@@ -1,0 +1,10 @@
+*.user
+
+compiler-cpp/.vs
+compiler-cpp/f-lang/x64
+compiler-cpp/x64
+compiler-cpp/tests/x64/Debug
+compiler-cpp/tests/x64/Release
+compiler-cpp/f-lang/Release
+compiler-cpp/Release
+compiler-cpp/f-lang/Debug
