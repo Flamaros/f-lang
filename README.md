@@ -5,7 +5,7 @@ This project is only for personal purpose, my goal is to learn ASM and a bit abo
 
 ## Goals
 1. Windows platform
-1. x64 architecture
+1. x86 architecture (x64 architecture eventually)
 1. No libc dependency
 1. Bootstrap as soon as possible the compiler
 1. Make the compiler fast
