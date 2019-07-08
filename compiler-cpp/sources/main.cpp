@@ -60,6 +60,10 @@ int main(int ac, char** av)
 	// import address table (IAT) is used to link against symbols into a different module (dll), but call functions in that way cost an extra indirection made by a jump
 	// 
 
+
+	// Information about Windows system APIs and libraries
+	// https://en.wikipedia.org/wiki/Microsoft_Windows_library_files
+
 	IMAGE_DOS_HEADER	image_dos_header = {};
 
 	image_dos_header.e_magic = (WORD)'M' | ((WORD)'Z' << 8);	// 'MZ' @Warning take care of the endianness / 0x5A4D

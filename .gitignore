@@ -3,8 +3,12 @@
 compiler-cpp/.vs
 compiler-cpp/f-lang/x64
 compiler-cpp/x64
+compiler-cpp/tests/Debug
+compiler-cpp/tests/Release
 compiler-cpp/tests/x64/Debug
 compiler-cpp/tests/x64/Release
 compiler-cpp/f-lang/Release
+compiler-cpp/Debug
 compiler-cpp/Release
 compiler-cpp/f-lang/Debug
+compiler-cpp/f-lang/Release
