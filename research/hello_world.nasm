@@ -4,7 +4,7 @@
 ; nasm -fwin32 hello_world.nasm
 ; 
 ; From a native Visual Studio Tools Command prompt
-; link /subsystem:console /nodefaultlib /entry:main hello_world.obj kernel32.lib user32.dll
+; link /subsystem:console /nodefaultlib /entry:main hello_world.obj kernel32.lib
 
 
    global _main
@@ -19,7 +19,7 @@ _main:
     mov     ebp, esp
     sub     esp, 4
 
-    ; hStdOut = GetstdHandle( STD_OUTPUT_HANDLE)
+    ; hStdOut = GetstdHandle(STD_OUTPUT_HANDLE)
     push    -11
     call    _GetStdHandle@4
     mov     ebx, eax    
