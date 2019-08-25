@@ -9,6 +9,8 @@ Project
         files: [
             "sources/third-party/microsoft_craziness.h",
 
+            "sources/c_generator.cpp",
+            "sources/c_generator.hpp",
             "sources/f_language_definitions.hpp",
             "sources/f_parser.cpp",
             "sources/f_parser.hpp",

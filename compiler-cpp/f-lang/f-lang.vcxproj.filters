@@ -29,6 +29,9 @@
     <ClCompile Include="..\sources\f_parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sources\c_generator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\utilities.hpp">
@@ -47,6 +50,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\f_parser.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\c_generator.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\sources\c_generator.cpp" />
     <ClCompile Include="..\sources\f_parser.cpp" />
     <ClCompile Include="..\sources\f_tokenizer.cpp" />
     <ClCompile Include="..\sources\main.cpp" />
@@ -136,6 +137,7 @@
     <ClCompile Include="..\sources\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\sources\c_generator.hpp" />
     <ClInclude Include="..\sources\f_language_definitions.hpp" />
     <ClInclude Include="..\sources\f_parser.hpp" />
     <ClInclude Include="..\sources\f_tokenizer.hpp" />

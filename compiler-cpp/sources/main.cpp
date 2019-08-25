@@ -2,6 +2,7 @@
 
 #include "f_tokenizer.hpp"
 #include "f_parser.hpp"
+#include "c_generator.hpp"
 
 #include "utilities.hpp"
 
@@ -21,9 +22,13 @@ int main(int ac, char** av)
     f::tokenize(input_file_content, tokens);
     f::parse(tokens, parsing_result);
 
-	Find_Result find_visual_studio_result = find_visual_studio_and_windows_sdk();
+    if (c_generator::generate("./build/main.c", parsing_result)) {
+        Find_Result find_visual_studio_result = find_visual_studio_and_windows_sdk();
 
-	free_resources(&find_visual_studio_result);
+        // @TODO build and link the generated c file here
+
+        free_resources(&find_visual_studio_result);
+    }
 
 //    generate_hello_world();
 	return 0;

@@ -105,7 +105,7 @@ namespace f
 					|| token.punctuation == Punctuation::less
 					|| token.punctuation == Punctuation::greater)
 				{
-					if (in_string_literal)
+/*					if (in_string_literal)
 					{
 						Include	include;
 
@@ -120,7 +120,7 @@ namespace f
 					{
 						in_string_literal = true;
 						string_litteral = std::string_view();
-					}
+                    }*/
 				}
 				else if (token.keyword == Keyword::_unknown
 					&& token.punctuation == Punctuation::unknown)

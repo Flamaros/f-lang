@@ -90,12 +90,31 @@ static Punctuation ending_punctuation(const std::string_view& text, int& punctua
 // @TODO in c++20 put the key as std::string
 static std::unordered_map<std::string_view, Keyword> keywords = {
     {"import"sv,	Keyword::_import},
-    {"return"sv,	Keyword::_return},
     {"enum"sv,      Keyword::_enum},
     {"struct"sv,	Keyword::_struct},
     {"typedef"sv,	Keyword::_typedef},
+    {"inline"sv,    Keyword::K_inline},
+    {"static"sv,    Keyword::_static},
+    {"fn"sv,        Keyword::_fn},
+    {"true"sv,      Keyword::_true},
+    {"false"sv,     Keyword::_false},
+
+    // Control flow
+    {"if"sv,        Keyword::_if},
+    {"else"sv,      Keyword::_else},
+    {"do"sv,        Keyword::_do},
+    {"while"sv,     Keyword::_while},
+    {"for"sv,       Keyword::_for},
+    {"foreach"sv,   Keyword::_foreach},
+    {"switch"sv,    Keyword::_switch},
+    {"case"sv,      Keyword::_case},
+    {"default"sv,   Keyword::_default},
+    {"final"sv,     Keyword::_final},
+    {"return"sv,	Keyword::_return},
+    {"exit"sv,      Keyword::_exit},
 
     // Types
+    {"bool"sv,      Keyword::_bool},
     {"i8"sv,        Keyword::_i8},
     {"ui8"sv,       Keyword::_ui8},
     {"i16"sv,       Keyword::_i16},

@@ -80,13 +80,33 @@ namespace f
 	{
 		_unknown,
 
+        // Special keywords
         _import,
-        _return,
         _enum,
         _struct,
         _typedef,
+        K_inline,
+        _static,
+        _fn,
+        _true,
+        _false,
+
+        // Control flow
+        _if,
+        _else,
+        _do,
+        _while,
+        _for,
+        _foreach,
+        _switch,
+        _case,
+        _default,
+        _final,
+        _return,
+        _exit,
 
         // Types
+        _bool,
         _i8,
         _ui8,
         _i16,

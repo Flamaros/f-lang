@@ -1,5 +1,7 @@
 *.user
 
+build/
+
 compiler-cpp/.vs
 compiler-cpp/f-lang/x64
 compiler-cpp/x64
