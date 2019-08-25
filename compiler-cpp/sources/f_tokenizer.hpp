@@ -1,11 +1,11 @@
 #pragma once
 
-#include "macro_language_definitions.hpp"
+#include "f_language_definitions.hpp"
 
 #include <vector>
 #include <string_view>
 
-namespace macro
+namespace f
 {
 	struct Token
 	{

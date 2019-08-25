@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-namespace macro
+namespace f
 {
 	enum class Punctuation : uint8_t
 	{

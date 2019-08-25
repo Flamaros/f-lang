@@ -1,5 +1,5 @@
-#include "../macro_tokenizer.hpp"
-#include "../macro_parser.hpp"
+#include "../f_tokenizer.hpp"
+#include "../f_parser.hpp"
 
 #include <CppUnitTest.h>
 
@@ -7,7 +7,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-using namespace macro;
+using namespace f;
 
 namespace tests
 {

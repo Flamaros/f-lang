@@ -14,24 +14,24 @@
     <ClCompile Include="..\sources\tests\tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\macro_tokenizer.cpp">
+    <ClCompile Include="..\sources\f_tokenizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\macro_parser.cpp">
+    <ClCompile Include="..\sources\f_parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\macro_tokenizer.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\macro_language_definitions.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\hash_table.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\macro_parser.hpp">
+    <ClInclude Include="..\sources\f_language_definitions.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\f_tokenizer.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\f_parser.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

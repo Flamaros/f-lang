@@ -1,6 +1,6 @@
-#include "macro_parser.hpp"
+#include "f_parser.hpp"
 
-#include "macro_language_definitions.hpp"
+#include "f_language_definitions.hpp"
 
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 // Typedef complexity
 // https://en.cppreference.com/w/cpp/language/typedef
 
-namespace macro
+namespace f
 {
 	enum class State
 	{
@@ -41,7 +41,7 @@ namespace macro
 			|| state == State::comment_line;
 	}
 
-	void macro::parse_macros(const std::vector<Token>& tokens, Macro_Parsing_Result& result)
+    void parse_macros(const std::vector<Token>& tokens, Macro_Parsing_Result& result)
 	{
 		std::stack<State>	states;
 		Token				name_token;

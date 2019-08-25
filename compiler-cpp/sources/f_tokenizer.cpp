@@ -1,4 +1,4 @@
-#include "macro_tokenizer.hpp"
+#include "f_tokenizer.hpp"
 
 #include "hash_table.hpp"
 
@@ -6,7 +6,7 @@
 
 using namespace std::literals;	// For string literal suffix (conversion to std::string_view)
 
-using namespace macro;
+using namespace f;
 
 static const std::size_t    tokens_length_heuristic = 6;
 
@@ -111,7 +111,7 @@ static Keyword is_keyword(const std::string_view& text)
     return Keyword::_unknown;
 }
 
-void macro::tokenize(const std::string& buffer, std::vector<Token>& tokens)
+void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 {
     tokens.reserve(buffer.length() / tokens_length_heuristic);
 
