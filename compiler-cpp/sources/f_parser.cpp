@@ -20,7 +20,7 @@ namespace f
 		comment_line,
 		comment_block,
 		macro_expression,
-		include_directive,
+        import_directive,
 
 		eof
 	};
@@ -41,7 +41,7 @@ namespace f
 			|| state == State::comment_line;
 	}
 
-    void parse_macros(const std::vector<Token>& tokens, Macro_Parsing_Result& result)
+    void parse(const std::vector<Token>& tokens, Parsing_Result& result)
 	{
 		std::stack<State>	states;
 		Token				name_token;
@@ -93,13 +93,13 @@ namespace f
 			}
 			else if (state == State::macro_expression)
 			{
-				if (token.keyword == Keyword::_include)
+                if (token.keyword == Keyword::_import)
 				{
 					states.pop();
-					states.push(State::include_directive);
+                    states.push(State::import_directive);
 				}
 			}
-			else if (state == State::include_directive)
+            else if (state == State::import_directive)
 			{
 				if (token.punctuation == Punctuation::double_quote
 					|| token.punctuation == Punctuation::less

@@ -21,6 +21,8 @@ Project
             "sources/utilities.cpp",
             "sources/utilities.hpp",
 
+            // compiler-f (Will not be compile, but appears in the project files list)
+            "../compiler-f/f_language_definitions.f",
             "../compiler-f/main.f",
         ]
 

@@ -76,23 +76,29 @@ namespace f
 		new_line_character
 	};
 
-	enum class Keyword
+    enum class Keyword  // @Warning I use an _ as prefix to avoid collisions with cpp keywords
 	{
 		_unknown,
 
-		_include,
-		_define,
-		_undef,
-		_pragma,
-		_if,
-		_else,
-		_elif,
-		_endif,
-		_ifdef,
-		_ifndef,
-		_defined,
-		_error
-	};
+        _import,
+        _return,
+        _enum,
+        _struct,
+        _typedef,
+
+        // Types
+        _i8,
+        _ui8,
+        _i16,
+        _ui16,
+        _i32,
+        _ui32,
+        _i64,
+        _ui64,
+        _f32,
+        _f64,
+        _string,
+    };
 
 	inline bool is_white_punctuation(Punctuation punctuation)
 	{

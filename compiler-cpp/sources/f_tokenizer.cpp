@@ -89,18 +89,24 @@ static Punctuation ending_punctuation(const std::string_view& text, int& punctua
 
 // @TODO in c++20 put the key as std::string
 static std::unordered_map<std::string_view, Keyword> keywords = {
-	{"include"sv,	Keyword::_include},
-	{"define"sv,	Keyword::_define},
-	{"undef"sv,		Keyword::_undef},
-	{"pragma"sv,	Keyword::_pragma},
-	{"if"sv,		Keyword::_if},
-	{"else"sv,		Keyword::_else},
-	{"elif"sv,		Keyword::_elif},
-	{"endif"sv,		Keyword::_endif},
-	{"ifdef"sv,		Keyword::_ifdef},
-	{"ifndef"sv,	Keyword::_ifndef},
-	{"defined"sv,	Keyword::_defined},
-	{"error"sv,		Keyword::_error},
+    {"import"sv,	Keyword::_import},
+    {"return"sv,	Keyword::_return},
+    {"enum"sv,      Keyword::_enum},
+    {"struct"sv,	Keyword::_struct},
+    {"typedef"sv,	Keyword::_typedef},
+
+    // Types
+    {"i8"sv,        Keyword::_i8},
+    {"ui8"sv,       Keyword::_ui8},
+    {"i16"sv,       Keyword::_i16},
+    {"ui16"sv,      Keyword::_ui16},
+    {"i32"sv,       Keyword::_i32},
+    {"ui32"sv,      Keyword::_ui32},
+    {"i64"sv,       Keyword::_i64},
+    {"ui64"sv,      Keyword::_ui64},
+    {"f32"sv,       Keyword::_f32},
+    {"f64"sv,       Keyword::_f64},
+    {"string"sv,	Keyword::_string}
 };
 
 static Keyword is_keyword(const std::string_view& text)

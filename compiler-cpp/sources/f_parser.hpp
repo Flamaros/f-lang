@@ -19,10 +19,10 @@ namespace f
 		std::string_view	path;
 	};
 
-	struct Macro_Parsing_Result
+	struct Parsing_Result
 	{
 		std::vector<Include>	includes;
 	};
 
-	void parse_macros(const std::vector<Token>& tokens, Macro_Parsing_Result& result);
+	void parse(const std::vector<Token>& tokens, Parsing_Result& result);
 }
