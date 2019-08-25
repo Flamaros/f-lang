@@ -306,7 +306,6 @@ bool visit_files_w(wchar_t *dir_name, Version_Data *data, Visit_Proc_W proc) {
     return true;
 }
 
-
 wchar_t *find_windows_kit_root_with_key(HKEY key, wchar_t *version) {
     // Given a key to an already opened registry entry,
     // get the value stored under the 'version' subkey.
@@ -316,21 +315,21 @@ wchar_t *find_windows_kit_root_with_key(HKEY key, wchar_t *version) {
     auto rc = RegQueryValueExW(key, version, NULL, NULL, NULL, &required_length);
     if (rc != 0)  return NULL;
 
-    DWORD length = required_length + 2;  // The +2 is for the maybe optional zero later on. Probably we are over-allocating.
-    wchar_t *value = (wchar_t *)malloc(length);
+	required_length = required_length + 2;  // The +2 is for the maybe optional zero later on. Probably we are over-allocating.
+	LPBYTE	value = (LPBYTE)malloc(required_length);
     if (!value) return NULL;
 
-    rc = RegQueryValueExW(key, version, NULL, NULL, (LPBYTE)value, &length);  // We know that version is zero-terminated...
+	DWORD length = required_length;
+	rc = RegQueryValueExW(key, version, NULL, NULL, value, &length);  // We know that version is zero-terminated...
     if (rc != 0)  return NULL;
 
     // The documentation says that if the string for some reason was not stored
     // with zero-termination, we need to manually terminate it. Sigh!!
 
-    if (value[length]) {
-        value[length+1] = 0;
-    }
+	value[length + 0] = 0;
+	value[length + 1] = 0;
 
-    return value;
+	return (wchar_t *)value;
 }
 
 void win10_best(wchar_t *short_name, wchar_t *full_name, Version_Data *data) {
