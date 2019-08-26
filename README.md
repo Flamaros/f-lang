@@ -21,10 +21,17 @@ also give the possibility to have an intermediate representation useful for debu
 After the c code generator I'll may look to add an other step by generating ASM code in nasm file format, the linker
 will be the last thing to replace after that.
 
-## Compile
-QtCreator (qbs) and Visual Studio solution files are in compiler-cpp folder.
-With the Visual Studio solution it is straight forward.
-For QtCreator you should set the working directory to the root folder of the git project to be able to run the compiler.
+## Compile/Run
+Visual Studio:
+1. Open solution that is in compiler-cpp folder
+1. Just click on the Run button
+
+QtCreato:
+1. Open solution that is in compiler-cpp folder
+1. In project configuration. Build&Run section
+  1. Set the working directory to the root folder of the git project
+  1. Uncheck "Add build library search path to PATH"
+  1. For "Execution environment" select "System environment"
 
 Please notice that for the moment the purpose of the cpp version of the compiler is to build the f-lang version of what
 will be the same compiler. So minimal efforts will be done on the cpp version of the compiler.

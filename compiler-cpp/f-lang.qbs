@@ -6,6 +6,8 @@ Project
     {
         name: "f-lang"
 
+        consoleApplication: true
+
         files: [
             "sources/third-party/microsoft_craziness.h",
 
