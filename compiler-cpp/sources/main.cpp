@@ -28,6 +28,7 @@ int main(int ac, char** av)
 	std::filesystem::path output_directory_path = "./build";
 	std::filesystem::path output_file_name = "f-compiler.exe";
 
+    std::filesystem::create_directory(output_directory_path);   // @Warning hacky thing, the canonical may failed if the directory doesn't exist
 	if (output_directory_path.is_relative()) {
 		output_directory_path = std::filesystem::canonical(output_directory_path);
 	}
