@@ -1,6 +1,6 @@
 #include "native_generator.hpp"
 
-#include "utilities.hpp"
+#include <utilities/file.hpp>
 
 #include <iostream>
 
@@ -52,7 +52,7 @@ std::uint8_t	hello_world_instructions[] = {
     0x89, 0xE5,										   // mov    ebp, esp
     0x83, 0xEC, 0x04,								   // sub    esp, 0x4
     0x6A, 0xF5,										   // push   0xfffffff5         @TODO correct F5 value
-    0xE8, 0xFC, 0x00, 0x00, 0x00,					   // call   8 <_main+0x8>		GetstdHandle @TODO fixe the adress
+    0xE8, 0xFC, 0x00, 0x00, 0x00,					   // call   8 <_main+0x8>		GetStdHandle @TODO fixe the adress
     0x89, 0xC3,										   // mov    ebx, eax
     0x6A, 0x00,										   // push   0x0
     0x8D, 0x45, 0xFC,								   // lea    eax, [ebp-0x4]

@@ -77,7 +77,9 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>false</ExceptionHandling>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,7 +92,9 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>false</ExceptionHandling>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -105,6 +109,9 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>false</ExceptionHandling>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -121,6 +128,9 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>false</ExceptionHandling>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,18 +142,30 @@
     <ClCompile Include="..\sources\c_generator.cpp" />
     <ClCompile Include="..\sources\f_parser.cpp" />
     <ClCompile Include="..\sources\f_tokenizer.cpp" />
+    <ClCompile Include="..\sources\globals.cpp" />
     <ClCompile Include="..\sources\main.cpp" />
     <ClCompile Include="..\sources\native_generator.cpp" />
-    <ClCompile Include="..\sources\utilities.cpp" />
+    <ClCompile Include="..\sources\utilities\file.cpp" />
+    <ClCompile Include="..\sources\utilities\logger.cpp" />
+    <ClCompile Include="..\sources\utilities\string.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\c_generator.hpp" />
     <ClInclude Include="..\sources\f_language_definitions.hpp" />
     <ClInclude Include="..\sources\f_parser.hpp" />
     <ClInclude Include="..\sources\f_tokenizer.hpp" />
+    <ClInclude Include="..\sources\globals.hpp" />
+    <ClInclude Include="..\sources\macros.hpp" />
     <ClInclude Include="..\sources\native_generator.hpp" />
+    <ClInclude Include="..\sources\platform.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
-    <ClInclude Include="..\sources\utilities.hpp" />
+    <ClInclude Include="..\sources\utilities\exit_scope.hpp" />
+    <ClInclude Include="..\sources\utilities\file.hpp" />
+    <ClInclude Include="..\sources\utilities\flags.hpp" />
+    <ClInclude Include="..\sources\utilities\logger.hpp" />
+    <ClInclude Include="..\sources\utilities\string.hpp" />
+    <ClInclude Include="..\sources\utilities\timer.hpp" />
+    <ClInclude Include="..\sources\utilities\vector.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
