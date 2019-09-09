@@ -15,7 +15,11 @@ static std::string   common_cl_options = "/W4";
 static std::string   debug_cl_options = "/Od";
 static std::string   release_cl_options = "/O2 /Oi /GL";
 
-static std::string	common_linker_options = "/SUBSYSTEM:CONSOLE";
+// @Warning https://docs.microsoft.com/en-us/cpp/build/reference/entry-entry-point-symbol?view=vs-2019
+// We remove completely the c runtime
+//
+// /SUBSYSTEM:CONSOLE
+static std::string	common_linker_options = "/NODEFAULTLIB /ENTRY:main";
 
 static bool	compile_c_file(const std::filesystem::path& input_filepath, const std::filesystem::path& output_directory_path, const std::filesystem::path& output_file_name)
 {
@@ -40,7 +44,7 @@ static bool	compile_c_file(const std::filesystem::path& input_filepath, const st
 	std::string  windows_sdk_ucrt_library_path = windows_sdk_um_library_path;
 	std::string  vs_windows_sdk_include_base_path(w_windows_sdk_um_library_path.begin(), w_windows_sdk_um_library_path.end());
 
-	utilities::replace(windows_sdk_um_library_path, "\\um", "\\ucrt");
+	utilities::replace(windows_sdk_ucrt_library_path, "\\um", "\\ucrt");
 
 	utilities::replace(vs_windows_sdk_include_base_path, "Lib", "Include");
 	utilities::replace(vs_windows_sdk_include_base_path, "\\um\\x64", "");
@@ -59,9 +63,10 @@ static bool	compile_c_file(const std::filesystem::path& input_filepath, const st
 		+ "/link "
 		+ common_linker_options + " "
 		+ "/out:\"" + (output_directory_path / output_file_name).generic_string() + "\" "
-		+ "/LIBPATH:\"" + windows_sdk_ucrt_library_path + "\" "
+//		+ "/LIBPATH:\"" + windows_sdk_ucrt_library_path + "\" "
 		+ "/LIBPATH:\"" + windows_sdk_um_library_path + "\" "
-		+ "/LIBPATH:\"" + vs_library_path + "\" "
+//		+ "/LIBPATH:\"" + vs_library_path + "\" "
+		+ "kernel32.lib"	// @Warning we need the kernel32.dll to be able to call win32 functions
 		;
 
 	// Running process (This method works with spaces in includes directories)
@@ -139,6 +144,15 @@ bool c_generator::generate(const std::filesystem::path& output_directory_path, c
     }
 
     file << "#include <Windows.h>\n"
+            "\n"
+            "size_t strlen(const char* str) {\n"
+            "   size_t i = 0;\n"
+            "\n"
+            "   for (; str[i] != 0; i++) {\n"
+            "   }\n"
+            "\n"
+            "   return i;\n"
+            "}\n"
             "\n"
             "int main(int ac, char** argv)\n"
             "{\n"
