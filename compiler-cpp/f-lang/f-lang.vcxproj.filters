@@ -23,12 +23,6 @@
     <ClCompile Include="..\sources\native_generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\f_tokenizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\f_parser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\c_generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -44,6 +38,12 @@
     <ClCompile Include="..\sources\globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sources\lexer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\ast.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\native_generator.hpp">
@@ -51,15 +51,6 @@
     </ClInclude>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
       <Filter>Source Files\third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\f_language_definitions.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\f_tokenizer.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\f_parser.hpp">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\c_generator.hpp">
       <Filter>Source Files</Filter>
@@ -92,6 +83,12 @@
       <Filter>Source Files\utilities</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\globals.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\lexer.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\ast.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "f_tokenizer.hpp"
+#include "lexer.hpp"
 
 #include <vector>
 #include <string_view>
@@ -34,12 +34,12 @@ namespace f
         std::vector<Variable>   arguments;
     };
 
-    struct Parsing_Result
+    struct AST
 	{
         std::vector<Function>	functions;
         std::vector<Variable>	variables;
         std::vector<Type>       types;
 	};
 
-	void parse(const std::vector<Token>& tokens, Parsing_Result& result);
+    void build_ast(const std::vector<Token>& tokens, AST& result);
 }

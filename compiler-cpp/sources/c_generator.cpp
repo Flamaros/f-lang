@@ -133,7 +133,7 @@ static bool	compile_c_file(const std::filesystem::path& input_filepath, const st
 	return true;
 }
 
-bool c_generator::generate(const std::filesystem::path& output_directory_path, const std::filesystem::path& output_file_name, const f::Parsing_Result& parsing_result)
+bool c_generator::generate(const std::filesystem::path& output_directory_path, const std::filesystem::path& output_file_name, const f::AST& parsing_result)
 {
     std::filesystem::create_directory(output_directory_path);
 

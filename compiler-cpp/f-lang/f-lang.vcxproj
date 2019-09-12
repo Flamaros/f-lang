@@ -139,10 +139,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\sources\ast.cpp" />
     <ClCompile Include="..\sources\c_generator.cpp" />
-    <ClCompile Include="..\sources\f_parser.cpp" />
-    <ClCompile Include="..\sources\f_tokenizer.cpp" />
     <ClCompile Include="..\sources\globals.cpp" />
+    <ClCompile Include="..\sources\lexer.cpp" />
     <ClCompile Include="..\sources\main.cpp" />
     <ClCompile Include="..\sources\native_generator.cpp" />
     <ClCompile Include="..\sources\utilities\file.cpp" />
@@ -150,11 +150,10 @@
     <ClCompile Include="..\sources\utilities\string.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\sources\ast.hpp" />
     <ClInclude Include="..\sources\c_generator.hpp" />
-    <ClInclude Include="..\sources\f_language_definitions.hpp" />
-    <ClInclude Include="..\sources\f_parser.hpp" />
-    <ClInclude Include="..\sources\f_tokenizer.hpp" />
     <ClInclude Include="..\sources\globals.hpp" />
+    <ClInclude Include="..\sources\lexer.hpp" />
     <ClInclude Include="..\sources\macros.hpp" />
     <ClInclude Include="..\sources\native_generator.hpp" />
     <ClInclude Include="..\sources\platform.hpp" />

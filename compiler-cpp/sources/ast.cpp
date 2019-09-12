@@ -1,6 +1,6 @@
-#include "f_parser.hpp"
+#include "ast.hpp"
 
-#include "f_language_definitions.hpp"
+#include "lexer.hpp"
 
 #include <string>
 #include <vector>
@@ -41,7 +41,7 @@ namespace f
 			|| state == State::comment_line;
 	}
 
-    void parse(const std::vector<Token>& tokens, Parsing_Result& result)
+    void build_ast(const std::vector<Token>& tokens, AST& result)
 	{
 		std::stack<State>	states;
 		Token				name_token;

@@ -14,10 +14,10 @@
     <ClCompile Include="..\sources\tests\tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\f_tokenizer.cpp">
+    <ClCompile Include="..\sources\ast.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\f_parser.cpp">
+    <ClCompile Include="..\sources\lexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -25,13 +25,10 @@
     <ClInclude Include="..\sources\hash_table.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\f_language_definitions.hpp">
+    <ClInclude Include="..\sources\ast.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\f_tokenizer.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\f_parser.hpp">
+    <ClInclude Include="..\sources\lexer.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

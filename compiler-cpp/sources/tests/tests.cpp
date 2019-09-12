@@ -1,5 +1,5 @@
-#include "../f_tokenizer.hpp"
-#include "../f_parser.hpp"
+#include "../lexer.hpp"
+#include "../ast.hpp"
 
 #include <CppUnitTest.h>
 

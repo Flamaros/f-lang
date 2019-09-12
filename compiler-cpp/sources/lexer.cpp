@@ -1,4 +1,4 @@
-#include "f_tokenizer.hpp"
+#include "lexer.hpp"
 
 #include "hash_table.hpp"
 
@@ -69,6 +69,11 @@ static Hash_Table<std::uint8_t, Punctuation, Punctuation::unknown> punctuation_t
     {'.', Punctuation::dot},
     {'?', Punctuation::question_mark}
 };
+
+static bool is_white_punctuation(Punctuation punctuation)
+{
+    return punctuation >= Punctuation::white_character;
+}
 
 /// This implemenation doesn't do any lookup in tables
 /// Instead it use hash tables specialized by length of punctuation
