@@ -92,6 +92,11 @@ namespace f
         _true,
         _false,
 
+        // Reserved for futur usage
+        _public,
+        _protected,
+        _private,
+
         // Control flow
         _if,
         _else,
@@ -119,6 +124,7 @@ namespace f
         _f32,
         _f64,
         _string,
+        // @TODO @Critical add types that have the size of ptr (like size_t and ptrdiff_t,...)
     };
 
 	struct Token

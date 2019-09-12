@@ -41,7 +41,7 @@ namespace f
 			|| state == State::comment_line;
 	}
 
-    void build_ast(const std::vector<Token>& tokens, AST& result)
+    void build_ast(const std::vector<Token>& tokens, AST& ast)
 	{
 		std::stack<State>	states;
 		Token				name_token;

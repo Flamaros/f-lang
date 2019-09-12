@@ -15,6 +15,9 @@
     <Filter Include="Source Files\utilities">
       <UniqueIdentifier>{b3ea5218-88b6-4d4a-a910-d2c392367676}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\fight-std">
+      <UniqueIdentifier>{70c034fb-3497-4706-8294-a2cc8fe55ec0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\main.cpp">
@@ -90,6 +93,12 @@
     </ClInclude>
     <ClInclude Include="..\sources\ast.hpp">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fight-std\string_ref.hpp">
+      <Filter>Source Files\fight-std</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fight-std\string.hpp">
+      <Filter>Source Files\fight-std</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -152,6 +152,8 @@
   <ItemGroup>
     <ClInclude Include="..\sources\ast.hpp" />
     <ClInclude Include="..\sources\c_generator.hpp" />
+    <ClInclude Include="..\sources\fight-std\string.hpp" />
+    <ClInclude Include="..\sources\fight-std\string_ref.hpp" />
     <ClInclude Include="..\sources\globals.hpp" />
     <ClInclude Include="..\sources\lexer.hpp" />
     <ClInclude Include="..\sources\macros.hpp" />

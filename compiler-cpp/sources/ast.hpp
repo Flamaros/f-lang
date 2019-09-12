@@ -41,5 +41,5 @@ namespace f
         std::vector<Type>       types;
 	};
 
-    void build_ast(const std::vector<Token>& tokens, AST& result);
+    void build_ast(const std::vector<Token>& tokens, AST& ast);
 }

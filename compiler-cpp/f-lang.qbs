@@ -22,6 +22,9 @@ Project
             "sources/utilities/timer.hpp",
             "sources/utilities/vector.hpp",
 
+            "sources/fight-std/string.hpp",
+            "sources/fight-std/string_ref.hpp",
+
             "sources/ast.cpp",
             "sources/ast.hpp",
             "sources/c_generator.cpp",
