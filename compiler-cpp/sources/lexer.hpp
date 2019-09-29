@@ -91,6 +91,8 @@ namespace f
         _fn,
         _true,
         _false,
+		_nullptr,
+		_immutable,
 
         // Reserved for futur usage
         _public,

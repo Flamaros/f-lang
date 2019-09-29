@@ -19,14 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\ast.cpp" />
     <ClCompile Include="..\sources\lexer.cpp" />
-    <ClCompile Include="..\sources\tests\tests.cpp" />
+    <ClCompile Include="..\sources\parser.cpp" />
+    <ClCompile Include="..\sources\tests\lexer_tests.cpp" />
+    <ClCompile Include="..\sources\tests\string_and_string_ref_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\ast.hpp" />
     <ClInclude Include="..\sources\hash_table.hpp" />
     <ClInclude Include="..\sources\lexer.hpp" />
+    <ClInclude Include="..\sources\parser.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

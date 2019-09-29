@@ -2,3 +2,11 @@ Mettre en place un logger avec un mecanisme de gestion des erreurs:
  * Certaines erreurs comme le fait de redefinir une valeur d'un enum ne sont pas critique d'un point de vu syntaxique, donc pas besoin de stopper immédiatement la compilation (on peut laisser plus d'erreurs apparaitre pour l'utilisateur)
  * Certaines erreurs sont critique et la compilation ne peut absolument plus continuer
  
+ 
+Grammar:
+https://dlang.org/spec/grammar.html
+https://dlang.org/spec/lex.html
+https://www.youtube.com/watch?v=9-EYWLbmiG0
+
+Expression types
+https://drive.google.com/file/d/1OggMRIwsuxse2MtkM6XIbL3pNMDUIzVC/view

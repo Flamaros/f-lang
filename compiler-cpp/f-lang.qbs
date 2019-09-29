@@ -22,11 +22,11 @@ Project
             "sources/utilities/timer.hpp",
             "sources/utilities/vector.hpp",
 
+            "sources/fight-std/bucket.hpp",
+            "sources/fight-std/bucket_array.hpp",
             "sources/fight-std/string.hpp",
             "sources/fight-std/string_ref.hpp",
 
-            "sources/ast.cpp",
-            "sources/ast.hpp",
             "sources/c_generator.cpp",
             "sources/c_generator.hpp",
             "sources/globals.cpp",
@@ -38,6 +38,8 @@ Project
             "sources/main.cpp",
             "sources/native_generator.cpp",
             "sources/native_generator.hpp",
+            "sources/parser.cpp",
+            "sources/parser.hpp",
             "sources/platform.hpp",
 
             // compiler-f (Will not be compile, but appears in the project files list)

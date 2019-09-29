@@ -103,6 +103,8 @@ static std::unordered_map<std::string_view, Keyword> keywords = {
     {"fn"sv,            Keyword::_fn},
     {"true"sv,          Keyword::_true},
     {"false"sv,         Keyword::_false},
+	{"nullptr"sv,       Keyword::_nullptr},
+	{"immutable"sv,     Keyword::_immutable},
 
     // Control flow
     {"if"sv,            Keyword::_if},

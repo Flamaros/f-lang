@@ -139,25 +139,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\ast.cpp" />
     <ClCompile Include="..\sources\c_generator.cpp" />
     <ClCompile Include="..\sources\globals.cpp" />
     <ClCompile Include="..\sources\lexer.cpp" />
     <ClCompile Include="..\sources\main.cpp" />
     <ClCompile Include="..\sources\native_generator.cpp" />
+    <ClCompile Include="..\sources\parser.cpp" />
     <ClCompile Include="..\sources\utilities\file.cpp" />
     <ClCompile Include="..\sources\utilities\logger.cpp" />
     <ClCompile Include="..\sources\utilities\string.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\ast.hpp" />
     <ClInclude Include="..\sources\c_generator.hpp" />
+    <ClInclude Include="..\sources\fight-std\bucket.hpp" />
+    <ClInclude Include="..\sources\fight-std\bucket_array.hpp" />
     <ClInclude Include="..\sources\fight-std\string.hpp" />
     <ClInclude Include="..\sources\fight-std\string_ref.hpp" />
     <ClInclude Include="..\sources\globals.hpp" />
     <ClInclude Include="..\sources\lexer.hpp" />
     <ClInclude Include="..\sources\macros.hpp" />
     <ClInclude Include="..\sources\native_generator.hpp" />
+    <ClInclude Include="..\sources\parser.hpp" />
     <ClInclude Include="..\sources\platform.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
     <ClInclude Include="..\sources\utilities\exit_scope.hpp" />
@@ -167,6 +169,10 @@
     <ClInclude Include="..\sources\utilities\string.hpp" />
     <ClInclude Include="..\sources\utilities\timer.hpp" />
     <ClInclude Include="..\sources\utilities\vector.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\compiler-f\f_language_definitions.f" />
+    <None Include="..\..\compiler-f\main.f" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

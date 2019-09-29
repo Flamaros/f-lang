@@ -11,13 +11,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\tests\tests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\ast.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\lexer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\tests\lexer_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\tests\string_and_string_ref_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -25,10 +28,10 @@
     <ClInclude Include="..\sources\hash_table.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\ast.hpp">
+    <ClInclude Include="..\sources\lexer.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\lexer.hpp">
+    <ClInclude Include="..\sources\parser.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

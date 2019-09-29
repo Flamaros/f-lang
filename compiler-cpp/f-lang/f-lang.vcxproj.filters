@@ -18,6 +18,9 @@
     <Filter Include="Source Files\fight-std">
       <UniqueIdentifier>{70c034fb-3497-4706-8294-a2cc8fe55ec0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="data">
+      <UniqueIdentifier>{b0f337d0-8db1-485c-8ab7-6aa4165a18f8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\main.cpp">
@@ -44,7 +47,7 @@
     <ClCompile Include="..\sources\lexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\ast.cpp">
+    <ClCompile Include="..\sources\parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -91,14 +94,28 @@
     <ClInclude Include="..\sources\lexer.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\ast.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\fight-std\string_ref.hpp">
       <Filter>Source Files\fight-std</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\fight-std\string.hpp">
       <Filter>Source Files\fight-std</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\parser.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fight-std\bucket.hpp">
+      <Filter>Source Files\fight-std</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fight-std\bucket_array.hpp">
+      <Filter>Source Files\fight-std</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\compiler-f\f_language_definitions.f">
+      <Filter>data</Filter>
+    </None>
+    <None Include="..\..\compiler-f\main.f">
+      <Filter>data</Filter>
+    </None>
   </ItemGroup>
 </Project>
