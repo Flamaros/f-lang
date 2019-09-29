@@ -13,5 +13,8 @@
     <ClCompile Include="..\sources\tests\string_and_string_ref_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\sources\tests\parser_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

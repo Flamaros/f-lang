@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\tests\lexer_tests.cpp" />
+    <ClCompile Include="..\sources\tests\parser_tests.cpp" />
     <ClCompile Include="..\sources\tests\string_and_string_ref_tests.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
