@@ -5,19 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Source Files\third-party">
-      <UniqueIdentifier>{7c856e97-e947-470f-892d-3c10f3176e1a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\utilities">
-      <UniqueIdentifier>{b3ea5218-88b6-4d4a-a910-d2c392367676}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\fight-std">
-      <UniqueIdentifier>{70c034fb-3497-4706-8294-a2cc8fe55ec0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="data">
       <UniqueIdentifier>{b0f337d0-8db1-485c-8ab7-6aa4165a18f8}</UniqueIdentifier>
     </Filter>
@@ -26,89 +13,6 @@
     <ClCompile Include="..\sources\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\native_generator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\c_generator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\utilities\string.cpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\utilities\file.cpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\utilities\logger.cpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\globals.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\lexer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\parser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\sources\native_generator.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
-      <Filter>Source Files\third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\c_generator.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\string.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\macros.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\platform.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\timer.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\vector.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\exit_scope.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\file.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\flags.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\logger.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\globals.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\lexer.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fight-std\string_ref.hpp">
-      <Filter>Source Files\fight-std</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fight-std\string.hpp">
-      <Filter>Source Files\fight-std</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\parser.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fight-std\bucket.hpp">
-      <Filter>Source Files\fight-std</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fight-std\bucket_array.hpp">
-      <Filter>Source Files\fight-std</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\compiler-f\f_language_definitions.f">
