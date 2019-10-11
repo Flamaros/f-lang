@@ -13,10 +13,50 @@ namespace tests
 	TEST_CLASS(parser_tests)
 	{
 	public:
+		TEST_METHOD(arithmetic_operations)
+		{
+			std::vector<Token>	tokens;
+			AST					ast;
+			AST_Node*			current_node = nullptr;
+			std::string			text =
+				"1 + 2 * 4";
+
+			tokenize(text, tokens);
+			parse(tokens, ast);
+
+			Assert::IsNotNull(ast.root);
+
+			current_node = ast.root;
+			Assert::AreEqual((int)Expression_Type::binary_operation, (int)current_node->type);
+			Assert::IsNotNull(current_node->first_sibling);
+			Assert::IsNotNull(current_node->first_child);
+
+			current_node = current_node->first_child;
+			Assert::AreEqual((int)Expression_Type::number, (int)current_node->type);
+			Assert::IsNotNull(current_node->first_sibling);
+			Assert::IsNotNull(current_node->first_child);
+
+			current_node = current_node->first_sibling;
+			Assert::AreEqual((int)Expression_Type::binary_operation, (int)current_node->type);
+			Assert::IsNotNull(current_node->first_sibling);
+			Assert::IsNotNull(current_node->first_child);
+
+			current_node = current_node->first_child;
+			Assert::AreEqual((int)Expression_Type::number, (int)current_node->type);
+			Assert::IsNotNull(current_node->first_sibling);
+			Assert::IsNotNull(current_node->first_child);
+
+			current_node = current_node->first_sibling;
+			Assert::AreEqual((int)Expression_Type::number, (int)current_node->type);
+			Assert::IsNotNull(current_node->first_sibling);
+			Assert::IsNotNull(current_node->first_child);
+		}
+
 		TEST_METHOD(hello_world)
 		{
 			std::vector<Token>	tokens;
 			AST					ast;
+			AST_Node*			current_node = nullptr;
 			std::string			text =
 				"main :: () -> i32\n"
 				"{\n"
@@ -26,6 +66,18 @@ namespace tests
 
 			tokenize(text, tokens);
 			parse(tokens, ast);
+
+			Assert::IsNotNull(ast.root);
+
+			current_node = ast.root;
+			Assert::AreEqual((int)Expression_Type::module, (int)current_node->type);
+			Assert::IsNotNull(current_node->first_sibling);
+			Assert::IsNotNull(current_node->first_child);
+
+			current_node = current_node->first_child;
+			Assert::AreEqual((int)Expression_Type::function_definition, (int)current_node->type);
+			Assert::IsNotNull(current_node->first_sibling);
+			Assert::IsNotNull(current_node->first_child);
 		}
 
 		TEST_METHOD(import_and_typedef)

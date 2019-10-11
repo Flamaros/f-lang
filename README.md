@@ -22,7 +22,7 @@ After the c code generator I'll may look to add an other step by generating ASM 
 will be the last thing to replace after that.
 
 ## Compile/Run
-Visual Studio:
+Visual Studio 2019:
 1. Open solution that is in compiler-cpp folder
 1. Just click on the Run button
 

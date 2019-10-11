@@ -1,0 +1,3 @@
+magic_enum.hpp:
+ - site: https://github.com/Neargye/magic_enum
+ - version: 0.6.2

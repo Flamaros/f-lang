@@ -2,6 +2,8 @@
 
 #include "lexer.hpp"
 
+#include <third-party/magic_enum.hpp>
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -23,16 +25,6 @@ namespace f
         import_directive,
 
 		eof
-	};
-
-	static std::string state_names[] = {
-		"global_scope",
-		"comment_line",
-		"comment_block",
-		"macro_expression",
-		"include_directive",
-
-		"eof"
 	};
 
 	static bool	is_one_line_state(State state)
@@ -82,7 +74,7 @@ namespace f
 
 			if (token.line >= print_start && token.line < print_end) {
 				std::cout
-					<< std::string(states.size() - 1, ' ') << state_names[(size_t)state]
+					<< std::string(states.size() - 1, ' ') << magic_enum::enum_name(state)
 					<< " " << token.line << " " << token.column << " " << token.text << std::endl;
 			}
 

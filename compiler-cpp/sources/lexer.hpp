@@ -5,6 +5,20 @@
 
 namespace f
 {
+	enum class Token_Type : uint8_t
+	{
+		identifier,	/// Every word that isn't a part of the language
+		keyword,
+		syntaxe_operator,
+		string_literal,
+		numeric_literal_i32,
+		numeric_literal_ui32,
+		numeric_literal_i64,
+		numeric_literal_ui64,
+		numeric_literal_f32,
+		numeric_literal_f64,
+	};
+
     enum class Punctuation : uint8_t
     {
         unknown,
@@ -77,7 +91,7 @@ namespace f
         new_line_character
     };
 
-    enum class Keyword  // @Warning I use an _ as prefix to avoid collisions with cpp keywords
+    enum class Keyword : uint8_t // @Warning I use an _ as prefix to avoid collisions with cpp keywords
     {
         _unknown,
 
@@ -127,6 +141,16 @@ namespace f
         _f64,
         _string,
         // @TODO @Critical add types that have the size of ptr (like size_t and ptrdiff_t,...)
+
+		// Special keywords (interpreted by the lexer)
+		// They will change the resulting token
+		special_file,				// replaced by a string litteral that contains current file name
+		special_full_path_file,		// replaced by a string litteral that contains current file absolut path
+		special_line,				// replaced by a number litteral that contains the current line value
+		special_module,				// replaced by a string litteral that contains current module name (equivalent to file for the moment)
+		special_eof,				// stop the lexer
+		special_compiler_vendor,	// replaced by a string litteral that contains the vendor of running compiler
+		special_compiler_version,	// replaced by a string litteral that contains the version of running compiler
     };
 
 	struct Token
@@ -135,14 +159,23 @@ namespace f
 		friend bool operator ==(const Token& lhs, const Token& rhs);
 
 	public:
-		Punctuation			punctuation = Punctuation::unknown;
-		Keyword				keyword = Keyword::_unknown;
+		Token_Type			type;
 		std::string_view	text;
 		size_t				line;       // Starting from 1
 		size_t				column;     // Starting from 1
-	};
 
-	inline bool operator==(const Token& lhs, const Token& rhs)
+		union
+		{
+			Punctuation	punctuation;
+			Keyword		keyword;
+			double		real_64;
+			float		real_32;
+			int64_t		integer;
+			uint64_t	unsigned_integer;
+		};
+	};
+	
+	inline bool operator ==(const Token& lhs, const Token& rhs)
 	{
 		return lhs.text == rhs.text;
 	}
