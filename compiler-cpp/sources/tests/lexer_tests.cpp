@@ -24,7 +24,6 @@ namespace tests
 
 			Assert::AreEqual(tokens.size(), size_t(0));
 		}
-
 		TEST_METHOD(white_spaces_text)
 		{
 			std::vector<Token>	tokens;
@@ -35,7 +34,6 @@ namespace tests
 
 			Assert::AreEqual(tokens.size(), size_t(0));
 		}
-
 		TEST_METHOD(comment_line_text_01)
 		{
 			std::vector<Token>	tokens;
@@ -47,7 +45,6 @@ namespace tests
 			Assert::AreEqual(tokens.size(), size_t(1));
 			Assert::AreEqual((int)tokens[0].punctuation, (int)Punctuation::line_comment);
 		}
-
 		TEST_METHOD(comment_line_text_02)
 		{
 			std::vector<Token>	tokens;
@@ -59,7 +56,6 @@ namespace tests
 			Assert::AreEqual(tokens.size(), size_t(2));
 			Assert::AreEqual((int)tokens[0].punctuation, (int)Punctuation::line_comment);
 		}
-
 		TEST_METHOD(comment_line_text_03)
 		{
 			std::vector<Token>	tokens;
@@ -79,7 +75,6 @@ namespace tests
 			Assert::AreEqual((int)tokens[3].punctuation, (int)Punctuation::slash);
 			Assert::AreEqual((int)tokens[3].line, (int)2);
 		}
-
 		TEST_METHOD(numeric_literals)
 		{
 			std::vector<Token>	tokens;

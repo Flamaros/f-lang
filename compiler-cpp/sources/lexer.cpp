@@ -94,50 +94,59 @@ static Punctuation ending_punctuation(const std::string_view& text, int& punctua
 
 // @TODO in c++20 put the key as std::string
 static std::unordered_map<std::string_view, Keyword> keywords = {
-    {"import"sv,        Keyword::_import},
-    {"enum"sv,          Keyword::_enum},
-    {"struct"sv,        Keyword::_struct},
-    {"typedef"sv,       Keyword::_typedef},
-    {"inline"sv,        Keyword::K_inline},
-    {"static"sv,        Keyword::_static},
-    {"fn"sv,            Keyword::_fn},
-    {"true"sv,          Keyword::_true},
-    {"false"sv,         Keyword::_false},
-	{"nullptr"sv,       Keyword::_nullptr},
-	{"immutable"sv,     Keyword::_immutable},
+    {"import"sv,				Keyword::_import},
+    {"enum"sv,					Keyword::_enum},
+    {"struct"sv,				Keyword::_struct},
+    {"typedef"sv,				Keyword::_typedef},
+    {"inline"sv,				Keyword::K_inline},
+    {"static"sv,				Keyword::_static},
+    {"fn"sv,					Keyword::_fn},
+    {"true"sv,					Keyword::_true},
+    {"false"sv,					Keyword::_false},
+	{"nullptr"sv,				Keyword::_nullptr},
+	{"immutable"sv,				Keyword::_immutable},
 
     // Control flow
-    {"if"sv,            Keyword::_if},
-    {"else"sv,          Keyword::_else},
-    {"do"sv,            Keyword::_do},
-    {"while"sv,         Keyword::_while},
-    {"for"sv,           Keyword::_for},
-    {"foreach"sv,       Keyword::_foreach},
-    {"switch"sv,        Keyword::_switch},
-    {"case"sv,          Keyword::_case},
-    {"default"sv,       Keyword::_default},
-    {"final"sv,         Keyword::_final},
-    {"return"sv,        Keyword::_return},
-    {"exit"sv,          Keyword::_exit},
+    {"if"sv,					Keyword::_if},
+    {"else"sv,					Keyword::_else},
+    {"do"sv,					Keyword::_do},
+    {"while"sv,					Keyword::_while},
+    {"for"sv,					Keyword::_for},
+    {"foreach"sv,				Keyword::_foreach},
+    {"switch"sv,				Keyword::_switch},
+    {"case"sv,					Keyword::_case},
+    {"default"sv,				Keyword::_default},
+    {"final"sv,					Keyword::_final},
+    {"return"sv,				Keyword::_return},
+    {"exit"sv,					Keyword::_exit},
 
     // Reserved for futur usage
-    {"public,"sv,       Keyword::_public},
-    {"protected,"sv,    Keyword::_protected},
-    {"private,"sv,      Keyword::_private},
+    {"public,"sv,				Keyword::_public},
+    {"protected,"sv,			Keyword::_protected},
+    {"private,"sv,				Keyword::_private},
 
     // Types
-    {"bool"sv,          Keyword::_bool},
-    {"i8"sv,            Keyword::_i8},
-    {"ui8"sv,           Keyword::_ui8},
-    {"i16"sv,           Keyword::_i16},
-    {"ui16"sv,          Keyword::_ui16},
-    {"i32"sv,           Keyword::_i32},
-    {"ui32"sv,          Keyword::_ui32},
-    {"i64"sv,           Keyword::_i64},
-    {"ui64"sv,          Keyword::_ui64},
-    {"f32"sv,           Keyword::_f32},
-    {"f64"sv,           Keyword::_f64},
-    {"string"sv,        Keyword::_string}
+    {"bool"sv,					Keyword::_bool},
+    {"i8"sv,					Keyword::_i8},
+    {"ui8"sv,					Keyword::_ui8},
+    {"i16"sv,					Keyword::_i16},
+    {"ui16"sv,					Keyword::_ui16},
+    {"i32"sv,					Keyword::_i32},
+    {"ui32"sv,					Keyword::_ui32},
+    {"i64"sv,					Keyword::_i64},
+    {"ui64"sv,					Keyword::_ui64},
+    {"f32"sv,					Keyword::_f32},
+    {"f64"sv,					Keyword::_f64},
+    {"string"sv,				Keyword::_string},
+
+	// Special keywords (interpreted by the lexer)
+	{"__FILE__"sv,				Keyword::special_file},
+	{"__FILE_FULL_PATH__"sv,	Keyword::special_full_path_file},
+	{"__LINE__"sv,				Keyword::special_line},
+	{"__MODULE__"sv,			Keyword::special_module},
+	{"__EOF__"sv,				Keyword::special_eof},
+	{"__VENDOR__"sv,			Keyword::special_compiler_vendor},
+	{"__VERSION__"sv,			Keyword::special_compiler_version},
 };
 
 static Keyword is_keyword(const std::string_view& text)
@@ -166,11 +175,21 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
     Punctuation			punctuation = Punctuation::unknown;
     int					punctuation_length = 0;
 
-    auto    generateToken = [&](std::string_view text, Punctuation punctuation, size_t column) {
-        token.line = current_line;
+	auto    generate_punctuation_token = [&](std::string_view text, Punctuation punctuation, size_t column) {
+		token.type = Token_Type::syntaxe_operator;
+		token.text = text;
+		token.line = current_line;
+		token.column = column;
+		token.punctuation = punctuation;
+
+		tokens.push_back(token);
+	};
+	
+	auto    generate_token = [&](std::string_view text, Punctuation punctuation, size_t column) {
+		token.type = Token_Type::keyword;
+		token.text = text;
+		token.line = current_line;
         token.column = column;
-        token.text = text;
-        token.punctuation = punctuation;
         token.keyword = punctuation == Punctuation::unknown ? is_keyword(text) : Keyword::_unknown;
 
         tokens.push_back(token);
@@ -205,10 +224,10 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
             punctuation_text = std::string_view(text.data() + text.length() - punctuation_length, punctuation_length);
 
             if (previous_token_text.length())
-                generateToken(previous_token_text, Punctuation::unknown, text_column);
+                generate_token(previous_token_text, Punctuation::unknown, text_column);
 
             if (is_white_punctuation(punctuation) == false)
-                generateToken(punctuation_text, punctuation, current_column - punctuation_text.length() + 1);
+				generate_punctuation_token(punctuation_text, punctuation, current_column - punctuation_text.length() + 1);
 
             start_position = current_position + 1;
             text_column = current_column + 1; // text_column comes 1 here after a line return
@@ -222,7 +241,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
                 previous_token_text = std::string_view(text.data(), text.length());
 
                 if (previous_token_text.length())
-                    generateToken(previous_token_text, Punctuation::unknown, text_column);
+                    generate_token(previous_token_text, Punctuation::unknown, text_column);
             }
 
             eof = true;
