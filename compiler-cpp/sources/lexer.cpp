@@ -4,6 +4,8 @@
 
 #include <unordered_map>
 
+#include <stdlib.h>	// For atoi, atoll,...
+
 using namespace std::literals;	// For string literal suffix (conversion to std::string_view)
 
 using namespace f;
@@ -157,6 +159,14 @@ static Keyword is_keyword(const std::string_view& text)
     return Keyword::_unknown;
 }
 
+static bool is_digit(char character)
+{
+	if (character >= '0' && character <= '9') {
+		return true;
+	}
+	return false;
+}
+
 void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 {
     tokens.reserve(buffer.length() / tokens_length_heuristic);
@@ -174,6 +184,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 	std::string_view	text;
     Punctuation			punctuation = Punctuation::unknown;
     int					punctuation_length = 0;
+	bool				start_with_digit = false;
 
 	auto    generate_punctuation_token = [&](std::string_view text, Punctuation punctuation, size_t column) {
 		token.type = Token_Type::syntaxe_operator;
@@ -184,9 +195,21 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 		tokens.push_back(token);
 	};
-	
+
+	auto    generate_numeric_literal_token = [&](std::string_view text, Punctuation punctuation, size_t column) {
+		token.type = Token_Type::numeric_literal_i32;
+		token.text = text;
+		token.line = current_line;
+		token.column = column;
+		token.integer = atoll(text.data());	// @TODO change that, by something much cleaner
+
+		tokens.push_back(token);
+	};
+
 	auto    generate_token = [&](std::string_view text, Punctuation punctuation, size_t column) {
-		token.type = Token_Type::keyword;
+		token.keyword = punctuation == Punctuation::unknown ? is_keyword(text) : Keyword::_unknown;
+
+		token.type = token.keyword != Keyword::_unknown ? Token_Type::keyword : Token_Type::identifier;
 		token.text = text;
 		token.line = current_line;
         token.column = column;
@@ -195,6 +218,28 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
         tokens.push_back(token);
     };
 
+
+	// TODO
+	// Il faut certainement des états afin de pouvoir gérer correctement les literals
+	// car le . ne doit pas être vu comme un symbol il fait parti des float literals
+	// quand un token commence par un digit ou 0x ou 0b dans ce cas on doit changer de state
+	// afin d'avoir de nouvelles règles pour déterminer la punctuation (restriction en fonction du state)
+	// Il faut bien gérer les erreurs.
+
+	// 0x et 0b devraient peut être être de la ponctuation
+
+	// L'état nous permettra de savoir plus rapidement s'il s'agit d'entier ou de float, ce qui aidera pour récupérer la valeur
+
+
+
+
+
+
+
+
+
+
+
     // Extracting token one by one (based on the punctuation)
     bool    eof = buffer.empty();
     while (eof == false)
@@ -202,6 +247,10 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		std::string_view	forward_text;
         Punctuation			forward_punctuation = Punctuation::unknown;
         int					forward_punctuation_length = 0;
+
+		if (current_position - start_position == 0) {
+			start_with_digit = (current_position - start_position) || is_digit(*current_position);
+		}
 
         if (current_position - string_views_buffer + 2 <= (int)buffer.length())
         {
@@ -223,14 +272,22 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
             previous_token_text = std::string_view(text.data(), text.length() - punctuation_length);
             punctuation_text = std::string_view(text.data() + text.length() - punctuation_length, punctuation_length);
 
-            if (previous_token_text.length())
-                generate_token(previous_token_text, Punctuation::unknown, text_column);
-
-            if (is_white_punctuation(punctuation) == false)
+			if (previous_token_text.length()) {
+				if (start_with_digit) {
+					generate_numeric_literal_token(previous_token_text, Punctuation::unknown, text_column);
+				}
+				else {
+					generate_token(previous_token_text, Punctuation::unknown, text_column);
+				}
+			}
+			
+			if (is_white_punctuation(punctuation) == false) {
 				generate_punctuation_token(punctuation_text, punctuation, current_column - punctuation_text.length() + 1);
+			}
 
             start_position = current_position + 1;
             text_column = current_column + 1; // text_column comes 1 here after a line return
+			start_with_digit = false;
         }
 
         if (current_position - string_views_buffer + 1 >= (int)buffer.length())

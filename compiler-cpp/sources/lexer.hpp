@@ -168,10 +168,10 @@ namespace f
 		{
 			Punctuation	punctuation;
 			Keyword		keyword;
-			double		real_64;
-			float		real_32;
 			int64_t		integer;
 			uint64_t	unsigned_integer;
+			double		real_64;
+			float		real_32;
 		};
 	};
 	
