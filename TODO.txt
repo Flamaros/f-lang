@@ -1,6 +1,14 @@
-Recoder les fonctions de conversion de string vers int32, int64, float,... pour le lexer.
-Il faut une gestion des erreurs et que ça fonctionne avec les string reference.
+Lexer:
+	Recoder les fonctions de conversion de string vers int32, int64, float,... pour le lexer.
+	Il faut une gestion des erreurs et que ça fonctionne avec les string reference.
 
+Parser:
+	Handle l'ordre des operateurs
+	Handle '-' character, unary or binary operator
+
+Langage:
+	Supporter les nombres imaginaires: http://villemin.gerard.free.fr/Wwwgvmm/Type/aaaCompl/Terminal.htm
+		Il faut un type particulier (suffix sur les number_literals et un support dans la lib standard)
 
 Mettre en place un logger avec un mecanisme de gestion des erreurs:
  * Certaines erreurs comme le fait de redefinir une valeur d'un enum ne sont pas critique d'un point de vu syntaxique, donc pas besoin de stopper immédiatement la compilation (on peut laisser plus d'erreurs apparaitre pour l'utilisateur)

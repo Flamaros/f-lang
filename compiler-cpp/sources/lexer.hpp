@@ -3,6 +3,13 @@
 #include <vector>
 #include <string_view>
 
+/*
+Notice:
+ - '-' character is an operator, so it can't be used to declare identifier (variables, functions,...).
+   Alos numeric_literal never contains negative number, this is the role of the parser do desembiguate
+   if this character is used as unary or binary operator.
+*/
+
 namespace f
 {
 	enum class Token_Type : uint8_t

@@ -167,6 +167,28 @@ static bool is_digit(char character)
 	return false;
 }
 
+bool	to_i64(std::string_view string, int64_t& value)	/// Return true if it start with a digit character and a number was extracted, '_' are skipped
+{
+	bool	start_with_digit = false;
+	size_t	power = 0;
+	value = 0;
+
+	for (size_t i = 0; i < string.length(); i++)
+	{
+		if (string[i] >= '0' && string[i] <= '9') {
+			value = value * 10 + (string[i] - '0');
+			if (i == 0) {
+				start_with_digit = true;
+			}
+			power++;
+		}
+		else if (string[i] != '_') {
+			return start_with_digit;
+		}
+	}
+	return start_with_digit;
+}
+
 void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 {
     tokens.reserve(buffer.length() / tokens_length_heuristic);
@@ -197,11 +219,11 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 	};
 
 	auto    generate_numeric_literal_token = [&](std::string_view text, Punctuation punctuation, size_t column) {
-		token.type = Token_Type::numeric_literal_i32;
+		token.type = Token_Type::numeric_literal_i32;	// @TODO do the promotion of the underlying type here
 		token.text = text;
 		token.line = current_line;
 		token.column = column;
-		token.integer = atoll(text.data());	// @TODO change that, by something much cleaner
+		to_i64(text, token.integer);
 
 		tokens.push_back(token);
 	};
