@@ -167,22 +167,23 @@ static bool is_digit(char character)
 	return false;
 }
 
-bool	to_i64(std::string_view string, int64_t& value)	/// Return true if it start with a digit character and a number was extracted, '_' are skipped
+bool	to_i64(std::string_view string, int64_t& value, size_t& pos)	/// Return true if it start with a digit character and a number was extracted, '_' are skipped
 {
 	bool	start_with_digit = false;
 	size_t	power = 0;
+
 	value = 0;
 
-	for (size_t i = 0; i < string.length(); i++)
+	for (pos = 0; pos < string.length(); pos++)
 	{
-		if (string[i] >= '0' && string[i] <= '9') {
-			value = value * 10 + (string[i] - '0');
-			if (i == 0) {
+		if (string[pos] >= '0' && string[pos] <= '9') {
+			value = value * 10 + (string[pos] - '0');
+			if (pos == 0) {
 				start_with_digit = true;
 			}
 			power++;
 		}
-		else if (string[i] != '_') {
+		else if (string[pos] != '_') {
 			return start_with_digit;
 		}
 	}
@@ -223,7 +224,36 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		token.text = text;
 		token.line = current_line;
 		token.column = column;
-		to_i64(text, token.integer);
+
+		size_t	pos;
+
+		to_i64(text, token.integer, pos);
+		
+		if (token.integer > 2'147'483'647) {
+			token.type = Token_Type::numeric_literal_i64;
+		}
+
+		if (pos < text.length()) {
+			if (pos + 1 == text.length()
+				&& text[pos] == 'u') {
+				token.type = token.integer > 4'294'967'295 ? Token_Type::numeric_literal_ui64 : Token_Type::numeric_literal_ui32;
+			}
+			else if (pos + 1 == text.length()
+				&& text[pos] == 'L') {
+				token.type = Token_Type::numeric_literal_i64;
+			}
+			else if (pos + 2 == text.length()
+				&& ((text[pos] == 'u'
+					&& text[pos + 1] == 'L')
+					|| (text[pos] == 'L'
+						&& text[pos + 1] == 'u'))) {
+				token.type = Token_Type::numeric_literal_ui64;
+			}
+			else {
+				// TODO lexing issue
+				// Unreconized suffix
+			}
+		}
 
 		tokens.push_back(token);
 	};
