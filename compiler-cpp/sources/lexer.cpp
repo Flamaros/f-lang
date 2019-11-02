@@ -218,6 +218,13 @@ bool	to_ui64(std::string_view string, uint64_t& value, size_t& pos)	/// Return t
 	return start_with_digit;
 }
 
+enum class State
+{
+	classic,
+	numeric_literal,
+	string_literal,
+};
+
 void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 {
     tokens.reserve(buffer.length() / tokens_length_heuristic);

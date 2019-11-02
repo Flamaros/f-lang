@@ -5,9 +5,12 @@
 
 /*
 Notice:
+ - Inspired by Dlang lexer (https://dlang.org/spec/lex.html#IntegerLiteral), flang lexer don't support
+   long double (80 bits) type and imaginary numbers. An other difference is that for prefixes and suffixes
+   flang lexer only support lower case in exception of L that looks too closely to 1 in lower case.
  - '-' character is an operator, so it can't be used to declare identifier (variables, functions,...).
-   Alos numeric_literal never contains negative number, this is the role of the parser do desembiguate
-   if this character is used as unary or binary operator.
+   Also numeric_literal never contains negative number, this is the role of the parser do desembiguate
+   if this character is used as unary or binary operator and eventually to modify the token value.
 */
 
 namespace f

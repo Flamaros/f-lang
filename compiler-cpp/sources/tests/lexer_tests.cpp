@@ -83,7 +83,7 @@ namespace tests
 		TEST_METHOD(numeric_literals)
 		{
 			std::vector<Token>	tokens;
-			std::string			text =	// In favor of lower case letter, but for the Long suffix (i64) we use L suffix as 'l' looks so similar to '1' (one) in lot of fonts
+			std::string			text =
 				"0\n"				// i32
 				"10\n"				// i32
 				"-10\n"				// i32 @Warning 2 tokens here: '-' and '10', the parser will handle the minus sign as unary operator
@@ -96,13 +96,11 @@ namespace tests
 				"256Lu\n"			// ui64
 				"0b1001\n"			// i32 binary
 				"0xFFBBAAddee\n"	// i64 hexadecimal (>= 2_147_483_648)
-				// @TODO add floating point literals with exponents
-				// @TODO add irreal literals
 				;
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(13));
+			Assert::AreEqual(size_t(13), tokens.size());
 			Assert::AreEqual((int)Token_Type::numeric_literal_i32, (int)tokens[0].type);
 			Assert::AreEqual(0, (int32_t)tokens[0].integer);
 			Assert::AreEqual((int)Token_Type::numeric_literal_i32, (int)tokens[1].type);
@@ -127,6 +125,24 @@ namespace tests
 			Assert::AreEqual(0b1001, (int32_t)tokens[11].integer);
 			Assert::AreEqual((int)Token_Type::numeric_literal_i64, (int)tokens[12].type);
 			Assert::AreEqual(0xFFBBAAddee, (int64_t)tokens[12].integer);
+		}
+
+		TEST_METHOD(numeric_literals_real)
+		{
+			std::vector<Token>	tokens;
+			std::string			text =
+				"2.645_751\n"
+				"6.022140857e+23\n"
+				"6_022.140857e+20\n"
+				"6_022_.140_857e+20_\n"
+				"0x1.FFFFFFFFFFFFFp1023\n" // double.max
+				"0x1p-52\n"                // double.epsilon
+				"1.175494351e-38f\n"       // float.min
+				;
+
+			tokenize(text, tokens);
+
+			Assert::AreEqual(size_t(7), tokens.size());
 		}
 
 		TEST_METHOD(string_literals)
