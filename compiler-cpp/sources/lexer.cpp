@@ -167,7 +167,7 @@ static bool is_digit(char character)
 	return false;
 }
 
-bool	to_i64(std::string_view string, int64_t& value, size_t& pos)	/// Return true if it start with a digit character and a number was extracted, '_' are skipped
+bool	to_ui64(std::string_view string, uint64_t& value, size_t& pos)	/// Return true if it start with a digit character and a number was extracted, '_' are skipped
 {
 	enum class Mode
 	{
@@ -255,16 +255,16 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 		size_t	pos;
 
-		to_i64(text, token.integer, pos);
+		to_ui64(text, token.unsigned_integer, pos);
 		
-		if (token.integer > 2'147'483'647) {
+		if (token.unsigned_integer > 2'147'483'647) {
 			token.type = Token_Type::numeric_literal_i64;
 		}
 
 		if (pos < text.length()) {
 			if (pos + 1 == text.length()
 				&& text[pos] == 'u') {
-				token.type = token.integer > 4'294'967'295 ? Token_Type::numeric_literal_ui64 : Token_Type::numeric_literal_ui32;
+				token.type = token.unsigned_integer > 4'294'967'295 ? Token_Type::numeric_literal_ui64 : Token_Type::numeric_literal_ui32;
 			}
 			else if (pos + 1 == text.length()
 				&& text[pos] == 'L') {
