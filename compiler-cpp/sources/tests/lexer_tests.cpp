@@ -81,7 +81,7 @@ namespace tests
 			std::string			text =	// In favor of lower case letter, but for the Long suffix (i64) we use L suffix as 'l' looks so similar to '1' (one) in lot of fonts
 				"0\n"				// i32
 				"10\n"				// i32
-				"-10\n"				// i32 @Warning 2 tokens here: '-' and '10', the parser will handle the minus signe as unary operator
+				"-10\n"				// i32 @Warning 2 tokens here: '-' and '10', the parser will handle the minus sign as unary operator
 				"2_147_483_647\n"	// i32
 				"2_147_483_648\n"	// i64
 				"256L\n"			// i64

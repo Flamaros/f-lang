@@ -169,19 +169,47 @@ static bool is_digit(char character)
 
 bool	to_i64(std::string_view string, int64_t& value, size_t& pos)	/// Return true if it start with a digit character and a number was extracted, '_' are skipped
 {
+	enum class Mode
+	{
+		decimal,
+		binary,
+		hexadecimal,
+	};
+
 	bool	start_with_digit = false;
-	size_t	power = 0;
+	Mode	mode = Mode::decimal;
 
 	value = 0;
 
 	for (pos = 0; pos < string.length(); pos++)
 	{
-		if (string[pos] >= '0' && string[pos] <= '9') {
+		if (mode == Mode::decimal
+			&& string[pos] >= '0' && string[pos] <= '9') {
 			value = value * 10 + (string[pos] - '0');
 			if (pos == 0) {
 				start_with_digit = true;
 			}
-			power++;
+		}
+		else if (mode == Mode::binary
+			&& string[pos] >= '0' && string[pos] <= '1') {
+			value = value * 2 + (string[pos] - '0');
+		}
+		else if (mode == Mode::hexadecimal) {
+			if (string[pos] >= '0' && string[pos] <= '9') {
+				value = value * 16 + (string[pos] - '0');
+			}
+			else if (string[pos] >= 'a' && string[pos] <= 'f') {
+				value = value * 16 + (string[pos] - 'a') + 10;
+			}
+			else if (string[pos] >= 'A' && string[pos] <= 'F') {
+				value = value * 16 + (string[pos] - 'A') + 10;
+			}
+		}
+		else if (pos == 1 && string[pos] == 'b') {
+			mode = Mode::binary;
+		}
+		else if (pos == 1 && string[pos] == 'x') {
+			mode = Mode::hexadecimal;
 		}
 		else if (string[pos] != '_') {
 			return start_with_digit;
@@ -220,7 +248,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 	};
 
 	auto    generate_numeric_literal_token = [&](std::string_view text, Punctuation punctuation, size_t column) {
-		token.type = Token_Type::numeric_literal_i32;	// @TODO do the promotion of the underlying type here
+		token.type = Token_Type::numeric_literal_i32;
 		token.text = text;
 		token.line = current_line;
 		token.column = column;
