@@ -80,12 +80,12 @@ namespace f
 
 			if (state == State::comment_block)
 			{
-				if (token.punctuation == Punctuation::close_block_comment)
+				if (token.value.punctuation == Punctuation::close_block_comment)
 					states.pop();
 			}
 			else if (state == State::macro_expression)
 			{
-                if (token.keyword == Keyword::_import)
+                if (token.value.keyword == Keyword::_import)
 				{
 					states.pop();
                     states.push(State::import_directive);
@@ -93,15 +93,15 @@ namespace f
 			}
             else if (state == State::import_directive)
 			{
-				if (token.punctuation == Punctuation::double_quote
-					|| token.punctuation == Punctuation::less
-					|| token.punctuation == Punctuation::greater)
+				if (token.value.punctuation == Punctuation::double_quote
+					|| token.value.punctuation == Punctuation::less
+					|| token.value.punctuation == Punctuation::greater)
 				{
 /*					if (in_string_literal)
 					{
 						Include	include;
 
-						include.type = (token.punctuation == Punctuation::greater) ? Include_Type::external : Include_Type::local;
+						include.type = (token.value.punctuation == Punctuation::greater) ? Include_Type::external : Include_Type::local;
 						include.path = string_litteral;
 						result.includes.push_back(include);
 
@@ -114,8 +114,8 @@ namespace f
 						string_litteral = std::string_view();
                     }*/
 				}
-				else if (token.keyword == Keyword::_unknown
-					&& token.punctuation == Punctuation::unknown)
+				else if (token.value.keyword == Keyword::_unknown
+					&& token.value.punctuation == Punctuation::unknown)
 				{
 					// Building the string litteral (can be splitted into multiple tokens)
 					if (in_string_literal)
@@ -132,13 +132,13 @@ namespace f
 			else if (state == State::global_scope)
 			{
 				if (start_new_line	// @Warning to be sure that we are on the beginning of the line
-					&& token.punctuation == Punctuation::hash) {   // Macro
+					&& token.value.punctuation == Punctuation::hash) {   // Macro
 					states.push(State::macro_expression);
 				}
-				else if (token.punctuation == Punctuation::open_block_comment) {
+				else if (token.value.punctuation == Punctuation::open_block_comment) {
 					states.push(State::comment_block);
 				}
-				else if (token.punctuation == Punctuation::line_comment) {
+				else if (token.value.punctuation == Punctuation::line_comment) {
 					states.push(State::comment_line);
 				}
 			}

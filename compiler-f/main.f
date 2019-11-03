@@ -3,7 +3,7 @@ import f_language_definitions;
 typedef DWORD = ui32;
 typedef HANDLE = void*;
 
-fn main :: (arguments : [] string) -> i32
+main :: (arguments : [] string) -> i32
 {
     message:        string  = "Hello World";
     written_bytes:  DWORD   = 0;

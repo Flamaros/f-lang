@@ -45,9 +45,11 @@ namespace f
         arrow,                  //    ->
         logical_and,            //    &&
         logical_or,             //    ||
-        double_colon,           //    ::                 Used for namespaces
-        equality_test,          //    ==
+        double_colon,           //    ::                 Used for function or struct declarations
+		double_dot,             //    ..                 Used for ranges
+		equality_test,          //    ==
         difference_test,        //    !=
+		escaped_double_quote,	//	  \"				To ease the detection of the end of the string litteral by avoiding the necessary to check it in an other way
         // Not sure that must be detected as one token instead of multiples (especially <<, >>, <<= and >>=) because of templates
     //    LeftShift,              //    <<
     //    RightShift,             //    >>
@@ -169,20 +171,22 @@ namespace f
 		friend bool operator ==(const Token& lhs, const Token& rhs);
 
 	public:
-		Token_Type			type;
-		std::string_view	text;
-		size_t				line;       // Starting from 1
-		size_t				column;     // Starting from 1
-
-		union
+		union Value
 		{
 			Punctuation	punctuation;
 			Keyword		keyword;
 			int64_t		integer;
 			uint64_t	unsigned_integer;
-			double		real_64;
 			float		real_32;
+			double		real_64;
+			long double	real_max;
 		};
+
+		Token_Type			type;
+		std::string_view	text;
+		size_t				line;       // Starting from 1
+		size_t				column;     // Starting from 1
+		Value				value;
 	};
 	
 	inline bool operator ==(const Token& lhs, const Token& rhs)
