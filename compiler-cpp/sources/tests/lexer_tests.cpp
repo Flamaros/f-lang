@@ -40,44 +40,47 @@ namespace tests
 		{
 			std::vector<Token>	tokens;
 			std::string			text =
-				"// ";
+				"// Test";
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(1));
-			Assert::AreEqual((int)tokens[0].value.punctuation, (int)Punctuation::line_comment);
+			Assert::AreEqual(tokens.size(), size_t(0));
 		}
 
 		TEST_METHOD(comment_line_text_02)
 		{
 			std::vector<Token>	tokens;
 			std::string			text =
-				"/// ";
+				"/// Test";
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(2));
-			Assert::AreEqual((int)tokens[0].value.punctuation, (int)Punctuation::line_comment);
+			Assert::AreEqual(tokens.size(), size_t(0));
 		}
 
 		TEST_METHOD(comment_line_text_03)
 		{
 			std::vector<Token>	tokens;
 			std::string			text =
-				"///\r\n"
-				"///\r\n";
+				"/// Test\r\n"
+				"/// Test\r\n";
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(4));
-			Assert::AreEqual((int)tokens[0].value.punctuation, (int)Punctuation::line_comment);
-			Assert::AreEqual((int)tokens[0].line, (int)1);
-			Assert::AreEqual((int)tokens[1].value.punctuation, (int)Punctuation::slash);
-			Assert::AreEqual((int)tokens[1].line, (int)1);
-			Assert::AreEqual((int)tokens[2].value.punctuation, (int)Punctuation::line_comment);
-			Assert::AreEqual((int)tokens[2].line, (int)2);
-			Assert::AreEqual((int)tokens[3].value.punctuation, (int)Punctuation::slash);
-			Assert::AreEqual((int)tokens[3].line, (int)2);
+			Assert::AreEqual(tokens.size(), size_t(0));
+		}
+
+		TEST_METHOD(comment_block_text_01)
+		{
+			std::vector<Token>	tokens;
+			std::string			text =
+				"/* Test\r\n"
+				"   Test\n"
+				"   Test */\n";
+
+			tokenize(text, tokens);
+
+			Assert::AreEqual(tokens.size(), size_t(0));
 		}
 
 		TEST_METHOD(numeric_literals)
@@ -181,13 +184,13 @@ namespace tests
 				"\n"
 				"	WriteFile(hstdOut, message.c_string, message.length, &bytes, 0);\n"	// 66
 				"\n"
-				"	// ExitProcess(0);\n"												// 67
-				"	return 0;\n"														// 70
-				"}\n"																	// 71
+				"	// ExitProcess(0);\n"												// 66
+				"	return 0;\n"														// 69
+				"}\n"																	// 70
 			;
 
 			tokenize(text, tokens);
-			Assert::AreEqual(size_t(71), tokens.size());
+			Assert::AreEqual(size_t(70), tokens.size());
 			// TODO need to fix string litteral and comments
 		}
 	};

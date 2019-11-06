@@ -230,6 +230,8 @@ enum class State
 	classic,
 	numeric_literal,
 	string_literal,
+	comment_line,
+	comment_block,
 };
 
 void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
@@ -322,7 +324,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		tokens.push_back(token);
 	};
 
-    // Extracting token one by one (based on the punctuation)
+	// Extracting token one by one (based on the punctuation)
     bool    eof = buffer.empty();
     while (eof == false)
     {
@@ -357,6 +359,12 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		case State::numeric_literal:
 			if (punctuation == Punctuation::double_quote) {
 				state = State::string_literal;
+			}
+			else if (punctuation == Punctuation::line_comment) {
+				state = State::comment_line;
+			}
+			else if (punctuation == Punctuation::open_block_comment) {
+				state = State::comment_block;
 			}
 			else if (punctuation != Punctuation::unknown
 				&& (forward_punctuation == Punctuation::unknown
@@ -406,7 +414,24 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 				start_position = current_position + 1;
 				text_column = current_column + 1; // text_column comes 1 here after a line return
 			}
+			break;
 
+		case State::comment_line:
+			if (current_column == 0) {
+				state = State::classic;
+
+				start_position = current_position + 1;
+				text_column = current_column + 1; // text_column comes 1 here after a line return
+			}
+			break;
+
+		case State::comment_block:
+			if (punctuation == Punctuation::close_block_comment) {
+				state = State::classic;
+
+				start_position = current_position + 1;
+				text_column = current_column + 1; // text_column comes 1 here after a line return
+			}
 			break;
 		}
 
