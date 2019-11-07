@@ -228,7 +228,8 @@ bool	to_numeric_value(std::string_view string, Token::Value& value, size_t& pos,
 enum class State
 {
 	classic,
-	numeric_literal,
+	numeric_literal_integer,
+	numeric_literal_real,
 	string_literal,
 	comment_line,
 	comment_block,
@@ -336,7 +337,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			start_with_digit = is_digit(*current_position);
 
 			if (start_with_digit) {
-				state = State::numeric_literal;
+				state = State::numeric_literal_integer;
 			}
 		}
 
@@ -356,7 +357,6 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		switch (state)
 		{
 		case State::classic:
-		case State::numeric_literal:
 			if (punctuation == Punctuation::double_quote) {
 				state = State::string_literal;
 			}
@@ -400,6 +400,21 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 						generate_keyword_or_identifier_token(previous_token_text, text_column);
 					}
 				}
+			}
+			break;
+
+		case State::numeric_literal_integer:
+			if (forward_punctuation != Punctuation::unknown)
+			{
+				state = State::classic;
+				start_with_digit = false;
+
+				previous_token_text = std::string_view(text.data(), text.length());
+
+				generate_numeric_literal_token(previous_token_text, text_column);
+
+				start_position = current_position + 1;
+				text_column = current_column + 1; // text_column comes 1 here after a line return
 			}
 			break;
 

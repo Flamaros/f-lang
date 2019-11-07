@@ -76,6 +76,8 @@ namespace tests
 			std::string			text =
 				"/* Test\r\n"
 				"   Test\n"
+				"   Test *//* Test\r\n"
+				"   Test\n"
 				"   Test */\n";
 
 			tokenize(text, tokens);
@@ -83,7 +85,7 @@ namespace tests
 			Assert::AreEqual(tokens.size(), size_t(0));
 		}
 
-		TEST_METHOD(numeric_literals)
+		TEST_METHOD(numeric_literals_integer)
 		{
 			std::vector<Token>	tokens;
 			std::string			text =
