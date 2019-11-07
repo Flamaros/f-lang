@@ -408,6 +408,8 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 				start_with_digit = false;
 			}
 
+			// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+			// This should be common for all states
 			if (current_position - string_views_buffer + 1 >= (int)buffer.length()) { // Handling the case of the last token of stream
 				if (punctuation == Punctuation::unknown) {
 					previous_token_text = std::string_view(text.data(), text.length());
@@ -420,7 +422,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			break;
 
 		case State::numeric_literal:
-			if (forward_punctuation != Punctuation::unknown
+			if (forward_punctuation != Punctuation::unknown	// @Warning We need to look to the next token type as numbers stop with there last character
 				&& forward_punctuation != Punctuation::dot)
 			{
 				state = State::classic;
@@ -443,6 +445,8 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 				generate_string_literal_token(previous_token_text, text_column);
 
+				// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+				// This should be common for all states
 				start_position = current_position + 1;
 				text_column = current_column + 1; // text_column comes 1 here after a line return
 			}

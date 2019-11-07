@@ -63,7 +63,7 @@ namespace tests
 			std::vector<Token>	tokens;
 			std::string			text =
 				"/// Test\r\n"
-				"/// Test\r\n";
+				"/// Test";
 
 			tokenize(text, tokens);
 
@@ -78,7 +78,7 @@ namespace tests
 				"   Test\n"
 				"   Test *//* Test\r\n"
 				"   Test\n"
-				"   Test */\n";
+				"   Test */";
 
 			tokenize(text, tokens);
 
@@ -100,7 +100,7 @@ namespace tests
 				"256uL\n"			// ui64
 				"256Lu\n"			// ui64
 				"0b1001\n"			// i32 binary
-				"0xFFBBAAddee\n"	// i64 hexadecimal (>= 2_147_483_648)
+				"0xFFBBAAddee"	// i64 hexadecimal (>= 2_147_483_648)
 				;
 
 			tokenize(text, tokens);
@@ -136,7 +136,7 @@ namespace tests
 		{
 			std::vector<Token>	tokens;
 			std::string			text =
-				"2.645_751\n"
+				"2.645_751"
 				//"6.022140857e+23\n"
 				//"6_022.140857e+20\n"
 				//"6_022_.140_857e+20_\n"
@@ -190,7 +190,7 @@ namespace tests
 				"\n"
 				"	// ExitProcess(0);\n"												// 66
 				"	return 0;\n"														// 69
-				"}\n"																	// 70
+				"}"																	// 70
 			;
 
 			tokenize(text, tokens);
