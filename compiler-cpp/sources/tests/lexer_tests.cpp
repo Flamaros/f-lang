@@ -148,6 +148,8 @@ namespace tests
 			tokenize(text, tokens);
 
 			Assert::AreEqual(size_t(1), tokens.size());
+			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[0].type);
+			Assert::AreEqual(2.645'751, tokens[0].value.real_64);
 		}
 
 		TEST_METHOD(string_literals)

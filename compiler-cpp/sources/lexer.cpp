@@ -183,16 +183,24 @@ bool	to_numeric_value(std::string_view string, Token::Value& value, size_t& pos,
 	};
 
 	bool	start_with_digit = false;
+	double	divider = 10;
 	Mode	mode = Mode::decimal;
 
-	is_integer = true;
+	is_integer = true;	// @Warning used internally also to determine if we pass the entire part of a real number
 	value.unsigned_integer = 0;
 
 	for (pos = 0; pos < string.length(); pos++)
 	{
 		if (mode == Mode::decimal
 			&& string[pos] >= '0' && string[pos] <= '9') {
-			value.unsigned_integer = value.unsigned_integer * 10 + (string[pos] - '0');
+			if (is_integer) {
+				value.unsigned_integer = value.unsigned_integer * 10 + (string[pos] - '0');
+			}
+			else {
+				value.real_64 += (string[pos] - '0') / divider;
+				divider *= 10;
+			}
+
 			if (pos == 0) {
 				start_with_digit = true;
 			}
@@ -218,6 +226,10 @@ bool	to_numeric_value(std::string_view string, Token::Value& value, size_t& pos,
 		else if (pos == 1 && string[pos] == 'x') {
 			mode = Mode::hexadecimal;
 		}
+		else if (string[pos] == '.' && is_integer == true) {	// @Warning We don't support number with many dot characters (it seems to be an error)
+			is_integer = false;
+			value.real_64 = value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+		}
 		else if (string[pos] != '_') {
 			return start_with_digit;
 		}
@@ -228,8 +240,7 @@ bool	to_numeric_value(std::string_view string, Token::Value& value, size_t& pos,
 enum class State
 {
 	classic,
-	numeric_literal_integer,
-	numeric_literal_real,
+	numeric_literal,
 	string_literal,
 	comment_line,
 	comment_block,
@@ -276,30 +287,35 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 		to_numeric_value(text, token.value, pos, is_integer);
 		
-		if (token.value.unsigned_integer > 2'147'483'647) {
-			token.type = Token_Type::numeric_literal_i64;
-		}
-
-		if (pos < text.length()) {
-			if (pos + 1 == text.length()
-				&& text[pos] == 'u') {
-				token.type = token.value.unsigned_integer > 4'294'967'295 ? Token_Type::numeric_literal_ui64 : Token_Type::numeric_literal_ui32;
-			}
-			else if (pos + 1 == text.length()
-				&& text[pos] == 'L') {
+		if (is_integer) {
+			if (token.value.unsigned_integer > 2'147'483'647) {
 				token.type = Token_Type::numeric_literal_i64;
 			}
-			else if (pos + 2 == text.length()
-				&& ((text[pos] == 'u'
-					&& text[pos + 1] == 'L')
-					|| (text[pos] == 'L'
-						&& text[pos + 1] == 'u'))) {
-				token.type = Token_Type::numeric_literal_ui64;
+
+			if (pos < text.length()) {
+				if (pos + 1 == text.length()
+					&& text[pos] == 'u') {
+					token.type = token.value.unsigned_integer > 4'294'967'295 ? Token_Type::numeric_literal_ui64 : Token_Type::numeric_literal_ui32;
+				}
+				else if (pos + 1 == text.length()
+					&& text[pos] == 'L') {
+					token.type = Token_Type::numeric_literal_i64;
+				}
+				else if (pos + 2 == text.length()
+					&& ((text[pos] == 'u'
+						&& text[pos + 1] == 'L')
+						|| (text[pos] == 'L'
+							&& text[pos + 1] == 'u'))) {
+					token.type = Token_Type::numeric_literal_ui64;
+				}
+				else {
+					// TODO lexing issue
+					// Unreconized suffix
+				}
 			}
-			else {
-				// TODO lexing issue
-				// Unreconized suffix
-			}
+		}
+		else {
+			token.type = Token_Type::numeric_literal_f64;
 		}
 
 		tokens.push_back(token);
@@ -337,7 +353,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			start_with_digit = is_digit(*current_position);
 
 			if (start_with_digit) {
-				state = State::numeric_literal_integer;
+				state = State::numeric_literal;
 			}
 		}
 
@@ -403,8 +419,9 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			}
 			break;
 
-		case State::numeric_literal_integer:
-			if (forward_punctuation != Punctuation::unknown)
+		case State::numeric_literal:
+			if (forward_punctuation != Punctuation::unknown
+				&& forward_punctuation != Punctuation::dot)
 			{
 				state = State::classic;
 				start_with_digit = false;
