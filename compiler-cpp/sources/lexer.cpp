@@ -2,6 +2,8 @@
 
 #include "hash_table.hpp"
 
+#include <utilities/exit_scope.hpp>
+
 #include <unordered_map>
 
 #include <stdlib.h>	// For atoi, atoll,...
@@ -169,72 +171,100 @@ static bool is_digit(char character)
 	return false;
 }
 
-/* Return true if it start with a digit character and a number was extracted, '_' are skipped.
+enum class Numeric_Value_Mode
+{
+	decimal,
+	binary,
+	hexadecimal,
+};
+
+struct Numeric_Value_Context
+{
+	bool				start_with_digit = false;
+	bool				is_integer = true;	// @Warning used internally also to determine if we pass the entire part of a real number
+	double				divider = 10;
+	Numeric_Value_Mode	mode = Numeric_Value_Mode::decimal;
+	bool				has_exponent = false;
+	size_t				exponent_pos = 0;
+	bool				unsigned_suffix = false;
+	bool				long_suffix = false;
+	size_t				pos = 0;
+};
+
+/* Return true if the entiere string was processed, else false
  * It can set unsigned_integer or real_max members of Token::Value type.
  * It also return if the passed string represent an integer or a real number.
+ * The parsing will stop immediately if the parsing failed, but the result stay valid, you have
+ * to refer to pos output parameter to know how many characters where processed
  */
-bool	to_numeric_value(std::string_view string, Token::Value& value, size_t& pos, bool& is_integer)
+bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, Token& token)
 {
-	enum class Mode
-	{
-		decimal,
-		binary,
-		hexadecimal,
-	};
+	defer { context.pos++; };
 
-	bool	start_with_digit = false;
-	double	divider = 10;
-	Mode	mode = Mode::decimal;
+	if (context.mode == Numeric_Value_Mode::decimal
+		&& string[context.pos] >= '0' && string[context.pos] <= '9') {
+		if (context.is_integer) {
+			token.value.unsigned_integer = token.value.unsigned_integer * 10 + (string[context.pos] - '0');
+		}
+		else {
+			token.value.real_64 += (string[context.pos] - '0') / context.divider;
+			context.divider *= 10;
+		}
 
-	is_integer = true;	// @Warning used internally also to determine if we pass the entire part of a real number
-	value.unsigned_integer = 0;
-
-	for (pos = 0; pos < string.length(); pos++)
-	{
-		if (mode == Mode::decimal
-			&& string[pos] >= '0' && string[pos] <= '9') {
-			if (is_integer) {
-				value.unsigned_integer = value.unsigned_integer * 10 + (string[pos] - '0');
-			}
-			else {
-				value.real_64 += (string[pos] - '0') / divider;
-				divider *= 10;
-			}
-
-			if (pos == 0) {
-				start_with_digit = true;
-			}
-		}
-		else if (mode == Mode::binary
-			&& string[pos] >= '0' && string[pos] <= '1') {
-			value.unsigned_integer = value.unsigned_integer * 2 + (string[pos] - '0');
-		}
-		else if (mode == Mode::hexadecimal) {
-			if (string[pos] >= '0' && string[pos] <= '9') {
-				value.unsigned_integer = value.unsigned_integer * 16 + (string[pos] - '0');
-			}
-			else if (string[pos] >= 'a' && string[pos] <= 'f') {
-				value.unsigned_integer = value.unsigned_integer * 16 + (string[pos] - 'a') + 10;
-			}
-			else if (string[pos] >= 'A' && string[pos] <= 'F') {
-				value.unsigned_integer = value.unsigned_integer * 16 + (string[pos] - 'A') + 10;
-			}
-		}
-		else if (pos == 1 && string[pos] == 'b') {
-			mode = Mode::binary;
-		}
-		else if (pos == 1 && string[pos] == 'x') {
-			mode = Mode::hexadecimal;
-		}
-		else if (string[pos] == '.' && is_integer == true) {	// @Warning We don't support number with many dot characters (it seems to be an error)
-			is_integer = false;
-			value.real_64 = value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
-		}
-		else if (string[pos] != '_') {
-			return start_with_digit;
+		if (context.pos == 0) {
+			context.start_with_digit = true;
 		}
 	}
-	return start_with_digit;
+	else if (context.mode == Numeric_Value_Mode::binary
+		&& string[context.pos] >= '0' && string[context.pos] <= '1') {
+		token.value.unsigned_integer = token.value.unsigned_integer * 2 + (string[context.pos] - '0');
+	}
+	else if (context.mode == Numeric_Value_Mode::hexadecimal) {
+		if (string[context.pos] >= '0' && string[context.pos] <= '9') {
+			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - '0');
+		}
+		else if (string[context.pos] >= 'a' && string[context.pos] <= 'f') {
+			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'a') + 10;
+		}
+		else if (string[context.pos] >= 'A' && string[context.pos] <= 'F') {
+			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'A') + 10;
+		}
+	}
+	else if (context.pos == 1 && string[context.pos] == 'b') {
+		context.mode = Numeric_Value_Mode::binary;
+	}
+	else if (context.pos == 1 && string[context.pos] == 'x') {
+		context.mode = Numeric_Value_Mode::hexadecimal;
+	}
+	else if (string[context.pos] == '.' && context.is_integer == true) {	// @Warning We don't support number with many dot characters (it seems to be an error)
+		context.is_integer = false;
+		token.value.real_64 = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+	}
+	else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::decimal)
+		|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::hexadecimal))
+		&& context.has_exponent == false) {	// @Warning We don't support number with many exponent characters (it seems to be an error)
+		context.is_integer = false;
+		context.has_exponent = true;
+		context.exponent_pos = context.pos;
+		token.value.real_64 = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+	}
+	else if (string[context.pos] == '+' && context.has_exponent == true && context.pos == context.exponent_pos + 1) {
+	}
+	else if (string[context.pos] == '-' && context.has_exponent == true && context.pos == context.exponent_pos + 1) {
+	}
+	else if (string[context.pos] == 'u' && context.unsigned_suffix == false) {
+		context.unsigned_suffix = true;
+	}
+	else if (string[context.pos] == 'L' && context.long_suffix == false) {
+		context.long_suffix = true;
+	}
+	else if (string[context.pos] == '_') {
+	}
+	else {
+		return false;
+	}
+
+	return true;
 }
 
 enum class State
@@ -266,6 +296,9 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
     int					punctuation_length = 0;
 	bool				start_with_digit = false;
 
+	Numeric_Value_Context	numeric_value_context;
+	Numeric_Value_Context	forward_numeric_value_context;	// @Warning Value will not be valid as the first number character will not be processed, only the result of the parsing is interesting
+
 	auto	start_new_token = [&]() {
 		start_position = current_position + 1;
 		text_column = current_column + 1; // text_column comes 1 here after a line return
@@ -281,42 +314,24 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		tokens.push_back(token);
 	};
 
-	auto    generate_numeric_literal_token = [&](std::string_view text, size_t column) {
-		size_t	pos;
-		bool	is_integer;
-
+	auto    generate_numeric_literal_token = [&](const Numeric_Value_Context& numeric_value_context, std::string_view text, size_t column) {
 		token.type = Token_Type::numeric_literal_i32;
 		token.text = text;
 		token.line = current_line;
 		token.column = column;
 
-		to_numeric_value(text, token.value, pos, is_integer);
-		
-		if (is_integer) {
-			if (token.value.unsigned_integer > 2'147'483'647) {
+		if (numeric_value_context.is_integer) {
+			if (numeric_value_context.unsigned_suffix && numeric_value_context.long_suffix) {
+				token.type = Token_Type::numeric_literal_ui64;
+			}
+			else if (numeric_value_context.long_suffix) {
 				token.type = Token_Type::numeric_literal_i64;
 			}
-
-			if (pos < text.length()) {
-				if (pos + 1 == text.length()
-					&& text[pos] == 'u') {
-					token.type = token.value.unsigned_integer > 4'294'967'295 ? Token_Type::numeric_literal_ui64 : Token_Type::numeric_literal_ui32;
-				}
-				else if (pos + 1 == text.length()
-					&& text[pos] == 'L') {
-					token.type = Token_Type::numeric_literal_i64;
-				}
-				else if (pos + 2 == text.length()
-					&& ((text[pos] == 'u'
-						&& text[pos + 1] == 'L')
-						|| (text[pos] == 'L'
-							&& text[pos + 1] == 'u'))) {
-					token.type = Token_Type::numeric_literal_ui64;
-				}
-				else {
-					// TODO lexing issue
-					// Unreconized suffix
-				}
+			else if (numeric_value_context.unsigned_suffix) {
+				token.type = token.value.unsigned_integer > 4'294'967'295 ? Token_Type::numeric_literal_ui64 : Token_Type::numeric_literal_ui32;
+			}
+			else if (token.value.unsigned_integer > 2'147'483'647) {
+				token.type = Token_Type::numeric_literal_i64;
 			}
 		}
 		else {
@@ -353,11 +368,18 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		std::string_view	forward_text;
         Punctuation			forward_punctuation = Punctuation::unknown;
         int					forward_punctuation_length = 0;
+		Token				forward_token;	// @Warning will not be necessary valid
 
 		if (current_position - start_position == 0) {
 			start_with_digit = is_digit(*current_position);
 
 			if (start_with_digit) {
+				numeric_value_context = Numeric_Value_Context();
+				forward_numeric_value_context = Numeric_Value_Context();
+				forward_numeric_value_context.pos = 1;
+
+				token.value.unsigned_integer = 0;
+
 				state = State::numeric_literal;
 			}
 		}
@@ -413,19 +435,26 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			break;
 
 		case State::numeric_literal:
-			if ((forward_punctuation != Punctuation::unknown	// @Warning We need to look to the next token type as numbers stop with there last character
-				&& forward_punctuation != Punctuation::dot)
-				|| eof)
+		{
+			bool	result = true;
+			bool	forward_result = true;
+
+			result = to_numeric_value(numeric_value_context, text, token);
+			if (forward_text.length()) {
+				forward_result = to_numeric_value(forward_numeric_value_context, forward_text, forward_token);
+			}
+
+			if (forward_result == false
+				|| (result && eof))
 			{
 				state = State::classic;
+
+				generate_numeric_literal_token(numeric_value_context, text, text_column);
+
 				start_with_digit = false;
-
-				token_string = std::string_view(text.data(), text.length());
-
-				generate_numeric_literal_token(token_string, text_column);
-
 				start_new_token();
 			}
+		}
 			break;
 
 		case State::string_literal:
