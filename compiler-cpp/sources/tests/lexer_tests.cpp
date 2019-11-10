@@ -100,7 +100,7 @@ namespace tests
 				"256uL\n"			// ui64
 				"256Lu\n"			// ui64
 				"0b1001\n"			// i32 binary
-				"0xFFBBAAddee"	// i64 hexadecimal (>= 2_147_483_648)
+				"0xFFBBAAddee"		// i64 hexadecimal (>= 2_147_483_648)
 				;
 
 			tokenize(text, tokens);

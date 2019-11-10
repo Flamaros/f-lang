@@ -250,8 +250,8 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 {
     tokens.reserve(buffer.length() / tokens_length_heuristic);
 
-	std::string_view	previous_token_text;
-	std::string_view	punctuation_text;
+	std::string_view	token_string;
+	std::string_view	punctuation_string;
 	const char*			string_views_buffer = buffer.data();	// @Warning all string views are about this string_view_buffer
     const char*			start_position = buffer.data();
 	const char*			current_position = start_position;
@@ -265,6 +265,11 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
     Punctuation			punctuation = Punctuation::unknown;
     int					punctuation_length = 0;
 	bool				start_with_digit = false;
+
+	auto	start_new_token = [&]() {
+		start_position = current_position + 1;
+		text_column = current_column + 1; // text_column comes 1 here after a line return
+	};
 
 	auto    generate_punctuation_token = [&](std::string_view text, Punctuation punctuation, size_t column) {
 		token.type = Token_Type::syntaxe_operator;
@@ -370,6 +375,10 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			current_column = 0; // 0 because the current_position was not incremented yet, and the cursor is virtually still on previous line
 		}
 
+		if (current_position - string_views_buffer + 1 >= (int)buffer.length()) {
+			eof = true;
+		}
+
 		switch (state)
 		{
 		case State::classic:
@@ -382,58 +391,40 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			else if (punctuation == Punctuation::open_block_comment) {
 				state = State::comment_block;
 			}
-			else if (punctuation != Punctuation::unknown
+			else if ((punctuation != Punctuation::unknown || eof)
 				&& (forward_punctuation == Punctuation::unknown
 					|| forward_punctuation >= Punctuation::tilde
 					|| punctuation <= forward_punctuation))			// @Warning Mutiple characters ponctuation have a lower enum value, <= to manage correctly cases like "///" for comment line
 			{
-				previous_token_text = std::string_view(text.data(), text.length() - punctuation_length);
-				punctuation_text = std::string_view(text.data() + text.length() - punctuation_length, punctuation_length);
+				token_string = std::string_view(text.data(), text.length() - punctuation_length);
+				punctuation_string = std::string_view(text.data() + text.length() - punctuation_length, punctuation_length);
 
-				if (previous_token_text.length()) {
-					if (start_with_digit) {
-						generate_numeric_literal_token(previous_token_text, text_column);
-					}
-					else {
-						generate_keyword_or_identifier_token(previous_token_text, text_column);
-					}
+				if (token_string.length()) {
+					generate_keyword_or_identifier_token(token_string, text_column);
 				}
 
 				if (is_white_punctuation(punctuation) == false) {
-					generate_punctuation_token(punctuation_text, punctuation, current_column - punctuation_text.length() + 1);
+					generate_punctuation_token(punctuation_string, punctuation, current_column - punctuation_string.length() + 1);
 				}
 
-				start_position = current_position + 1;
-				text_column = current_column + 1; // text_column comes 1 here after a line return
 				start_with_digit = false;
-			}
-
-			// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-			// This should be common for all states
-			if (current_position - string_views_buffer + 1 >= (int)buffer.length()) { // Handling the case of the last token of stream
-				if (punctuation == Punctuation::unknown) {
-					previous_token_text = std::string_view(text.data(), text.length());
-
-					if (previous_token_text.length()) {
-						generate_keyword_or_identifier_token(previous_token_text, text_column);
-					}
-				}
+				start_new_token();
 			}
 			break;
 
 		case State::numeric_literal:
-			if (forward_punctuation != Punctuation::unknown	// @Warning We need to look to the next token type as numbers stop with there last character
+			if ((forward_punctuation != Punctuation::unknown	// @Warning We need to look to the next token type as numbers stop with there last character
 				&& forward_punctuation != Punctuation::dot)
+				|| eof)
 			{
 				state = State::classic;
 				start_with_digit = false;
 
-				previous_token_text = std::string_view(text.data(), text.length());
+				token_string = std::string_view(text.data(), text.length());
 
-				generate_numeric_literal_token(previous_token_text, text_column);
+				generate_numeric_literal_token(token_string, text_column);
 
-				start_position = current_position + 1;
-				text_column = current_column + 1; // text_column comes 1 here after a line return
+				start_new_token();
 			}
 			break;
 
@@ -441,23 +432,19 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			if (state == State::string_literal && punctuation == Punctuation::double_quote) {
 				state = State::classic;
 
-				previous_token_text = std::string_view(text.data() + 1, text.length() - 2);
+				token_string = std::string_view(text.data() + 1, text.length() - 2);
 
-				generate_string_literal_token(previous_token_text, text_column);
+				generate_string_literal_token(token_string, text_column);
 
-				// TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-				// This should be common for all states
-				start_position = current_position + 1;
-				text_column = current_column + 1; // text_column comes 1 here after a line return
+				start_new_token();
 			}
 			break;
 
 		case State::comment_line:
-			if (current_column == 0) {
+			if (current_column == 0 || eof) {	// We go a new line, so the comment ends now
 				state = State::classic;
 
-				start_position = current_position + 1;
-				text_column = current_column + 1; // text_column comes 1 here after a line return
+				start_new_token();
 			}
 			break;
 
@@ -465,14 +452,9 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			if (punctuation == Punctuation::close_block_comment) {
 				state = State::classic;
 
-				start_position = current_position + 1;
-				text_column = current_column + 1; // text_column comes 1 here after a line return
+				start_new_token();
 			}
 			break;
-		}
-
-		if (current_position - string_views_buffer + 1 >= (int)buffer.length()) {
-			eof = true;
 		}
 
 		// TODO manage here case of eof with a state different than classic, it means that there is an error
