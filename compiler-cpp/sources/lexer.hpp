@@ -27,6 +27,7 @@ namespace f
 		numeric_literal_ui64,
 		numeric_literal_f32,
 		numeric_literal_f64,
+		numeric_literal_real,	// means longue double (80bits computations)
 	};
 
     enum class Punctuation : uint8_t

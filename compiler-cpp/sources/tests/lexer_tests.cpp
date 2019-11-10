@@ -138,18 +138,26 @@ namespace tests
 			std::string			text =
 				"2.645_751\n"
 				"6.022140857e+23\n"
-				//"6_022.140857e+20\n"
-				//"6_022_.140_857e+20_\n"
+				"6_022.140857e+20\n"
+				"6_022_.140_857e+20_\n"
+				"1.175494351e-38f\n"       // float.min
 				//"0x1.FFFFFFFFFFFFFp1023\n" // double.max
 				//"0x1p-52\n"                // double.epsilon
-				//"1.175494351e-38f\n"       // float.min
 				;
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(size_t(2), tokens.size());
+			Assert::AreEqual(size_t(5), tokens.size());
 			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[0].type);
 			Assert::AreEqual(2.645'751, tokens[0].value.real_64);
+			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[1].type);
+			Assert::AreEqual(6.022140857e+23, tokens[1].value.real_64, 0.000000001 * pow(10, 23));
+			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[2].type);
+			Assert::AreEqual(6'022.140'857e+20, tokens[2].value.real_64, 0.000000001 * pow(10, 23));
+			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[3].type);
+			Assert::AreEqual(6'022.140'857e+20, tokens[3].value.real_64, 0.000000001 * pow(10, 23));
+			Assert::AreEqual((int)Token_Type::numeric_literal_f32, (int)tokens[4].type);
+			Assert::AreEqual(1.175494351e-38f, tokens[4].value.real_32, std::numeric_limits<float>::epsilon());
 		}
 
 		TEST_METHOD(string_literals)

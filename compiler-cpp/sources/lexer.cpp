@@ -6,8 +6,6 @@
 
 #include <unordered_map>
 
-#include <stdlib.h>	// For atoi, atoll,...
-
 using namespace std::literals;	// For string literal suffix (conversion to std::string_view)
 
 using namespace f;
@@ -185,10 +183,22 @@ struct Numeric_Value_Context
 	double				divider = 10;
 	Numeric_Value_Mode	mode = Numeric_Value_Mode::decimal;
 	bool				has_exponent = false;
+	bool				is_exponent_negative = false;
 	size_t				exponent_pos = 0;
+	int					exponent = 0;
 	bool				unsigned_suffix = false;
 	bool				long_suffix = false;
+	bool				float_suffix = false;
+	bool				double_suffix = false;
 	size_t				pos = 0;
+
+	bool	has_suffix() const
+	{
+		return double_suffix
+			|| float_suffix
+			|| long_suffix
+			|| unsigned_suffix;
+	}
 };
 
 /* Return true if the entiere string was processed, else false
@@ -202,13 +212,25 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 	defer { context.pos++; };
 
 	if (context.mode == Numeric_Value_Mode::decimal
-		&& string[context.pos] >= '0' && string[context.pos] <= '9') {
+		&& string[context.pos] >= '0' && string[context.pos] <= '9'
+		&& context.has_suffix() == false) {
 		if (context.is_integer) {
 			token.value.unsigned_integer = token.value.unsigned_integer * 10 + (string[context.pos] - '0');
 		}
 		else {
-			token.value.real_64 += (string[context.pos] - '0') / context.divider;
-			context.divider *= 10;
+			if (context.has_exponent && context.exponent == 0 && context.is_exponent_negative) {
+				context.exponent = -(string[context.pos] - '0');
+			}
+			else if (context.has_exponent && context.exponent == 0) {
+				context.exponent = (string[context.pos] - '0');
+			}
+			else if (context.has_exponent) {
+				context.exponent = context.exponent * 10 + (string[context.pos] - '0');
+			}
+			else {
+				token.value.real_max += (string[context.pos] - '0') / context.divider;
+				context.divider *= 10;
+			}
 		}
 
 		if (context.pos == 0) {
@@ -216,10 +238,12 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 		}
 	}
 	else if (context.mode == Numeric_Value_Mode::binary
-		&& string[context.pos] >= '0' && string[context.pos] <= '1') {
+		&& string[context.pos] >= '0' && string[context.pos] <= '1'
+		&& context.has_suffix() == false) {
 		token.value.unsigned_integer = token.value.unsigned_integer * 2 + (string[context.pos] - '0');
 	}
-	else if (context.mode == Numeric_Value_Mode::hexadecimal) {
+	else if (context.mode == Numeric_Value_Mode::hexadecimal
+		&& context.has_suffix() == false) {
 		if (string[context.pos] >= '0' && string[context.pos] <= '9') {
 			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - '0');
 		}
@@ -230,35 +254,53 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'A') + 10;
 		}
 	}
-	else if (context.pos == 1 && string[context.pos] == 'b') {
+	else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'b') {
 		context.mode = Numeric_Value_Mode::binary;
 	}
-	else if (context.pos == 1 && string[context.pos] == 'x') {
+	else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'x') {
 		context.mode = Numeric_Value_Mode::hexadecimal;
 	}
-	else if (string[context.pos] == '.' && context.is_integer == true) {	// @Warning We don't support number with many dot characters (it seems to be an error)
+	else if (string[context.pos] == '.' && context.is_integer == true	// @Warning We don't support number with many dot characters (it seems to be an error)
+		&& context.has_suffix() == false) {
+		token.value.real_max = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+
 		context.is_integer = false;
-		token.value.real_64 = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
 	}
 	else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::decimal)
 		|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::hexadecimal))
-		&& context.has_exponent == false) {	// @Warning We don't support number with many exponent characters (it seems to be an error)
+		&& context.has_exponent == false	// @Warning We don't support number with many exponent characters (it seems to be an error)
+		&& context.has_suffix() == false) {
+
+		if (context.is_integer) {
+			token.value.real_max = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+		}
+
 		context.is_integer = false;
 		context.has_exponent = true;
 		context.exponent_pos = context.pos;
-		token.value.real_64 = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
 	}
 	else if (string[context.pos] == '+' && context.has_exponent == true && context.pos == context.exponent_pos + 1) {
 	}
 	else if (string[context.pos] == '-' && context.has_exponent == true && context.pos == context.exponent_pos + 1) {
+		context.is_exponent_negative = true;
 	}
-	else if (string[context.pos] == 'u' && context.unsigned_suffix == false) {
+	else if (string[context.pos] == '_'
+		&& context.has_suffix() == false) {
+	}
+	// Suffixes
+	else if (string[context.pos] == 'u' && context.unsigned_suffix == false && context.is_integer == true) {
 		context.unsigned_suffix = true;
 	}
 	else if (string[context.pos] == 'L' && context.long_suffix == false) {
 		context.long_suffix = true;
 	}
-	else if (string[context.pos] == '_') {
+	else if (string[context.pos] == 'f' && context.float_suffix == false) {
+		context.is_integer = false;	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
+		context.float_suffix = true;
+	}
+	else if (string[context.pos] == 'd' && context.double_suffix == false) {
+		context.is_integer = false;	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
+		context.double_suffix = true;
 	}
 	else {
 		return false;
@@ -315,12 +357,13 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 	};
 
 	auto    generate_numeric_literal_token = [&](const Numeric_Value_Context& numeric_value_context, std::string_view text, size_t column) {
-		token.type = Token_Type::numeric_literal_i32;
 		token.text = text;
 		token.line = current_line;
 		token.column = column;
 
 		if (numeric_value_context.is_integer) {
+			token.type = Token_Type::numeric_literal_i32;
+
 			if (numeric_value_context.unsigned_suffix && numeric_value_context.long_suffix) {
 				token.type = Token_Type::numeric_literal_ui64;
 			}
@@ -336,6 +379,25 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		}
 		else {
 			token.type = Token_Type::numeric_literal_f64;
+
+			if (numeric_value_context.has_exponent) {
+				token.value.real_max = token.value.real_max * powl(10, numeric_value_context.exponent);
+			}
+
+			if (numeric_value_context.long_suffix) {
+				token.type = Token_Type::numeric_literal_real;
+			}
+			else if (numeric_value_context.double_suffix) {
+				token.type = Token_Type::numeric_literal_f64;
+				token.value.real_64 = token.value.real_max;	// A conversion is necessary
+			}
+			else if (numeric_value_context.float_suffix) {
+				token.type = Token_Type::numeric_literal_f32;
+				token.value.real_32 = token.value.real_max;	// A conversion is necessary
+			}
+			else {
+				token.value.real_64 = token.value.real_max;
+			}
 		}
 
 		tokens.push_back(token);

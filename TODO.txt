@@ -1,5 +1,8 @@
+Ajouter le support des float en hexa
+String literals
+
+
 Lexer:
-	Recoder les fonctions de conversion de string vers int32, int64, float,... pour le lexer.
 	Il faut une gestion des erreurs et que ça fonctionne avec les string reference.
 
 Parser:
