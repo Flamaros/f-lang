@@ -3,6 +3,7 @@
 #include "hash_table.hpp"
 
 #include <utilities/exit_scope.hpp>
+#include <utilities/flags.hpp>
 
 #include <unordered_map>
 
@@ -176,37 +177,41 @@ enum class Numeric_Value_Mode
 	hexadecimal,
 };
 
+enum class Numeric_Value_Flag
+{
+	start_with_digit		= 0x0001,
+	is_integer				= 0x0002,
+	has_exponent			= 0x0004,
+	is_exponent_negative	= 0x0008,
+
+	// @Warning suffixes should be at end for has_suffix method
+	unsigned_suffix			= 0x0010,
+	long_suffix				= 0x0020,
+	float_suffix			= 0x0040,
+	double_suffix			= 0x0080,
+};
+
+// @TODO pack this struct members with flags,...
 struct Numeric_Value_Context
 {
-	bool				start_with_digit = false;
-	bool				is_integer = true;	// @Warning used internally also to determine if we pass the entire part of a real number
-	double				divider = 10;
 	Numeric_Value_Mode	mode = Numeric_Value_Mode::decimal;
-	bool				has_exponent = false;
-	bool				is_exponent_negative = false;
+	Numeric_Value_Flag	flags = Numeric_Value_Flag::is_integer;
+	double				divider = 10;
 	size_t				exponent_pos = 0;
 	int					exponent = 0;
-	bool				unsigned_suffix = false;
-	bool				long_suffix = false;
-	bool				float_suffix = false;
-	bool				double_suffix = false;
 	size_t				pos = 0;
 
-	bool	has_suffix() const
-	{
-		return double_suffix
-			|| float_suffix
-			|| long_suffix
-			|| unsigned_suffix;
+	bool	has_suffix() const {
+		return (uint32_t)flags >= (uint32_t)Numeric_Value_Flag::unsigned_suffix;
 	}
 };
 
-/* Return true if the entiere string was processed, else false
- * It can set unsigned_integer or real_max members of Token::Value type.
- * It also return if the passed string represent an integer or a real number.
- * The parsing will stop immediately if the parsing failed, but the result stay valid, you have
- * to refer to pos output parameter to know how many characters where processed
- */
+// to_numeric_value parse a string_view incrementaly to extract a number.
+// It return true if the entiere string was processed, else false, which means that the
+// number ended.
+// The token value can be partialy filled depending of the type of the number,
+// floating points with exponent have the value of the exponent in the Numeric_Value_Context.
+// The context also contains some other usefull flags like suffixes.
 bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, Token& token)
 {
 	defer { context.pos++; };
@@ -214,17 +219,20 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 	if (context.mode == Numeric_Value_Mode::decimal
 		&& string[context.pos] >= '0' && string[context.pos] <= '9'
 		&& context.has_suffix() == false) {
-		if (context.is_integer) {
+		if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer)) {
 			token.value.unsigned_integer = token.value.unsigned_integer * 10 + (string[context.pos] - '0');
 		}
 		else {
-			if (context.has_exponent && context.exponent == 0 && context.is_exponent_negative) {
+			if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
+				&& context.exponent == 0
+				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_exponent_negative)) {
 				context.exponent = -(string[context.pos] - '0');
 			}
-			else if (context.has_exponent && context.exponent == 0) {
+			else if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
+				&& context.exponent == 0) {
 				context.exponent = (string[context.pos] - '0');
 			}
-			else if (context.has_exponent) {
+			else if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)) {
 				context.exponent = context.exponent * 10 + (string[context.pos] - '0');
 			}
 			else {
@@ -234,7 +242,7 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 		}
 
 		if (context.pos == 0) {
-			context.start_with_digit = true;
+			utilities::set_flag(context.flags, Numeric_Value_Flag::start_with_digit);
 		}
 	}
 	else if (context.mode == Numeric_Value_Mode::binary
@@ -260,47 +268,56 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 	else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'x') {
 		context.mode = Numeric_Value_Mode::hexadecimal;
 	}
-	else if (string[context.pos] == '.' && context.is_integer == true	// @Warning We don't support number with many dot characters (it seems to be an error)
+	else if (string[context.pos] == '.' && utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer)	// @Warning We don't support number with many dot characters (it seems to be an error)
 		&& context.has_suffix() == false) {
 		token.value.real_max = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
 
-		context.is_integer = false;
+		utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);
 	}
 	else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::decimal)
 		|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::hexadecimal))
-		&& context.has_exponent == false	// @Warning We don't support number with many exponent characters (it seems to be an error)
+		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent) == false	// @Warning We don't support number with many exponent characters (it seems to be an error)
 		&& context.has_suffix() == false) {
 
-		if (context.is_integer) {
+		if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer)) {
 			token.value.real_max = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
 		}
 
-		context.is_integer = false;
-		context.has_exponent = true;
+		utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);
+		utilities::set_flag(context.flags, Numeric_Value_Flag::has_exponent);
 		context.exponent_pos = context.pos;
 	}
-	else if (string[context.pos] == '+' && context.has_exponent == true && context.pos == context.exponent_pos + 1) {
+	else if (string[context.pos] == '+'
+		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
+		&& context.pos == context.exponent_pos + 1) {
 	}
-	else if (string[context.pos] == '-' && context.has_exponent == true && context.pos == context.exponent_pos + 1) {
-		context.is_exponent_negative = true;
+	else if (string[context.pos] == '-'
+		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
+		&& context.pos == context.exponent_pos + 1) {
+		utilities::set_flag(context.flags, Numeric_Value_Flag::is_exponent_negative);
 	}
 	else if (string[context.pos] == '_'
 		&& context.has_suffix() == false) {
 	}
 	// Suffixes
-	else if (string[context.pos] == 'u' && context.unsigned_suffix == false && context.is_integer == true) {
-		context.unsigned_suffix = true;
+	else if (string[context.pos] == 'u'
+		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::unsigned_suffix) == false
+		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer) == true) {
+		utilities::set_flag(context.flags, Numeric_Value_Flag::unsigned_suffix);
 	}
-	else if (string[context.pos] == 'L' && context.long_suffix == false) {
-		context.long_suffix = true;
+	else if (string[context.pos] == 'L'
+		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::long_suffix) == false) {
+		utilities::set_flag(context.flags, Numeric_Value_Flag::long_suffix);
 	}
-	else if (string[context.pos] == 'f' && context.float_suffix == false) {
-		context.is_integer = false;	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
-		context.float_suffix = true;
+	else if (string[context.pos] == 'f'
+		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::float_suffix) == false) {
+		utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
+		utilities::set_flag(context.flags, Numeric_Value_Flag::float_suffix);
 	}
-	else if (string[context.pos] == 'd' && context.double_suffix == false) {
-		context.is_integer = false;	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
-		context.double_suffix = true;
+	else if (string[context.pos] == 'd'
+		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::double_suffix) == false) {
+		utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
+		utilities::set_flag(context.flags, Numeric_Value_Flag::double_suffix);
 	}
 	else {
 		return false;
@@ -361,16 +378,17 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		token.line = current_line;
 		token.column = column;
 
-		if (numeric_value_context.is_integer) {
+		if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::is_integer)) {
 			token.type = Token_Type::numeric_literal_i32;
 
-			if (numeric_value_context.unsigned_suffix && numeric_value_context.long_suffix) {
+			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::unsigned_suffix)
+				&& utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::long_suffix)) {
 				token.type = Token_Type::numeric_literal_ui64;
 			}
-			else if (numeric_value_context.long_suffix) {
+			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::long_suffix)) {
 				token.type = Token_Type::numeric_literal_i64;
 			}
-			else if (numeric_value_context.unsigned_suffix) {
+			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::unsigned_suffix)) {
 				token.type = token.value.unsigned_integer > 4'294'967'295 ? Token_Type::numeric_literal_ui64 : Token_Type::numeric_literal_ui32;
 			}
 			else if (token.value.unsigned_integer > 2'147'483'647) {
@@ -380,18 +398,18 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		else {
 			token.type = Token_Type::numeric_literal_f64;
 
-			if (numeric_value_context.has_exponent) {
+			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::has_exponent)) {
 				token.value.real_max = token.value.real_max * powl(10, numeric_value_context.exponent);
 			}
 
-			if (numeric_value_context.long_suffix) {
+			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::long_suffix)) {
 				token.type = Token_Type::numeric_literal_real;
 			}
-			else if (numeric_value_context.double_suffix) {
+			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::double_suffix)) {
 				token.type = Token_Type::numeric_literal_f64;
 				token.value.real_64 = token.value.real_max;	// A conversion is necessary
 			}
-			else if (numeric_value_context.float_suffix) {
+			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::float_suffix)) {
 				token.type = Token_Type::numeric_literal_f32;
 				token.value.real_32 = token.value.real_max;	// A conversion is necessary
 			}
