@@ -1,6 +1,8 @@
 Ajouter le support des float en hexa
 String literals
 
+Tester les perfs du lexer, et faire un post sur le blog
+
 
 Lexer:
 	Il faut une gestion des erreurs et que ça fonctionne avec les string reference.

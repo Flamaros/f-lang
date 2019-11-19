@@ -33,7 +33,7 @@ namespace f
     enum class Punctuation : uint8_t
     {
         unknown,
-
+		
         // Multiple characters punctuation
         // !!!!! Have to be sort by the number of characters
         // !!!!! to avoid bad forward detection (/** issue when last * can override the /* detection during the forward test)

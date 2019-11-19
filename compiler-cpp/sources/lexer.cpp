@@ -216,13 +216,91 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 {
 	defer { context.pos++; };
 
-	if (context.mode == Numeric_Value_Mode::decimal
-		&& string[context.pos] >= '0' && string[context.pos] <= '9'
-		&& context.has_suffix() == false) {
-		if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer)) {
+	if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer))	// Integer
+	{
+		if (context.mode == Numeric_Value_Mode::decimal
+			&& string[context.pos] >= '0' && string[context.pos] <= '9'
+			&& context.has_suffix() == false) {
 			token.value.unsigned_integer = token.value.unsigned_integer * 10 + (string[context.pos] - '0');
+
+			if (context.pos == 0) {
+				utilities::set_flag(context.flags, Numeric_Value_Flag::start_with_digit);
+			}
+		}
+		else if (context.mode == Numeric_Value_Mode::binary
+			&& string[context.pos] >= '0' && string[context.pos] <= '1'
+			&& context.has_suffix() == false) {
+			token.value.unsigned_integer = token.value.unsigned_integer * 2 + (string[context.pos] - '0');
+		}
+		else if (context.mode == Numeric_Value_Mode::hexadecimal
+			&& context.has_suffix() == false) {
+			if (string[context.pos] >= '0' && string[context.pos] <= '9') {
+				token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - '0');
+			}
+			else if (string[context.pos] >= 'a' && string[context.pos] <= 'f') {
+				token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'a') + 10;
+			}
+			else if (string[context.pos] >= 'A' && string[context.pos] <= 'F') {
+				token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'A') + 10;
+			}
+		}
+		else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'b') {
+			context.mode = Numeric_Value_Mode::binary;
+		}
+		else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'x') {
+			context.mode = Numeric_Value_Mode::hexadecimal;
+		}
+		else if (string[context.pos] == '.'
+			&& context.has_suffix() == false) {
+			token.value.real_max = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+
+			utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);
+		}
+		else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::decimal)
+			|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::hexadecimal))
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent) == false	// @Warning We don't support number with many exponent characters (it seems to be an error)
+			&& context.has_suffix() == false) {
+
+			token.value.real_max = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+
+			utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);
+			utilities::set_flag(context.flags, Numeric_Value_Flag::has_exponent);
+			context.exponent_pos = context.pos;
+		}
+		else if (string[context.pos] == '_'
+			&& context.has_suffix() == false) {
+		}
+		// Suffixes
+		else if (string[context.pos] == 'u'
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::unsigned_suffix) == false
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer) == true) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::unsigned_suffix);
+		}
+		else if (string[context.pos] == 'L'
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::long_suffix) == false) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::long_suffix);
+		}
+		else if (string[context.pos] == 'f'
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::float_suffix) == false
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::unsigned_suffix) == false
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::long_suffix) == false) {
+			utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
+			utilities::set_flag(context.flags, Numeric_Value_Flag::float_suffix);
+		}
+		else if (string[context.pos] == 'd'
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::double_suffix) == false
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::unsigned_suffix) == false) {
+			utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
+			utilities::set_flag(context.flags, Numeric_Value_Flag::double_suffix);
 		}
 		else {
+			return false;
+		}
+	}
+	else {	// Real
+		if (context.mode == Numeric_Value_Mode::decimal
+			&& string[context.pos] >= '0' && string[context.pos] <= '9'
+			&& context.has_suffix() == false) {
 			if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
 				&& context.exponent == 0
 				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_exponent_negative)) {
@@ -239,88 +317,64 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 				token.value.real_max += (string[context.pos] - '0') / context.divider;
 				context.divider *= 10;
 			}
-		}
 
-		if (context.pos == 0) {
-			utilities::set_flag(context.flags, Numeric_Value_Flag::start_with_digit);
+			if (context.pos == 0) {
+				utilities::set_flag(context.flags, Numeric_Value_Flag::start_with_digit);
+			}
 		}
-	}
-	else if (context.mode == Numeric_Value_Mode::binary
-		&& string[context.pos] >= '0' && string[context.pos] <= '1'
-		&& context.has_suffix() == false) {
-		token.value.unsigned_integer = token.value.unsigned_integer * 2 + (string[context.pos] - '0');
-	}
-	else if (context.mode == Numeric_Value_Mode::hexadecimal
-		&& context.has_suffix() == false) {
-		if (string[context.pos] >= '0' && string[context.pos] <= '9') {
-			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - '0');
+		else if (context.mode == Numeric_Value_Mode::binary
+			&& string[context.pos] >= '0' && string[context.pos] <= '1'
+			&& context.has_suffix() == false) {
+			token.value.unsigned_integer = token.value.unsigned_integer * 2 + (string[context.pos] - '0');
 		}
-		else if (string[context.pos] >= 'a' && string[context.pos] <= 'f') {
-			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'a') + 10;
+		else if (context.mode == Numeric_Value_Mode::hexadecimal
+			&& context.has_suffix() == false) {
+			//if (string[context.pos] >= '0' && string[context.pos] <= '9') {
+			//	token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - '0');
+			//}
+			//else if (string[context.pos] >= 'a' && string[context.pos] <= 'f') {
+			//	token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'a') + 10;
+			//}
+			//else if (string[context.pos] >= 'A' && string[context.pos] <= 'F') {
+			//	token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'A') + 10;
+			//}
 		}
-		else if (string[context.pos] >= 'A' && string[context.pos] <= 'F') {
-			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'A') + 10;
-		}
-	}
-	else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'b') {
-		context.mode = Numeric_Value_Mode::binary;
-	}
-	else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'x') {
-		context.mode = Numeric_Value_Mode::hexadecimal;
-	}
-	else if (string[context.pos] == '.' && utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer)	// @Warning We don't support number with many dot characters (it seems to be an error)
-		&& context.has_suffix() == false) {
-		token.value.real_max = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+		else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::decimal)
+			|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::hexadecimal))
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent) == false	// @Warning We don't support number with many exponent characters (it seems to be an error)
+			&& context.has_suffix() == false) {
 
-		utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);
-	}
-	else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::decimal)
-		|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::hexadecimal))
-		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent) == false	// @Warning We don't support number with many exponent characters (it seems to be an error)
-		&& context.has_suffix() == false) {
-
-		if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer)) {
-			token.value.real_max = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+			utilities::set_flag(context.flags, Numeric_Value_Flag::has_exponent);
+			context.exponent_pos = context.pos;
 		}
-
-		utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);
-		utilities::set_flag(context.flags, Numeric_Value_Flag::has_exponent);
-		context.exponent_pos = context.pos;
-	}
-	else if (string[context.pos] == '+'
-		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
-		&& context.pos == context.exponent_pos + 1) {
-	}
-	else if (string[context.pos] == '-'
-		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
-		&& context.pos == context.exponent_pos + 1) {
-		utilities::set_flag(context.flags, Numeric_Value_Flag::is_exponent_negative);
-	}
-	else if (string[context.pos] == '_'
-		&& context.has_suffix() == false) {
-	}
-	// Suffixes
-	else if (string[context.pos] == 'u'
-		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::unsigned_suffix) == false
-		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer) == true) {
-		utilities::set_flag(context.flags, Numeric_Value_Flag::unsigned_suffix);
-	}
-	else if (string[context.pos] == 'L'
-		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::long_suffix) == false) {
-		utilities::set_flag(context.flags, Numeric_Value_Flag::long_suffix);
-	}
-	else if (string[context.pos] == 'f'
-		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::float_suffix) == false) {
-		utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
-		utilities::set_flag(context.flags, Numeric_Value_Flag::float_suffix);
-	}
-	else if (string[context.pos] == 'd'
-		&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::double_suffix) == false) {
-		utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
-		utilities::set_flag(context.flags, Numeric_Value_Flag::double_suffix);
-	}
-	else {
-		return false;
+		else if (string[context.pos] == '+'
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
+			&& context.pos == context.exponent_pos + 1) {
+		}
+		else if (string[context.pos] == '-'
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
+			&& context.pos == context.exponent_pos + 1) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::is_exponent_negative);
+		}
+		else if (string[context.pos] == '_'
+			&& context.has_suffix() == false) {
+		}
+		// Suffixes
+		else if (string[context.pos] == 'L'
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::long_suffix) == false) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::long_suffix);
+		}
+		else if (string[context.pos] == 'f'
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::float_suffix) == false) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::float_suffix);
+		}
+		else if (string[context.pos] == 'd'
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::double_suffix) == false) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::double_suffix);
+		}
+		else {
+			return false;
+		}
 	}
 
 	return true;
