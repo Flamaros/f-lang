@@ -182,13 +182,15 @@ enum class Numeric_Value_Flag
 	start_with_digit		= 0x0001,
 	is_integer				= 0x0002,
 	has_exponent			= 0x0004,
-	is_exponent_negative	= 0x0008,
+	is_hexadecimal          = 0x0008,
+	is_binary				= 0x0010,
+	is_exponent_negative	= 0x0020,
 
 	// @Warning suffixes should be at end for has_suffix method
-	unsigned_suffix			= 0x0010,
-	long_suffix				= 0x0020,
-	float_suffix			= 0x0040,
-	double_suffix			= 0x0080,
+	unsigned_suffix			= 0x0040,
+	long_suffix				= 0x0080,
+	float_suffix			= 0x0100,
+	double_suffix			= 0x0200,
 };
 
 // @TODO pack this struct members with flags,...
@@ -196,7 +198,7 @@ struct Numeric_Value_Context
 {
 	Numeric_Value_Mode	mode = Numeric_Value_Mode::decimal;
 	Numeric_Value_Flag	flags = Numeric_Value_Flag::is_integer;
-	double				divider = 10;
+	long double			divider = 10;
 	size_t				exponent_pos = 0;
 	int					exponent = 0;
 	size_t				pos = 0;
@@ -233,22 +235,28 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 			token.value.unsigned_integer = token.value.unsigned_integer * 2 + (string[context.pos] - '0');
 		}
 		else if (context.mode == Numeric_Value_Mode::hexadecimal
+			&& string[context.pos] >= '0' && string[context.pos] <= '9'
 			&& context.has_suffix() == false) {
-			if (string[context.pos] >= '0' && string[context.pos] <= '9') {
-				token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - '0');
-			}
-			else if (string[context.pos] >= 'a' && string[context.pos] <= 'f') {
-				token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'a') + 10;
-			}
-			else if (string[context.pos] >= 'A' && string[context.pos] <= 'F') {
-				token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'A') + 10;
-			}
+			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - '0');
+		}
+		else if (context.mode == Numeric_Value_Mode::hexadecimal
+			&& string[context.pos] >= 'a' && string[context.pos] <= 'f'
+			&& context.has_suffix() == false) {
+			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'a') + 10;
+		}
+		else if (context.mode == Numeric_Value_Mode::hexadecimal
+			&& string[context.pos] >= 'A' && string[context.pos] <= 'F'
+			&& context.has_suffix() == false) {
+			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'A') + 10;
 		}
 		else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'b') {
 			context.mode = Numeric_Value_Mode::binary;
+			utilities::set_flag(context.flags, Numeric_Value_Flag::is_binary);
 		}
 		else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'x') {
 			context.mode = Numeric_Value_Mode::hexadecimal;
+			context.divider = 1;
+			utilities::set_flag(context.flags, Numeric_Value_Flag::is_hexadecimal);
 		}
 		else if (string[context.pos] == '.'
 			&& context.has_suffix() == false) {
@@ -297,47 +305,79 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 			return false;
 		}
 	}
-	else {	// Real
-		if (context.mode == Numeric_Value_Mode::decimal
-			&& string[context.pos] >= '0' && string[context.pos] <= '9'
-			&& context.has_suffix() == false) {
-			if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
-				&& context.exponent == 0
-				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_exponent_negative)) {
-				context.exponent = -(string[context.pos] - '0');
+	else {	// Real (start to be real only after the '.' character)
+		if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)) {
+			if (string[context.pos] == '+'
+				&& context.pos == context.exponent_pos + 1) {
 			}
-			else if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
-				&& context.exponent == 0) {
-				context.exponent = (string[context.pos] - '0');
+			else if (string[context.pos] == '-'
+				&& context.pos == context.exponent_pos + 1) {
+				utilities::set_flag(context.flags, Numeric_Value_Flag::is_exponent_negative);
 			}
-			else if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)) {
-				context.exponent = context.exponent * 10 + (string[context.pos] - '0');
+			else if (string[context.pos] >= '0' && string[context.pos] <= '9') {
+				if (context.exponent == 0
+					&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_exponent_negative)
+					&& context.has_suffix() == false) {
+					context.exponent = -(string[context.pos] - '0');
+				}
+				else if (context.exponent == 0
+					&& context.has_suffix() == false) {
+					context.exponent = (string[context.pos] - '0');
+				}
+				else if (context.has_suffix() == false) {
+					context.exponent = context.exponent * 10 + (string[context.pos] - '0');
+				}
+				else {
+					return false;
+				}
+			}
+			else if (string[context.pos] == '_'
+				&& context.has_suffix() == false) {
+			}
+			// Suffixes
+			else if (string[context.pos] == 'L'
+				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::long_suffix) == false) {
+				utilities::set_flag(context.flags, Numeric_Value_Flag::long_suffix);
+			}
+			else if (string[context.pos] == 'f'
+				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::float_suffix) == false) {
+				utilities::set_flag(context.flags, Numeric_Value_Flag::float_suffix);
+			}
+			else if (string[context.pos] == 'd'
+				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::double_suffix) == false) {
+				utilities::set_flag(context.flags, Numeric_Value_Flag::double_suffix);
 			}
 			else {
-				token.value.real_max += (string[context.pos] - '0') / context.divider;
-				context.divider *= 10;
+				return false;
 			}
+		}
+		else if (context.mode == Numeric_Value_Mode::decimal
+			&& string[context.pos] >= '0' && string[context.pos] <= '9'
+			&& context.has_suffix() == false) {
+			token.value.real_max += (string[context.pos] - '0') / context.divider;
+			context.divider *= 10;
 
 			if (context.pos == 0) {
 				utilities::set_flag(context.flags, Numeric_Value_Flag::start_with_digit);
 			}
 		}
-		else if (context.mode == Numeric_Value_Mode::binary
-			&& string[context.pos] >= '0' && string[context.pos] <= '1'
+		else if (context.mode == Numeric_Value_Mode::hexadecimal
+			&& string[context.pos] >= '0' && string[context.pos] <= '9'
 			&& context.has_suffix() == false) {
-			token.value.unsigned_integer = token.value.unsigned_integer * 2 + (string[context.pos] - '0');
+			token.value.real_max += (string[context.pos] - '0') / context.divider;
+			context.divider *= 16;
 		}
 		else if (context.mode == Numeric_Value_Mode::hexadecimal
+			&& string[context.pos] >= 'a' && string[context.pos] <= 'f'
 			&& context.has_suffix() == false) {
-			//if (string[context.pos] >= '0' && string[context.pos] <= '9') {
-			//	token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - '0');
-			//}
-			//else if (string[context.pos] >= 'a' && string[context.pos] <= 'f') {
-			//	token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'a') + 10;
-			//}
-			//else if (string[context.pos] >= 'A' && string[context.pos] <= 'F') {
-			//	token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'A') + 10;
-			//}
+			token.value.real_max += (string[context.pos] - 'a' + 10) / context.divider;
+			context.divider *= 16;
+		}
+		else if (context.mode == Numeric_Value_Mode::hexadecimal
+			&& string[context.pos] >= 'A' && string[context.pos] <= 'F'
+			&& context.has_suffix() == false) {
+			token.value.real_max += (string[context.pos] - 'A' + 10) / context.divider;
+			context.divider *= 16;
 		}
 		else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::decimal)
 			|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::hexadecimal))
@@ -346,15 +386,6 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 
 			utilities::set_flag(context.flags, Numeric_Value_Flag::has_exponent);
 			context.exponent_pos = context.pos;
-		}
-		else if (string[context.pos] == '+'
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
-			&& context.pos == context.exponent_pos + 1) {
-		}
-		else if (string[context.pos] == '-'
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)
-			&& context.pos == context.exponent_pos + 1) {
-			utilities::set_flag(context.flags, Numeric_Value_Flag::is_exponent_negative);
 		}
 		else if (string[context.pos] == '_'
 			&& context.has_suffix() == false) {
@@ -453,7 +484,12 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			token.type = Token_Type::numeric_literal_f64;
 
 			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::has_exponent)) {
-				token.value.real_max = token.value.real_max * powl(10, numeric_value_context.exponent);
+				if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::is_hexadecimal)) {
+					token.value.real_max = token.value.real_max * powl(2, numeric_value_context.exponent);
+				}
+				else {
+					token.value.real_max = token.value.real_max * powl(10, numeric_value_context.exponent);
+				}
 			}
 
 			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::long_suffix)) {
