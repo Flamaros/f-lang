@@ -4,6 +4,8 @@
 
 #include <string>
 #include <vector>
+#include <locale>
+#include <codecvt>
 
 namespace utilities {
     std::vector<std::string> explodeString(const std::string& source, const std::string& separator);
@@ -25,4 +27,19 @@ namespace utilities {
     std::string              toUpperCase(const std::string& text);
     std::string&             toUpperCase(std::string& text);
     std::string              toLowerCamelCase(const std::string& text);
+
+	inline std::string		to_string(const std::wstring& wstr)
+	{
+		std::locale const	loc("");
+		wchar_t const*		from = wstr.c_str();
+		std::size_t const	len = wstr.size();
+		std::vector<char>	buffer(len + 1);
+
+		std::use_facet<std::ctype<wchar_t>>(loc).narrow(from, from + len, '_', &buffer[0]);
+		return std::string(&buffer[0], &buffer[len]);
+
+		// Deprecated in C++17
+		//std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+		//return converter.to_bytes(wstr);
+	}
 }

@@ -32,19 +32,15 @@ static bool	compile_c_file(const std::filesystem::path& input_filepath, const st
 		free_resources(&find_visual_studio_result);
 	};
 
-	std::wstring w_vs_exe_path(find_visual_studio_result.vs_exe_path);
-	std::string  vs_exe_path(w_vs_exe_path.begin(), w_vs_exe_path.end());
-
-	std::wstring w_vs_library_path(find_visual_studio_result.vs_library_path);
-	std::string  vs_library_path(w_vs_library_path.begin(), w_vs_library_path.end());
+	std::string  vs_exe_path = utilities::to_string(find_visual_studio_result.vs_exe_path);
+	std::string  vs_library_path = utilities::to_string(find_visual_studio_result.vs_library_path);
 	std::string	 vs_include_basse_path = vs_library_path;
 
 	utilities::replace(vs_include_basse_path, "lib\\x64", "include");
 
-	std::wstring w_windows_sdk_um_library_path(find_visual_studio_result.windows_sdk_um_library_path);
-	std::string  windows_sdk_um_library_path(w_windows_sdk_um_library_path.begin(), w_windows_sdk_um_library_path.end());
+	std::string  windows_sdk_um_library_path = utilities::to_string(find_visual_studio_result.windows_sdk_um_library_path);
 	std::string  windows_sdk_ucrt_library_path = windows_sdk_um_library_path;
-	std::string  vs_windows_sdk_include_base_path(w_windows_sdk_um_library_path.begin(), w_windows_sdk_um_library_path.end());
+	std::string  vs_windows_sdk_include_base_path = utilities::to_string(find_visual_studio_result.windows_sdk_um_library_path);
 
 	utilities::replace(windows_sdk_ucrt_library_path, "\\um", "\\ucrt");
 

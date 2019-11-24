@@ -179,12 +179,13 @@ namespace tests
 		TEST_METHOD(string_literals)
 		{
 			std::vector<Token>	tokens;
-			std::string			text = "\"Hello World\"";
+			std::string			text = R"('Hello World')";
 
 			// TODO test escape characters
 
 			tokenize(text, tokens);
 			Assert::AreEqual(size_t(1), tokens.size());
+			Assert::AreEqual((int)Token_Type::string_literal_raw, (int)tokens[0].type);
 			Assert::AreEqual(std::string("Hello World"), std::string(tokens[0].text));
 		}
 
@@ -216,7 +217,7 @@ namespace tests
 				"\n"
 				"	// ExitProcess(0);\n"												// 66
 				"	return 0;\n"														// 69
-				"}"																	// 70
+				"}"																		// 70
 			;
 
 			tokenize(text, tokens);

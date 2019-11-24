@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string_view>
+#include <string>
 
 /*
 Notice:
@@ -20,6 +21,7 @@ namespace f
 		identifier,	/// Every word that isn't a part of the language
 		keyword,
 		syntaxe_operator,
+		string_literal_raw,	// @Warning In this case the text is the value of the token instead of a member of the Value union
 		string_literal,
 		numeric_literal_i32,
 		numeric_literal_ui32,
@@ -174,13 +176,14 @@ namespace f
 	public:
 		union Value
 		{
-			Punctuation	punctuation;
-			Keyword		keyword;
-			int64_t		integer;
-			uint64_t	unsigned_integer;
-			float		real_32;
-			double		real_64;
-			long double	real_max;
+			Punctuation		punctuation;
+			Keyword			keyword;
+			int64_t			integer;
+			uint64_t		unsigned_integer;
+			float			real_32;
+			double			real_64;
+			long double		real_max;
+			std::string*	string;
 		};
 
 		Token_Type			type;

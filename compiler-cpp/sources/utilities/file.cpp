@@ -22,7 +22,7 @@ bool utilities::read_all_file(const fs::path& file_path, std::vector<uint8_t>& d
     file_size = file.tellg();
     file.seekg(0, file.beg);
 
-    data.resize(file_size);
+    data.resize((size_t)file_size);
     file.read(reinterpret_cast<char*>(data.data()), data.size());
     return file.fail() == false;
 }

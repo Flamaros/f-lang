@@ -260,7 +260,7 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 		}
 		else if (string[context.pos] == '.'
 			&& context.has_suffix() == false) {
-			token.value.real_max = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+			token.value.real_max = (long double)token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
 
 			utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);
 		}
@@ -269,7 +269,7 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent) == false	// @Warning We don't support number with many exponent characters (it seems to be an error)
 			&& context.has_suffix() == false) {
 
-			token.value.real_max = token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+			token.value.real_max = (long double)token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
 
 			utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);
 			utilities::set_flag(context.flags, Numeric_Value_Flag::has_exponent);
@@ -415,6 +415,7 @@ enum class State
 {
 	classic,
 	numeric_literal,
+	string_literal_raw,
 	string_literal,
 	comment_line,
 	comment_block,
@@ -501,7 +502,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			}
 			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::float_suffix)) {
 				token.type = Token_Type::numeric_literal_f32;
-				token.value.real_32 = token.value.real_max;	// A conversion is necessary
+				token.value.real_32 = (float)token.value.real_max;	// A conversion is necessary
 			}
 			else {
 				token.value.real_64 = token.value.real_max;
@@ -522,8 +523,8 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
         tokens.push_back(token);
     };
 
-	auto    generate_string_literal_token = [&](std::string_view text, size_t column) {
-		token.type =Token_Type::string_literal;
+	auto    generate_string_literal_token = [&](std::string_view text, size_t column, bool raw) {
+		token.type = raw ? Token_Type::string_literal_raw : Token_Type::string_literal;
 		token.text = text;
 		token.line = current_line;
 		token.column = column;
@@ -574,7 +575,10 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		switch (state)
 		{
 		case State::classic:
-			if (punctuation == Punctuation::double_quote) {
+			if (punctuation == Punctuation::single_quote) {
+				state = State::string_literal_raw;
+			}
+			else if (punctuation == Punctuation::double_quote) {
 				state = State::string_literal;
 			}
 			else if (punctuation == Punctuation::line_comment) {
@@ -627,13 +631,25 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		}
 			break;
 
-		case State::string_literal:
-			if (state == State::string_literal && punctuation == Punctuation::double_quote) {
+		case State::string_literal_raw:
+			if (punctuation == Punctuation::single_quote) {
 				state = State::classic;
 
 				token_string = std::string_view(text.data() + 1, text.length() - 2);
 
-				generate_string_literal_token(token_string, text_column);
+				generate_string_literal_token(token_string, text_column, true);
+
+				start_new_token();
+			}
+			break;
+
+		case State::string_literal:
+			if (punctuation == Punctuation::double_quote) {
+				state = State::classic;
+
+				token_string = std::string_view(text.data() + 1, text.length() - 2);
+
+				generate_string_literal_token(token_string, text_column, false);
 
 				start_new_token();
 			}

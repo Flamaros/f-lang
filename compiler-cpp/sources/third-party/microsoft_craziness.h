@@ -495,9 +495,9 @@ bool find_visual_studio_2017_by_fighting_through_microsoft_craziness(Find_Result
         }
 
         uint64_t version_bytes = (tools_file_size.QuadPart + 1) * 2;  // Warning: This multiplication by 2 presumes there is no variable-length encoding in the wchars (wacky characters in the file could betray this expectation).
-        wchar_t *version = (wchar_t *)malloc(version_bytes);
+        wchar_t *version = (wchar_t *)malloc((size_t)version_bytes);
 
-        wchar_t *read_result = fgetws(version, version_bytes, f);
+        wchar_t *read_result = fgetws(version, (int)version_bytes, f);
         fclose(f);
         if (!read_result) continue;
 
