@@ -650,9 +650,21 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			}
 			else if (punctuation == Punctuation::line_comment) {
 				state = State::comment_line;
+
+				token_string = std::string_view(text.data(), text.length() - punctuation_length);
+
+				if (token_string.length()) {
+					generate_keyword_or_identifier_token(token_string, text_column);
+				}
 			}
 			else if (punctuation == Punctuation::open_block_comment) {
 				state = State::comment_block;
+
+				token_string = std::string_view(text.data(), text.length() - punctuation_length);
+
+				if (token_string.length()) {
+					generate_keyword_or_identifier_token(token_string, text_column);
+				}
 			}
 			else if ((punctuation != Punctuation::unknown || eof)
 				&& (forward_punctuation == Punctuation::unknown

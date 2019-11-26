@@ -22,7 +22,20 @@ namespace tests
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(0));
+			Assert::AreEqual(size_t(0), tokens.size());
+		}
+
+		TEST_METHOD(identifier)
+		{
+			std::vector<Token>	tokens;
+			std::string			text =
+				"abcdef";
+
+			tokenize(text, tokens);
+
+			Assert::AreEqual(size_t(1), tokens.size());
+			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[0].type);
+			Assert::AreEqual(std::string("abcdef"), std::string(tokens[0].text));
 		}
 
 		TEST_METHOD(white_spaces_text)
@@ -33,29 +46,33 @@ namespace tests
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(0));
+			Assert::AreEqual(size_t(0), tokens.size());
 		}
 
 		TEST_METHOD(comment_line_text_01)
 		{
 			std::vector<Token>	tokens;
 			std::string			text =
-				"// Test";
+				"abc// Test";
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(0));
+			Assert::AreEqual(size_t(1), tokens.size());
+			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[0].type);
+			Assert::AreEqual(std::string("abc"), std::string(tokens[0].text));
 		}
 
 		TEST_METHOD(comment_line_text_02)
 		{
 			std::vector<Token>	tokens;
 			std::string			text =
-				"/// Test";
+				"abc /// Test";
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(0));
+			Assert::AreEqual(size_t(1), tokens.size());
+			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[0].type);
+			Assert::AreEqual(std::string("abc"), std::string(tokens[0].text));
 		}
 
 		TEST_METHOD(comment_line_text_03)
@@ -67,7 +84,7 @@ namespace tests
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(0));
+			Assert::AreEqual(size_t(0), tokens.size());
 		}
 
 		TEST_METHOD(comment_block_text_01)
@@ -82,7 +99,7 @@ namespace tests
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(0));
+			Assert::AreEqual(size_t(0), tokens.size());
 		}
 
 		TEST_METHOD(comment_block_text_02)
@@ -93,7 +110,7 @@ namespace tests
 
 			tokenize(text, tokens);
 
-			Assert::AreEqual(tokens.size(), size_t(2));
+			Assert::AreEqual(size_t(2), tokens.size());
 			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[0].type);
 			Assert::AreEqual(std::string("abc"), std::string(tokens[0].text));
 			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[1].type);
