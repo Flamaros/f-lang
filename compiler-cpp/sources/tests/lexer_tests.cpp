@@ -85,6 +85,21 @@ namespace tests
 			Assert::AreEqual(tokens.size(), size_t(0));
 		}
 
+		TEST_METHOD(comment_block_text_02)
+		{
+			std::vector<Token>	tokens;
+			std::string			text =
+				"abc/**/def";
+
+			tokenize(text, tokens);
+
+			Assert::AreEqual(tokens.size(), size_t(2));
+			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[0].type);
+			Assert::AreEqual(std::string("abc"), std::string(tokens[0].text));
+			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[1].type);
+			Assert::AreEqual(std::string("def"), std::string(tokens[1].text));
+		}
+
 		TEST_METHOD(numeric_literals_integer)
 		{
 			std::vector<Token>	tokens;
@@ -179,14 +194,21 @@ namespace tests
 		TEST_METHOD(string_literals)
 		{
 			std::vector<Token>	tokens;
-			std::string			text = R"('Hello World')";
+			std::string			text = R"(
+				'Hello World'
+				"Hello World"
+				"Hello World\n\t")";
 
 			// TODO test escape characters
 
 			tokenize(text, tokens);
-			Assert::AreEqual(size_t(1), tokens.size());
+			Assert::AreEqual(size_t(3), tokens.size());
 			Assert::AreEqual((int)Token_Type::string_literal_raw, (int)tokens[0].type);
 			Assert::AreEqual(std::string("Hello World"), std::string(tokens[0].text));
+			Assert::AreEqual((int)Token_Type::string_literal, (int)tokens[1].type);
+			Assert::AreEqual(std::string("Hello World"), std::string(tokens[1].text));
+			Assert::AreEqual((int)Token_Type::string_literal, (int)tokens[2].type);
+			Assert::AreEqual(std::string("Hello World\n\t"), *tokens[2].value.string);
 		}
 
 		//TEST_METHOD(special_kewords)

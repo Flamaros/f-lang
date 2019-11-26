@@ -411,6 +411,69 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 	return true;
 }
 
+std::string* parse_string(std::string_view string_view) {
+	std::string* result = new std::string;
+	bool	escaping = false;
+
+	result->reserve(string_view.size());
+	for (size_t i = 0; i < string_view.size(); i++) {
+		if (escaping) {
+			if (string_view[i] == '\'') {
+				result->push_back('\'');
+			}
+			else if (string_view[i] == '"') {
+				result->push_back('\"');
+			}
+			else if (string_view[i] == '?') {
+				result->push_back('\?');
+			}
+			else if (string_view[i] == '\\') {
+				result->push_back('\\');
+			}
+			else if (string_view[i] == '0') {
+				result->push_back('\0');	// @TODO do we need to stop the string here?
+			}
+			else if (string_view[i] == 'a') {
+				result->push_back('\a');
+			}
+			else if (string_view[i] == 'b') {
+				result->push_back('\b');
+			}
+			else if (string_view[i] == 'f') {
+				result->push_back('\f');
+			}
+			else if (string_view[i] == 'n') {
+				result->push_back('\n');
+			}
+			else if (string_view[i] == 'r') {
+				result->push_back('\r');
+			}
+			else if (string_view[i] == 't') {
+				result->push_back('\t');
+			}
+			else if (string_view[i] == 'v') {
+				result->push_back('\v');
+			}
+			// @TODO \x hexa decimal character value (2 digits) \u for 4 hexa digits unicode \U for 8 digits unicode
+			else {
+				// @TODO throw an error, we are trying to escape a character that no has no need to be escaped
+				// So we drop it
+			}
+			escaping = false;
+			continue;
+		}
+		else if (string_view[i] == '\\') {
+			escaping = true;
+		}
+
+		if (escaping == false) {
+			result->push_back(string_view[i]);
+		}
+	}
+
+	return result;
+}
+
 enum class State
 {
 	classic,
@@ -528,6 +591,10 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		token.text = text;
 		token.line = current_line;
 		token.column = column;
+
+		if (raw == false) {
+			token.value.string = parse_string(token.text);
+		}
 
 		tokens.push_back(token);
 	};

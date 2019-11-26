@@ -1,24 +1,20 @@
-Ajouter le support des float en hexa
-String literals
-
-Tester les perfs du lexer, et faire un post sur le blog
-
-
 Lexer:
-	Il faut une gestion des erreurs et que ça fonctionne avec les string reference.
+ - Add string literal support with escape sequences
+ - Add lexer/parsing errors log
+ - Add utf8 support for source code (with BOM)
+ - Test lexer performances
+ - Add hexadecimal floating point support
 
 Parser:
-	Handle l'ordre des operateurs
-	Handle '-' character, unary or binary operator
+ - Handle operator precedence
+ - Handle '-' character, unary or binary operator
 
 Langage:
-	Supporter les nombres imaginaires: http://villemin.gerard.free.fr/Wwwgvmm/Type/aaaCompl/Terminal.htm
-		Il faut un type particulier (suffix sur les number_literals et un support dans la lib standard)
+ - Support of imaginary numbers?
+	- http://villemin.gerard.free.fr/Wwwgvmm/Type/aaaCompl/Terminal.htm
+	- Add a suffix for numeric_literals
+	- Add functions in the std library
 
-Mettre en place un logger avec un mecanisme de gestion des erreurs:
- * Certaines erreurs comme le fait de redefinir une valeur d'un enum ne sont pas critique d'un point de vu syntaxique, donc pas besoin de stopper immédiatement la compilation (on peut laisser plus d'erreurs apparaitre pour l'utilisateur)
- * Certaines erreurs sont critique et la compilation ne peut absolument plus continuer
- 
  
 Grammar:
 https://dlang.org/spec/grammar.html
