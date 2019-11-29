@@ -18,19 +18,19 @@ namespace f
 {
 	enum class State
 	{
-		global_scope,
-		comment_line,
-		comment_block,
-		macro_expression,
-        import_directive,
+		GLOBAL_SCOPE,
+		COMMENT_LINE,
+		COMMENT_BLOCK,
+		MACRO_EXPRESSION,
+        IMPORT_DIRECTIVE,
 
 		eof
 	};
 
 	static bool	is_one_line_state(State state)
 	{
-		return state == State::macro_expression	// Actually we don't manage every macro directive (we stay on this state)
-			|| state == State::comment_line;
+		return state == State::MACRO_EXPRESSION	// Actually we don't manage every macro directive (we stay on this state)
+			|| state == State::COMMENT_LINE;
 	}
 
     void parse(const std::vector<Token>& tokens, AST& ast)
@@ -50,7 +50,7 @@ namespace f
 		size_t  print_start = 0;
 		size_t  print_end = 0;
 
-		states.push(State::global_scope);
+		states.push(State::GLOBAL_SCOPE);
 
 		if (tokens.size()) {
 			string_views_buffer = tokens[0].text.data();	// @Warning all string views are about this string_views_buffer
@@ -78,20 +78,20 @@ namespace f
 					<< " " << token.line << " " << token.column << " " << token.text << std::endl;
 			}
 
-			if (state == State::comment_block)
+			if (state == State::COMMENT_BLOCK)
 			{
 				if (token.value.punctuation == Punctuation::CLOSE_BLOCK_COMMENT)
 					states.pop();
 			}
-			else if (state == State::macro_expression)
+			else if (state == State::MACRO_EXPRESSION)
 			{
                 if (token.value.KEYWORD == Keyword::IMPORT)
 				{
 					states.pop();
-                    states.push(State::import_directive);
+                    states.push(State::IMPORT_DIRECTIVE);
 				}
 			}
-            else if (state == State::import_directive)
+            else if (state == State::IMPORT_DIRECTIVE)
 			{
 				if (token.value.punctuation == Punctuation::DOUBLE_QUOTE
 					|| token.value.punctuation == Punctuation::LESS
@@ -129,17 +129,17 @@ namespace f
 					}
 				}
 			}
-			else if (state == State::global_scope)
+			else if (state == State::GLOBAL_SCOPE)
 			{
 				if (start_new_line	// @Warning to be sure that we are on the beginning of the line
 					&& token.value.punctuation == Punctuation::HASH) {   // Macro
-					states.push(State::macro_expression);
+					states.push(State::MACRO_EXPRESSION);
 				}
 				else if (token.value.punctuation == Punctuation::OPEN_BLOCK_COMMENT) {
-					states.push(State::comment_block);
+					states.push(State::COMMENT_BLOCK);
 				}
 				else if (token.value.punctuation == Punctuation::LINE_COMMENT) {
-					states.push(State::comment_line);
+					states.push(State::COMMENT_LINE);
 				}
 			}
 			start_new_line = false;
@@ -148,7 +148,7 @@ namespace f
 
 		// @Warning we should finish on the global_scope state or one that can stay active only on one line
 		assert(states.size() >= 1 && states.size() <= 2);
-		assert(states.top() == State::global_scope
+		assert(states.top() == State::GLOBAL_SCOPE
 			|| is_one_line_state(states.top()));
 	}
 }

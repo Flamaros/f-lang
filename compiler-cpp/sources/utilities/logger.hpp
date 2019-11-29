@@ -3,15 +3,15 @@
 #include <string>
 
 enum class Log_Level {
-    verbose,
-    info,
-    warning,
-    error,
-    invalid
+    VERBOSE,
+    INFO,
+    WARNING,
+    ERROR,
+    INVALID
 };
 
 struct Logger {
-    Log_Level   level = Log_Level::warning;
+    Log_Level   level = Log_Level::WARNING;
 };
 
 void        set_log_level(Logger* logger, Log_Level level);

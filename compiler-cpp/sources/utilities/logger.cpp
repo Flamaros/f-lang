@@ -24,7 +24,7 @@ void set_log_level(Logger* logger, Log_Level level) {
 
 Log_Level get_log_level(Logger* logger) {
     if (logger == nullptr)
-        return Log_Level::invalid;
+        return Log_Level::INVALID;
 
     return logger->level;
 }
@@ -44,16 +44,16 @@ void log(Logger* logger, Log_Level level, const char* format, ...) {
     // bufferiser dans un buffer par thread ou locker pour le premier thread qui appelle log apres un flush
 
     switch (level) {
-    case Log_Level::verbose:
+    case Log_Level::VERBOSE:
         printf("\033[38;5;14mVerbose:\033[0m ");
        break;
-    case Log_Level::info:
+    case Log_Level::INFO:
         printf("\033[38;5;10mInfo:\033[0m ");
        break;
-    case Log_Level::warning:
+    case Log_Level::WARNING:
         printf("\033[38;5;208mWarning:\033[0m ");
        break;
-    case Log_Level::error:
+    case Log_Level::ERROR:
         printf("\033[38;5;196;4mError:\033[0m ");
        break;
     default:

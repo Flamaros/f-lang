@@ -71,7 +71,7 @@ void utilities::vsprintf(const char* format, va_list vlist, std::string& result)
 	int length = ::vsnprintf(buffer, bufferSize, format, vlist);
 	if (length < 0)
 	{
-		result = "vsnprintf error";
+		result = "vsnprintf ERROR";
 	}
 
 	if (length < bufferSize)

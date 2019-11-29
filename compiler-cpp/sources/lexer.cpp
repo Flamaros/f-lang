@@ -171,43 +171,43 @@ static bool is_digit(char character)
 
 enum class Numeric_Value_Mode
 {
-	decimal,
-	binary,
-	hexadecimal,
+	DECIMAL,
+	BINARY,
+	HEXADECIMAL,
 };
 
 enum class Numeric_Value_Flag
 {
-	start_with_digit		= 0x0001,
-	is_integer				= 0x0002,
-	has_exponent			= 0x0004,
-	is_hexadecimal          = 0x0008,
-	is_binary				= 0x0010,
-	is_exponent_negative	= 0x0020,
+	START_WITH_DIGIT		= 0x0001,
+	IS_INTERGER				= 0x0002,
+	HAS_EXPONENT			= 0x0004,
+	IS_HEXADECIMAL          = 0x0008,
+	IS_BINARY				= 0x0010,
+	IS_EXPONENT_NEGATIVE	= 0x0020,
 
 	// @Warning suffixes should be at end for has_suffix method
-	unsigned_suffix			= 0x0040,
-	long_suffix				= 0x0080,
-	float_suffix			= 0x0100,
-	double_suffix			= 0x0200,
+	UNSIGNED_SUFFIX			= 0x0040,
+	LONG_SUFFIX				= 0x0080,
+	FLOAT_SUFFIX			= 0x0100,
+	DOUBLE_SUFFIX			= 0x0200,
 };
 
 // @TODO pack this struct members with flags,...
 struct Numeric_Value_Context
 {
-	Numeric_Value_Mode	mode = Numeric_Value_Mode::decimal;
-	Numeric_Value_Flag	flags = Numeric_Value_Flag::is_integer;
+	Numeric_Value_Mode	mode = Numeric_Value_Mode::DECIMAL;
+	Numeric_Value_Flag	flags = Numeric_Value_Flag::IS_INTERGER;
 	long double			divider = 10;
 	size_t				exponent_pos = 0;
 	int					exponent = 0;
 	size_t				pos = 0;
 
 	bool	has_suffix() const {
-		return (uint32_t)flags >= (uint32_t)Numeric_Value_Flag::unsigned_suffix;
+		return (uint32_t)flags >= (uint32_t)Numeric_Value_Flag::UNSIGNED_SUFFIX;
 	}
 };
 
-// to_numeric_value parse a string_view incrementaly to extract a number.
+// to_numeric_value parse a string_view incrementaly to extract a NUMBER.
 // It return true if the entiere string was processed, else false, which means that the
 // number ended.
 // The token value can be partialy filled depending of the type of the number,
@@ -217,61 +217,61 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 {
 	defer { context.pos++; };
 
-	if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer))	// Integer
+	if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::IS_INTERGER))	// Integer
 	{
-		if (context.mode == Numeric_Value_Mode::decimal
+		if (context.mode == Numeric_Value_Mode::DECIMAL
 			&& string[context.pos] >= '0' && string[context.pos] <= '9'
 			&& context.has_suffix() == false) {
 			token.value.unsigned_integer = token.value.unsigned_integer * 10 + (string[context.pos] - '0');
 
 			if (context.pos == 0) {
-				utilities::set_flag(context.flags, Numeric_Value_Flag::start_with_digit);
+				utilities::set_flag(context.flags, Numeric_Value_Flag::START_WITH_DIGIT);
 			}
 		}
-		else if (context.mode == Numeric_Value_Mode::binary
+		else if (context.mode == Numeric_Value_Mode::BINARY
 			&& string[context.pos] >= '0' && string[context.pos] <= '1'
 			&& context.has_suffix() == false) {
 			token.value.unsigned_integer = token.value.unsigned_integer * 2 + (string[context.pos] - '0');
 		}
-		else if (context.mode == Numeric_Value_Mode::hexadecimal
+		else if (context.mode == Numeric_Value_Mode::HEXADECIMAL
 			&& string[context.pos] >= '0' && string[context.pos] <= '9'
 			&& context.has_suffix() == false) {
 			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - '0');
 		}
-		else if (context.mode == Numeric_Value_Mode::hexadecimal
+		else if (context.mode == Numeric_Value_Mode::HEXADECIMAL
 			&& string[context.pos] >= 'a' && string[context.pos] <= 'f'
 			&& context.has_suffix() == false) {
 			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'a') + 10;
 		}
-		else if (context.mode == Numeric_Value_Mode::hexadecimal
+		else if (context.mode == Numeric_Value_Mode::HEXADECIMAL
 			&& string[context.pos] >= 'A' && string[context.pos] <= 'F'
 			&& context.has_suffix() == false) {
 			token.value.unsigned_integer = token.value.unsigned_integer * 16 + (string[context.pos] - 'A') + 10;
 		}
 		else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'b') {
-			context.mode = Numeric_Value_Mode::binary;
-			utilities::set_flag(context.flags, Numeric_Value_Flag::is_binary);
+			context.mode = Numeric_Value_Mode::BINARY;
+			utilities::set_flag(context.flags, Numeric_Value_Flag::IS_BINARY);
 		}
 		else if (context.pos == 1 && string[0] == '0' && string[context.pos] == 'x') {
-			context.mode = Numeric_Value_Mode::hexadecimal;
+			context.mode = Numeric_Value_Mode::HEXADECIMAL;
 			context.divider = 1;
-			utilities::set_flag(context.flags, Numeric_Value_Flag::is_hexadecimal);
+			utilities::set_flag(context.flags, Numeric_Value_Flag::IS_HEXADECIMAL);
 		}
 		else if (string[context.pos] == '.'
 			&& context.has_suffix() == false) {
 			token.value.real_max = (long double)token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
 
-			utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);
+			utilities::unset_flag(context.flags, Numeric_Value_Flag::IS_INTERGER);
 		}
-		else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::decimal)
-			|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::hexadecimal))
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent) == false	// @Warning We don't support number with many exponent characters (it seems to be an error)
+		else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::DECIMAL)
+			|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::HEXADECIMAL))
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::HAS_EXPONENT) == false	// @Warning We don't support number with many exponent characters (it seems to be an ERROR)
 			&& context.has_suffix() == false) {
 
 			token.value.real_max = (long double)token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
 
-			utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);
-			utilities::set_flag(context.flags, Numeric_Value_Flag::has_exponent);
+			utilities::unset_flag(context.flags, Numeric_Value_Flag::IS_INTERGER);
+			utilities::set_flag(context.flags, Numeric_Value_Flag::HAS_EXPONENT);
 			context.exponent_pos = context.pos;
 		}
 		else if (string[context.pos] == '_'
@@ -279,43 +279,43 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 		}
 		// Suffixes
 		else if (string[context.pos] == 'u'
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::unsigned_suffix) == false
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_integer) == true) {
-			utilities::set_flag(context.flags, Numeric_Value_Flag::unsigned_suffix);
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::UNSIGNED_SUFFIX) == false
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::IS_INTERGER) == true) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::UNSIGNED_SUFFIX);
 		}
 		else if (string[context.pos] == 'L'
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::long_suffix) == false) {
-			utilities::set_flag(context.flags, Numeric_Value_Flag::long_suffix);
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::LONG_SUFFIX) == false) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::LONG_SUFFIX);
 		}
 		else if (string[context.pos] == 'f'
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::float_suffix) == false
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::unsigned_suffix) == false
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::long_suffix) == false) {
-			utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
-			utilities::set_flag(context.flags, Numeric_Value_Flag::float_suffix);
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::FLOAT_SUFFIX) == false
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::UNSIGNED_SUFFIX) == false
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::LONG_SUFFIX) == false) {
+			utilities::unset_flag(context.flags, Numeric_Value_Flag::IS_INTERGER);	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
+			utilities::set_flag(context.flags, Numeric_Value_Flag::FLOAT_SUFFIX);
 		}
 		else if (string[context.pos] == 'd'
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::double_suffix) == false
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::unsigned_suffix) == false) {
-			utilities::unset_flag(context.flags, Numeric_Value_Flag::is_integer);	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
-			utilities::set_flag(context.flags, Numeric_Value_Flag::double_suffix);
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::DOUBLE_SUFFIX) == false
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::UNSIGNED_SUFFIX) == false) {
+			utilities::unset_flag(context.flags, Numeric_Value_Flag::IS_INTERGER);	// @Warning it will not have any side effect on the parsing as it is already finished (we are on a suffix)
+			utilities::set_flag(context.flags, Numeric_Value_Flag::DOUBLE_SUFFIX);
 		}
 		else {
 			return false;
 		}
 	}
 	else {	// Real (start to be real only after the '.' character)
-		if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent)) {
+		if (utilities::is_flag_set(context.flags, Numeric_Value_Flag::HAS_EXPONENT)) {
 			if (string[context.pos] == '+'
 				&& context.pos == context.exponent_pos + 1) {
 			}
 			else if (string[context.pos] == '-'
 				&& context.pos == context.exponent_pos + 1) {
-				utilities::set_flag(context.flags, Numeric_Value_Flag::is_exponent_negative);
+				utilities::set_flag(context.flags, Numeric_Value_Flag::IS_EXPONENT_NEGATIVE);
 			}
 			else if (string[context.pos] >= '0' && string[context.pos] <= '9') {
 				if (context.exponent == 0
-					&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::is_exponent_negative)
+					&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::IS_EXPONENT_NEGATIVE)
 					&& context.has_suffix() == false) {
 					context.exponent = -(string[context.pos] - '0');
 				}
@@ -335,55 +335,55 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 			}
 			// Suffixes
 			else if (string[context.pos] == 'L'
-				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::long_suffix) == false) {
-				utilities::set_flag(context.flags, Numeric_Value_Flag::long_suffix);
+				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::LONG_SUFFIX) == false) {
+				utilities::set_flag(context.flags, Numeric_Value_Flag::LONG_SUFFIX);
 			}
 			else if (string[context.pos] == 'f'
-				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::float_suffix) == false) {
-				utilities::set_flag(context.flags, Numeric_Value_Flag::float_suffix);
+				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::FLOAT_SUFFIX) == false) {
+				utilities::set_flag(context.flags, Numeric_Value_Flag::FLOAT_SUFFIX);
 			}
 			else if (string[context.pos] == 'd'
-				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::double_suffix) == false) {
-				utilities::set_flag(context.flags, Numeric_Value_Flag::double_suffix);
+				&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::DOUBLE_SUFFIX) == false) {
+				utilities::set_flag(context.flags, Numeric_Value_Flag::DOUBLE_SUFFIX);
 			}
 			else {
 				return false;
 			}
 		}
-		else if (context.mode == Numeric_Value_Mode::decimal
+		else if (context.mode == Numeric_Value_Mode::DECIMAL
 			&& string[context.pos] >= '0' && string[context.pos] <= '9'
 			&& context.has_suffix() == false) {
 			token.value.real_max += (string[context.pos] - '0') / context.divider;
 			context.divider *= 10;
 
 			if (context.pos == 0) {
-				utilities::set_flag(context.flags, Numeric_Value_Flag::start_with_digit);
+				utilities::set_flag(context.flags, Numeric_Value_Flag::START_WITH_DIGIT);
 			}
 		}
-		else if (context.mode == Numeric_Value_Mode::hexadecimal
+		else if (context.mode == Numeric_Value_Mode::HEXADECIMAL
 			&& string[context.pos] >= '0' && string[context.pos] <= '9'
 			&& context.has_suffix() == false) {
 			token.value.real_max += (string[context.pos] - '0') / context.divider;
 			context.divider *= 16;
 		}
-		else if (context.mode == Numeric_Value_Mode::hexadecimal
+		else if (context.mode == Numeric_Value_Mode::HEXADECIMAL
 			&& string[context.pos] >= 'a' && string[context.pos] <= 'f'
 			&& context.has_suffix() == false) {
 			token.value.real_max += (string[context.pos] - 'a' + 10) / context.divider;
 			context.divider *= 16;
 		}
-		else if (context.mode == Numeric_Value_Mode::hexadecimal
+		else if (context.mode == Numeric_Value_Mode::HEXADECIMAL
 			&& string[context.pos] >= 'A' && string[context.pos] <= 'F'
 			&& context.has_suffix() == false) {
 			token.value.real_max += (string[context.pos] - 'A' + 10) / context.divider;
 			context.divider *= 16;
 		}
-		else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::decimal)
-			|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::hexadecimal))
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::has_exponent) == false	// @Warning We don't support number with many exponent characters (it seems to be an error)
+		else if (((string[context.pos] == 'e' && context.mode == Numeric_Value_Mode::DECIMAL)
+			|| (string[context.pos] == 'p' && context.mode == Numeric_Value_Mode::HEXADECIMAL))
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::HAS_EXPONENT) == false	// @Warning We don't support number with many exponent characters (it seems to be an error)
 			&& context.has_suffix() == false) {
 
-			utilities::set_flag(context.flags, Numeric_Value_Flag::has_exponent);
+			utilities::set_flag(context.flags, Numeric_Value_Flag::HAS_EXPONENT);
 			context.exponent_pos = context.pos;
 		}
 		else if (string[context.pos] == '_'
@@ -391,16 +391,16 @@ bool	to_numeric_value(Numeric_Value_Context& context, std::string_view string, T
 		}
 		// Suffixes
 		else if (string[context.pos] == 'L'
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::long_suffix) == false) {
-			utilities::set_flag(context.flags, Numeric_Value_Flag::long_suffix);
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::LONG_SUFFIX) == false) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::LONG_SUFFIX);
 		}
 		else if (string[context.pos] == 'f'
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::float_suffix) == false) {
-			utilities::set_flag(context.flags, Numeric_Value_Flag::float_suffix);
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::FLOAT_SUFFIX) == false) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::FLOAT_SUFFIX);
 		}
 		else if (string[context.pos] == 'd'
-			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::double_suffix) == false) {
-			utilities::set_flag(context.flags, Numeric_Value_Flag::double_suffix);
+			&& utilities::is_flag_set(context.flags, Numeric_Value_Flag::DOUBLE_SUFFIX) == false) {
+			utilities::set_flag(context.flags, Numeric_Value_Flag::DOUBLE_SUFFIX);
 		}
 		else {
 			return false;
@@ -475,12 +475,12 @@ std::string* parse_string(std::string_view string_view) {
 
 enum class State
 {
-	classic,
-	numeric_literal,
+	CLASSIC,
+	NUMERIC_LITERAL,
 	STRING_LITERAL_RAW,
 	STRING_LITERAL,
-	comment_line,
-	comment_block,
+	COMMENT_LINE,
+	COMMENT_BLOCK,
 };
 
 void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
@@ -495,13 +495,13 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
     int					current_line = 1;
     int					current_column = 1;
     int					text_column = 1;
-	State				state = State::classic;
+	State				state = State::CLASSIC;
 
     Token				token;
 	std::string_view	text;
     Punctuation			punctuation = Punctuation::UNKNOWN;
     int					punctuation_length = 0;
-	bool				start_with_digit = false;
+	bool				START_WITH_DIGIT = false;
 
 	Numeric_Value_Context	numeric_value_context;
 	Numeric_Value_Context	forward_numeric_value_context;	// @Warning Value will not be valid as the first number character will not be processed, only the result of the parsing is interesting
@@ -526,17 +526,17 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		token.line = current_line;
 		token.column = column;
 
-		if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::is_integer)) {
+		if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::IS_INTERGER)) {
 			token.type = Token_Type::NUMERIC_LITERAL_I32;
 
-			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::unsigned_suffix)
-				&& utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::long_suffix)) {
+			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::UNSIGNED_SUFFIX)
+				&& utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::LONG_SUFFIX)) {
 				token.type = Token_Type::NUMERIC_LITERAL_UI64;
 			}
-			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::long_suffix)) {
+			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::LONG_SUFFIX)) {
 				token.type = Token_Type::NUMERIC_LITERAL_I64;
 			}
-			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::unsigned_suffix)) {
+			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::UNSIGNED_SUFFIX)) {
 				token.type = token.value.unsigned_integer > 4'294'967'295 ? Token_Type::NUMERIC_LITERAL_UI64 : Token_Type::NUMERIC_LITERAL_UI32;
 			}
 			else if (token.value.unsigned_integer > 2'147'483'647) {
@@ -546,8 +546,8 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		else {
 			token.type = Token_Type::NUMERIC_LITERAL_F64;
 
-			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::has_exponent)) {
-				if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::is_hexadecimal)) {
+			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::HAS_EXPONENT)) {
+				if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::IS_HEXADECIMAL)) {
 					token.value.real_max = token.value.real_max * powl(2, numeric_value_context.exponent);
 				}
 				else {
@@ -555,14 +555,14 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 				}
 			}
 
-			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::long_suffix)) {
+			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::LONG_SUFFIX)) {
 				token.type = Token_Type::NUMERIC_LITERAL_REAL;
 			}
-			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::double_suffix)) {
+			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::DOUBLE_SUFFIX)) {
 				token.type = Token_Type::NUMERIC_LITERAL_F64;
 				token.value.real_64 = token.value.real_max;	// A conversion is necessary
 			}
-			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::float_suffix)) {
+			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::FLOAT_SUFFIX)) {
 				token.type = Token_Type::NUMERIC_LITERAL_F32;
 				token.value.real_32 = (float)token.value.real_max;	// A conversion is necessary
 			}
@@ -608,16 +608,16 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		Token				forward_token;	// @Warning will not be necessary valid
 
 		if (current_position - start_position == 0) {
-			start_with_digit = is_digit(*current_position);
+			START_WITH_DIGIT = is_digit(*current_position);
 
-			if (start_with_digit) {
+			if (START_WITH_DIGIT) {
 				numeric_value_context = Numeric_Value_Context();
 				forward_numeric_value_context = Numeric_Value_Context();
 				forward_numeric_value_context.pos = 1;
 
 				token.value.unsigned_integer = 0;
 
-				state = State::numeric_literal;
+				state = State::NUMERIC_LITERAL;
 			}
 		}
 
@@ -640,7 +640,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 		switch (state)
 		{
-		case State::classic:
+		case State::CLASSIC:
 			if (punctuation == Punctuation::SINGLE_QUOTE) {
 				state = State::STRING_LITERAL_RAW;
 			}
@@ -648,7 +648,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 				state = State::STRING_LITERAL;
 			}
 			else if (punctuation == Punctuation::LINE_COMMENT) {
-				state = State::comment_line;
+				state = State::COMMENT_LINE;
 
 				token_string = std::string_view(text.data(), text.length() - punctuation_length);
 
@@ -657,7 +657,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 				}
 			}
 			else if (punctuation == Punctuation::OPEN_BLOCK_COMMENT) {
-				state = State::comment_block;
+				state = State::COMMENT_BLOCK;
 
 				token_string = std::string_view(text.data(), text.length() - punctuation_length);
 
@@ -681,12 +681,12 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 					generate_punctuation_token(punctuation_string, punctuation, current_column - punctuation_string.length() + 1);
 				}
 
-				start_with_digit = false;
+				START_WITH_DIGIT = false;
 				start_new_token();
 			}
 			break;
 
-		case State::numeric_literal:
+		case State::NUMERIC_LITERAL:
 		{
 			bool	result = true;
 			bool	forward_result = true;
@@ -699,11 +699,11 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			if (forward_result == false
 				|| (result && eof))
 			{
-				state = State::classic;
+				state = State::CLASSIC;
 
 				generate_numeric_literal_token(numeric_value_context, text, text_column);
 
-				start_with_digit = false;
+				START_WITH_DIGIT = false;
 				start_new_token();
 			}
 		}
@@ -711,7 +711,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 		case State::STRING_LITERAL_RAW:
 			if (punctuation == Punctuation::SINGLE_QUOTE) {
-				state = State::classic;
+				state = State::CLASSIC;
 
 				token_string = std::string_view(text.data() + 1, text.length() - 2);
 
@@ -723,7 +723,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 		case State::STRING_LITERAL:
 			if (punctuation == Punctuation::DOUBLE_QUOTE) {
-				state = State::classic;
+				state = State::CLASSIC;
 
 				token_string = std::string_view(text.data() + 1, text.length() - 2);
 
@@ -733,17 +733,17 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			}
 			break;
 
-		case State::comment_line:
+		case State::COMMENT_LINE:
 			if (current_column == 0 || eof) {	// We go a new line, so the comment ends now
-				state = State::classic;
+				state = State::CLASSIC;
 
 				start_new_token();
 			}
 			break;
 
-		case State::comment_block:
+		case State::COMMENT_BLOCK:
 			if (punctuation == Punctuation::CLOSE_BLOCK_COMMENT) {
-				state = State::classic;
+				state = State::CLASSIC;
 
 				start_new_token();
 			}

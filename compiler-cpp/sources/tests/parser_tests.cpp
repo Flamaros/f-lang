@@ -27,27 +27,27 @@ namespace tests
 			Assert::IsNotNull(ast.root);
 
 			current_node = ast.root;
-			Assert::AreEqual((int)Expression_Type::binary_operation, (int)current_node->type);
+			Assert::AreEqual((int)Expression_Type::BINARY_OPERATION, (int)current_node->type);
 			Assert::IsNotNull(current_node->first_sibling);
 			Assert::IsNotNull(current_node->first_child);
 
 			current_node = current_node->first_child;
-			Assert::AreEqual((int)Expression_Type::number, (int)current_node->type);
+			Assert::AreEqual((int)Expression_Type::NUMBER, (int)current_node->type);
 			Assert::IsNotNull(current_node->first_sibling);
 			Assert::IsNotNull(current_node->first_child);
 
 			current_node = current_node->first_sibling;
-			Assert::AreEqual((int)Expression_Type::binary_operation, (int)current_node->type);
+			Assert::AreEqual((int)Expression_Type::BINARY_OPERATION, (int)current_node->type);
 			Assert::IsNotNull(current_node->first_sibling);
 			Assert::IsNotNull(current_node->first_child);
 
 			current_node = current_node->first_child;
-			Assert::AreEqual((int)Expression_Type::number, (int)current_node->type);
+			Assert::AreEqual((int)Expression_Type::NUMBER, (int)current_node->type);
 			Assert::IsNotNull(current_node->first_sibling);
 			Assert::IsNotNull(current_node->first_child);
 
 			current_node = current_node->first_sibling;
-			Assert::AreEqual((int)Expression_Type::number, (int)current_node->type);
+			Assert::AreEqual((int)Expression_Type::NUMBER, (int)current_node->type);
 			Assert::IsNotNull(current_node->first_sibling);
 			Assert::IsNotNull(current_node->first_child);
 		}
@@ -70,12 +70,12 @@ namespace tests
 			Assert::IsNotNull(ast.root);
 
 			current_node = ast.root;
-			Assert::AreEqual((int)Expression_Type::module, (int)current_node->type);
+			Assert::AreEqual((int)Expression_Type::MODULE, (int)current_node->type);
 			Assert::IsNotNull(current_node->first_sibling);
 			Assert::IsNotNull(current_node->first_child);
 
 			current_node = current_node->first_child;
-			Assert::AreEqual((int)Expression_Type::function_definition, (int)current_node->type);
+			Assert::AreEqual((int)Expression_Type::FUNCTION_DEFINITION, (int)current_node->type);
 			Assert::IsNotNull(current_node->first_sibling);
 			Assert::IsNotNull(current_node->first_child);
 		}

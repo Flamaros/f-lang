@@ -94,11 +94,11 @@ void	write_zeros(HANDLE file, uint32_t count)
 bool generate_hello_world()
 {
     const char*	binary_path = "hello_world.exe";
-    HANDLE		binary;
+    HANDLE		BINARY;
     DWORD		bytes_written;
 
-    binary = CreateFileA(binary_path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (binary == INVALID_HANDLE_VALUE) {
+    BINARY = CreateFileA(binary_path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (BINARY == INVALID_HANDLE_VALUE) {
         std::cout << "Failed to open " << binary_path << std::endl;
         return false;
     }
@@ -133,10 +133,10 @@ bool generate_hello_world()
 
     image_dos_header.e_magic = (WORD)'M' | ((WORD)'Z' << 8);	// 'MZ' @Warning take care of the endianness / 0x5A4D
     image_dos_header.e_lfanew = sizeof(image_dos_header);		// Offset to the image_nt_header
-    // @TODO complete the MS-DOS stub program, we should print an error message ("This program cannot be run in DOS mode") and exit with code: 1
+    // @TODO complete the MS-DOS stub program, we should print an ERROR message ("This program cannot be run in DOS mode") and exit with code: 1
 
-    image_dos_header_address = SetFilePointer(binary, 0, NULL, FILE_CURRENT);
-    WriteFile(binary, (const void*)&image_dos_header, sizeof(image_dos_header), &bytes_written, NULL);
+    image_dos_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
+    WriteFile(BINARY, (const void*)&image_dos_header, sizeof(image_dos_header), &bytes_written, NULL);
 
 
 
@@ -164,7 +164,7 @@ bool generate_hello_world()
     image_nt_header.OptionalHeader.ImageBase = image_base;					// Binary will be loaded at this adress if available else on an other one that will overwrite this value
     image_nt_header.OptionalHeader.SectionAlignment = section_alignment;
     image_nt_header.OptionalHeader.FileAlignment = file_alignment;
-    image_nt_header.OptionalHeader.MajorOperatingSystemVersion = (BYTE)(_WIN32_WINNT_WIN7 >> 8);	// @Warning _WIN32_WINNT_***** macros are encoded as 0xMMmm where MM is the major version number and mm the minor version number
+    image_nt_header.OptionalHeader.MajorOperatingSystemVersion = (BYTE)(_WIN32_WINNT_WIN7 >> 8);	// @Warning _WIN32_WINNT_***** macros are encoded as 0xMMmm where MM is the major version NUMBER and mm the minor version number
     image_nt_header.OptionalHeader.MinorOperatingSystemVersion = (BYTE)_WIN32_WINNT_WIN7;			// @Warning _WIN32_WINNT_***** macros are encoded as 0xMMmm where MM is the major version number and mm the minor version number
     image_nt_header.OptionalHeader.MajorImageVersion = major_image_version;
     image_nt_header.OptionalHeader.MinorImageVersion = minor_image_version;
@@ -186,8 +186,8 @@ bool generate_hello_world()
     // Data Directories
     RtlSecureZeroMemory(image_nt_header.OptionalHeader.DataDirectory, sizeof(image_nt_header.OptionalHeader.DataDirectory));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
-    image_nt_header_address = SetFilePointer(binary, 0, NULL, FILE_CURRENT);
-    WriteFile(binary, (const void*)&image_nt_header, sizeof(image_nt_header), &bytes_written, NULL);
+    image_nt_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
+    WriteFile(BINARY, (const void*)&image_nt_header, sizeof(image_nt_header), &bytes_written, NULL);
 
 
 
@@ -208,8 +208,8 @@ bool generate_hello_world()
         text_image_section_header.NumberOfLinenumbers = 0;
         text_image_section_header.Characteristics = IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ;
 
-        text_image_section_header_address = SetFilePointer(binary, 0, NULL, FILE_CURRENT);
-        WriteFile(binary, (const void*)&text_image_section_header, sizeof(text_image_section_header), &bytes_written, NULL);
+        text_image_section_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
+        WriteFile(BINARY, (const void*)&text_image_section_header, sizeof(text_image_section_header), &bytes_written, NULL);
     }
 
     // .rdata section
@@ -227,8 +227,8 @@ bool generate_hello_world()
         rdata_image_section_header.NumberOfLinenumbers = 0;
         rdata_image_section_header.Characteristics = IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ;
 
-        rdata_image_section_header_address = SetFilePointer(binary, 0, NULL, FILE_CURRENT);
-        WriteFile(binary, (const void*)& rdata_image_section_header, sizeof(rdata_image_section_header), &bytes_written, NULL);
+        rdata_image_section_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
+        WriteFile(BINARY, (const void*)& rdata_image_section_header, sizeof(rdata_image_section_header), &bytes_written, NULL);
     }
 
     // .reloc section
@@ -246,13 +246,13 @@ bool generate_hello_world()
         reloc_image_section_header.NumberOfLinenumbers = 0;
         reloc_image_section_header.Characteristics = IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ;
 
-        reloc_image_section_header_address = SetFilePointer(binary, 0, NULL, FILE_CURRENT);
-        WriteFile(binary, (const void*)&reloc_image_section_header, sizeof(reloc_image_section_header), &bytes_written, NULL);
+        reloc_image_section_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
+        WriteFile(BINARY, (const void*)&reloc_image_section_header, sizeof(reloc_image_section_header), &bytes_written, NULL);
     }
 
-    text_section_address = SetFilePointer(binary, 0, NULL, FILE_CURRENT);
-    WriteFile(binary, (const void*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written, NULL);
-    write_zeros(binary, text_image_section_header.SizeOfRawData - sizeof(hello_world_instructions));
+    text_section_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
+    WriteFile(BINARY, (const void*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written, NULL);
+    write_zeros(BINARY, text_image_section_header.SizeOfRawData - sizeof(hello_world_instructions));
 
     // Patching address and sizes
 //	- Done - DWORD	size_of_code = 0;			// The size of the code (text) section, or the sum of all code sections if there are multiple sections.
@@ -277,8 +277,8 @@ bool generate_hello_world()
         DWORD size_of_code_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfCode);
         size_of_code = text_image_section_header.SizeOfRawData;	 // @Warning size of the sum of all .text sections
 
-        SetFilePointer(binary, size_of_code_address, NULL, FILE_BEGIN);
-        WriteFile(binary, (const void*)&size_of_code, sizeof(size_of_code), &bytes_written, NULL);
+        SetFilePointer(BINARY, size_of_code_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&size_of_code, sizeof(size_of_code), &bytes_written, NULL);
     }
 
     // size_of_initialized_data
@@ -286,8 +286,8 @@ bool generate_hello_world()
         DWORD size_of_initialized_data_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfCode);
         size_of_initialized_data = text_image_section_header.SizeOfRawData;	 // @Warning size of the sum of all .text sections
 
-        SetFilePointer(binary, size_of_initialized_data_address, NULL, FILE_BEGIN);
-        WriteFile(binary, (const void*)&size_of_initialized_data, sizeof(size_of_initialized_data), &bytes_written, NULL);
+        SetFilePointer(BINARY, size_of_initialized_data_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&size_of_initialized_data, sizeof(size_of_initialized_data), &bytes_written, NULL);
     }
 
     // size_of_headers
@@ -295,8 +295,8 @@ bool generate_hello_world()
         DWORD size_of_header_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfHeaders);
         size_of_headers = text_section_address;
 
-        SetFilePointer(binary, size_of_header_address, NULL, FILE_BEGIN);
-        WriteFile(binary, (const void*)&size_of_headers, sizeof(size_of_headers), &bytes_written, NULL);
+        SetFilePointer(BINARY, size_of_header_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&size_of_headers, sizeof(size_of_headers), &bytes_written, NULL);
     }
 
     // text_image_section_virtual_address
@@ -304,8 +304,8 @@ bool generate_hello_world()
         DWORD text_image_section_virtual_address_address = text_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         text_image_section_virtual_address = text_section_address;
 
-        SetFilePointer(binary, text_image_section_virtual_address_address, NULL, FILE_BEGIN);
-        WriteFile(binary, (const void*)&text_image_section_virtual_address, sizeof(text_image_section_virtual_address), &bytes_written, NULL);
+        SetFilePointer(BINARY, text_image_section_virtual_address_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&text_image_section_virtual_address, sizeof(text_image_section_virtual_address), &bytes_written, NULL);
     }
 
     // text_image_section_pointer_to_raw_data
@@ -313,8 +313,8 @@ bool generate_hello_world()
         DWORD text_image_section_pointer_to_raw_data_address = text_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
         text_image_section_pointer_to_raw_data = text_section_address;
 
-        SetFilePointer(binary, text_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
-        WriteFile(binary, (const void*)&text_image_section_pointer_to_raw_data, sizeof(text_image_section_pointer_to_raw_data), &bytes_written, NULL);
+        SetFilePointer(BINARY, text_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&text_image_section_pointer_to_raw_data, sizeof(text_image_section_pointer_to_raw_data), &bytes_written, NULL);
     }
 
     // rdata_image_section_virtual_address
@@ -322,8 +322,8 @@ bool generate_hello_world()
         DWORD rdata_image_section_virtual_address_address = rdata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         rdata_image_section_virtual_address = rdata_section_address;
 
-        SetFilePointer(binary, rdata_image_section_virtual_address_address, NULL, FILE_BEGIN);
-        WriteFile(binary, (const void*)&rdata_image_section_virtual_address, sizeof(rdata_image_section_virtual_address), &bytes_written, NULL);
+        SetFilePointer(BINARY, rdata_image_section_virtual_address_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&rdata_image_section_virtual_address, sizeof(rdata_image_section_virtual_address), &bytes_written, NULL);
     }
 
     // rdata_image_section_pointer_to_raw_data
@@ -331,8 +331,8 @@ bool generate_hello_world()
         DWORD rdata_image_section_pointer_to_raw_data_address = rdata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
         rdata_image_section_pointer_to_raw_data = rdata_section_address;
 
-        SetFilePointer(binary, rdata_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
-        WriteFile(binary, (const void*)&rdata_image_section_pointer_to_raw_data, sizeof(rdata_image_section_pointer_to_raw_data), &bytes_written, NULL);
+        SetFilePointer(BINARY, rdata_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&rdata_image_section_pointer_to_raw_data, sizeof(rdata_image_section_pointer_to_raw_data), &bytes_written, NULL);
     }
 
     // reloc_image_section_virtual_address
@@ -340,8 +340,8 @@ bool generate_hello_world()
         DWORD reloc_image_section_virtual_address_address = reloc_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         reloc_image_section_virtual_address = reloc_section_address;
 
-        SetFilePointer(binary, reloc_image_section_virtual_address_address, NULL, FILE_BEGIN);
-        WriteFile(binary, (const void*)&reloc_image_section_virtual_address, sizeof(reloc_image_section_virtual_address), &bytes_written, NULL);
+        SetFilePointer(BINARY, reloc_image_section_virtual_address_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&reloc_image_section_virtual_address, sizeof(reloc_image_section_virtual_address), &bytes_written, NULL);
     }
 
     // rdata_image_section_pointer_to_raw_data
@@ -349,11 +349,11 @@ bool generate_hello_world()
         DWORD reloc_image_section_pointer_to_raw_data_address = reloc_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
         reloc_image_section_pointer_to_raw_data = reloc_section_address;
 
-        SetFilePointer(binary, reloc_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
-        WriteFile(binary, (const void*)& reloc_image_section_pointer_to_raw_data, sizeof(reloc_image_section_pointer_to_raw_data), &bytes_written, NULL);
+        SetFilePointer(BINARY, reloc_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)& reloc_image_section_pointer_to_raw_data, sizeof(reloc_image_section_pointer_to_raw_data), &bytes_written, NULL);
     }
 
-    CloseHandle(binary);
+    CloseHandle(BINARY);
 
     return true;
 }

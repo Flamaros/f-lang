@@ -9,18 +9,18 @@ namespace f
 {
 	enum class Expression_Type
 	{
-		number,
+		NUMBER,
 		IDENTIFIER,				/// Variable identifier
-		binary_operation,		/// Operation that takes 2 arguments (+ - * / %)
+		BINARY_OPERATION,		/// Operation that takes 2 arguments (+ - * / %)
 
 
 
-		module,					/// A source file is an implicit module
-		import,
-		assignment,
-		function_call,
-		function_definition,
-		condition,
+		MODULE,					/// A source file is an implicit module
+		IMPORT,
+		ASSIGNMENT,
+		FUNCTION_CALL,
+		FUNCTION_DEFINITION,
+		CONDITION,
 	};
 
 	typedef uint32_t AST_Node_Index;

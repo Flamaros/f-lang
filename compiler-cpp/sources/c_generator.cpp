@@ -71,7 +71,7 @@ static bool	compile_c_file(const std::filesystem::path& input_filepath, const st
 	// We create a file in which we redirect the cl.exe StdOutput
 	{
 		std::filesystem::path	outputFilePath = output_directory_path / "cl.log";
-		std::filesystem::path	errorOutputFilePath = output_directory_path / "cl.error";
+		std::filesystem::path	errorOutputFilePath = output_directory_path / "cl.ERROR";
 		char*					args = _strdup(command.c_str());
 		STARTUPINFO				si;
 		PROCESS_INFORMATION		pi;
@@ -99,7 +99,7 @@ static bool	compile_c_file(const std::filesystem::path& input_filepath, const st
 		if (!CreateProcessA(cl_file_path.c_str(), args, NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi))
 		{
 			std::cerr << "Execution of command:\n"
-				<< command << " error: " << GetLastError() << "\n"
+				<< command << " ERROR: " << GetLastError() << "\n"
 				<< " take a look to: " << errorOutputFilePath << std::endl;
 
 			return false;

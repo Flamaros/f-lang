@@ -14,7 +14,7 @@ bool utilities::read_all_file(const fs::path& file_path, std::vector<uint8_t>& d
     std::streampos  file_size;
 
     if (file.is_open() == false) {
-        log(globals.logger, Log_Level::error, "Failed to open file %s.\n", file_path.generic_string().c_str());
+        log(globals.logger, Log_Level::ERROR, "Failed to open file %s.\n", file_path.generic_string().c_str());
         return false;
     }
 
@@ -33,7 +33,7 @@ bool utilities::read_all_file(const fs::path& file_path, std::string& data)
 	std::streampos  file_size;
 
 	if (file.is_open() == false) {
-		log(globals.logger, Log_Level::error, "Failed to open file %s.\n", file_path.generic_string().c_str());
+		log(globals.logger, Log_Level::ERROR, "Failed to open file %s.\n", file_path.generic_string().c_str());
 		return false;
 	}
 
