@@ -23,7 +23,7 @@ class Hash_Table
 public:
     struct Hash_Pair
     {
-        Hash_Type    hash;
+        Hash_Type    HASH;
         Value_Type   value;
     };
 
@@ -44,7 +44,7 @@ public:
         }
     }
 
-    Value_Type& operator[](const Hash_Type& hash) { return m_table[hash]; }
+    Value_Type& operator[](const Hash_Type& HASH) { return m_table[HASH]; }
 
 
 private:

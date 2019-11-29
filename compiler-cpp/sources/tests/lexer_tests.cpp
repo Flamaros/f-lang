@@ -34,7 +34,7 @@ namespace tests
 			tokenize(text, tokens);
 
 			Assert::AreEqual(size_t(1), tokens.size());
-			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[0].type);
+			Assert::AreEqual((int)Token_Type::IDENTIFIER, (int)tokens[0].type);
 			Assert::AreEqual(std::string("abcdef"), std::string(tokens[0].text));
 		}
 
@@ -58,7 +58,7 @@ namespace tests
 			tokenize(text, tokens);
 
 			Assert::AreEqual(size_t(1), tokens.size());
-			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[0].type);
+			Assert::AreEqual((int)Token_Type::IDENTIFIER, (int)tokens[0].type);
 			Assert::AreEqual(std::string("abc"), std::string(tokens[0].text));
 		}
 
@@ -71,7 +71,7 @@ namespace tests
 			tokenize(text, tokens);
 
 			Assert::AreEqual(size_t(1), tokens.size());
-			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[0].type);
+			Assert::AreEqual((int)Token_Type::IDENTIFIER, (int)tokens[0].type);
 			Assert::AreEqual(std::string("abc"), std::string(tokens[0].text));
 		}
 
@@ -111,9 +111,9 @@ namespace tests
 			tokenize(text, tokens);
 
 			Assert::AreEqual(size_t(2), tokens.size());
-			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[0].type);
+			Assert::AreEqual((int)Token_Type::IDENTIFIER, (int)tokens[0].type);
 			Assert::AreEqual(std::string("abc"), std::string(tokens[0].text));
-			Assert::AreEqual((int)Token_Type::identifier, (int)tokens[1].type);
+			Assert::AreEqual((int)Token_Type::IDENTIFIER, (int)tokens[1].type);
 			Assert::AreEqual(std::string("def"), std::string(tokens[1].text));
 		}
 
@@ -138,29 +138,29 @@ namespace tests
 			tokenize(text, tokens);
 
 			Assert::AreEqual(size_t(13), tokens.size());
-			Assert::AreEqual((int)Token_Type::numeric_literal_i32, (int)tokens[0].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_I32, (int)tokens[0].type);
 			Assert::AreEqual(0, (int32_t)tokens[0].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_i32, (int)tokens[1].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_I32, (int)tokens[1].type);
 			Assert::AreEqual(10, (int32_t)tokens[1].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_i32, (int)tokens[3].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_I32, (int)tokens[3].type);
 			Assert::AreEqual(10, (int32_t)tokens[3].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_i32, (int)tokens[4].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_I32, (int)tokens[4].type);
 			Assert::AreEqual(2'147'483'647, (int32_t)tokens[4].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_i64, (int)tokens[5].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_I64, (int)tokens[5].type);
 			Assert::AreEqual(2'147'483'648LL, (int64_t)tokens[5].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_i64, (int)tokens[6].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_I64, (int)tokens[6].type);
 			Assert::AreEqual(256LL, (int64_t)tokens[6].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_ui32, (int)tokens[7].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_UI32, (int)tokens[7].type);
 			Assert::AreEqual(4'294'967'295u, (uint32_t)tokens[7].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_ui64, (int)tokens[8].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_UI64, (int)tokens[8].type);
 			Assert::AreEqual(429'496'7296u, (uint64_t)tokens[8].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_ui64, (int)tokens[9].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_UI64, (int)tokens[9].type);
 			Assert::AreEqual(256uLL, (uint64_t)tokens[9].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_ui64, (int)tokens[10].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_UI64, (int)tokens[10].type);
 			Assert::AreEqual(256uLL, (uint64_t)tokens[10].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_i32, (int)tokens[11].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_I32, (int)tokens[11].type);
 			Assert::AreEqual(0b1001, (int32_t)tokens[11].value.integer);
-			Assert::AreEqual((int)Token_Type::numeric_literal_i64, (int)tokens[12].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_I64, (int)tokens[12].type);
 			Assert::AreEqual(0xFFBBAAddee, (int64_t)tokens[12].value.integer);
 		}
 
@@ -178,15 +178,15 @@ namespace tests
 			tokenize(text, tokens);
 
 			Assert::AreEqual(size_t(5), tokens.size());
-			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[0].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_F64, (int)tokens[0].type);
 			Assert::AreEqual(2.645'751, tokens[0].value.real_64);
-			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[1].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_F64, (int)tokens[1].type);
 			Assert::AreEqual(6.022140857e+23, tokens[1].value.real_64, 0.000000001 * pow(10, 23));
-			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[2].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_F64, (int)tokens[2].type);
 			Assert::AreEqual(6'022.140'857e+20, tokens[2].value.real_64, 0.000000001 * pow(10, 23));
-			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[3].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_F64, (int)tokens[3].type);
 			Assert::AreEqual(6'022.140'857e+20, tokens[3].value.real_64, 0.000000001 * pow(10, 23));
-			Assert::AreEqual((int)Token_Type::numeric_literal_f32, (int)tokens[4].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_F32, (int)tokens[4].type);
 			Assert::AreEqual(1.175494351e-38f, tokens[4].value.real_32, std::numeric_limits<float>::epsilon());
 		}
 
@@ -202,9 +202,9 @@ namespace tests
 			tokenize(text, tokens);
 
 			Assert::AreEqual(size_t(2), tokens.size());
-			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[0].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_F64, (int)tokens[0].type);
 			Assert::AreEqual(0x1.FFFFFFFFFFFFFp1023, tokens[0].value.real_64);
-			Assert::AreEqual((int)Token_Type::numeric_literal_f64, (int)tokens[1].type);
+			Assert::AreEqual((int)Token_Type::NUMERIC_LITERAL_F64, (int)tokens[1].type);
 			Assert::AreEqual(0x1p-52, tokens[1].value.real_64);
 		}
 
@@ -220,11 +220,11 @@ namespace tests
 
 			tokenize(text, tokens);
 			Assert::AreEqual(size_t(3), tokens.size());
-			Assert::AreEqual((int)Token_Type::string_literal_raw, (int)tokens[0].type);
+			Assert::AreEqual((int)Token_Type::STRING_LITERAL_RAW, (int)tokens[0].type);
 			Assert::AreEqual(std::string("Hello World"), std::string(tokens[0].text));
-			Assert::AreEqual((int)Token_Type::string_literal, (int)tokens[1].type);
+			Assert::AreEqual((int)Token_Type::STRING_LITERAL, (int)tokens[1].type);
 			Assert::AreEqual(std::string("Hello World"), std::string(tokens[1].text));
-			Assert::AreEqual((int)Token_Type::string_literal, (int)tokens[2].type);
+			Assert::AreEqual((int)Token_Type::STRING_LITERAL, (int)tokens[2].type);
 			Assert::AreEqual(std::string("Hello World\n\t"), *tokens[2].value.string);
 		}
 

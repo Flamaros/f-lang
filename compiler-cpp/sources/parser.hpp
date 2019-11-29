@@ -10,7 +10,7 @@ namespace f
 	enum class Expression_Type
 	{
 		number,
-		identifier,				/// Variable identifier
+		IDENTIFIER,				/// Variable identifier
 		binary_operation,		/// Operation that takes 2 arguments (+ - * / %)
 
 

@@ -80,12 +80,12 @@ namespace f
 
 			if (state == State::comment_block)
 			{
-				if (token.value.punctuation == Punctuation::close_block_comment)
+				if (token.value.punctuation == Punctuation::CLOSE_BLOCK_COMMENT)
 					states.pop();
 			}
 			else if (state == State::macro_expression)
 			{
-                if (token.value.keyword == Keyword::_import)
+                if (token.value.KEYWORD == Keyword::_import)
 				{
 					states.pop();
                     states.push(State::import_directive);
@@ -93,9 +93,9 @@ namespace f
 			}
             else if (state == State::import_directive)
 			{
-				if (token.value.punctuation == Punctuation::double_quote
-					|| token.value.punctuation == Punctuation::less
-					|| token.value.punctuation == Punctuation::greater)
+				if (token.value.punctuation == Punctuation::DOUBLE_QUOTE
+					|| token.value.punctuation == Punctuation::LESS
+					|| token.value.punctuation == Punctuation::GREATER)
 				{
 /*					if (in_string_literal)
 					{
@@ -114,8 +114,8 @@ namespace f
 						string_litteral = std::string_view();
                     }*/
 				}
-				else if (token.value.keyword == Keyword::_unknown
-					&& token.value.punctuation == Punctuation::unknown)
+				else if (token.value.KEYWORD == Keyword::_unknown
+					&& token.value.punctuation == Punctuation::UNKNOWN)
 				{
 					// Building the string litteral (can be splitted into multiple tokens)
 					if (in_string_literal)
@@ -132,13 +132,13 @@ namespace f
 			else if (state == State::global_scope)
 			{
 				if (start_new_line	// @Warning to be sure that we are on the beginning of the line
-					&& token.value.punctuation == Punctuation::hash) {   // Macro
+					&& token.value.punctuation == Punctuation::HASH) {   // Macro
 					states.push(State::macro_expression);
 				}
-				else if (token.value.punctuation == Punctuation::open_block_comment) {
+				else if (token.value.punctuation == Punctuation::OPEN_BLOCK_COMMENT) {
 					states.push(State::comment_block);
 				}
-				else if (token.value.punctuation == Punctuation::line_comment) {
+				else if (token.value.punctuation == Punctuation::LINE_COMMENT) {
 					states.push(State::comment_line);
 				}
 			}

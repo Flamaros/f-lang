@@ -19,77 +19,77 @@ constexpr static std::uint16_t punctuation_key_2(const char* str)
     return ((std::uint16_t)str[0] << 8) | (std::uint16_t)str[1];
 }
 
-static Hash_Table<std::uint16_t, Punctuation, Punctuation::unknown> punctuation_table_2 = {
-    {punctuation_key_2("//"),	Punctuation::line_comment},
-    {punctuation_key_2("/*"),	Punctuation::open_block_comment},
-    {punctuation_key_2("*/"),	Punctuation::close_block_comment},
-    {punctuation_key_2("->"),	Punctuation::arrow},
-    {punctuation_key_2("&&"),	Punctuation::logical_and},
-    {punctuation_key_2("||"),	Punctuation::logical_or},
-    {punctuation_key_2("::"),	Punctuation::double_colon},
-	{punctuation_key_2(".."),	Punctuation::double_dot},
-	{punctuation_key_2("=="),	Punctuation::equality_test},
-    {punctuation_key_2("!="),	Punctuation::difference_test},
-	{punctuation_key_2("\\\""),	Punctuation::escaped_double_quote},
+static Hash_Table<std::uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
+    {punctuation_key_2("//"),	Punctuation::LINE_COMMENT},
+    {punctuation_key_2("/*"),	Punctuation::OPEN_BLOCK_COMMENT},
+    {punctuation_key_2("*/"),	Punctuation::CLOSE_BLOCK_COMMENT},
+    {punctuation_key_2("->"),	Punctuation::ARROW},
+    {punctuation_key_2("&&"),	Punctuation::LOGICAL_AND},
+    {punctuation_key_2("||"),	Punctuation::LOGICAL_OR},
+    {punctuation_key_2("::"),	Punctuation::DOUBLE_COLON},
+	{punctuation_key_2(".."),	Punctuation::DOUBLE_DOT},
+	{punctuation_key_2("=="),	Punctuation::EQUALITY_TEST},
+    {punctuation_key_2("!="),	Punctuation::DIFFERENCE_TEST},
+	{punctuation_key_2("\\\""),	Punctuation::ESCAPED_DOUBLE_QUOTE},
 };
 
-static Hash_Table<std::uint8_t, Punctuation, Punctuation::unknown> punctuation_table_1 = {
+static Hash_Table<std::uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1 = {
     // White characters (aren't handle for an implicit skip/separation between tokens)
-    {' ', Punctuation::white_character},       // space
-    {'\t', Punctuation::white_character},      // horizontal tab
-    {'\v', Punctuation::white_character},      // vertical tab
-    {'\f', Punctuation::white_character},      // feed
-    {'\r', Punctuation::white_character},      // carriage return
-    {'\n', Punctuation::new_line_character},   // newline
-    {'~', Punctuation::tilde},
-    {'`', Punctuation::backquote},
-    {'!', Punctuation::bang},
-    {'@', Punctuation::at},
-    {'#', Punctuation::hash},
-    {'$', Punctuation::dollar},
-    {'%', Punctuation::percent},
-    {'^', Punctuation::caret},
-    {'&', Punctuation::ampersand},
-    {'*', Punctuation::star},
-    {'(', Punctuation::open_parenthesis},
-    {')', Punctuation::close_parenthesis},
+    {' ', Punctuation::WHITE_CHARACTER},       // space
+    {'\t', Punctuation::WHITE_CHARACTER},      // horizontal tab
+    {'\v', Punctuation::WHITE_CHARACTER},      // vertical tab
+    {'\f', Punctuation::WHITE_CHARACTER},      // feed
+    {'\r', Punctuation::WHITE_CHARACTER},      // carriage return
+    {'\n', Punctuation::NEW_LINE_CHARACTER},   // newline
+    {'~', Punctuation::TILDE},
+    {'`', Punctuation::BACKQUOTE},
+    {'!', Punctuation::BANG},
+    {'@', Punctuation::AT},
+    {'#', Punctuation::HASH},
+    {'$', Punctuation::DOLLAR},
+    {'%', Punctuation::PERCENT},
+    {'^', Punctuation::CARET},
+    {'&', Punctuation::AMPERSAND},
+    {'*', Punctuation::STAR},
+    {'(', Punctuation::OPEN_PARENTHESIS},
+    {')', Punctuation::CLOSE_PARENTHESIS},
 //  {'_', Token::underscore},
-    {'-', Punctuation::dash},
-    {'+', Punctuation::plus},
-    {'=', Punctuation::equals},
-    {'{', Punctuation::open_brace},
-    {'}', Punctuation::close_brace},
-    {'[', Punctuation::open_bracket},
-    {']', Punctuation::close_bracket},
-    {':', Punctuation::colon},
-    {';', Punctuation::semicolon},
-    {'\'', Punctuation::single_quote},
-    {'"', Punctuation::double_quote},
-    {'|', Punctuation::pipe},
-    {'/', Punctuation::slash},
-    {'\\', Punctuation::backslash},
-    {'<', Punctuation::less},
-    {'>', Punctuation::greater},
-    {',', Punctuation::comma},
-    {'.', Punctuation::dot},
-    {'?', Punctuation::question_mark}
+    {'-', Punctuation::DASH},
+    {'+', Punctuation::PLUS},
+    {'=', Punctuation::EQUALS},
+    {'{', Punctuation::OPEN_BRACE},
+    {'}', Punctuation::CLOSE_BRACE},
+    {'[', Punctuation::OPEN_BRACKET},
+    {']', Punctuation::CLOSE_BRACKET},
+    {':', Punctuation::COLON},
+    {';', Punctuation::SEMICOLON},
+    {'\'', Punctuation::SINGLE_QUOTE},
+    {'"', Punctuation::DOUBLE_QUOTE},
+    {'|', Punctuation::PIPE},
+    {'/', Punctuation::SLASH},
+    {'\\', Punctuation::BACKSLASH},
+    {'<', Punctuation::LESS},
+    {'>', Punctuation::GREATER},
+    {',', Punctuation::COMMA},
+    {'.', Punctuation::DOT},
+    {'?', Punctuation::QUESTION_MARK}
 };
 
 static bool is_white_punctuation(Punctuation punctuation)
 {
-    return punctuation >= Punctuation::white_character;
+    return punctuation >= Punctuation::WHITE_CHARACTER;
 }
 
 /// This implemenation doesn't do any lookup in tables
 /// Instead it use hash tables specialized by length of punctuation
 static Punctuation ending_punctuation(const std::string_view& text, int& punctuation_length)
 {
-    Punctuation punctuation = Punctuation::unknown;
+    Punctuation punctuation = Punctuation::UNKNOWN;
 
     punctuation_length = 2;
     if (text.length() >= 2)
         punctuation = punctuation_table_2[punctuation_key_2(text.data() + text.length() - 2)];
-    if (punctuation != Punctuation::unknown)
+    if (punctuation != Punctuation::UNKNOWN)
         return punctuation;
     punctuation_length = 1;
     if (text.length() >= 1)
@@ -478,8 +478,8 @@ enum class State
 {
 	classic,
 	numeric_literal,
-	string_literal_raw,
-	string_literal,
+	STRING_LITERAL_RAW,
+	STRING_LITERAL,
 	comment_line,
 	comment_block,
 };
@@ -500,7 +500,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
     Token				token;
 	std::string_view	text;
-    Punctuation			punctuation = Punctuation::unknown;
+    Punctuation			punctuation = Punctuation::UNKNOWN;
     int					punctuation_length = 0;
 	bool				start_with_digit = false;
 
@@ -513,7 +513,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 	};
 
 	auto    generate_punctuation_token = [&](std::string_view text, Punctuation punctuation, size_t column) {
-		token.type = Token_Type::syntaxe_operator;
+		token.type = Token_Type::SYNTAXE_OPERATOR;
 		token.text = text;
 		token.line = current_line;
 		token.column = column;
@@ -528,24 +528,24 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		token.column = column;
 
 		if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::is_integer)) {
-			token.type = Token_Type::numeric_literal_i32;
+			token.type = Token_Type::NUMERIC_LITERAL_I32;
 
 			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::unsigned_suffix)
 				&& utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::long_suffix)) {
-				token.type = Token_Type::numeric_literal_ui64;
+				token.type = Token_Type::NUMERIC_LITERAL_UI64;
 			}
 			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::long_suffix)) {
-				token.type = Token_Type::numeric_literal_i64;
+				token.type = Token_Type::NUMERIC_LITERAL_I64;
 			}
 			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::unsigned_suffix)) {
-				token.type = token.value.unsigned_integer > 4'294'967'295 ? Token_Type::numeric_literal_ui64 : Token_Type::numeric_literal_ui32;
+				token.type = token.value.unsigned_integer > 4'294'967'295 ? Token_Type::NUMERIC_LITERAL_UI64 : Token_Type::NUMERIC_LITERAL_UI32;
 			}
 			else if (token.value.unsigned_integer > 2'147'483'647) {
-				token.type = Token_Type::numeric_literal_i64;
+				token.type = Token_Type::NUMERIC_LITERAL_I64;
 			}
 		}
 		else {
-			token.type = Token_Type::numeric_literal_f64;
+			token.type = Token_Type::NUMERIC_LITERAL_F64;
 
 			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::has_exponent)) {
 				if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::is_hexadecimal)) {
@@ -557,14 +557,14 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			}
 
 			if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::long_suffix)) {
-				token.type = Token_Type::numeric_literal_real;
+				token.type = Token_Type::NUMERIC_LITERAL_REAL;
 			}
 			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::double_suffix)) {
-				token.type = Token_Type::numeric_literal_f64;
+				token.type = Token_Type::NUMERIC_LITERAL_F64;
 				token.value.real_64 = token.value.real_max;	// A conversion is necessary
 			}
 			else if (utilities::is_flag_set(numeric_value_context.flags, Numeric_Value_Flag::float_suffix)) {
-				token.type = Token_Type::numeric_literal_f32;
+				token.type = Token_Type::NUMERIC_LITERAL_F32;
 				token.value.real_32 = (float)token.value.real_max;	// A conversion is necessary
 			}
 			else {
@@ -576,9 +576,9 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 	};
 
 	auto    generate_keyword_or_identifier_token = [&](std::string_view text, size_t column) {
-		token.value.keyword = is_keyword(text);
+		token.value.KEYWORD = is_keyword(text);
 
-		token.type = token.value.keyword != Keyword::_unknown ? Token_Type::keyword : Token_Type::identifier;
+		token.type = token.value.KEYWORD != Keyword::_unknown ? Token_Type::KEYWORD : Token_Type::IDENTIFIER;
 		token.text = text;
 		token.line = current_line;
         token.column = column;
@@ -587,7 +587,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
     };
 
 	auto    generate_string_literal_token = [&](std::string_view text, size_t column, bool raw) {
-		token.type = raw ? Token_Type::string_literal_raw : Token_Type::string_literal;
+		token.type = raw ? Token_Type::STRING_LITERAL_RAW : Token_Type::STRING_LITERAL;
 		token.text = text;
 		token.line = current_line;
 		token.column = column;
@@ -604,7 +604,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
     while (eof == false)
     {
 		std::string_view	forward_text;
-        Punctuation			forward_punctuation = Punctuation::unknown;
+        Punctuation			forward_punctuation = Punctuation::UNKNOWN;
         int					forward_punctuation_length = 0;
 		Token				forward_token;	// @Warning will not be necessary valid
 
@@ -631,7 +631,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
         text = std::string_view(start_position, (current_position - start_position) + 1);
         punctuation = ending_punctuation(text, punctuation_length);
 
-		if (punctuation == Punctuation::new_line_character) {
+		if (punctuation == Punctuation::NEW_LINE_CHARACTER) {
 			current_column = 0; // 0 because the current_position was not incremented yet, and the cursor is virtually still on previous line
 		}
 
@@ -642,13 +642,13 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		switch (state)
 		{
 		case State::classic:
-			if (punctuation == Punctuation::single_quote) {
-				state = State::string_literal_raw;
+			if (punctuation == Punctuation::SINGLE_QUOTE) {
+				state = State::STRING_LITERAL_RAW;
 			}
-			else if (punctuation == Punctuation::double_quote) {
-				state = State::string_literal;
+			else if (punctuation == Punctuation::DOUBLE_QUOTE) {
+				state = State::STRING_LITERAL;
 			}
-			else if (punctuation == Punctuation::line_comment) {
+			else if (punctuation == Punctuation::LINE_COMMENT) {
 				state = State::comment_line;
 
 				token_string = std::string_view(text.data(), text.length() - punctuation_length);
@@ -657,7 +657,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 					generate_keyword_or_identifier_token(token_string, text_column);
 				}
 			}
-			else if (punctuation == Punctuation::open_block_comment) {
+			else if (punctuation == Punctuation::OPEN_BLOCK_COMMENT) {
 				state = State::comment_block;
 
 				token_string = std::string_view(text.data(), text.length() - punctuation_length);
@@ -666,9 +666,9 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 					generate_keyword_or_identifier_token(token_string, text_column);
 				}
 			}
-			else if ((punctuation != Punctuation::unknown || eof)
-				&& (forward_punctuation == Punctuation::unknown
-					|| forward_punctuation >= Punctuation::tilde
+			else if ((punctuation != Punctuation::UNKNOWN || eof)
+				&& (forward_punctuation == Punctuation::UNKNOWN
+					|| forward_punctuation >= Punctuation::TILDE
 					|| punctuation <= forward_punctuation))			// @Warning Mutiple characters ponctuation have a lower enum value, <= to manage correctly cases like "///" for comment line
 			{
 				token_string = std::string_view(text.data(), text.length() - punctuation_length);
@@ -710,8 +710,8 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		}
 			break;
 
-		case State::string_literal_raw:
-			if (punctuation == Punctuation::single_quote) {
+		case State::STRING_LITERAL_RAW:
+			if (punctuation == Punctuation::SINGLE_QUOTE) {
 				state = State::classic;
 
 				token_string = std::string_view(text.data() + 1, text.length() - 2);
@@ -722,8 +722,8 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			}
 			break;
 
-		case State::string_literal:
-			if (punctuation == Punctuation::double_quote) {
+		case State::STRING_LITERAL:
+			if (punctuation == Punctuation::DOUBLE_QUOTE) {
 				state = State::classic;
 
 				token_string = std::string_view(text.data() + 1, text.length() - 2);
@@ -743,7 +743,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			break;
 
 		case State::comment_block:
-			if (punctuation == Punctuation::close_block_comment) {
+			if (punctuation == Punctuation::CLOSE_BLOCK_COMMENT) {
 				state = State::classic;
 
 				start_new_token();
@@ -754,7 +754,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 		// TODO manage here case of eof with a state different than classic, it means that there is an error
 		// string literal not ended correctly,...
 
-		if (punctuation == Punctuation::new_line_character) {
+		if (punctuation == Punctuation::NEW_LINE_CHARACTER) {
 			current_line++;
 		}
 

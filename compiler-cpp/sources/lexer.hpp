@@ -18,23 +18,23 @@ namespace f
 {
 	enum class Token_Type : uint8_t
 	{
-		identifier,	/// Every word that isn't a part of the language
-		keyword,
-		syntaxe_operator,
-		string_literal_raw,	// @Warning In this case the text is the value of the token instead of a member of the Value union
-		string_literal,
-		numeric_literal_i32,
-		numeric_literal_ui32,
-		numeric_literal_i64,
-		numeric_literal_ui64,
-		numeric_literal_f32,
-		numeric_literal_f64,
-		numeric_literal_real,	// means longue double (80bits computations)
+		IDENTIFIER,	/// Every word that isn't a part of the language
+		KEYWORD,
+		SYNTAXE_OPERATOR,
+		STRING_LITERAL_RAW,	// @Warning In this case the text is the value of the token instead of a member of the Value union
+		STRING_LITERAL,
+		NUMERIC_LITERAL_I32,
+		NUMERIC_LITERAL_UI32,
+		NUMERIC_LITERAL_I64,
+		NUMERIC_LITERAL_UI64,
+		NUMERIC_LITERAL_F32,
+		NUMERIC_LITERAL_F64,
+		NUMERIC_LITERAL_REAL,	// means longue double (80bits computations)
 	};
 
     enum class Punctuation : uint8_t
     {
-        unknown,
+        UNKNOWN,
 		
         // Multiple characters punctuation
         // !!!!! Have to be sort by the number of characters
@@ -42,17 +42,17 @@ namespace f
 
     // TODO the escape of line return can be handle by the parser by checking if there is no more token after the \ on the line
     //    InhibitedLineReturn,    //    \\n or \\r\n          A backslash that preceed a line return (should be completely skipped)
-        line_comment,           //    //
-        open_block_comment,     //    /*
-        close_block_comment,    //    */
-        arrow,                  //    ->
-        logical_and,            //    &&
-        logical_or,             //    ||
-        double_colon,           //    ::                 Used for function or struct declarations
-		double_dot,             //    ..                 Used for ranges
-		equality_test,          //    ==
-        difference_test,        //    !=
-		escaped_double_quote,	//	  \"				To ease the detection of the end of the string litteral by avoiding the necessary to check it in an other way
+        LINE_COMMENT,           //    //
+        OPEN_BLOCK_COMMENT,     //    /*
+        CLOSE_BLOCK_COMMENT,    //    */
+        ARROW,                  //    ->
+        LOGICAL_AND,            //    &&
+        LOGICAL_OR,             //    ||
+        DOUBLE_COLON,           //    ::                 Used for function or struct declarations
+		DOUBLE_DOT,             //    ..                 Used for ranges
+		EQUALITY_TEST,          //    ==
+        DIFFERENCE_TEST,        //    !=
+		ESCAPED_DOUBLE_QUOTE,	//	  \"				To ease the detection of the end of the string litteral by avoiding the necessary to check it in an other way
         // Not sure that must be detected as one token instead of multiples (especially <<, >>, <<= and >>=) because of templates
     //    LeftShift,              //    <<
     //    RightShift,             //    >>
@@ -68,42 +68,42 @@ namespace f
     //    DivisionAssignment,     //    >>=
 
         // Mostly in the order on a QWERTY keyboard (symbols making a pair are grouped)
-        tilde,                  //    ~                  Should stay the first of single character symbols
-        backquote,              //    `
-        bang,                   //    !
-        at,                     //    @
-        hash,                   //    #
-        dollar,                 //    $
-        percent,                //    %
-        caret,                  //    ^
-        ampersand,              //    &					 bitwise and
-        star,                   //    *
-        open_parenthesis,       //    (
-        close_parenthesis,      //    )
-        underscore,             //    _
-        dash,                   //    -
-        plus,                   //    +
-        equals,                 //    =
-        open_brace,             //    {
-        close_brace,            //    }
-        open_bracket,           //    [
-        close_bracket,          //    ]
-        colon,                  //    :                  Used in ternaire expression
-        semicolon,              //    ;
-        single_quote,           //    '
-        double_quote,           //    "
-        pipe,                   //    |					 bitwise or
-        slash,                  //    /
-        backslash,              //    '\'
-        less,                   //    <
-        greater,                //    >
-        comma,                  //    ,
-        dot,                    //    .
-        question_mark,          //    ?
+        TILDE,                  //    ~                  Should stay the first of single character symbols
+        BACKQUOTE,              //    `
+        BANG,                   //    !
+        AT,                     //    @
+        HASH,                   //    #
+        DOLLAR,                 //    $
+        PERCENT,                //    %
+        CARET,                  //    ^
+        AMPERSAND,              //    &					 bitwise and
+        STAR,                   //    *
+        OPEN_PARENTHESIS,       //    (
+        CLOSE_PARENTHESIS,      //    )
+        UNDERSCORE,             //    _
+        DASH,                   //    -
+        PLUS,                   //    +
+        EQUALS,                 //    =
+        OPEN_BRACE,             //    {
+        CLOSE_BRACE,            //    }
+        OPEN_BRACKET,           //    [
+        CLOSE_BRACKET,          //    ]
+        COLON,                  //    :                  Used in ternaire expression
+        SEMICOLON,              //    ;
+        SINGLE_QUOTE,           //    '
+        DOUBLE_QUOTE,           //    "
+        PIPE,                   //    |					 bitwise or
+        SLASH,                  //    /
+        BACKSLASH,              //    '\'
+        LESS,                   //    <
+        GREATER,                //    >
+        COMMA,                  //    ,
+        DOT,                    //    .
+        QUESTION_MARK,          //    ?
 
         // White character at end to be able to handle correctly lines that terminate with a separator like semicolon just before a line return
-        white_character,
-        new_line_character
+        WHITE_CHARACTER,
+        NEW_LINE_CHARACTER
     };
 
     enum class Keyword : uint8_t // @Warning I use an _ as prefix to avoid collisions with cpp keywords
@@ -177,7 +177,7 @@ namespace f
 		union Value
 		{
 			Punctuation		punctuation;
-			Keyword			keyword;
+			Keyword			KEYWORD;
 			int64_t			integer;
 			uint64_t		unsigned_integer;
 			float			real_32;
