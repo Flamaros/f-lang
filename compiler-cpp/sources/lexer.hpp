@@ -14,6 +14,10 @@ Notice:
    if this character is used as unary or binary operator and eventually to modify the token value.
 */
 
+#if defined(TRUE) || defined(FALSE)
+#	error "TRUE or FALSE should not be defined before including this file"
+#endif
+
 namespace f
 {
 	enum class Token_Type : uint8_t
@@ -106,66 +110,65 @@ namespace f
         NEW_LINE_CHARACTER
     };
 
-    enum class Keyword : uint8_t // @Warning I use an _ as prefix to avoid collisions with cpp keywords
+    enum class Keyword : uint8_t
     {
-        _unknown,
+        UNKNOWN,
 
         // Special keywords
-        _import,
-        _enum,
-        _struct,
-        _typedef,
-        K_inline,
-        _static,
-        _fn,
-        _true,
-        _false,
-		_nullptr,
-		_immutable,
+        IMPORT,
+        ENUM,
+        STRUCT,
+        TYPEDEF,
+        INLINE,
+        STATIC,
+        TRUE,
+        FALSE,
+		NULLPTR,
+		IMMUTABLE,
 
         // Reserved for futur usage
-        _public,
-        _protected,
-        _private,
+        PUBLIC,
+        PROTECTED,
+        PRIVATE,
 
         // Control flow
-        _if,
-        _else,
-        _do,
-        _while,
-        _for,
-        _foreach,
-        _switch,
-        _case,
-        _default,
-        _final,
-        _return,
-        _exit,
+        IF,
+        ELSE,
+        DO,
+        WHILE,
+        FOR,
+        FOREACH,
+        SWITCH,
+        CASE,
+        DEFAULT,
+        FINAL,
+        RETURN,
+        EXIT,
 
         // Types
-        _bool,
-        _i8,
-        _ui8,
-        _i16,
-        _ui16,
-        _i32,
-        _ui32,
-        _i64,
-        _ui64,
-        _f32,
-        _f64,
-        _string,
+        BOOL,
+        I8,
+        UI8,
+        I16,
+        UI16,
+        I32,
+        UI32,
+        I64,
+        UI64,
+        F32,
+        F64,
+        STRING,
         // @TODO @Critical add types that have the size of ptr (like size_t and ptrdiff_t,...)
 
 		// Special keywords (interpreted by the lexer)
 		// They will change the resulting token
-		special_file,				// replaced by a string litteral that contains current file name
-		special_full_path_file,		// replaced by a string litteral that contains current file absolut path
-		special_line,				// replaced by a number litteral that contains the current line value
-		special_module,				// replaced by a string litteral that contains current module name (equivalent to file for the moment)
-		special_eof,				// stop the lexer
-		special_compiler_vendor,	// replaced by a string litteral that contains the vendor of running compiler
-		special_compiler_version,	// replaced by a string litteral that contains the version of running compiler
+		SPECIAL_FILE,				// replaced by a string litteral that contains current file name
+		SPECIAL_FULL_PATH_FILE,		// replaced by a string litteral that contains current file absolut path
+		SPECIAL_LINE,				// replaced by a number litteral that contains the current line value
+		SPECIAL_MODULE,				// replaced by a string litteral that contains current module name (equivalent to file for the moment)
+		SPECIAL_EOF,				// stop the lexer
+		SPECIAL_COMPILER_VENDOR,	// replaced by a string litteral that contains the vendor of running compiler
+		SPECIAL_COMPILER_VERSION,	// replaced by a string litteral that contains the version of running compiler
     };
 
 	struct Token

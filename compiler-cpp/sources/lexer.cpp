@@ -99,59 +99,58 @@ static Punctuation ending_punctuation(const std::string_view& text, int& punctua
 
 // @TODO in c++20 put the key as std::string
 static std::unordered_map<std::string_view, Keyword> keywords = {
-    {"import"sv,				Keyword::_import},
-    {"enum"sv,					Keyword::_enum},
-    {"struct"sv,				Keyword::_struct},
-    {"typedef"sv,				Keyword::_typedef},
-    {"inline"sv,				Keyword::K_inline},
-    {"static"sv,				Keyword::_static},
-    {"fn"sv,					Keyword::_fn},
-    {"true"sv,					Keyword::_true},
-    {"false"sv,					Keyword::_false},
-	{"nullptr"sv,				Keyword::_nullptr},
-	{"immutable"sv,				Keyword::_immutable},
+    {"import"sv,				Keyword::IMPORT},
+    {"enum"sv,					Keyword::ENUM},
+    {"struct"sv,				Keyword::STRUCT},
+    {"typedef"sv,				Keyword::TYPEDEF},
+    {"inline"sv,				Keyword::INLINE},
+    {"static"sv,				Keyword::STATIC},
+    {"true"sv,					Keyword::TRUE},
+    {"false"sv,					Keyword::FALSE},
+	{"nullptr"sv,				Keyword::NULLPTR},
+	{"immutable"sv,				Keyword::IMMUTABLE},
 
     // Control flow
-    {"if"sv,					Keyword::_if},
-    {"else"sv,					Keyword::_else},
-    {"do"sv,					Keyword::_do},
-    {"while"sv,					Keyword::_while},
-    {"for"sv,					Keyword::_for},
-    {"foreach"sv,				Keyword::_foreach},
-    {"switch"sv,				Keyword::_switch},
-    {"case"sv,					Keyword::_case},
-    {"default"sv,				Keyword::_default},
-    {"final"sv,					Keyword::_final},
-    {"return"sv,				Keyword::_return},
-    {"exit"sv,					Keyword::_exit},
+    {"if"sv,					Keyword::IF},
+    {"else"sv,					Keyword::ELSE},
+    {"do"sv,					Keyword::DO},
+    {"while"sv,					Keyword::WHILE},
+    {"for"sv,					Keyword::FOR},
+    {"foreach"sv,				Keyword::FOREACH},
+    {"switch"sv,				Keyword::SWITCH},
+    {"case"sv,					Keyword::CASE},
+    {"default"sv,				Keyword::DEFAULT},
+    {"final"sv,					Keyword::FINAL},
+    {"return"sv,				Keyword::RETURN},
+    {"exit"sv,					Keyword::EXIT},
 
     // Reserved for futur usage
-    {"public,"sv,				Keyword::_public},
-    {"protected,"sv,			Keyword::_protected},
-    {"private,"sv,				Keyword::_private},
+    {"public,"sv,				Keyword::PUBLIC},
+    {"protected,"sv,			Keyword::PROTECTED},
+    {"private,"sv,				Keyword::PRIVATE},
 
     // Types
-    {"bool"sv,					Keyword::_bool},
-    {"i8"sv,					Keyword::_i8},
-    {"ui8"sv,					Keyword::_ui8},
-    {"i16"sv,					Keyword::_i16},
-    {"ui16"sv,					Keyword::_ui16},
-    {"i32"sv,					Keyword::_i32},
-    {"ui32"sv,					Keyword::_ui32},
-    {"i64"sv,					Keyword::_i64},
-    {"ui64"sv,					Keyword::_ui64},
-    {"f32"sv,					Keyword::_f32},
-    {"f64"sv,					Keyword::_f64},
-    {"string"sv,				Keyword::_string},
+    {"bool"sv,					Keyword::BOOL},
+    {"i8"sv,					Keyword::I8},
+    {"ui8"sv,					Keyword::UI8},
+    {"i16"sv,					Keyword::I16},
+    {"ui16"sv,					Keyword::UI16},
+    {"i32"sv,					Keyword::I32},
+    {"ui32"sv,					Keyword::UI32},
+    {"i64"sv,					Keyword::I64},
+    {"ui64"sv,					Keyword::UI64},
+    {"f32"sv,					Keyword::F32},
+    {"f64"sv,					Keyword::F64},
+    {"string"sv,				Keyword::STRING},
 
 	// Special keywords (interpreted by the lexer)
-	{"__FILE__"sv,				Keyword::special_file},
-	{"__FILE_FULL_PATH__"sv,	Keyword::special_full_path_file},
-	{"__LINE__"sv,				Keyword::special_line},
-	{"__MODULE__"sv,			Keyword::special_module},
-	{"__EOF__"sv,				Keyword::special_eof},
-	{"__VENDOR__"sv,			Keyword::special_compiler_vendor},
-	{"__VERSION__"sv,			Keyword::special_compiler_version},
+	{"__FILE__"sv,				Keyword::SPECIAL_FILE},
+	{"__FILE_FULL_PATH__"sv,	Keyword::SPECIAL_FULL_PATH_FILE},
+	{"__LINE__"sv,				Keyword::SPECIAL_LINE},
+	{"__MODULE__"sv,			Keyword::SPECIAL_MODULE},
+	{"__EOF__"sv,				Keyword::SPECIAL_EOF},
+	{"__VENDOR__"sv,			Keyword::SPECIAL_COMPILER_VENDOR},
+	{"__VERSION__"sv,			Keyword::SPECIAL_COMPILER_VERSION},
 };
 
 static Keyword is_keyword(const std::string_view& text)
@@ -159,7 +158,7 @@ static Keyword is_keyword(const std::string_view& text)
     const auto& it = keywords.find(text);
     if (it != keywords.end())
         return it->second;
-    return Keyword::_unknown;
+    return Keyword::UNKNOWN;
 }
 
 static bool is_digit(char character)
@@ -578,7 +577,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 	auto    generate_keyword_or_identifier_token = [&](std::string_view text, size_t column) {
 		token.value.KEYWORD = is_keyword(text);
 
-		token.type = token.value.KEYWORD != Keyword::_unknown ? Token_Type::KEYWORD : Token_Type::IDENTIFIER;
+		token.type = token.value.KEYWORD != Keyword::UNKNOWN ? Token_Type::KEYWORD : Token_Type::IDENTIFIER;
 		token.text = text;
 		token.line = current_line;
         token.column = column;
