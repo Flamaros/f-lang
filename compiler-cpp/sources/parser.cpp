@@ -85,7 +85,7 @@ namespace f
 			}
 			else if (state == State::MACRO_EXPRESSION)
 			{
-                if (token.value.KEYWORD == Keyword::IMPORT)
+                if (token.value.keyword == Keyword::IMPORT)
 				{
 					states.pop();
                     states.push(State::IMPORT_DIRECTIVE);
@@ -114,7 +114,7 @@ namespace f
 						string_litteral = std::string_view();
                     }*/
 				}
-				else if (token.value.KEYWORD == Keyword::UNKNOWN
+				else if (token.value.keyword == Keyword::UNKNOWN
 					&& token.value.punctuation == Punctuation::UNKNOWN)
 				{
 					// Building the string litteral (can be splitted into multiple tokens)

@@ -180,7 +180,7 @@ namespace f
 		union Value
 		{
 			Punctuation		punctuation;
-			Keyword			KEYWORD;
+			Keyword			keyword;
 			int64_t			integer;
 			uint64_t		unsigned_integer;
 			float			real_32;

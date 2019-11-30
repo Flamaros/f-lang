@@ -575,9 +575,9 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 	};
 
 	auto    generate_keyword_or_identifier_token = [&](std::string_view text, size_t column) {
-		token.value.KEYWORD = is_keyword(text);
+		token.value.keyword = is_keyword(text);
 
-		token.type = token.value.KEYWORD != Keyword::UNKNOWN ? Token_Type::KEYWORD : Token_Type::IDENTIFIER;
+		token.type = token.value.keyword != Keyword::UNKNOWN ? Token_Type::KEYWORD : Token_Type::IDENTIFIER;
 		token.text = text;
 		token.line = current_line;
         token.column = column;
