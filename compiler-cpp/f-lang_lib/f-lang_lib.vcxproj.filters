@@ -20,6 +20,12 @@
     <Filter Include="Source Files\fstd\system">
       <UniqueIdentifier>{fee017ce-5e88-496a-a478-3ea7b79c5f17}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\fstd\os">
+      <UniqueIdentifier>{e6b11f65-caed-4ed0-98da-87a19a959ffd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\fstd\os\windows">
+      <UniqueIdentifier>{64983b75-2bc3-4a61-85c9-b5faf9623677}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\utilities\string.hpp">
@@ -94,6 +100,12 @@
     <ClInclude Include="..\sources\fstd\system\allocator.hpp">
       <Filter>Source Files\fstd\system</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\os\windows\console.hpp">
+      <Filter>Source Files\fstd\os\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\system\stdio.hpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\utilities\string.cpp">
@@ -127,6 +139,12 @@
       <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\fstd\system\allocator.cpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\os\windows\console.cpp">
+      <Filter>Source Files\fstd\os\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\stdio.cpp">
       <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
   </ItemGroup>

@@ -10,6 +10,8 @@
 
 #include <fstd/system/file.hpp>
 
+#include <fstd/os/windows/console.hpp>
+
 #include <iostream>
 #include <chrono>
 #include <string>
@@ -70,7 +72,16 @@ int main(int ac, char** av)
     f::AST					parsing_result;
 	int						result = 0;
 
-	defer{ std::system("PAUSE"); };
+#if defined(PLATFORM_WINDOWS)
+	fstd::os::windows::enable_default_console_configuration();
+#endif
+
+	defer{ 
+
+#if defined(PLATFORM_WINDOWS)
+	fstd::os::windows::close_console();
+#endif
+	};
 
 #if defined(TEST_PARSING_SPEED)
 	test_parsing_speed();

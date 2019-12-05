@@ -3,35 +3,38 @@
 #include <cstdint>
 
 namespace fstd {
-    struct string
-    {
-        uint8_t*    data;
-        uint32_t    length;
-    };
-
-	inline void	initialize(string& str)
+	namespace memory
 	{
-		str.data = nullptr;
-		str.length = 0;
-	}
+		struct String
+		{
+			uint8_t* data;
+			uint32_t    length;
+		};
 
-	size_t	strlen(const char* buffer)
-	{
-		size_t	len = 0;
-
-		if (buffer == nullptr) {
-			return 0;
+		inline void	initialize(String& str)
+		{
+			str.data = nullptr;
+			str.length = 0;
 		}
 
-		for (; buffer[len] != '\0'; len++)
-			;
+		size_t	strlen(const char* buffer)
+		{
+			size_t	len = 0;
 
-		return len;
-	}
+			if (buffer == nullptr) {
+				return 0;
+			}
 
-	void assign(string& str, const char* buffer)
-	{
-		str.data = (uint8_t*)buffer;
-		str.length = strlen(buffer);
+			for (; buffer[len] != '\0'; len++)
+				;
+
+			return len;
+		}
+
+		void assign(String& str, const char* buffer)
+		{
+			str.data = (uint8_t*)buffer;
+			str.length = strlen(buffer);
+		}
 	}
 }

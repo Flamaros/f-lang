@@ -12,11 +12,6 @@ namespace tests
 		
 		TEST_METHOD(string_litteral)
 		{
-			fstd::string	string;
-
-			assign(string, "test");
-
-			Assert::AreEqual("test", (char*)string.data);
 		}
 	};
 }

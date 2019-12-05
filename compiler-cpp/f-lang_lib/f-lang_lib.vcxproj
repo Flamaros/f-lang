@@ -24,10 +24,12 @@
     <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\string.hpp" />
     <ClInclude Include="..\sources\fstd\memory\string_ref.hpp" />
+    <ClInclude Include="..\sources\fstd\os\windows\console.hpp" />
     <ClInclude Include="..\sources\fstd\platform.hpp" />
     <ClInclude Include="..\sources\fstd\system\allocator.hpp" />
     <ClInclude Include="..\sources\fstd\system\file.hpp" />
     <ClInclude Include="..\sources\fstd\system\path.hpp" />
+    <ClInclude Include="..\sources\fstd\system\stdio.hpp" />
     <ClInclude Include="..\sources\globals.hpp" />
     <ClInclude Include="..\sources\lexer.hpp" />
     <ClInclude Include="..\sources\macros.hpp" />
@@ -46,9 +48,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\c_generator.cpp" />
+    <ClCompile Include="..\sources\fstd\os\windows\console.cpp" />
     <ClCompile Include="..\sources\fstd\system\allocator.cpp" />
     <ClCompile Include="..\sources\fstd\system\file.cpp" />
     <ClCompile Include="..\sources\fstd\system\path.cpp" />
+    <ClCompile Include="..\sources\fstd\system\stdio.cpp" />
     <ClCompile Include="..\sources\globals.cpp" />
     <ClCompile Include="..\sources\lexer.cpp" />
     <ClCompile Include="..\sources\native_generator.cpp" />
