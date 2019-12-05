@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace fight_std {
+namespace fstd {
     struct string_ref
     {
         uint8_t*    ref_ptr;

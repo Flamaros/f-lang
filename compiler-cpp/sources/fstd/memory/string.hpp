@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace fight_std {
+namespace fstd {
     struct string
     {
         uint8_t*    data;

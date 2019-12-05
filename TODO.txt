@@ -4,6 +4,7 @@ Lexer:
  - Add utf8 support for source code (with BOM)
  - Test lexer performances
  - Add hexadecimal floating point support
+ - Analyse if with tokens_length_heuristic at 6 there is some allocations, find a strategy for the allocation if needed
 
 Parser:
  - Handle operator precedence

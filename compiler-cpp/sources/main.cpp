@@ -8,10 +8,15 @@
 #include <utilities/string.hpp>
 #include <utilities/exit_scope.hpp>
 
+#include <fstd/system/file.hpp>
+
 #include <iostream>
 #include <chrono>
+#include <string>
 
 #include <cstdlib>
+
+using namespace std::string_literals; // enables s-suffix for std::string literals
 
 #define TEST_PARSING_SPEED
 
@@ -74,6 +79,14 @@ int main(int ac, char** av)
     if (utilities::read_all_file("./compiler-f/main.f", input_file_content) == false) {
         return 1;
     }
+
+	fstd::system::File	file;
+	fstd::system::Path	path;
+
+	fstd::system::from_native(&path, LR"(.\compiler-f\main.f)"s);
+	fstd::system::from_native(&path, LR"(C:\Users\Xavier\Documents\development\f-lang\compiler-f\main.f)"s);
+
+	fstd::system::open_file(&file, &path, fstd::system::File::Opening_Flag::READ);
 
     f::tokenize(input_file_content, tokens);
     f::parse(tokens, parsing_result);

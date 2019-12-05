@@ -11,11 +11,12 @@
 
 #include <iostream>
 
-static std::string   common_cl_options = "/W4";
+static std::string   common_cl_options = "/W4 /utf-8";
 static std::string   debug_cl_options = "/Od";
 static std::string   release_cl_options = "/O2 /Oi /GL";
 
 // @TODO give the possibility to build in debug/release and x86/x64 architecture
+// @TODO check about utf-8, it is certainly better to add a BOM even if we use the /utf-8 option
 
 // @Warning https://docs.microsoft.com/en-us/cpp/build/reference/entry-entry-point-symbol?view=vs-2019
 // We remove completely the c runtime

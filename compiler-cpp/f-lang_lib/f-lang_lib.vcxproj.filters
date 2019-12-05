@@ -5,29 +5,23 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\fight-std">
-      <UniqueIdentifier>{b22864f1-6fa7-42f8-9d6b-fb4404a6e551}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\utilities">
       <UniqueIdentifier>{48b05944-f114-4e91-b8e5-d3ca38447a6d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\third-party">
       <UniqueIdentifier>{5a709e23-9252-4f65-8bc1-1f7b055662e3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\fstd">
+      <UniqueIdentifier>{0e99d103-0c9f-4bdb-b04d-ca60f812a034}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\fstd\memory">
+      <UniqueIdentifier>{8b888506-8433-49d2-97f9-19de04d5ea3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\fstd\system">
+      <UniqueIdentifier>{fee017ce-5e88-496a-a478-3ea7b79c5f17}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\fight-std\string_ref.hpp">
-      <Filter>Source Files\fight-std</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fight-std\string.hpp">
-      <Filter>Source Files\fight-std</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fight-std\bucket.hpp">
-      <Filter>Source Files\fight-std</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fight-std\bucket_array.hpp">
-      <Filter>Source Files\fight-std</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\utilities\string.hpp">
       <Filter>Source Files\utilities</Filter>
     </ClInclude>
@@ -76,12 +70,33 @@
     <ClInclude Include="..\sources\third-party\magic_enum.hpp">
       <Filter>Source Files\third-party</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\memory\bucket.hpp">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\memory\string.hpp">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\memory\string_ref.hpp">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\system\file.hpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\platform.hpp">
+      <Filter>Source Files\fstd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\system\path.hpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\system\allocator.hpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\utilities\string.cpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\utilities\file.cpp">
       <Filter>Source Files\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\utilities\logger.cpp">
@@ -101,6 +116,18 @@
     </ClCompile>
     <ClCompile Include="..\sources\parser.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\file.cpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\utilities\_file.cpp">
+      <Filter>Source Files\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\path.cpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\allocator.cpp">
+      <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

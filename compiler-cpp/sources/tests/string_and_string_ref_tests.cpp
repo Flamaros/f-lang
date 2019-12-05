@@ -1,4 +1,4 @@
-#include "../fight-std/string.hpp"
+#include "../fstd/memory/string.hpp"
 
 #include <CppUnitTest.h>
 
@@ -12,7 +12,7 @@ namespace tests
 		
 		TEST_METHOD(string_litteral)
 		{
-			fight_std::string	string;
+			fstd::string	string;
 
 			assign(string, "test");
 

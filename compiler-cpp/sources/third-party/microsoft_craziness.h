@@ -257,10 +257,10 @@ wchar_t *concat(const wchar_t *a, const wchar_t *b, const wchar_t *c, const wcha
     auto len_a = wcslen(a);
     auto len_b = wcslen(b);
 
-    auto len_c = 0;
+    size_t len_c = 0;
     if (c) len_c = wcslen(c);
 
-    auto len_d = 0;
+	size_t len_d = 0;
     if (d) len_d = wcslen(d);
 
     wchar_t *result = (wchar_t *)malloc((len_a + len_b + len_c + len_d + 1) * 2);
