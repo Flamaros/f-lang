@@ -69,7 +69,7 @@ namespace fstd
 #endif
 		}
 
-		void	memory_zero(void* destination, size_t size)
+		void	zero_memory(void* destination, size_t size)
 		{
 #if defined(PLATFORM_WINDOWS)
 			SecureZeroMemory(destination, size);

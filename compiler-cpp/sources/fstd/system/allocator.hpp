@@ -17,7 +17,7 @@ namespace fstd
 
 		void	memory_copy(void* destination, void* source, size_t size);
 		void	memory_move(void* destination, void* source, size_t size);
-		void	memory_fill(void* destination, size_t size, uint8_t value);
-		void	memory_zero(void* destination, size_t size);
+		void	fill_memory(void* destination, size_t size, uint8_t value);
+		void	zero_memory(void* destination, size_t size);
 	}
 }

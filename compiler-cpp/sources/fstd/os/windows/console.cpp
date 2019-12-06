@@ -4,6 +4,8 @@
 
 #include <Windows.h>
 
+#include <fstd/system/allocator.hpp>
+
 namespace fstd
 {
 	namespace os
@@ -40,19 +42,39 @@ namespace fstd
 
 			void close_console()
 			{
-				if (g_allocated_console) {	// We should make a PAUSE before the console will be closed (by the process exit)
-					//CreateProcessW(
-					//	LPCWSTR               lpApplicationName,
-					//	LPWSTR                lpCommandLine,
-					//	LPSECURITY_ATTRIBUTES lpProcessAttributes,
-					//	LPSECURITY_ATTRIBUTES lpThreadAttributes,
-					//	BOOL                  bInheritHandles,
-					//	DWORD                 dwCreationFlags,
-					//	LPVOID                lpEnvironment,
-					//	LPCWSTR               lpCurrentDirectory,
-					//	LPSTARTUPINFOW        lpStartupInfo,
-					//	LPPROCESS_INFORMATION lpProcessInformation
-					//);
+				wchar_t				parameters[32];
+				STARTUPINFOW		startup_info;
+				PROCESS_INFORMATION	process_info;
+				
+				system::zero_memory(&startup_info, sizeof(startup_info));
+				startup_info.cb = sizeof(startup_info);
+				system::zero_memory(&process_info, sizeof(process_info));
+
+				// @TODO replace that with our string
+				system::memory_copy(parameters, (void*)L"cmd.exe /c PAUSE", 16 * sizeof(wchar_t));
+				parameters[16] = 0;
+
+				if (g_allocated_console
+					|| IsDebuggerPresent()) {	// We should make a PAUSE before the console will be closed (by the process exit)
+					CreateProcessW(
+						NULL,			// lpApplicationName
+						parameters,		// lpCommandLine
+						NULL,			// lpProcessAttributes
+						NULL,			// lpThreadAttributes
+						FALSE,			// bInheritHandles
+						0,				// dwCreationFlags
+						NULL,			// lpEnvironment
+						NULL,			// lpCurrentDirectory,
+						&startup_info,	// lpStartupInfo,
+						&process_info	// lpProcessInformation
+					);
+
+					// Wait until child process exits.
+					WaitForSingleObject(process_info.hProcess, INFINITE);
+
+					// Close process and thread handles. 
+					CloseHandle(process_info.hProcess);
+					CloseHandle(process_info.hThread);
 				}
 			}
 		}
