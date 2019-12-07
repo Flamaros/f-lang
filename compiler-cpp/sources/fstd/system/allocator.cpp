@@ -24,7 +24,12 @@ namespace fstd
 		void* reallocate(void* address, size_t size)
 		{
 #if defined(PLATFORM_WINDOWS)
-			return HeapReAlloc(GetProcessHeap(), 0, address, size);
+			if (address == nullptr) {
+				return HeapAlloc(GetProcessHeap(), 0, size);
+			}
+			else {
+				return HeapReAlloc(GetProcessHeap(), 0, address, size);
+			}
 #else
 #	error
 #endif
@@ -60,7 +65,7 @@ namespace fstd
 #endif
 		}
 
-		void	memory_fill(void* destination, size_t size, uint8_t value)
+		void	fill_memory(void* destination, size_t size, uint8_t value)
 		{
 #if defined(PLATFORM_WINDOWS)
 			FillMemory(destination, size, value);

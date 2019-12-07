@@ -27,8 +27,8 @@ namespace fstd
 			bool	is_absolute = false;
 		};
 
-		void		from_native(Path* path, const std::wstring& native_path);
-		wchar_t*	to_native(Path* const path);
-		void		reset_path(Path* path);
+		void		from_native(Path& path, const std::wstring& native_path);
+		wchar_t*	to_native(const Path& path);
+		void		reset_path(Path& path);
 	}
 }

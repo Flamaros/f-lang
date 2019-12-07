@@ -10,7 +10,7 @@ namespace fstd
 {
 	namespace system
 	{
-		bool	open_file(File* file, Path* const path, File::Opening_Flag flags)
+		bool open_file(File& file, const Path& path, File::Opening_Flag flags)
 		{
 			close_file(file);
 
@@ -28,7 +28,7 @@ namespace fstd
 				dwDesiredAccess = CREATE_ALWAYS;
 			}
 
-			file->m_handle = CreateFileW(
+			file.handle = CreateFileW(
 				to_native(path),
 				dwDesiredAccess,
 				0,						// dwShareMode,
@@ -37,20 +37,56 @@ namespace fstd
 				FILE_ATTRIBUTE_NORMAL,	// dwFlagsAndAttributes,
 				NULL					// hTemplateFile
 			);
-			return file->m_handle != INVALID_HANDLE_VALUE;
+			return file.handle != INVALID_HANDLE_VALUE;
 #else
 #	error
 #endif
 			return false;
 		}
 
-		void	close_file(File* file)
+		void close_file(File& file)
 		{
 #if defined(PLATFORM_WINDOWS)
-			if (file->m_handle != nullptr) {
-				CloseHandle(file->m_handle);
-				file->m_handle = nullptr;
+			if (file.handle != nullptr) {
+				CloseHandle(file.handle);
+				file.handle = nullptr;
 			}
+#else
+#	error
+#endif
+		}
+
+		uint64_t get_file_size(const File& file)
+		{
+#if defined(PLATFORM_WINDOWS)
+			LARGE_INTEGER	size;
+
+			GetFileSizeEx(file.handle, &size);
+
+			return (uint64_t)(size.QuadPart);
+#else
+#	error
+#endif
+		}
+
+		memory::Array<uint8_t> get_file_content(File& file)
+		{
+#if defined(PLATFORM_WINDOWS)
+			memory::Array<uint8_t>	content;
+			DWORD					read = 0;
+
+			memory::resize_array(content, (size_t)get_file_size(file));
+			if (ReadFile(
+				file.handle,						// hFile
+				memory::get_array_data(content),	// lpBuffer
+				memory::get_array_size(content),	// nNumberOfBytesToRead
+				&read,								// lpNumberOfBytesRead
+				NULL								// lpOverlapped
+			) == TRUE) {
+				return content;
+			}
+			memory::reset_array(content);
+			return content;
 #else
 #	error
 #endif

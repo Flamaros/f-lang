@@ -1,4 +1,4 @@
-import f_language_definitions;
+﻿import f_language_definitions;
 
 typedef DWORD = ui32;
 typedef HANDLE = void*;

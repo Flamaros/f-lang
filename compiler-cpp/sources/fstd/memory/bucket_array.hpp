@@ -1,9 +1,13 @@
 #pragma once
 
-namespace fight_std {
-	template<typename Type>
-	struct Bucket_Array
+namespace fstd
+{
+	namespace memory
 	{
+		template<typename Type>
+		struct Bucket_Array
+		{
 
-	};
+		};
+	}
 }

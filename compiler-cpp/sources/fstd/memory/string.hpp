@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <cstdint>
 
 namespace fstd {
@@ -7,34 +9,14 @@ namespace fstd {
 	{
 		struct String
 		{
-			uint8_t* data;
-			uint32_t    length;
+			uint8_t*	data = nullptr;
+			size_t		length = 0;
 		};
 
-		inline void	initialize(String& str)
-		{
-			str.data = nullptr;
-			str.length = 0;
-		}
-
-		size_t	strlen(const char* buffer)
-		{
-			size_t	len = 0;
-
-			if (buffer == nullptr) {
-				return 0;
-			}
-
-			for (; buffer[len] != '\0'; len++)
-				;
-
-			return len;
-		}
-
-		void assign(String& str, const char* buffer)
-		{
-			str.data = (uint8_t*)buffer;
-			str.length = strlen(buffer);
-		}
+		//void assign(String& str, const std::string& string)
+		//{
+		//	str.data = (uint8_t*)string.c_str();
+		//	str.length = string.length();
+		//}
 	}
 }

@@ -106,6 +106,9 @@
     <ClInclude Include="..\sources\fstd\system\stdio.hpp">
       <Filter>Source Files\fstd\system</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\memory\array.hpp">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\utilities\string.cpp">

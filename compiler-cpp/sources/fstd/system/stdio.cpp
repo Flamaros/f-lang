@@ -6,7 +6,7 @@ namespace fstd
 {
 	namespace system
 	{
-		void print(fstd::memory::String* string)
+		void print(const fstd::memory::String& string)
 		{
 #if defined(PLATFORM_WINDOWS)
 			//std::wstring	string(L"\x043a\x043e\x0448\x043a\x0430 \x65e5\x672c\x56fd\n");

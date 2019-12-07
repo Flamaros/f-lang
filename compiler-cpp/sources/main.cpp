@@ -8,6 +8,8 @@
 #include <utilities/string.hpp>
 #include <utilities/exit_scope.hpp>
 
+#include <fstd/memory/array.hpp>
+
 #include <fstd/system/file.hpp>
 
 #include <fstd/os/windows/console.hpp>
@@ -94,10 +96,11 @@ int main(int ac, char** av)
 	fstd::system::File	file;
 	fstd::system::Path	path;
 
-	fstd::system::from_native(&path, LR"(.\compiler-f\main.f)"s);
-	fstd::system::from_native(&path, LR"(C:\Users\Xavier\Documents\development\f-lang\compiler-f\main.f)"s);
+	fstd::system::from_native(path, LR"(.\compiler-f\main.f)"s);
+	fstd::system::from_native(path, LR"(C:\Users\Xavier\Documents\development\f-lang\compiler-f\main.f)"s);
 
-	fstd::system::open_file(&file, &path, fstd::system::File::Opening_Flag::READ);
+	fstd::system::open_file(file, path, fstd::system::File::Opening_Flag::READ);
+	fstd::memory::Array	source_file_content = fstd::system::get_file_content(file);
 
     f::tokenize(input_file_content, tokens);
     f::parse(tokens, parsing_result);

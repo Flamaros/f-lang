@@ -6,6 +6,6 @@ namespace fstd
 {
 	namespace system
 	{
-		void print(fstd::memory::String* string);
+		void print(const fstd::memory::String& string);
 	}
 }

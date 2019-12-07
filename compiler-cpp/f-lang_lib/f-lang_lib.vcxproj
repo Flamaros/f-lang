@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\c_generator.hpp" />
+    <ClInclude Include="..\sources\fstd\memory\array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\string.hpp" />
@@ -135,6 +136,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)sources</AdditionalIncludeDirectories>
+      <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -151,6 +153,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)sources</AdditionalIncludeDirectories>
+      <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -169,6 +172,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)sources</AdditionalIncludeDirectories>
+      <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -189,6 +193,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)sources</AdditionalIncludeDirectories>
+      <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

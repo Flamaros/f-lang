@@ -1,4 +1,4 @@
-enum Punctuation {
+﻿enum Punctuation {
     unknown,
 
     // Multiple characters punctuation
