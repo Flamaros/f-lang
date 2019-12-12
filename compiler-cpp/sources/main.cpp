@@ -10,6 +10,8 @@
 
 #include <fstd/memory/array.hpp>
 
+#include <fstd/stream/memory_stream.hpp>
+
 #include <fstd/system/file.hpp>
 
 #include <fstd/os/windows/console.hpp>
@@ -100,7 +102,12 @@ int main(int ac, char** av)
 	fstd::system::from_native(path, LR"(C:\Users\Xavier\Documents\development\f-lang\compiler-f\main.f)"s);
 
 	fstd::system::open_file(file, path, fstd::system::File::Opening_Flag::READ);
-	fstd::memory::Array	source_file_content = fstd::system::get_file_content(file);
+	fstd::memory::Array<uint8_t>	source_file_content = fstd::system::get_file_content(file);
+
+	fstd::stream::Memory_Stream	stream;
+
+	fstd::stream::initialize_memory_stream(stream, source_file_content);
+	bool has_utf8_boom = fstd::stream::is_uft8_bom(stream, true);
 
     f::tokenize(input_file_content, tokens);
     f::parse(tokens, parsing_result);

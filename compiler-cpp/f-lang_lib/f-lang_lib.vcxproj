@@ -27,6 +27,7 @@
     <ClInclude Include="..\sources\fstd\memory\string_ref.hpp" />
     <ClInclude Include="..\sources\fstd\os\windows\console.hpp" />
     <ClInclude Include="..\sources\fstd\platform.hpp" />
+    <ClInclude Include="..\sources\fstd\stream\memory_stream.hpp" />
     <ClInclude Include="..\sources\fstd\system\allocator.hpp" />
     <ClInclude Include="..\sources\fstd\system\file.hpp" />
     <ClInclude Include="..\sources\fstd\system\path.hpp" />
@@ -50,6 +51,7 @@
   <ItemGroup>
     <ClCompile Include="..\sources\c_generator.cpp" />
     <ClCompile Include="..\sources\fstd\os\windows\console.cpp" />
+    <ClCompile Include="..\sources\fstd\stream\memory_stream.cpp" />
     <ClCompile Include="..\sources\fstd\system\allocator.cpp" />
     <ClCompile Include="..\sources\fstd\system\file.cpp" />
     <ClCompile Include="..\sources\fstd\system\path.cpp" />

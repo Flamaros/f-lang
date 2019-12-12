@@ -1,4 +1,6 @@
 Lexer:
+ - Optimize the Token structure size (removing aliasing,...)
+ - Optimize the std::unordered_map used for keywords
  - Add string literal support with escape sequences
  - Add lexer/parsing errors log
  - Add utf8 support for source code (with BOM)

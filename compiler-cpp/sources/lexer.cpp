@@ -11,7 +11,7 @@ using namespace std::literals;	// For string literal suffix (conversion to std::
 
 using namespace f;
 
-static const std::size_t    tokens_length_heuristic = 6;
+static const std::size_t    tokens_length_heuristic = 4;
 
 /// Return a key for the punctuation of 2 characters
 constexpr static std::uint16_t punctuation_key_2(const char* str)
