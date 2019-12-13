@@ -3,6 +3,7 @@
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "c_generator.hpp"
+#include "globals.hpp"
 
 #include <utilities/file.hpp>
 #include <utilities/string.hpp>
@@ -32,41 +33,42 @@ void	test_parsing_speed()
 	typedef std::chrono::time_point<Clock>		Time_Point;
 
 	Time_Point	start;
-	Time_Point	start_tokenize;
-	Time_Point	start_parse;
+	Time_Point	start_lexing;
+	Time_Point	start_parsing;
 	Time_Point	end;
-	Time_Point	end_tokenize;
-	Time_Point	end_parse;
+	Time_Point	end_lexing;
+	Time_Point	end_parsing;
 
 	start = Clock::now();
 
-	std::string             input_file_content;
 	std::vector<f::Token>   tokens;
 	f::AST					parsing_result;
 	int						result = 0;
 
-	if (utilities::read_all_file("./tests/big_file.f", input_file_content) == true) {
-		start_tokenize = Clock::now();
-		f::tokenize(input_file_content, tokens);
-		end_tokenize = Clock::now();
+	fstd::system::Path	path;
 
-		start_parse = Clock::now();
-		f::parse(tokens, parsing_result);
-		end_parse = Clock::now();
-	}
+	fstd::system::from_native(path, LR"(.\tests\big_file.f)"s);
+
+	start_lexing = Clock::now();
+	f::lex(path, tokens);
+	end_lexing = Clock::now();
+
+	start_parsing = Clock::now();
+	f::parse(tokens, parsing_result);
+	end_parsing = Clock::now();
 
 	end = Clock::now();
 
 	size_t	nb_lines = tokens.back().line;
 
-	std::chrono::duration<double> tokenize_s = end_tokenize - start_tokenize;
-	std::chrono::duration<double> parse_s = end_parse - start_parse;
+	std::chrono::duration<double> lexing_s = end_lexing - start_lexing;
+	std::chrono::duration<double> parsing_s = end_parsing - start_parsing;
 	std::chrono::duration<double> total_s = end - start;
 
 	std::cout << "./tests/big_file.f" << std::endl;
-	std::cout << "    tokenize: " << tokenize_s.count() << " s - lines/s: " << nb_lines / tokenize_s.count() << std::endl;
-	std::cout << "    parse:    " << parse_s.count() << " s - lines/s: " << nb_lines / parse_s.count() << std::endl;
-	std::cout << "    total:    " << total_s.count() << " s - lines/s: " << nb_lines / total_s.count() << std::endl;
+	std::cout << "    lexing:   " << lexing_s.count()  << " s - lines/s: " << nb_lines / lexing_s.count() << std::endl;
+	std::cout << "    parsing:  " << parsing_s.count() << " s - lines/s: " << nb_lines / parsing_s.count() << std::endl;
+	std::cout << "    total:    " << total_s.count()   << " s - lines/s: " << nb_lines / total_s.count() << std::endl;
 }
 
 int main(int ac, char** av)
@@ -78,14 +80,10 @@ int main(int ac, char** av)
 
 #if defined(PLATFORM_WINDOWS)
 	fstd::os::windows::enable_default_console_configuration();
+	defer { fstd::os::windows::close_console(); };
 #endif
 
-	defer{ 
-
-#if defined(PLATFORM_WINDOWS)
-	fstd::os::windows::close_console();
-#endif
-	};
+	initialize_globals();
 
 #if defined(TEST_PARSING_SPEED)
 	test_parsing_speed();
@@ -95,21 +93,11 @@ int main(int ac, char** av)
         return 1;
     }
 
-	fstd::system::File	file;
 	fstd::system::Path	path;
 
 	fstd::system::from_native(path, LR"(.\compiler-f\main.f)"s);
-	fstd::system::from_native(path, LR"(C:\Users\Xavier\Documents\development\f-lang\compiler-f\main.f)"s);
 
-	fstd::system::open_file(file, path, fstd::system::File::Opening_Flag::READ);
-	fstd::memory::Array<uint8_t>	source_file_content = fstd::system::get_file_content(file);
-
-	fstd::stream::Memory_Stream	stream;
-
-	fstd::stream::initialize_memory_stream(stream, source_file_content);
-	bool has_utf8_boom = fstd::stream::is_uft8_bom(stream, true);
-
-    f::tokenize(input_file_content, tokens);
+    f::lex(path, tokens);
     f::parse(tokens, parsing_result);
 
 	std::filesystem::path output_directory_path = "./build";

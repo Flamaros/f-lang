@@ -20,6 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\c_generator.hpp" />
+    <ClInclude Include="..\sources\fstd\core\logger.hpp" />
+    <ClInclude Include="..\sources\fstd\language\defer.hpp" />
+    <ClInclude Include="..\sources\fstd\language\flags.hpp" />
     <ClInclude Include="..\sources\fstd\memory\array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp" />
@@ -40,16 +43,13 @@
     <ClInclude Include="..\sources\platform.hpp" />
     <ClInclude Include="..\sources\third-party\magic_enum.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
-    <ClInclude Include="..\sources\utilities\exit_scope.hpp" />
-    <ClInclude Include="..\sources\utilities\file.hpp" />
-    <ClInclude Include="..\sources\utilities\flags.hpp" />
-    <ClInclude Include="..\sources\utilities\logger.hpp" />
     <ClInclude Include="..\sources\utilities\string.hpp" />
     <ClInclude Include="..\sources\utilities\timer.hpp" />
     <ClInclude Include="..\sources\utilities\vector.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\c_generator.cpp" />
+    <ClCompile Include="..\sources\fstd\core\logger.cpp" />
     <ClCompile Include="..\sources\fstd\os\windows\console.cpp" />
     <ClCompile Include="..\sources\fstd\stream\memory_stream.cpp" />
     <ClCompile Include="..\sources\fstd\system\allocator.cpp" />
@@ -60,9 +60,7 @@
     <ClCompile Include="..\sources\lexer.cpp" />
     <ClCompile Include="..\sources\native_generator.cpp" />
     <ClCompile Include="..\sources\parser.cpp" />
-    <ClCompile Include="..\sources\utilities\logger.cpp" />
     <ClCompile Include="..\sources\utilities\string.cpp" />
-    <ClCompile Include="..\sources\utilities\_file.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

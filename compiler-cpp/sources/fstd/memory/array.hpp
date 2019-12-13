@@ -81,6 +81,12 @@ namespace fstd
 		}
 
 		template<typename Type>
+		size_t is_array_empty(Array<Type>& array)
+		{
+			return array.size == 0;
+		}
+
+		template<typename Type>
 		size_t get_array_reserved(Array<Type>& array)
 		{
 			return array.reserved;

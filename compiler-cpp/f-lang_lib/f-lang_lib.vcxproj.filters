@@ -29,6 +29,12 @@
     <Filter Include="Source Files\fstd\stream">
       <UniqueIdentifier>{f9f7bf4f-a246-49fc-a9b3-f77d577fa635}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\fstd\core">
+      <UniqueIdentifier>{15969bb9-5b5a-49e9-aaee-e3e23a5cb027}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\fstd\language">
+      <UniqueIdentifier>{324ac387-8e63-407e-9c81-7960b10990a9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\utilities\string.hpp">
@@ -38,18 +44,6 @@
       <Filter>Source Files\utilities</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\utilities\vector.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\exit_scope.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\file.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\flags.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\logger.hpp">
       <Filter>Source Files\utilities</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
@@ -115,12 +109,18 @@
     <ClInclude Include="..\sources\fstd\stream\memory_stream.hpp">
       <Filter>Source Files\fstd\stream</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\core\logger.hpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\defer.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\flags.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\utilities\string.cpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\utilities\logger.cpp">
       <Filter>Source Files\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\c_generator.cpp">
@@ -141,9 +141,6 @@
     <ClCompile Include="..\sources\fstd\system\file.cpp">
       <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\utilities\_file.cpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\fstd\system\path.cpp">
       <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
@@ -158,6 +155,9 @@
     </ClCompile>
     <ClCompile Include="..\sources\fstd\stream\memory_stream.cpp">
       <Filter>Source Files\fstd\stream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\core\logger.cpp">
+      <Filter>Source Files\fstd\core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

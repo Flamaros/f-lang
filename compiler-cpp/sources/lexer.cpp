@@ -2,6 +2,10 @@
 
 #include "hash_table.hpp"
 
+#include <fstd/system/file.hpp>
+
+#include <fstd/stream/memory_stream.hpp>
+
 #include <utilities/exit_scope.hpp>
 #include <utilities/flags.hpp>
 
@@ -11,7 +15,7 @@ using namespace std::literals;	// For string literal suffix (conversion to std::
 
 using namespace f;
 
-static const std::size_t    tokens_length_heuristic = 4;
+static const std::size_t    tokens_length_heuristic = 5;
 
 /// Return a key for the punctuation of 2 characters
 constexpr static std::uint16_t punctuation_key_2(const char* str)
@@ -475,7 +479,7 @@ std::string* parse_string(std::string_view string_view) {
 
 enum class State
 {
-	CLASSIC,
+	DEFAULT,
 	NUMERIC_LITERAL,
 	STRING_LITERAL_RAW,
 	STRING_LITERAL,
@@ -483,19 +487,40 @@ enum class State
 	COMMENT_BLOCK,
 };
 
-void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
+bool f::lex(const fstd::system::Path& path, std::vector<Token>& tokens)
 {
-    tokens.reserve(buffer.length() / tokens_length_heuristic);
+	fstd::system::File	file;
+
+	fstd::system::open_file(file, path, fstd::system::File::Opening_Flag::READ);
+	fstd::memory::Array<uint8_t>	source_file_content = fstd::system::get_file_content(file);
+
+	// @TODO We may want to read the file sequentially instead from only one call
+	// to @SpeedUp the lexing, the OS will fill his cach for next read while we are
+	// lexing chuncks we already have
+	// This can improve total time by almost all time necessary to read the file (startup latency win)
+
+	fstd::stream::Memory_Stream	stream;
+
+	fstd::stream::initialize_memory_stream(stream, source_file_content);
+	bool has_utf8_boom = fstd::stream::is_uft8_bom(stream, true);
+
+	if (has_utf8_boom == false) {
+		// @TODO print a user warning about that the utf8 BOM is missing
+	}
+
+	size_t	nb_tokens_prediction = fstd::memory::get_array_size(source_file_content) / tokens_length_heuristic;
+
+    tokens.reserve(nb_tokens_prediction);
 
 	std::string_view	token_string;
 	std::string_view	punctuation_string;
-	const char*			string_views_buffer = buffer.data();	// @Warning all string views are about this string_view_buffer
-    const char*			start_position = buffer.data();
+	const char*			string_views_buffer = (const char*)fstd::stream::get_pointer(stream);	// @Warning all string views are about this string_view_buffer
+    const char*			start_position = (const char*)fstd::stream::get_pointer(stream);
 	const char*			current_position = start_position;
     int					current_line = 1;
     int					current_column = 1;
     int					text_column = 1;
-	State				state = State::CLASSIC;
+	State				state = State::DEFAULT;
 
     Token				token;
 	std::string_view	text;
@@ -599,7 +624,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 	};
 
 	// Extracting token one by one (based on the punctuation)
-    bool    eof = buffer.empty();
+	bool    eof = fstd::memory::is_array_empty(source_file_content);
     while (eof == false)
     {
 		std::string_view	forward_text;
@@ -621,7 +646,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			}
 		}
 
-        if (current_position - string_views_buffer + 2 <= (int)buffer.length())
+        if (current_position - string_views_buffer + 2 <= (int)fstd::memory::is_array_empty(source_file_content))
         {
             forward_text = std::string_view(start_position, (current_position - start_position) + 2);
             forward_punctuation = ending_punctuation(forward_text, forward_punctuation_length);
@@ -634,13 +659,13 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			current_column = 0; // 0 because the current_position was not incremented yet, and the cursor is virtually still on previous line
 		}
 
-		if (current_position - string_views_buffer + 1 >= (int)buffer.length()) {
+		if (current_position - string_views_buffer + 1 >= (int)fstd::memory::is_array_empty(source_file_content)) {
 			eof = true;
 		}
 
 		switch (state)
 		{
-		case State::CLASSIC:
+		case State::DEFAULT:
 			if (punctuation == Punctuation::SINGLE_QUOTE) {
 				state = State::STRING_LITERAL_RAW;
 			}
@@ -699,7 +724,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 			if (forward_result == false
 				|| (result && eof))
 			{
-				state = State::CLASSIC;
+				state = State::DEFAULT;
 
 				generate_numeric_literal_token(numeric_value_context, text, text_column);
 
@@ -711,7 +736,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 		case State::STRING_LITERAL_RAW:
 			if (punctuation == Punctuation::SINGLE_QUOTE) {
-				state = State::CLASSIC;
+				state = State::DEFAULT;
 
 				token_string = std::string_view(text.data() + 1, text.length() - 2);
 
@@ -723,7 +748,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 		case State::STRING_LITERAL:
 			if (punctuation == Punctuation::DOUBLE_QUOTE) {
-				state = State::CLASSIC;
+				state = State::DEFAULT;
 
 				token_string = std::string_view(text.data() + 1, text.length() - 2);
 
@@ -735,7 +760,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 		case State::COMMENT_LINE:
 			if (current_column == 0 || eof) {	// We go a new line, so the comment ends now
-				state = State::CLASSIC;
+				state = State::DEFAULT;
 
 				start_new_token();
 			}
@@ -743,7 +768,7 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
 
 		case State::COMMENT_BLOCK:
 			if (punctuation == Punctuation::CLOSE_BLOCK_COMMENT) {
-				state = State::CLASSIC;
+				state = State::DEFAULT;
 
 				start_new_token();
 			}
@@ -760,4 +785,10 @@ void f::tokenize(const std::string& buffer, std::vector<Token>& tokens)
         current_column++;
         current_position++;
     }
+
+	if (nb_tokens_prediction < tokens.size()) {
+		// @TODO print a developer warning about performance issue, with 2 values and the number of tokens/per bytes
+	}
+
+	return true;
 }

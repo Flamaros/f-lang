@@ -2,26 +2,19 @@
 
 #include <string>
 
-struct Logger;
-struct VK_Renderer;
-struct Window;
-
-using real = float;
-
-enum Application_State : uint8_t {
-    running = 0x01,
-};
+namespace fstd
+{
+	namespace core
+	{
+		struct Logger;
+	}
+}
 
 struct Globals
 {
-    Logger*             logger = nullptr;
-    VK_Renderer*        renderer = nullptr;
-    Window*             window = nullptr;
-    std::string         data_path;
-    Application_State   application_state = Application_State::running;
+	fstd::core::Logger*	logger = nullptr;
 };
 
-extern thread_local Globals    globals;
+void initialize_globals();
 
-// @TODO Voir s'il ne faut pas mettre les membres de la structure en thread_local au cas par cas
-// le logger doit à priori être thread_safe
+extern thread_local Globals    globals;

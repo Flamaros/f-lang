@@ -19,35 +19,41 @@ namespace fstd
 			size_t							position = 0;
 		};
 
-		void initialize_memory_stream(Memory_Stream& stream, fstd::memory::Array<uint8_t>& buffer) {
+		inline void initialize_memory_stream(Memory_Stream& stream, fstd::memory::Array<uint8_t>& buffer) {
 			stream.buffer_ptr = &buffer;
 		}
 
-		bool is_eof(Memory_Stream& stream) {
+		inline bool is_eof(Memory_Stream& stream) {
 			assert(stream.buffer_ptr);
 
 			return stream.position >= stream.buffer_ptr->size;
 		}
 
 		// General
-		void skip(Memory_Stream& stream, size_t size) {
+		inline void skip(Memory_Stream& stream, size_t size) {
 			assert(stream.buffer_ptr);
 
 			stream.position = stream.position + size;
 		}
 
-		void peek(Memory_Stream& stream) {
+		inline void peek(Memory_Stream& stream) {
 			skip(stream, 1);
 		}
 
-		uint8_t	get(Memory_Stream& stream) {
+		inline uint8_t	get(Memory_Stream& stream) {
 			assert(stream.buffer_ptr);
 
 			return *memory::array_get(*stream.buffer_ptr, stream.position);
 		}
 
+		inline const uint8_t*	get_pointer(Memory_Stream& stream) {	// @Warning return pointer at current position
+			assert(stream.buffer_ptr);
+
+			return memory::array_get(*stream.buffer_ptr, stream.position);
+		}
+
 		// UTF-8
-		bool is_uft8_bom(Memory_Stream& stream, bool skip_it) {
+		inline bool is_uft8_bom(Memory_Stream& stream, bool skip_it) {
 			assert(stream.buffer_ptr);
 			assert(is_eof(stream) == false);
 
