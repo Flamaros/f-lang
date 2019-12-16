@@ -2,7 +2,7 @@
 
 #include <fstd/platform.hpp>
 
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 #	include <Windows.h>
 #endif
 
@@ -14,7 +14,7 @@ namespace fstd
 	{
 		void* allocate(size_t size)
 		{
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			return HeapAlloc(GetProcessHeap(), 0, size);
 #else
 #	error
@@ -23,7 +23,7 @@ namespace fstd
 
 		void* reallocate(void* address, size_t size)
 		{
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			if (address == nullptr) {
 				return HeapAlloc(GetProcessHeap(), 0, size);
 			}
@@ -40,7 +40,7 @@ namespace fstd
 			if (address == nullptr) {
 				return;
 			}
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			HeapFree(GetProcessHeap(), 0, address);
 #else
 #	error
@@ -49,7 +49,7 @@ namespace fstd
 
 		void	memory_copy(void* destination, void* source, size_t size)
 		{
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			CopyMemory(destination, source, size);
 #else
 #	error
@@ -58,7 +58,7 @@ namespace fstd
 
 		void	memory_move(void* destination, void* source, size_t size)
 		{
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			MoveMemory(destination, source, size);
 #else
 #	error
@@ -67,7 +67,7 @@ namespace fstd
 
 		void	fill_memory(void* destination, size_t size, uint8_t value)
 		{
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			FillMemory(destination, size, value);
 #else
 #	error
@@ -76,7 +76,7 @@ namespace fstd
 
 		void	zero_memory(void* destination, size_t size)
 		{
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			SecureZeroMemory(destination, size);
 #else
 #	error

@@ -2,7 +2,7 @@
 
 #include <fstd/platform.hpp>
 
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 
 namespace fstd
 {

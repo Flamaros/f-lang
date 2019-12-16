@@ -1,6 +1,6 @@
 #include "console.hpp"
 
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 
 #include <Windows.h>
 

@@ -32,7 +32,7 @@ int main(int ac, char** av)
     f::AST					parsing_result;
 	int						result = 0;
 
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 	fstd::os::windows::enable_default_console_configuration();
 	defer { fstd::os::windows::close_console(); };
 #endif

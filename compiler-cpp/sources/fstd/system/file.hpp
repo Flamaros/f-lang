@@ -5,7 +5,7 @@
 #include <fstd/platform.hpp>
 #include <fstd/memory/array.hpp>
 
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 typedef void*	HANDLE;
 typedef HANDLE	File_Handle;
 #endif

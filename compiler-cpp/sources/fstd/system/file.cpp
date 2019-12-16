@@ -2,7 +2,7 @@
 
 #include <fstd/language/flags.hpp>
 
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 #	include <Windows.h>
 #endif
 
@@ -14,17 +14,17 @@ namespace fstd
 		{
 			close_file(file);
 
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			DWORD	dwDesiredAccess = 0;
 			DWORD	dwCreationDisposition = OPEN_EXISTING;
 
-			if (utilities::is_flag_set(flags, File::Opening_Flag::READ)) {
+			if (is_flag_set(flags, File::Opening_Flag::READ)) {
 				dwDesiredAccess |= GENERIC_READ;
 			}
-			if (utilities::is_flag_set(flags, File::Opening_Flag::WRITE)) {
+			if (is_flag_set(flags, File::Opening_Flag::WRITE)) {
 				dwDesiredAccess |= GENERIC_WRITE;
 			}
-			if (utilities::is_flag_set(flags, File::Opening_Flag::CREATE)) {
+			if (is_flag_set(flags, File::Opening_Flag::CREATE)) {
 				dwDesiredAccess = CREATE_ALWAYS;
 			}
 
@@ -46,7 +46,7 @@ namespace fstd
 
 		void close_file(File& file)
 		{
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			if (file.handle != nullptr) {
 				CloseHandle(file.handle);
 				file.handle = nullptr;
@@ -58,7 +58,7 @@ namespace fstd
 
 		uint64_t get_file_size(const File& file)
 		{
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			LARGE_INTEGER	size;
 
 			GetFileSizeEx(file.handle, &size);
@@ -71,7 +71,7 @@ namespace fstd
 
 		memory::Array<uint8_t> get_file_content(File& file)
 		{
-#if defined(PLATFORM_WINDOWS)
+#if defined(OS_WINDOWS)
 			memory::Array<uint8_t>	content;
 			DWORD					read = 0;
 

@@ -40,9 +40,6 @@
     <ClInclude Include="..\sources\utilities\string.hpp">
       <Filter>Source Files\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\utilities\vector.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
       <Filter>Source Files\third-party</Filter>
     </ClInclude>

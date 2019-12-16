@@ -45,7 +45,6 @@
     <ClInclude Include="..\sources\third-party\magic_enum.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
     <ClInclude Include="..\sources\utilities\string.hpp" />
-    <ClInclude Include="..\sources\utilities\vector.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\c_generator.cpp" />
