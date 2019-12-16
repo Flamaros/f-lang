@@ -5,9 +5,10 @@
 #define MICROSOFT_CRAZINESS_IMPLEMENTATION
 #include "third-party/microsoft_craziness.h"
 
-#include <utilities/file.hpp>
+#include <fstd/system/file.hpp>
+#include <fstd/language/defer.hpp>
+
 #include <utilities/string.hpp>
-#include <utilities/exit_scope.hpp>
 
 #include <iostream>
 

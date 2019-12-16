@@ -1,6 +1,6 @@
 #include "file.hpp"
 
-#include <utilities/flags.hpp>
+#include <fstd/language/flags.hpp>
 
 #if defined(PLATFORM_WINDOWS)
 #	include <Windows.h>

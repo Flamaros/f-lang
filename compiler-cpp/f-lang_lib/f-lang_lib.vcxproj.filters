@@ -40,9 +40,6 @@
     <ClInclude Include="..\sources\utilities\string.hpp">
       <Filter>Source Files\utilities</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\utilities\timer.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\utilities\vector.hpp">
       <Filter>Source Files\utilities</Filter>
     </ClInclude>
@@ -117,6 +114,9 @@
     </ClInclude>
     <ClInclude Include="..\sources\fstd\language\flags.hpp">
       <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\system\timer.hpp">
+      <Filter>Source Files\fstd\system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

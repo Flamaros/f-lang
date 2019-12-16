@@ -1,19 +1,24 @@
 #include "lexer.hpp"
 
 #include "hash_table.hpp"
+#include "globals.hpp"
+
+#include <fstd/core/logger.hpp>
 
 #include <fstd/system/file.hpp>
 
 #include <fstd/stream/memory_stream.hpp>
 
-#include <utilities/exit_scope.hpp>
-#include <utilities/flags.hpp>
+#include <fstd/language/defer.hpp>
+#include <fstd/language/flags.hpp>
 
 #include <unordered_map>
 
 using namespace std::literals;	// For string literal suffix (conversion to std::string_view)
 
 using namespace f;
+
+using namespace fstd::core;
 
 static const std::size_t    tokens_length_heuristic = 5;
 
@@ -492,6 +497,7 @@ bool f::lex(const fstd::system::Path& path, std::vector<Token>& tokens)
 	fstd::system::File	file;
 
 	fstd::system::open_file(file, path, fstd::system::File::Opening_Flag::READ);
+
 	fstd::memory::Array<uint8_t>	source_file_content = fstd::system::get_file_content(file);
 
 	// @TODO We may want to read the file sequentially instead from only one call
@@ -787,6 +793,7 @@ bool f::lex(const fstd::system::Path& path, std::vector<Token>& tokens)
     }
 
 	if (nb_tokens_prediction < tokens.size()) {
+		log(globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f", nb_tokens_prediction, tokens.size(), (float)tokens.size() / (float)get_array_size(source_file_content));
 		// @TODO print a developer warning about performance issue, with 2 values and the number of tokens/per bytes
 	}
 

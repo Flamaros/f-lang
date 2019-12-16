@@ -1,6 +1,6 @@
 #include "string.hpp"
 
-#include "logger.hpp"
+#include <fstd/core/logger.hpp>
 
 #include "../platform.hpp"
 

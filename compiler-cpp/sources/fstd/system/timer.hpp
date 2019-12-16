@@ -1,5 +1,6 @@
 #include <time.h>
 #include <assert.h>
+#include <cstdint>
 
 #if defined(_WIN32)
 #   include <windows.h>
@@ -9,7 +10,7 @@
 #   include <sys/time.h>
 #endif
 
-uint64_t get_time_in_nanoseconds(void) {
+inline uint64_t get_time_in_nanoseconds(void) {
 #if defined(_WIN32)
     LARGE_INTEGER freq;
     LARGE_INTEGER count;
