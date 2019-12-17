@@ -5,9 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\utilities">
-      <UniqueIdentifier>{48b05944-f114-4e91-b8e5-d3ca38447a6d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\third-party">
       <UniqueIdentifier>{5a709e23-9252-4f65-8bc1-1f7b055662e3}</UniqueIdentifier>
     </Filter>
@@ -37,14 +34,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\utilities\string.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
       <Filter>Source Files\third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\c_generator.hpp">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\globals.hpp">
       <Filter>Source Files</Filter>
@@ -117,12 +108,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\utilities\string.cpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\c_generator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

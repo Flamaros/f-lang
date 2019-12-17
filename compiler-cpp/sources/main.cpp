@@ -2,11 +2,9 @@
 
 #include "lexer.hpp"
 #include "parser.hpp"
-#include "c_generator.hpp"
 #include "globals.hpp"
 
 #include <fstd/system/file.hpp>
-#include <utilities/string.hpp>
 #include <fstd/language/defer.hpp>
 
 #include <fstd/memory/array.hpp>
@@ -46,13 +44,13 @@ int main(int ac, char** av)
     f::lex(path, tokens);
     f::parse(tokens, parsing_result);
 
-	std::filesystem::path output_directory_path = "./build";
-	std::filesystem::path output_file_name = "f-compiler.exe";
+	//std::filesystem::path output_directory_path = "./build";
+	//std::filesystem::path output_file_name = "f-compiler.exe";
 
-    std::filesystem::create_directory(output_directory_path);   // @Warning hacky thing, the canonical may failed if the directory doesn't exist
-	if (output_directory_path.is_relative()) {
-		output_directory_path = std::filesystem::canonical(output_directory_path);
-	}
+ //   std::filesystem::create_directory(output_directory_path);   // @Warning hacky thing, the canonical may failed if the directory doesn't exist
+	//if (output_directory_path.is_relative()) {
+	//	output_directory_path = std::filesystem::canonical(output_directory_path);
+	//}
 
   //  if (c_generator::generate(output_directory_path, output_file_name, parsing_result)) {
 		//return 0;

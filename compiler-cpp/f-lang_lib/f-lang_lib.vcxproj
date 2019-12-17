@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\c_generator.hpp" />
     <ClInclude Include="..\sources\fstd\core\logger.hpp" />
     <ClInclude Include="..\sources\fstd\language\defer.hpp" />
     <ClInclude Include="..\sources\fstd\language\flags.hpp" />
@@ -44,10 +43,8 @@
     <ClInclude Include="..\sources\platform.hpp" />
     <ClInclude Include="..\sources\third-party\magic_enum.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
-    <ClInclude Include="..\sources\utilities\string.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\c_generator.cpp" />
     <ClCompile Include="..\sources\fstd\core\logger.cpp" />
     <ClCompile Include="..\sources\fstd\os\windows\console.cpp" />
     <ClCompile Include="..\sources\fstd\stream\memory_stream.cpp" />
@@ -59,7 +56,6 @@
     <ClCompile Include="..\sources\lexer.cpp" />
     <ClCompile Include="..\sources\native_generator.cpp" />
     <ClCompile Include="..\sources\parser.cpp" />
-    <ClCompile Include="..\sources\utilities\string.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
