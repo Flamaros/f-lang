@@ -511,6 +511,7 @@ bool f::lex(const fstd::system::Path& path, std::vector<Token>& tokens)
 	bool has_utf8_boom = fstd::stream::is_uft8_bom(stream, true);
 
 	if (has_utf8_boom == false) {
+		log(*globals.logger, Log_Level::warning, "[f::lexer] File: '%s' doesn't have UTF8 BOM.", fstd::system::to_native(path));
 		// @TODO print a user warning about that the utf8 BOM is missing
 	}
 
@@ -793,7 +794,7 @@ bool f::lex(const fstd::system::Path& path, std::vector<Token>& tokens)
     }
 
 	if (nb_tokens_prediction < tokens.size()) {
-		log(globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f", nb_tokens_prediction, tokens.size(), (float)tokens.size() / (float)get_array_size(source_file_content));
+		log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f", nb_tokens_prediction, tokens.size(), (float)tokens.size() / (float)get_array_size(source_file_content));
 	}
 
 	return true;

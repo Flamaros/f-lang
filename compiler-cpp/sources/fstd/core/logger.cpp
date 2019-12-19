@@ -8,23 +8,16 @@ namespace fstd
 {
 	namespace core
 	{
-		void set_log_level(Logger* logger, Log_Level level) {
-			if (logger == nullptr)
-				return;
-
-			logger->level = level;
+		void set_log_level(Logger& logger, Log_Level level) {
+			logger.level = level;
 		}
 
-		Log_Level get_log_level(Logger* logger) {
-			if (logger == nullptr)
-				return Log_Level::invalid;
-
-			return logger->level;
+		Log_Level get_log_level(Logger& logger) {
+			return logger.level;
 		}
 
-		void log(Logger* logger, Log_Level level, const char* format, ...) {
-			if (logger == nullptr
-				|| level < logger->level)
+		void log(Logger& logger, Log_Level level, const char* format, ...) {
+			if (level < logger.level)
 				return;
 
 			va_list args;
@@ -36,7 +29,7 @@ namespace fstd
 			// Encoder directement les couleurs dans la string avec des codes VT_100
 			// bufferiser dans un buffer par thread ou locker pour le premier thread qui appelle log apres un flush
 
-			for (uint8_t i = 0; i < logger->indentation; i++) {
+			for (uint8_t i = 0; i < logger.indentation; i++) {
 				printf("    ");
 			}
 
@@ -61,28 +54,20 @@ namespace fstd
 			va_end(args);
 		}
 
-		void log_push_scope(Logger* logger, const char* scope_name) {
-			if (logger == nullptr)
-				return;
-
-			for (uint8_t i = 0; i < logger->indentation; i++) {
+		void log_push_scope(Logger& logger, const char* scope_name) {
+			for (uint8_t i = 0; i < logger.indentation; i++) {
 				printf("    ");
 			}
 			printf("%s:\n", scope_name);
 
-			logger->indentation++;
+			logger.indentation++;
 		}
 
-		void log_pop_scope(Logger* logger) {
-			if (logger == nullptr)
-				return;
-
-			logger->indentation--;
+		void log_pop_scope(Logger& logger) {
+			logger.indentation--;
 		}
 
-		void flush_logs(Logger* logger) {
-			if (logger == nullptr)
-				return;
+		void flush_logs(Logger& logger) {
 			fflush(stdout);
 		}
 	}
