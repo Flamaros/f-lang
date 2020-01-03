@@ -85,7 +85,7 @@ namespace fstd
 			) == TRUE) {
 				return content;
 			}
-			memory::reset_array(content);
+			memory::release(content);
 			return content;
 #else
 #	error

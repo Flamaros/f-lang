@@ -47,7 +47,7 @@ namespace fstd
 #endif
 		}
 
-		void	memory_copy(void* destination, void* source, size_t size)
+		void	memory_copy(void* destination, const void* source, size_t size)
 		{
 #if defined(OS_WINDOWS)
 			CopyMemory(destination, source, size);
@@ -56,7 +56,7 @@ namespace fstd
 #endif
 		}
 
-		void	memory_move(void* destination, void* source, size_t size)
+		void	memory_move(void* destination, const void* source, size_t size)
 		{
 #if defined(OS_WINDOWS)
 			MoveMemory(destination, source, size);

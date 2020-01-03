@@ -1,8 +1,13 @@
 #include "logger.hpp"
 
-#include <cstdio>
 
-#include <stdarg.h>
+#include <fstd/language/string.hpp>
+#include <fstd/system/stdio.hpp>
+
+#include <cstdint>
+
+using namespace fstd::language;
+using namespace fstd::system;
 
 namespace fstd
 {
@@ -20,45 +25,45 @@ namespace fstd
 			if (level < logger.level)
 				return;
 
-			va_list args;
+			//va_list args;
 
-			va_start(args, format);
+			//va_start(args, format);
 
-			// @TODO Mettre en place un mécanisme de thread safety
-			// Il faut flush pour débloquer le thread courant
-			// Encoder directement les couleurs dans la string avec des codes VT_100
-			// bufferiser dans un buffer par thread ou locker pour le premier thread qui appelle log apres un flush
+			//// @TODO Mettre en place un mécanisme de thread safety
+			//// Il faut flush pour débloquer le thread courant
+			//// Encoder directement les couleurs dans la string avec des codes VT_100
+			//// bufferiser dans un buffer par thread ou locker pour le premier thread qui appelle log apres un flush
 
-			for (uint8_t i = 0; i < logger.indentation; i++) {
-				printf("    ");
-			}
+			//for (uint8_t i = 0; i < logger.indentation; i++) {
+			//	printf("    ");
+			//}
 
-			switch (level) {
-			case Log_Level::verbose:
-				printf("\033[38;5;14mVerbose:\033[0m ");
-				break;
-			case Log_Level::info:
-				printf("\033[38;5;10mInfo:\033[0m ");
-				break;
-			case Log_Level::warning:
-				printf("\033[38;5;208mWarning:\033[0m ");
-				break;
-			case Log_Level::error:
-				printf("\033[38;5;196;4mError:\033[0m ");
-				break;
-			default:
-				break;
-			}
-			vprintf(format, args);
+			//switch (level) {
+			//case Log_Level::verbose:
+			//	printf("\033[38;5;14mVerbose:\033[0m ");
+			//	break;
+			//case Log_Level::info:
+			//	printf("\033[38;5;10mInfo:\033[0m ");
+			//	break;
+			//case Log_Level::warning:
+			//	printf("\033[38;5;208mWarning:\033[0m ");
+			//	break;
+			//case Log_Level::error:
+			//	printf("\033[38;5;196;4mError:\033[0m ");
+			//	break;
+			//default:
+			//	break;
+			//}
+			//vprintf(format, args);
 
-			va_end(args);
+			//va_end(args);
 		}
 
 		void log_push_scope(Logger& logger, const char* scope_name) {
-			for (uint8_t i = 0; i < logger.indentation; i++) {
-				printf("    ");
-			}
-			printf("%s:\n", scope_name);
+			//for (uint8_t i = 0; i < logger.indentation; i++) {
+			//	printf("    ");
+			//}
+			//printf("%s:\n", scope_name);
 
 			logger.indentation++;
 		}
@@ -68,7 +73,7 @@ namespace fstd
 		}
 
 		void flush_logs(Logger& logger) {
-			fflush(stdout);
+			//fflush(stdout);
 		}
 	}
 }

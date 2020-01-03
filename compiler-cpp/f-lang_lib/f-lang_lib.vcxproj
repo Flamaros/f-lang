@@ -20,13 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\fstd\core\logger.hpp" />
+    <ClInclude Include="..\sources\fstd\core\string_builder.hpp" />
     <ClInclude Include="..\sources\fstd\language\defer.hpp" />
     <ClInclude Include="..\sources\fstd\language\flags.hpp" />
+    <ClInclude Include="..\sources\fstd\language\string.hpp" />
+    <ClInclude Include="..\sources\fstd\language\string_view.hpp" />
     <ClInclude Include="..\sources\fstd\memory\array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\string.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\string_ref.hpp" />
     <ClInclude Include="..\sources\fstd\os\windows\console.hpp" />
     <ClInclude Include="..\sources\fstd\platform.hpp" />
     <ClInclude Include="..\sources\fstd\stream\memory_stream.hpp" />
@@ -46,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\fstd\core\logger.cpp" />
+    <ClCompile Include="..\sources\fstd\core\string_builder.cpp" />
     <ClCompile Include="..\sources\fstd\os\windows\console.cpp" />
     <ClCompile Include="..\sources\fstd\stream\memory_stream.cpp" />
     <ClCompile Include="..\sources\fstd\system\allocator.cpp" />

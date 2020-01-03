@@ -1,11 +1,13 @@
 #pragma once
 
-#include <fstd/memory/string.hpp>
+#include <fstd/language/string.hpp>
+
+#include <cstdint>
 
 namespace fstd
 {
 	namespace system
 	{
-		void print(const fstd::memory::String& string);
+		void print(const fstd::language::string& string);
 	}
 }

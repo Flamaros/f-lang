@@ -64,12 +64,6 @@
     <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp">
       <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\string.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\string_ref.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\fstd\system\file.hpp">
       <Filter>Source Files\fstd\system</Filter>
     </ClInclude>
@@ -106,6 +100,15 @@
     <ClInclude Include="..\sources\fstd\system\timer.hpp">
       <Filter>Source Files\fstd\system</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\string.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\string_view.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\core\string_builder.hpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -139,6 +142,9 @@
       <Filter>Source Files\fstd\stream</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\fstd\core\logger.cpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\core\string_builder.cpp">
       <Filter>Source Files\fstd\core</Filter>
     </ClCompile>
   </ItemGroup>

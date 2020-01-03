@@ -43,13 +43,13 @@ namespace fstd
 		inline uint8_t	get(Memory_Stream& stream) {
 			assert(stream.buffer_ptr);
 
-			return *memory::array_get(*stream.buffer_ptr, stream.position);
+			return *memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
 		inline const uint8_t*	get_pointer(Memory_Stream& stream) {	// @Warning return pointer at current position
 			assert(stream.buffer_ptr);
 
-			return memory::array_get(*stream.buffer_ptr, stream.position);
+			return memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
 		// UTF-8
@@ -57,9 +57,9 @@ namespace fstd
 			assert(stream.buffer_ptr);
 			assert(is_eof(stream) == false);
 
-			bool result = *memory::array_get(*stream.buffer_ptr, stream.position + 0) == 0xEF
-				&& *memory::array_get(*stream.buffer_ptr, stream.position + 1) == 0xBB
-				&& *memory::array_get(*stream.buffer_ptr, stream.position + 2) == 0xBF;
+			bool result = *memory::get_array_element(*stream.buffer_ptr, stream.position + 0) == 0xEF
+				&& *memory::get_array_element(*stream.buffer_ptr, stream.position + 1) == 0xBB
+				&& *memory::get_array_element(*stream.buffer_ptr, stream.position + 2) == 0xBF;
 
 			if (skip_it && result) {
 				skip(stream, 3);
@@ -80,8 +80,8 @@ namespace fstd
 
 		//	
 
-		//	if (*memory::array_get(*stream.buffer_ptr, stream.position) <= 0x7F) {
-		//		return *memory::array_get(*stream.buffer_ptr, stream.position);
+		//	if (*memory::get_array_element(*stream.buffer_ptr, stream.position) <= 0x7F) {
+		//		return *memory::get_array_element(*stream.buffer_ptr, stream.position);
 		//	}
 		//	else if ()
 

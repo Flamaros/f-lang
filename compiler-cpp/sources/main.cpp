@@ -4,7 +4,8 @@
 #include "parser.hpp"
 #include "globals.hpp"
 
-#include <fstd/system/file.hpp>
+#include <fstd/core/string_builder.hpp>
+
 #include <fstd/language/defer.hpp>
 
 #include <fstd/memory/array.hpp>
@@ -15,6 +16,8 @@
 
 #include <fstd/os/windows/console.hpp>
 
+#include "globals.hpp"
+
 #include <iostream>
 #include <chrono>
 #include <string>
@@ -22,6 +25,8 @@
 #include <cstdlib>
 
 using namespace std::string_literals; // enables s-suffix for std::string literals
+
+using namespace fstd;
 
 int main(int ac, char** av)
 {
@@ -31,15 +36,24 @@ int main(int ac, char** av)
 	int						result = 0;
 
 #if defined(OS_WINDOWS)
-	fstd::os::windows::enable_default_console_configuration();
-	defer { fstd::os::windows::close_console(); };
+	os::windows::enable_default_console_configuration();
+	defer { os::windows::close_console(); };
 #endif
 
 	initialize_globals();
 
-	fstd::system::Path	path;
+	core::String_Builder	string_builder;
+	language::string		format;
 
-	fstd::system::from_native(path, LR"(.\compiler-f\main.f)"s);
+	language::assign(format, LR"(test: %d)");
+	core::print_to_builder(string_builder, &format, 1234);
+
+	system::print(core::to_string(string_builder));
+
+
+	system::Path	path;
+
+	system::from_native(path, LR"(.\compiler-f\main.f)"s);
 
     f::lex(path, tokens);
     f::parse(tokens, parsing_result);
