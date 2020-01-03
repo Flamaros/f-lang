@@ -77,14 +77,14 @@ namespace fstd
 		void array_copy(Array<Type>& array, size_t index, const Type* raw_array, size_t length)
 		{
 			resize_array(array, index + length);
-			system::memory_copy(array.buffer, raw_array, length * sizeof(Type));
+			system::memory_copy(&array.buffer[index], raw_array, length * sizeof(Type));
 		}
 
 		template<typename Type>
 		void array_copy(Array<Type>& array, size_t index, const Array<Type>& source)
 		{
 			resize_array(array, index + source.size);
-			system::memory_copy(array.buffer, source.buffer, source.size * sizeof(Type));
+			system::memory_copy(&array.buffer[index], source.buffer, source.size * sizeof(Type));
 		}
 
 		template<typename Type>

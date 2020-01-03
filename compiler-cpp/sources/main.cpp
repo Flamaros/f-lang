@@ -45,7 +45,7 @@ int main(int ac, char** av)
 	core::String_Builder	string_builder;
 	language::string		format;
 
-	language::assign(format, LR"(test: %d)");
+	language::assign(format, LR"(test: %% %d)");
 	core::print_to_builder(string_builder, &format, 1234);
 
 	system::print(core::to_string(string_builder));

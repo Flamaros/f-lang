@@ -12,6 +12,15 @@
 // to build path, there will be a conversion made by the path object when calling win32 APIs
 
 
+
+// As in f-lang we will not use the c runtime library we should not have a lot of functions that
+// need the '/0' ending character. Maybe for very few OS functions. So it is not planned to store
+// it in our strings.
+// If it is really needed, the best strategy is certainly to always add this ending character and cheating
+// the about length.
+//
+// Flamaros - 03 january 2020
+
 #include <fstd/memory/array.hpp>
 
 #include <cstdint>
@@ -42,6 +51,8 @@ namespace fstd
 			str.data = (uint16_t*)string;
 		}
 
+		// @Warning be careful when using the resulting buffer
+		// there is no ending '/0'
 		inline uint16_t* to_uft16(const immutable_string& str)
 		{
 			return str.data;
@@ -85,6 +96,8 @@ namespace fstd
 			memory::release(str.buffer);
 		}
 
+		// @Warning be careful when using the resulting buffer
+		// there is no ending '/0'
 		inline const uint16_t* to_uft16(const string& str)
 		{
 			return memory::get_array_data(str.buffer);

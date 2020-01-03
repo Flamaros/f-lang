@@ -8,6 +8,10 @@ namespace fstd
 	{
 		static void print_to_builder(String_Builder& builder, const uint16_t* string, size_t length)
 		{
+			if (length == 0) {
+				return;
+			}
+
 			language::string* string_buffer;
 
 			memory::array_push_back(builder.strings, language::string());
@@ -18,11 +22,12 @@ namespace fstd
 
 		static void print_to_builder(String_Builder& builder, int32_t value)
 		{
-			language::string	string;
+			//language::string* string_buffer;
 
-			uint16_t	temp[16];
+			//memory::array_push_back(builder.strings, language::string());
+			//string_buffer = memory::get_array_last_element(builder.strings);
 
-			language::assign(string, (const wchar_t*)temp);
+
 		}
 
 		void print_to_builder(String_Builder& builder, const language::string* format, ...)
@@ -45,6 +50,10 @@ namespace fstd
 					next_print_length = 0;
 
 					if (language::to_uft16(*format)[position] == '%') {
+						// no vararg in this case
+						print_to_builder(builder, &language::to_uft16(*format)[position], 1);
+
+						position++;
 					}
 					else if (language::to_uft16(*format)[position] == 'd') {
 						int32_t value = va_arg(args, int32_t);
@@ -83,7 +92,7 @@ namespace fstd
 				total_length += language::get_string_length(*memory::get_array_element(builder.strings, i));
 			}
 
-			language::reserve(result, total_length);
+			language::reserve(result, total_length + 1);
 			for (size_t i = 0; i < memory::get_array_size(builder.strings); i++) {
 				size_t length = language::get_string_length(*memory::get_array_element(builder.strings, i));
 
