@@ -18,7 +18,7 @@ namespace ftsd
 	{
 		inline uint64_t get_time_in_nanoseconds(void)
 		{
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 			LARGE_INTEGER freq;
 			LARGE_INTEGER count;
 			QueryPerformanceCounter(&count);
@@ -34,18 +34,18 @@ namespace ftsd
 				return count.QuadPart / (freq.QuadPart / 1000000);
 			}
 
-#elif defined(OS_POSIX_COMPATIBLE)
+#elif defined(FSTD_OS_POSIX_COMPATIBLE)
 			struct timespec currTime;
 			clock_gettime(CLOCK_MONOTONIC, &currTime);
 			return (uint64_t)currTime.tv_sec * 1000000 + ((uint64_t)currTime.tv_nsec / 1000);
 
-#elif defined(OS_SYMBIAN)
+#elif defined(FSTD_OS_SYMBIAN)
 			struct timespec currTime;
 			/* Symbian supports only realtime clock for clock_gettime. */
 			clock_gettime(CLOCK_REALTIME, &currTime);
 			return (uint64_t)currTime.tv_sec * 1000000 + ((uint64_t)currTime.tv_nsec / 1000);
 
-#elif defined(OS_MACOS)
+#elif defined(FSTD_OS_MACOS)
 			struct timeval currTime;
 			gettimeofday(&currTime, NULL);
 			return (uint64_t)currTime.tv_sec * 1000000 + (uint64_t)currTime.tv_usec;

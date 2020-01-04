@@ -23,6 +23,7 @@
     <ClInclude Include="..\sources\fstd\core\string_builder.hpp" />
     <ClInclude Include="..\sources\fstd\language\defer.hpp" />
     <ClInclude Include="..\sources\fstd\language\flags.hpp" />
+    <ClInclude Include="..\sources\fstd\language\intrinsic.hpp" />
     <ClInclude Include="..\sources\fstd\language\string.hpp" />
     <ClInclude Include="..\sources\fstd\language\string_view.hpp" />
     <ClInclude Include="..\sources\fstd\memory\array.hpp" />
@@ -41,7 +42,6 @@
     <ClInclude Include="..\sources\macros.hpp" />
     <ClInclude Include="..\sources\native_generator.hpp" />
     <ClInclude Include="..\sources\parser.hpp" />
-    <ClInclude Include="..\sources\platform.hpp" />
     <ClInclude Include="..\sources\third-party\magic_enum.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
   </ItemGroup>

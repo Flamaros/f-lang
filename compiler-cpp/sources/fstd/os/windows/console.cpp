@@ -1,6 +1,6 @@
 #include "console.hpp"
 
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 
 #include <fstd/system/allocator.hpp>
 

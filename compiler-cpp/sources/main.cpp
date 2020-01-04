@@ -35,7 +35,7 @@ int main(int ac, char** av)
     f::AST					parsing_result;
 	int						result = 0;
 
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 	os::windows::enable_default_console_configuration();
 	defer { os::windows::close_console(); };
 #endif
@@ -45,8 +45,8 @@ int main(int ac, char** av)
 	core::String_Builder	string_builder;
 	language::string		format;
 
-	language::assign(format, LR"(test: %% %d)");
-	core::print_to_builder(string_builder, &format, 1234);
+	language::assign(format, LR"(test: %d %d %d\n)");
+	core::print_to_builder(string_builder, &format, -12340, 1234, 12340);
 
 	system::print(core::to_string(string_builder));
 

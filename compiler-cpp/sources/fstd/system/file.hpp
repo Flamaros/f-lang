@@ -5,9 +5,11 @@
 #include <fstd/platform.hpp>
 #include <fstd/memory/array.hpp>
 
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 typedef void*	HANDLE;
 typedef HANDLE	File_Handle;
+#else
+#	error
 #endif
 
 namespace fstd

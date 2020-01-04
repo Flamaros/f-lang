@@ -4,7 +4,7 @@
 
 #include <fstd/os/windows/console.hpp>
 
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 #	include <Windows.h>
 #endif
 
@@ -14,7 +14,7 @@ namespace fstd
 	{
 		void print(const language::immutable_string& string)
 		{
-#			if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 			//std::wstring	string(L"\x043a\x043e\x0448\x043a\x0430 \x65e5\x672c\x56fd\n");
 			DWORD	nb_written = 0;
 
@@ -26,7 +26,7 @@ namespace fstd
 
 		void print(const language::string& string)
 		{
-#			if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 			//std::wstring	string(L"\x043a\x043e\x0448\x043a\x0430 \x65e5\x672c\x56fd\n");
 			DWORD	nb_written = 0;
 

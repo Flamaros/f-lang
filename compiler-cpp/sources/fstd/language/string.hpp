@@ -81,6 +81,11 @@ namespace fstd
 			memory::reserve_array(str.buffer, length);
 		}
 
+		inline void resize(string& str, size_t length)
+		{
+			memory::resize_array(str.buffer, length);
+		}
+
 		inline void copy(string& str, size_t position, const wchar_t* string, size_t length)
 		{
 			memory::array_copy(str.buffer, position, (const uint16_t*)string, length);

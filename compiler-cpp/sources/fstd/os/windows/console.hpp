@@ -2,7 +2,7 @@
 
 #include <fstd/platform.hpp>
 
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 
 #	include <Windows.h>
 

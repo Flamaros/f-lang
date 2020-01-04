@@ -2,7 +2,7 @@
 
 #include <fstd/language/flags.hpp>
 
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 #	include <Windows.h>
 #endif
 
@@ -14,7 +14,7 @@ namespace fstd
 		{
 			close_file(file);
 
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 			DWORD	dwDesiredAccess = 0;
 			DWORD	dwCreationDisposition = OPEN_EXISTING;
 
@@ -46,7 +46,7 @@ namespace fstd
 
 		void close_file(File& file)
 		{
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 			if (file.handle != nullptr) {
 				CloseHandle(file.handle);
 				file.handle = nullptr;
@@ -58,7 +58,7 @@ namespace fstd
 
 		uint64_t get_file_size(const File& file)
 		{
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 			LARGE_INTEGER	size;
 
 			GetFileSizeEx(file.handle, &size);
@@ -71,7 +71,7 @@ namespace fstd
 
 		memory::Array<uint8_t> get_file_content(File& file)
 		{
-#if defined(OS_WINDOWS)
+#if defined(FSTD_OS_WINDOWS)
 			memory::Array<uint8_t>	content;
 			DWORD					read = 0;
 
