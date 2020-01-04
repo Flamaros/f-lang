@@ -10,7 +10,9 @@ namespace fstd
 	{
 		inline void swap(uint16_t* a, uint16_t* b)
 		{
-			// @TODO @SpeedUp use a real intresec here
+			// https://c9x.me/x86/html/file_module_x86_id_328.html
+			// xchg is certainly not faster as the C implementation
+			// xchg does a lock (memory barrier)
 			wchar_t	temp = *a;
 			*a = *b;
 			*b = temp;
