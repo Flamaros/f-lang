@@ -38,7 +38,7 @@ int main(int ac, char** av)
 	core::String_Builder	string_builder;
 	language::string		format;
 
-	language::assign(format, LR"(test: %d %d %d\n)");
+	language::assign(format, L"test: %d %d %d\n");
 	core::print_to_builder(string_builder, &format, -12340, 1234, 12340);
 
 	system::print(core::to_string(string_builder));

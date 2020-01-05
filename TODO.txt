@@ -1,3 +1,5 @@
+It seems to have a bug with the String_Builder where the last part of the string isn't correctly added. Check at the \n
+
 Optimize to_string function, it is actually much slower than the stl implementation.
 
 Logs:
