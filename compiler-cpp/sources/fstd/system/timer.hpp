@@ -12,11 +12,11 @@
 #   include <sys/time.h>
 #endif
 
-namespace ftsd
+namespace fstd
 {
 	namespace system
 	{
-		inline uint64_t get_time_in_nanoseconds(void)
+		inline uint64_t get_time_in_nanoseconds()
 		{
 #if defined(FSTD_OS_WINDOWS)
 			LARGE_INTEGER freq;
@@ -25,14 +25,24 @@ namespace ftsd
 			QueryPerformanceFrequency(&freq);
 			assert(freq.LowPart != 0 || freq.HighPart != 0);
 
-			if (count.QuadPart < MAXLONGLONG / 1000000) {
-				assert(freq.QuadPart != 0);
-				return count.QuadPart * 1000000 / freq.QuadPart;
-			}
-			else {
-				assert(freq.QuadPart >= 1000000);
-				return count.QuadPart / (freq.QuadPart / 1000000);
-			}
+			// This code overflow in nanoseconds but works in microseconds
+			// And is certainly more efficient and accurate than passing by a
+			// conversion into double
+			//
+			// Flamaros - 05 january 2020
+
+			//if (count.QuadPart < MAXLONGLONG / 1'000'000'000) {
+			//	assert(freq.QuadPart != 0);
+			//	return count.QuadPart * 1'000'000'000 / freq.QuadPart;
+			//	
+			//}
+			//else {
+			//	assert(freq.QuadPart >= 1'000'000'000);
+			//	return count.QuadPart / (freq.QuadPart / 1'000'000'000);
+			//}
+
+			double nanoseconds_per_count = 1.0e9 / (double)freq.QuadPart;
+			return (uint64_t)(count.QuadPart * nanoseconds_per_count);
 
 #elif defined(FSTD_OS_POSIX_COMPATIBLE)
 			struct timespec currTime;
