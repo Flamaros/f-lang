@@ -6,16 +6,25 @@ namespace fstd
 {
 	namespace language
 	{
-		static const wchar_t ordered_digits[] = LR"(0123456789ABCDEF)";
+		static const wchar_t* ordered_digits = LR"(0123456789ABCDEF)";
+
+		// @TODO @SpeedUp
+		//
+		// Many things are slow here
+		// 1. The reserve of string take 25% of time
+		// 2. intrinsic::divide implementation in ASM for x86 is slower than the C version
+		// 3. The assignment of the character after the divide is slow, check if using a range test to determine wich character to assign can be faster
+		//
+		// Flamaros - 05 january 2020
 
 		string to_string(int32_t number, int8_t base)
 		{
 			assert(base >= 2 && base <= 16);
 
-			string	result;
-			wchar_t* string;
-			size_t	string_length = 0;	// doesn't contains the sign
-			bool	is_negative = false;
+			string		result;
+			wchar_t*	string;
+			size_t		string_length = 0;	// doesn't contains the sign
+			bool		is_negative = false;
 
 			// value range is from -2,147,483,647 to +2,147,483,647
 			// without decoration we need at most 10 + 1 characters (+1 for the sign)
@@ -50,7 +59,6 @@ namespace fstd
 				else {
 					string[0] = '0';
 				}
-
 			}
 
 			resize(result, string_length + is_negative);

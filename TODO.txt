@@ -1,3 +1,5 @@
+Optimize to_string function, it is actually much slower than the stl implementation.
+
 Logs:
  - We need logs for the end user
  - we need logs for the language developer (me)

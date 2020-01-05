@@ -79,7 +79,7 @@ namespace fstd
 			if (ReadFile(
 				file.handle,						// hFile
 				memory::get_array_data(content),	// lpBuffer
-				memory::get_array_size(content),	// nNumberOfBytesToRead
+				(DWORD)memory::get_array_size(content),	// nNumberOfBytesToRead
 				&read,								// lpNumberOfBytesRead
 				NULL								// lpOverlapped
 			) == TRUE) {

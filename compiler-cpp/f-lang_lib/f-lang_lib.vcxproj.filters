@@ -109,6 +109,9 @@
     <ClInclude Include="..\sources\fstd\language\intrinsic.hpp">
       <Filter>Source Files\fstd\language</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\tests.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -149,6 +152,9 @@
     </ClCompile>
     <ClCompile Include="..\sources\fstd\language\string.cpp">
       <Filter>Source Files\fstd\language</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\tests.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

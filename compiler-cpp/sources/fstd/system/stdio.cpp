@@ -18,7 +18,7 @@ namespace fstd
 			//std::wstring	string(L"\x043a\x043e\x0448\x043a\x0430 \x65e5\x672c\x56fd\n");
 			DWORD	nb_written = 0;
 
-			WriteConsoleW(os::windows::get_std_out_handle(), language::to_uft16(string), language::get_string_length(string), &nb_written, NULL);
+			WriteConsoleW(os::windows::get_std_out_handle(), language::to_uft16(string), (DWORD)language::get_string_length(string), &nb_written, NULL);
 #else
 #	error
 #endif
@@ -30,7 +30,7 @@ namespace fstd
 			//std::wstring	string(L"\x043a\x043e\x0448\x043a\x0430 \x65e5\x672c\x56fd\n");
 			DWORD	nb_written = 0;
 
-			WriteConsoleW(os::windows::get_std_out_handle(), language::to_uft16(string), language::get_string_length(string), &nb_written, NULL);
+			WriteConsoleW(os::windows::get_std_out_handle(), language::to_uft16(string), (DWORD)language::get_string_length(string), &nb_written, NULL);
 #else
 #	error
 #endif

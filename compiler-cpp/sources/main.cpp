@@ -3,6 +3,7 @@
 #include "lexer.hpp"
 #include "parser.hpp"
 #include "globals.hpp"
+#include "tests.hpp"
 
 #include <fstd/core/string_builder.hpp>
 
@@ -15,14 +16,6 @@
 #include <fstd/system/file.hpp>
 
 #include <fstd/os/windows/console.hpp>
-
-#include "globals.hpp"
-
-#include <iostream>
-#include <chrono>
-#include <string>
-
-#include <cstdlib>
 
 using namespace std::string_literals; // enables s-suffix for std::string literals
 
@@ -50,6 +43,7 @@ int main(int ac, char** av)
 
 	system::print(core::to_string(string_builder));
 
+	run_tests();
 
 	system::Path	path;
 
