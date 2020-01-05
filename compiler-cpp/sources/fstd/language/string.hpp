@@ -112,5 +112,7 @@ namespace fstd
 		{
 			return memory::get_array_size(str.buffer);
 		}
+
+		string to_string(int32_t number, int8_t base);
 	}
 }

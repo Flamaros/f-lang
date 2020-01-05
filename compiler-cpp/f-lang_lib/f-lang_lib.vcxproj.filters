@@ -147,5 +147,8 @@
     <ClCompile Include="..\sources\fstd\core\string_builder.cpp">
       <Filter>Source Files\fstd\core</Filter>
     </ClCompile>
+    <ClCompile Include="..\sources\fstd\language\string.cpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

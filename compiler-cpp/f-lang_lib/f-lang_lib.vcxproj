@@ -48,6 +48,7 @@
   <ItemGroup>
     <ClCompile Include="..\sources\fstd\core\logger.cpp" />
     <ClCompile Include="..\sources\fstd\core\string_builder.cpp" />
+    <ClCompile Include="..\sources\fstd\language\string.cpp" />
     <ClCompile Include="..\sources\fstd\os\windows\console.cpp" />
     <ClCompile Include="..\sources\fstd\stream\memory_stream.cpp" />
     <ClCompile Include="..\sources\fstd\system\allocator.cpp" />
