@@ -10,7 +10,7 @@ namespace fstd
 {
 	namespace core
 	{
-		static void print_to_builder(String_Builder& builder, const uint16_t* string, size_t length)
+		static void print_to_builder(String_Builder& builder, const wchar_t* string, size_t length)
 		{
 			if (length == 0) {
 				return;
@@ -74,6 +74,11 @@ namespace fstd
 					position++;
 					next_print_length++;
 				}
+			}
+
+			// Flush the last text chunk if there is one
+			if (next_print_length) {
+				print_to_builder(builder, &language::to_uft16(*format)[start_print_position], next_print_length);
 			}
 
 			va_end(args);

@@ -32,8 +32,8 @@ namespace fstd
 	{
 		struct immutable_string
 		{
-			uint16_t*	data = nullptr;
-			size_t		length = 0;
+			const wchar_t*	data = nullptr;
+			size_t			length = 0;
 		};
 
 		inline size_t	string_literal_length(const wchar_t* string)
@@ -48,12 +48,12 @@ namespace fstd
 		inline void assign(immutable_string& str, const wchar_t* string)
 		{
 			str.length = string_literal_length(string);
-			str.data = (uint16_t*)string;
+			str.data = string;
 		}
 
 		// @Warning be careful when using the resulting buffer
 		// there is no ending '/0'
-		inline uint16_t* to_uft16(const immutable_string& str)
+		inline const wchar_t* to_uft16(const immutable_string& str)
 		{
 			return str.data;
 		}
@@ -67,7 +67,7 @@ namespace fstd
 
 		struct string
 		{
-			memory::Array<uint16_t>	buffer;
+			memory::Array<wchar_t>	buffer;
 		};
 
 		inline void assign(string& str, const wchar_t* string)
@@ -88,7 +88,7 @@ namespace fstd
 
 		inline void copy(string& str, size_t position, const wchar_t* string, size_t length)
 		{
-			memory::array_copy(str.buffer, position, (const uint16_t*)string, length);
+			memory::array_copy(str.buffer, position, string, length);
 		}
 
 		inline void copy(string& str, size_t position, const string& string)
@@ -103,7 +103,7 @@ namespace fstd
 
 		// @Warning be careful when using the resulting buffer
 		// there is no ending '/0'
-		inline const uint16_t* to_uft16(const string& str)
+		inline const wchar_t* to_uft16(const string& str)
 		{
 			return memory::get_array_data(str.buffer);
 		}
