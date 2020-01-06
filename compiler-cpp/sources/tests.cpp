@@ -27,24 +27,28 @@ void test_integer_to_string_performances()
 		number = std::rand();
 	}
 
-	fstd::language::string f_string;
-	start_time = fstd::system::get_time_in_nanoseconds();
-	for (auto& number : numbers) {
-		f_string = fstd::language::to_string(number, 10);
-		release(f_string);
+	{
+		fstd::language::string f_string;
+		start_time = fstd::system::get_time_in_nanoseconds();
+		for (auto& number : numbers) {
+			f_string = fstd::language::to_string(number, 10);
+			release(f_string);
+		}
+		end_time = fstd::system::get_time_in_nanoseconds();
+		f_implemenation_time = ((end_time - start_time) / 1'000'000.0);
 	}
-	end_time = fstd::system::get_time_in_nanoseconds();
-	f_implemenation_time = ((end_time - start_time) / 1000000.0);
 
-	std::string std_string;
-	start_time = fstd::system::get_time_in_nanoseconds();
-	for (auto& number : numbers) {
-		std_string = std::to_string(number);
+	{
+		std::string std_string;
+		start_time = fstd::system::get_time_in_nanoseconds();
+		for (auto& number : numbers) {
+			std_string = std::to_string(number);
+		}
+		end_time = fstd::system::get_time_in_nanoseconds();
+		std_implemenation_time = ((end_time - start_time) / 1'000'000.0);
 	}
-	end_time = fstd::system::get_time_in_nanoseconds();
-	std_implemenation_time = ((end_time - start_time) / 1000000.0);
 
-	printf("\nto_string performances (%llu iterations):\n    f-lang: %0.3lf ms\n    std: %0.3lf ms\n", (uint64_t)numbers.size(), f_implemenation_time, std_implemenation_time);
+	printf("to_string performances (%llu iterations):\n    f-lang: %0.3lf ms\n    std: %0.3lf ms\n", (uint64_t)numbers.size(), f_implemenation_time, std_implemenation_time);
 }
 
 void run_tests()

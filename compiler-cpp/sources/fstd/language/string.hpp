@@ -113,6 +113,14 @@ namespace fstd
 			return memory::get_array_size(str.buffer);
 		}
 
+		// @SpeedUp @CleanUp
+		// Generic version with the base should the only version
+		// but if the base is a constant the compiler should be
+		// smart enough to remove conditions that launch the fastest
+		// implementation normally at runtime
+		//
+		// Flamaros - 06 january 2020
+		string to_string(int32_t number);
 		string to_string(int32_t number, int8_t base);
 	}
 }

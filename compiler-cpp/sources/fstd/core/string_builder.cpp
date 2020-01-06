@@ -24,6 +24,16 @@ namespace fstd
 			language::copy(*string_buffer, 0, (const wchar_t*)string, length);
 		}
 
+		static void print_to_builder(String_Builder& builder, int32_t value)
+		{
+			language::string* string_buffer;
+
+			memory::array_push_back(builder.strings, language::string());
+			string_buffer = memory::get_array_last_element(builder.strings);
+
+			*string_buffer = language::to_string(value);
+		}
+
 		static void print_to_builder(String_Builder& builder, int32_t value, int32_t base)
 		{
 			assert(base >= 2 && base <= 16);
@@ -64,7 +74,7 @@ namespace fstd
 					else if (language::to_uft16(*format)[position] == 'd') {
 						int32_t value = va_arg(args, int32_t);
 
-						print_to_builder(builder, value, 10);
+						print_to_builder(builder, value);
 						position++;
 					}
 

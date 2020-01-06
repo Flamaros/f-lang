@@ -6,7 +6,14 @@ namespace fstd
 {
 	namespace language
 	{
-		static const wchar_t* ordered_digits = LR"(0123456789ABCDEF)";
+		static const wchar_t* ordered_digits = L"0123456789ABCDEF";
+
+		static const wchar_t* base_10_digits =
+			L"0001020304050607080910111213141516171819"
+			"2021222324252627282930313233343536373839"
+			"4041424344454647484950515253545556575859"
+			"6061626364656667686970717273747576777879"
+			"8081828384858687888990919293949596979899";
 
 		// @TODO @SpeedUp
 		//
@@ -16,6 +23,59 @@ namespace fstd
 		// 3. The assignment of the character after the divide is slow, check if using a range test to determine wich character to assign can be faster
 		//
 		// Flamaros - 05 january 2020
+
+		string to_string(int32_t number)
+		{
+			string		result;
+			wchar_t* string;
+			size_t		string_length = 0;	// doesn't contains the sign
+			bool		is_negative = false;
+
+			// value range is from -2,147,483,647 to +2,147,483,647
+			// without decoration we need at most 10 + 1 characters (+1 for the sign)
+			reserve(result, 10 + 1);
+			string = (wchar_t*)to_uft16(result);
+
+			// @TODO May we optimize this code?
+			{
+				uint32_t	quotien = number;
+				uint32_t	reminder;
+
+				if (number < 0) {
+					is_negative = true;
+					string[0] = '-';
+					string++;
+					quotien = -number;
+				}
+
+				while (quotien >= 100) {
+					// Integer division is slow so do it for a group of two digits instead
+					// of for every digit. The idea comes from the talk by Alexandrescu
+					// "Three Optimization Tips for C++". See speed-test for a comparison.
+					intrinsic::divide(quotien, 100, &quotien, &reminder);
+					reminder = reminder * 2;
+					string[string_length++] = base_10_digits[reminder + 1];
+					string[string_length++] = base_10_digits[reminder];
+				}
+				if (quotien < 10) {
+					string[string_length++] = '0' + quotien;
+				}
+				else {
+					reminder = quotien * 2;
+					string[string_length++] = base_10_digits[reminder + 1];
+					string[string_length++] = base_10_digits[reminder];
+				}
+
+				// Reverse the string
+				size_t middle_cursor = string_length / 2;
+				for (size_t i = 0; i < middle_cursor; i++) {
+					intrinsic::swap((uint16_t*)&string[i], (uint16_t*)&string[string_length - i - 1]);
+				}
+			}
+
+			resize(result, string_length + is_negative);
+			return result;
+		}
 
 		string to_string(int32_t number, int8_t base)
 		{

@@ -1,6 +1,8 @@
-It seems to have a bug with the String_Builder where the last part of the string isn't correctly added. Check at the \n
-
 Optimize to_string function, it is actually much slower than the stl implementation.
+
+FSTD:
+ - Is it better to use the Win32 equivalent of std::contional in a thread_pool implementation than a while(true) with a mutex (to lock the task container)
+   and a yield (check if a CPU core stay at 100% while there is no task to run) ?
 
 Logs:
  - We need logs for the end user
@@ -33,3 +35,8 @@ https://www.youtube.com/watch?v=9-EYWLbmiG0
 
 Expression types
 https://drive.google.com/file/d/1OggMRIwsuxse2MtkM6XIbL3pNMDUIzVC/view
+
+################################################################################
+In f-lang:
+ - check how to have template specialization to be able to optimize functions like to_string depending on the base value
+   can we generate at compile time best code by detecting that the base is a constant and run automatically conditions at compile time.

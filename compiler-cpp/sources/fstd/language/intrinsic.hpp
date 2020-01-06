@@ -24,30 +24,40 @@ namespace fstd
 
 			// https://c9x.me/x86/html/file_module_x86_id_72.html
 			// https://www.aldeid.com/wiki/X86-assembly/Instructions/div
-#if defined (FSTD_X86_32)
-			__asm
-			{
-				mov edx, 0			// clear higher part of dividend (here value is only i32 will div instruction take edx and eax for a 64 bit value
-				// @todo test to do the clear with command 'xor edx, edx' is it faster?
-				mov eax, value		// dividend
-				mov ecx, divisor	// divisor
-				div ecx
-
-				// copy eax into quotien (but we have to use an other register to be able to use indirect mode)
-				mov ecx, quotien
-				mov [ecx], eax
-				
-				// copy edx into reminder (but we have to use an other register to be able to use indirect mode)
-				mov ecx, reminder
-				mov[ecx], edx
-			}
-#else	// There is no inline assembly in x64 with Visual Studio
+//#if defined (FSTD_X86_32)
+//			__asm
+//			{
+//				mov edx, 0			// clear higher part of dividend (here value is only i32 will div instruction take edx and eax for a 64 bit value
+//				// @todo test to do the clear with command 'xor edx, edx' is it faster?
+//				mov eax, value		// dividend
+//				mov ecx, divisor	// divisor
+//				div ecx
+//
+//				// copy eax into quotien (but we have to use an other register to be able to use indirect mode)
+//				mov ecx, quotien
+//				mov [ecx], eax
+//				
+//				// copy edx into reminder (but we have to use an other register to be able to use indirect mode)
+//				mov ecx, reminder
+//				mov[ecx], edx
+//
+//				// Here is the code generated in release by Visual Studio when divisor is set to 100
+//				// I suspect that with the combination of the inlining the compiler is able to generate
+//				// a better code without a division actually
+//				//mov         eax, 51EB851Fh
+//				//mov         ecx, esi
+//				//mul         eax, esi
+//				//mov         esi, edx
+//				//shr         esi, 5
+//				//imul        eax, esi, 64h
+//			}
+//#else	// There is no inline assembly in x64 with Visual Studio
 
 			// It seams that some C/C++ compilers are capable to optimize this code by using intrinsic
 			// as both operations are done closely
 			*quotien = value / divisor;
 			*reminder = value % divisor;
-#endif
+//#endif
 		}
 	}
 }
