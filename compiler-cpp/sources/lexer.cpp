@@ -500,6 +500,8 @@ bool f::lex(const fstd::system::Path& path, std::vector<Token>& tokens)
 
 	fstd::memory::Array<uint8_t>	source_file_content = fstd::system::get_file_content(file);
 
+	defer{ release(source_file_content); };
+
 	// @TODO We may want to read the file sequentially instead from only one call
 	// to @SpeedUp the lexing, the OS will fill his cach for next read while we are
 	// lexing chuncks we already have
