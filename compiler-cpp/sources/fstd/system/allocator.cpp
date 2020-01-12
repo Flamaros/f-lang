@@ -8,7 +8,7 @@
 
 // Need we use VirtualAlloc instead of HeapAlloc, to support allocation of bigger buffers?
 
-//#define POOL_32
+#define POOL_32
 
 namespace fstd
 {
@@ -131,7 +131,7 @@ namespace fstd
 
 			initialize();
 
-			if ((ptr = allocate_32(size)) == nullptr) {
+			if ((ptr = allocate_32(real_size)) == nullptr) {
 				ptr = os_allocate(real_size);
 				((Memory_Header*)ptr)->index = 0xffff;
 			}
@@ -151,7 +151,7 @@ namespace fstd
 				Memory_Header*	header = (Memory_Header*)((size_t)address - Memory_Header_size);
 				bool			was_32_allocation;
 
-				if ((ptr = reallocate_32(header, size, &was_32_allocation)) == nullptr) {
+				if ((ptr = reallocate_32(header, real_size, &was_32_allocation)) == nullptr) {
 					if (was_32_allocation) {
 						ptr = os_allocate(real_size);
 
@@ -165,7 +165,7 @@ namespace fstd
 				}
 			}
 			else {
-				if ((ptr = allocate_32(size)) == nullptr) {
+				if ((ptr = allocate_32(real_size)) == nullptr) {
 					ptr = os_allocate(real_size);
 					((Memory_Header*)ptr)->index = 0xffff;
 				}
