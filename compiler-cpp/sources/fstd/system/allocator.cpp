@@ -50,8 +50,11 @@ namespace fstd
 			uint16_t	index;
 		};
 
+		typedef uint64_t	Flag_Set;
+
 		constexpr size_t	check_32_count = 1'024;
 		constexpr size_t	Memory_Header_size = sizeof(Memory_Header);
+		constexpr size_t	flag_set_count = check_32_count / (sizeof(Flag_Set) * 8);
 #if defined(POOL_32)
 		void*				chunks_32 = nullptr;
 		uint64_t*			chunks_32_flags = nullptr;
@@ -62,8 +65,8 @@ namespace fstd
 #if defined(POOL_32)
 			if (chunks_32 == nullptr) {
 				chunks_32 = os_allocate(check_32_count * 32);
-				chunks_32_flags = (uint64_t*)os_allocate(check_32_count / sizeof(uint64_t));
-				zero_memory(chunks_32_flags, 1'024 / sizeof(uint64_t));
+				chunks_32_flags = (uint64_t*)os_allocate(flag_set_count * sizeof(Flag_Set));
+				zero_memory(chunks_32_flags, flag_set_count * sizeof(Flag_Set));
 			}
 #endif
 		}
@@ -82,7 +85,7 @@ namespace fstd
 				return nullptr;
 			}
 
-			for (uint16_t i = 0; i < check_32_count / sizeof(uint64_t); i++) {
+			for (uint16_t i = 0; i < flag_set_count; i++) {
 				if (chunks_32_flags[i] != 0xffff'ffff'ffff'ffff) {
 					chunks_32_flags[i] = 0xffff'ffff'ffff'ffff;
 
