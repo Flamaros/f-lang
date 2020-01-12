@@ -27,7 +27,7 @@ namespace fstd
 		string to_string(int32_t number)
 		{
 			string		result;
-			wchar_t* string;
+			wchar_t*	string;
 			size_t		string_length = 0;	// doesn't contains the sign
 			bool		is_negative = false;
 

@@ -37,16 +37,24 @@ int main(int ac, char** av)
 
 	core::String_Builder	string_builder;
 	language::string		format;
+	language::string		formatted_string;
+
+	defer{
+		core::free_buffers(string_builder);
+		language::release(formatted_string);
+	};
 
 	language::assign(format, L"test: %d %d %d\n");
 	core::print_to_builder(string_builder, &format, -12340, 1234, 12340);
 
-	system::print(core::to_string(string_builder));
+	formatted_string = core::to_string(string_builder);
+	system::print(formatted_string);
 
 	run_tests();
 
-
 	system::Path	path;
+
+	defer{ system::reset_path(path); };
 
 	system::from_native(path, LR"(.\compiler-f\main.f)"s);
 
