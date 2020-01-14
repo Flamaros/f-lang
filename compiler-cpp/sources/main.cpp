@@ -28,6 +28,8 @@ int main(int ac, char** av)
     f::AST					parsing_result;
 	int						result = 0;
 
+	system::allocator_initialize();
+
 #if defined(FSTD_OS_WINDOWS)
 	os::windows::enable_default_console_configuration();
 	defer { os::windows::close_console(); };

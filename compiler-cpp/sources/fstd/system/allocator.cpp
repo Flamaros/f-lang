@@ -8,6 +8,14 @@
 
 // Need we use VirtualAlloc instead of HeapAlloc, to support allocation of bigger buffers?
 
+// We use some bits operations to reduce the memory footprint and improve performances.
+// Size of the Memory_Header struct is a critical point.
+//
+// Flamaros - 14 january 2020
+//
+// https://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit
+
+
 #define POOL_32
 
 namespace fstd
@@ -44,40 +52,46 @@ namespace fstd
 #endif
 		}
 
-		struct Memory_Header
-		{
-			size_t		size;
-			uint16_t	index;
-		};
-
 		typedef uint64_t	Flag_Set;
 
-		constexpr size_t	check_32_count = 1'024;
-		constexpr size_t	Memory_Header_size = sizeof(Memory_Header);
-		constexpr size_t	flag_set_count = check_32_count / (sizeof(Flag_Set) * 8);
+		enum class Chunk_Size : uint8_t
+		{
+			not_used,
+			size_32,
+		};
+
+		struct Memory_Header
+		{
+			// Bitfield of 16 bits
+			struct Index
+			{
+				uint16_t	set : 10;	// 10 bits allow a maximum value of 1023
+				uint16_t	bit : 6;	// can't exceed 63, need only 6 bits, other bits are used for the set_index
+			};
+
+			Index		index;
+			Chunk_Size	size;
+		};
+
+		constexpr uint32_t	check_32_count = 1'024;
+		constexpr uint32_t	Memory_Header_size = sizeof(Memory_Header);
+		constexpr uint32_t	flag_set_count = check_32_count / (sizeof(Flag_Set) * 8);
+		constexpr uint16_t	flag_set_size_in_bits = sizeof(Flag_Set) * 8;
+		constexpr Flag_Set	flag_set_completely_unused = 0x0000'0000'0000'0000;
+		constexpr Flag_Set	flag_set_completely_used = 0xffff'ffff'ffff'ffff;
+
 #if defined(POOL_32)
 		void*				chunks_32 = nullptr;
 		uint64_t*			chunks_32_flags = nullptr;
 #endif
 
-		inline void initialize()
+		inline void free_32(Memory_Header::Index index)
 		{
 #if defined(POOL_32)
-			if (chunks_32 == nullptr) {
-				chunks_32 = os_allocate(check_32_count * 32);
-				chunks_32_flags = (uint64_t*)os_allocate(flag_set_count * sizeof(Flag_Set));
-				zero_memory(chunks_32_flags, flag_set_count * sizeof(Flag_Set));
-			}
+			chunks_32_flags[index.set] &= ~(1ULL << index.bit);
 #endif
 		}
-
-		inline void free_32(uint16_t index)
-		{
-#if defined(POOL_32)
-			chunks_32_flags[index] = 0x0000'0000'0000'0000;
-#endif
-		}
-
+		
 		inline void* allocate_32(size_t size)
 		{
 #if defined(POOL_32)
@@ -86,12 +100,18 @@ namespace fstd
 			}
 
 			for (uint16_t i = 0; i < flag_set_count; i++) {
-				if (chunks_32_flags[i] != 0xffff'ffff'ffff'ffff) {
-					chunks_32_flags[i] = 0xffff'ffff'ffff'ffff;
+				if (chunks_32_flags[i] != flag_set_completely_used) {
+					for (uint16_t j = 0; j < flag_set_size_in_bits; j++) {
+						if (((chunks_32_flags[i] >> j) & 1ULL) == 0) {	// Check if the flag at j is set
+							chunks_32_flags[i] |= 1ULL << j;
 
-					void*	ptr = (void*)((size_t)chunks_32 + i * 32);
-					((Memory_Header*)ptr)->index = i;
-					return ptr;
+							void* ptr = (void*)((size_t)chunks_32 + (size_t)((uint32_t)i * flag_set_size_in_bits + j) * 32);
+							((Memory_Header*)ptr)->index.set = i;
+							((Memory_Header*)ptr)->index.bit = j;
+							((Memory_Header*)ptr)->size = Chunk_Size::size_32;
+							return ptr;
+						}
+					}
 				}
 			}
 #endif
@@ -110,8 +130,7 @@ namespace fstd
 				return header;	// header address is the same as the resulting one of the previous allocation
 			}
 			else {
-				if (header->size <= 32
-					&& header->index != 0xffff) {
+				if (header->size == Chunk_Size::size_32) {
 					*was_32_allocation = true;
 				}
 				else {
@@ -127,19 +146,27 @@ namespace fstd
 
 		// =====================================================================
 
+		void allocator_initialize()
+		{
+#if defined(POOL_32)
+			if (chunks_32 == nullptr) {
+				chunks_32 = os_allocate(check_32_count * 32);
+				chunks_32_flags = (uint64_t*)os_allocate(flag_set_count * sizeof(Flag_Set));
+				zero_memory(chunks_32_flags, flag_set_count * sizeof(Flag_Set));
+			}
+#endif
+		}
+
 		void* allocate(size_t size)
 		{
 			size_t	real_size = size + Memory_Header_size;
 			void*	ptr;
 
-			initialize();
-
 			if ((ptr = allocate_32(real_size)) == nullptr) {
 				ptr = os_allocate(real_size);
-				((Memory_Header*)ptr)->index = 0xffff;
+				((Memory_Header*)ptr)->size = Chunk_Size::not_used;
 			}
 
-			((Memory_Header*)ptr)->size = size;
 			return (void*)((size_t)ptr + Memory_Header_size);
 		}
 
@@ -147,8 +174,6 @@ namespace fstd
 		{
 			size_t	real_size = size + sizeof(Memory_Header);
 			void*	ptr;
-
-			initialize();
 
 			if (address) {
 				Memory_Header*	header = (Memory_Header*)((size_t)address - Memory_Header_size);
@@ -158,9 +183,9 @@ namespace fstd
 					if (was_32_allocation) {
 						ptr = os_allocate(real_size);
 
-						memory_copy(ptr, header, header->size + Memory_Header_size);
+						memory_copy(ptr, header, 32 + Memory_Header_size);
 						free_32(header->index);
-						((Memory_Header*)ptr)->index = 0xffff;
+						((Memory_Header*)ptr)->size = Chunk_Size::not_used;
 					}
 					else {
 						ptr = os_reallocate((void*)header, real_size);
@@ -170,10 +195,9 @@ namespace fstd
 			else {
 				if ((ptr = allocate_32(real_size)) == nullptr) {
 					ptr = os_allocate(real_size);
-					((Memory_Header*)ptr)->index = 0xffff;
+					((Memory_Header*)ptr)->size = Chunk_Size::not_used;
 				}
 			}
-			((Memory_Header*)ptr)->size = size;
 			return (void*)((size_t)ptr + Memory_Header_size);
 		}
 
@@ -181,8 +205,7 @@ namespace fstd
 		{
 			Memory_Header* header = (Memory_Header*)((size_t)address - Memory_Header_size);
 
-			if (header->size <= 32
-				&& header->index != 0xffff) {
+			if (header->size == Chunk_Size::size_32) {
 				free_32(header->index);
 			}
 			else {

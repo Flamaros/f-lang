@@ -11,6 +11,7 @@ namespace fstd
 {
 	namespace system
 	{
+		void	allocator_initialize();
 		void*	allocate(size_t size);
 		void*	reallocate(void* address, size_t size);
 		void	free(void* address);
