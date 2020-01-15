@@ -6,6 +6,9 @@
 #	include <Windows.h>
 #endif
 
+#include <cmath>
+#include <cassert>
+
 // Need we use VirtualAlloc instead of HeapAlloc, to support allocation of bigger buffers?
 
 // We use some bits operations to reduce the memory footprint and improve performances.
@@ -54,7 +57,11 @@ namespace fstd
 
 		typedef uint64_t	Flag_Set;
 
-		enum class Chunk_Size : uint8_t
+		constexpr uint32_t	check_32_count = 1'024;
+		constexpr uint32_t	flag_set_count = check_32_count / (sizeof(Flag_Set) * 8);
+//		constexpr uint32_t	flag_set_count_bits = ~flag_set_count & (flag_set_count + 1);	// @TODO we need an intrinsic here like ctz https://en.wikipedia.org/wiki/Find_first_set, but to do it a compile time we need a better language
+
+		enum class Chunk_Size : uint16_t
 		{
 			not_used,
 			size_32,
@@ -63,19 +70,12 @@ namespace fstd
 		struct Memory_Header
 		{
 			// Bitfield of 16 bits
-			struct Index
-			{
-				uint16_t	set : 10;	// 10 bits allow a maximum value of 1023
-				uint16_t	bit : 6;	// can't exceed 63, need only 6 bits, other bits are used for the set_index
-			};
-
-			Index		index;
-			Chunk_Size	size;
+			uint16_t	set_index	: 6;	// For 1024 chuncks we need only 16 sets => 4 bits, but we can resonably give little bits if we want to handle more chunks
+			uint16_t	bit_index	: 6;	// can't exceed 63, need only 6 bits, other bits are used for the set_index
+			Chunk_Size	size		: 4;	// We take only 4 bits for 16 values
 		};
 
-		constexpr uint32_t	check_32_count = 1'024;
 		constexpr uint32_t	Memory_Header_size = sizeof(Memory_Header);
-		constexpr uint32_t	flag_set_count = check_32_count / (sizeof(Flag_Set) * 8);
 		constexpr uint16_t	flag_set_size_in_bits = sizeof(Flag_Set) * 8;
 		constexpr Flag_Set	flag_set_completely_unused = 0x0000'0000'0000'0000;
 		constexpr Flag_Set	flag_set_completely_used = 0xffff'ffff'ffff'ffff;
@@ -85,10 +85,10 @@ namespace fstd
 		uint64_t*			chunks_32_flags = nullptr;
 #endif
 
-		inline void free_32(Memory_Header::Index index)
+		inline void free_32(Memory_Header* index)
 		{
 #if defined(POOL_32)
-			chunks_32_flags[index.set] &= ~(1ULL << index.bit);
+			chunks_32_flags[index->set_index] &= ~(1ULL << index->bit_index);
 #endif
 		}
 		
@@ -100,19 +100,25 @@ namespace fstd
 			}
 
 			for (uint16_t i = 0; i < flag_set_count; i++) {
-				if (chunks_32_flags[i] != flag_set_completely_used) {
-					for (uint16_t j = 0; j < flag_set_size_in_bits; j++) {
-						if (((chunks_32_flags[i] >> j) & 1ULL) == 0) {	// Check if the flag at j is set
-							chunks_32_flags[i] |= 1ULL << j;
+#if defined(FSTD_OS_WINDOWS)
+				DWORD	bit_index;
 
-							void* ptr = (void*)((size_t)chunks_32 + (size_t)((uint32_t)i * flag_set_size_in_bits + j) * 32);
-							((Memory_Header*)ptr)->index.set = i;
-							((Memory_Header*)ptr)->index.bit = j;
-							((Memory_Header*)ptr)->size = Chunk_Size::size_32;
-							return ptr;
-						}
-					}
+				if (_BitScanForward64(&bit_index, chunks_32_flags[i])) {	// @TODO We need to implement this intrinsic in f-lang
+					bit_index -= 1;
 				}
+				else {
+					bit_index = 63;
+				}
+				chunks_32_flags[i] |= 1ULL << bit_index;
+
+				void* ptr = (void*)((size_t)chunks_32 + (size_t)((uint32_t)i * flag_set_size_in_bits + bit_index) * 32);
+				((Memory_Header*)ptr)->set_index = i;
+				((Memory_Header*)ptr)->bit_index = bit_index;
+				((Memory_Header*)ptr)->size = Chunk_Size::size_32;
+				return ptr;
+#else
+#	error
+#endif
 			}
 #endif
 			return nullptr;
@@ -148,6 +154,8 @@ namespace fstd
 
 		void allocator_initialize()
 		{
+			assert(sizeof(Memory_Header) == 2);
+
 #if defined(POOL_32)
 			if (chunks_32 == nullptr) {
 				chunks_32 = os_allocate(check_32_count * 32);
@@ -184,7 +192,7 @@ namespace fstd
 						ptr = os_allocate(real_size);
 
 						memory_copy(ptr, header, 32 + Memory_Header_size);
-						free_32(header->index);
+						free_32(header);
 						((Memory_Header*)ptr)->size = Chunk_Size::not_used;
 					}
 					else {
@@ -206,7 +214,7 @@ namespace fstd
 			Memory_Header* header = (Memory_Header*)((size_t)address - Memory_Header_size);
 
 			if (header->size == Chunk_Size::size_32) {
-				free_32(header->index);
+				free_32(header);
 			}
 			else {
 				os_free((void*)((size_t)address - Memory_Header_size));
