@@ -55,11 +55,16 @@ namespace fstd
 #endif
 		}
 
+#if defined(FSTD_X86_64)
 		typedef uint64_t	Flag_Set;
+#else
+		typedef uint32_t	Flag_Set;
+#endif
 
 		constexpr uint32_t	check_32_count = 1'024;
 		constexpr uint32_t	flag_set_count = check_32_count / (sizeof(Flag_Set) * 8);
 //		constexpr uint32_t	flag_set_count_bits = ~flag_set_count & (flag_set_count + 1);	// @TODO we need an intrinsic here like ctz https://en.wikipedia.org/wiki/Find_first_set, but to do it a compile time we need a better language
+		constexpr uint32_t	flag_set_first_bit_index_to_set = (sizeof(Flag_Set) * 8) - 1;
 
 		enum class Chunk_Size : uint16_t
 		{
@@ -70,19 +75,17 @@ namespace fstd
 		struct Memory_Header
 		{
 			// Bitfield of 16 bits
-			uint16_t	set_index	: 6;	// For 1024 chuncks we need only 16 sets => 4 bits, but we can resonably give little bits if we want to handle more chunks
+			uint16_t	set_index	: 6;	// For 1024 chunks we need only 16 sets => 4 bits, but we can resonably give little bits if we want to handle more chunks
 			uint16_t	bit_index	: 6;	// can't exceed 63, need only 6 bits, other bits are used for the set_index
 			Chunk_Size	size		: 4;	// We take only 4 bits for 16 values
 		};
 
 		constexpr uint32_t	Memory_Header_size = sizeof(Memory_Header);
 		constexpr uint16_t	flag_set_size_in_bits = sizeof(Flag_Set) * 8;
-		constexpr Flag_Set	flag_set_completely_unused = 0x0000'0000'0000'0000;
-		constexpr Flag_Set	flag_set_completely_used = 0xffff'ffff'ffff'ffff;
 
 #if defined(POOL_32)
 		void*				chunks_32 = nullptr;
-		uint64_t*			chunks_32_flags = nullptr;
+		Flag_Set*			chunks_32_flags = nullptr;
 #endif
 
 		inline void free_32(Memory_Header* index)
@@ -103,11 +106,15 @@ namespace fstd
 #if defined(FSTD_OS_WINDOWS)
 				DWORD	bit_index;
 
+#if defined(FSTD_X86_64)
 				if (_BitScanForward64(&bit_index, chunks_32_flags[i])) {	// @TODO We need to implement this intrinsic in f-lang
+#else
+				if (_BitScanForward(&bit_index, chunks_32_flags[i])) {	// @TODO We need to implement this intrinsic in f-lang
+#endif
 					bit_index -= 1;
 				}
 				else {
-					bit_index = 63;
+					bit_index = flag_set_first_bit_index_to_set;
 				}
 				chunks_32_flags[i] |= 1ULL << bit_index;
 
@@ -159,7 +166,7 @@ namespace fstd
 #if defined(POOL_32)
 			if (chunks_32 == nullptr) {
 				chunks_32 = os_allocate(check_32_count * 32);
-				chunks_32_flags = (uint64_t*)os_allocate(flag_set_count * sizeof(Flag_Set));
+				chunks_32_flags = (Flag_Set*)os_allocate(flag_set_count * sizeof(Flag_Set));
 				zero_memory(chunks_32_flags, flag_set_count * sizeof(Flag_Set));
 			}
 #endif
