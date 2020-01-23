@@ -15,14 +15,13 @@ namespace fstd
 			"6061626364656667686970717273747576777879"
 			"8081828384858687888990919293949596979899";
 
-		// @TODO @SpeedUp
+		// Inspiration
+		// https://github.com/fmtlib/fmt/blob/master/include/fmt/format.h
 		//
-		// Many things are slow here
-		// 1. The reserve of string take 25% of time
-		// 2. intrinsic::divide implementation in ASM for x86 is slower than the C version
-		// 3. The assignment of the character after the divide is slow, check if using a range test to determine wich character to assign can be faster
+		// @SpeedUp:
+		// 1. intrinsic::divide implementation in ASM for x86 is slower than the C version
 		//
-		// Flamaros - 05 january 2020
+		// Flamaros - 23 january 2020
 
 		string to_string(int32_t number)
 		{
