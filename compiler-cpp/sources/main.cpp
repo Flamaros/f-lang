@@ -17,6 +17,10 @@
 
 #include <fstd/os/windows/console.hpp>
 
+#undef max
+#include <tracy/Tracy.hpp>
+#include <tracy/common/TracySystem.hpp>
+
 using namespace std::string_literals; // enables s-suffix for std::string literals
 
 using namespace fstd;
@@ -33,6 +37,10 @@ int main(int ac, char** av)
 #if defined(FSTD_OS_WINDOWS)
 	os::windows::enable_default_console_configuration();
 	defer { os::windows::close_console(); };
+#endif
+
+#if defined(TRACY_ENABLE)
+	tracy::SetThreadName("Main thread");
 #endif
 
 	initialize_globals();
@@ -54,14 +62,21 @@ int main(int ac, char** av)
 
 	run_tests();
 
-	system::Path	path;
+	FrameMark;
+	// Initialization and tests ================================================
 
-	defer{ system::reset_path(path); };
+	{
+		ZoneScopedN("f-lang parsing");
 
-	system::from_native(path, LR"(.\compiler-f\main.f)"s);
+		system::Path	path;
 
-    f::lex(path, tokens);
-    f::parse(tokens, parsing_result);
+		defer{ system::reset_path(path); };
+
+		system::from_native(path, LR"(.\compiler-f\main.f)"s);
+
+		f::lex(path, tokens);
+		f::parse(tokens, parsing_result);
+	}
 
 	//std::filesystem::path output_directory_path = "./build";
 	//std::filesystem::path output_file_name = "f-compiler.exe";
@@ -76,6 +91,9 @@ int main(int ac, char** av)
   //  }
 
 //    generate_hello_world();
+
+
+	FrameMark;
 
 	return 1;
 }

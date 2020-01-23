@@ -11,6 +11,9 @@
 
 #include <assert.h>
 
+#undef max
+#include <tracy/Tracy.hpp>
+
 // Typedef complexity
 // https://en.cppreference.com/w/cpp/language/typedef
 
@@ -35,6 +38,8 @@ namespace f
 
     void parse(const std::vector<Token>& tokens, AST& ast)
 	{
+		ZoneScoped;
+
 		std::stack<State>	states;
 		Token				name_token;
 		size_t				previous_line = 0;

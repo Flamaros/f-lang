@@ -12,8 +12,14 @@
 
 #include <time.h>       /* time */
 
+#undef max
+#include <tracy/Tracy.hpp>
+
+
 void test_integer_to_string_performances()
 {
+	ZoneScopedN("test_integer_to_string_performances");
+
 	std::vector<int32_t>	numbers;
 	uint64_t				start_time;
 	uint64_t				end_time;
@@ -22,12 +28,18 @@ void test_integer_to_string_performances()
 
 	std::srand((uint32_t)time(nullptr));
 
-	numbers.resize(10'000'000);
-	for (auto& number : numbers) {
-		number = std::rand();
+	{
+		ZoneScopedN("Initialize random numbers");
+
+		numbers.resize(10'000'000);
+		for (auto& number : numbers) {
+			number = std::rand();
+		}
 	}
 
 	{
+		ZoneScopedN("f-lang to_string");
+
 		fstd::language::string f_string;
 		start_time = fstd::system::get_time_in_nanoseconds();
 		for (auto& number : numbers) {
@@ -39,6 +51,8 @@ void test_integer_to_string_performances()
 	}
 
 	{
+		ZoneScopedN("stl to_string");
+
 		std::string std_string;
 		start_time = fstd::system::get_time_in_nanoseconds();
 		for (auto& number : numbers) {
@@ -53,5 +67,7 @@ void test_integer_to_string_performances()
 
 void run_tests()
 {
+	ZoneScopedN("run_tests");
+
 	test_integer_to_string_performances();
 }

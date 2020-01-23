@@ -14,6 +14,9 @@
 
 #include <unordered_map>
 
+#undef max
+#include <tracy/Tracy.hpp>
+
 using namespace std::literals;	// For string literal suffix (conversion to std::string_view)
 
 using namespace f;
@@ -494,6 +497,8 @@ enum class State
 
 bool f::lex(const fstd::system::Path& path, std::vector<Token>& tokens)
 {
+	ZoneScopedN("f::lex");
+
 	fstd::system::File	file;
 
 	fstd::system::open_file(file, path, fstd::system::File::Opening_Flag::READ);
