@@ -28,7 +28,7 @@ using namespace fstd;
 int main(int ac, char** av)
 {
     std::string             input_file_content;
-    std::vector<f::Token>   tokens;
+	memory::Array<f::Token>	tokens;
     f::AST					parsing_result;
 	int						result = 0;
 

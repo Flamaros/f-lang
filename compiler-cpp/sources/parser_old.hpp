@@ -2,7 +2,8 @@
 
 #include "lexer.hpp"
 
-#include <fstd/memory/array.hpp>
+#include <vector>
+#include <string_view>
 
 namespace f
 {
@@ -37,5 +38,5 @@ namespace f
 		AST_Node*	root;
 	};
 
-    void parse(const fstd::memory::Array<Token>& tokens, AST& ast);
+    void parse(const std::vector<Token>& tokens, AST& ast);
 }

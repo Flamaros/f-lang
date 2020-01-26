@@ -4,7 +4,7 @@
 
 namespace fstd {
 	namespace language {
-		struct String_View
+		struct string_view
 		{
 			//uint8_t*	ref_ptr;
 			//uint32_t	length;

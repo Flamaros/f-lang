@@ -1,11 +1,10 @@
 #pragma once
 
-#include <fstd/language/string.hpp>
-#include <fstd/language/string_view.hpp>
-
 #include <fstd/system/path.hpp>
 
-#include <fstd/memory/array.hpp>
+#include <vector>
+#include <string_view>
+#include <string>
 
 /*
 Notice:
@@ -182,29 +181,27 @@ namespace f
 	public:
 		union Value
 		{
-			Punctuation		        punctuation;
-			Keyword			        keyword;
-			int64_t			        integer;
-			uint64_t		        unsigned_integer;
-			float			        real_32;
-			double			        real_64;
-			long double		        real_max;
-			fstd::language::string* string;
+			Punctuation		punctuation;
+			Keyword			keyword;
+			int64_t			integer;
+			uint64_t		unsigned_integer;
+			float			real_32;
+			double			real_64;
+			long double		real_max;
+			std::string*	string;
 		};
 
-		Token_Type			        type;
-        fstd::language::string_view text;
-		size_t				        line;       // Starting from 1
-		size_t				        column;     // Starting from 1
-		Value				        value;
+		Token_Type			type;
+		std::string_view	text;
+		size_t				line;       // Starting from 1
+		size_t				column;     // Starting from 1
+		Value				value;
 	};
 	
 	inline bool operator ==(const Token& lhs, const Token& rhs)
 	{
-        assert(false);
-        return false;
-//		return lhs.text == rhs.text;
+		return lhs.text == rhs.text;
 	}
 
-	bool    lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens);
+	bool    lex(const fstd::system::Path& path, std::vector<Token>& tokens);
 }

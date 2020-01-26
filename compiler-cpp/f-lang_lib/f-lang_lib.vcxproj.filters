@@ -112,6 +112,9 @@
     <ClInclude Include="..\sources\tests.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\memory\hash_table.hpp">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
