@@ -1,10 +1,12 @@
 #pragma once
 
+#include <fstd/language/types.hpp>
+
 #include <fstd/system/allocator.hpp>
+
 #include <fstd/memory/array.hpp>
 
-#include <cassert>
-
+#include <fstd/core/assert.hpp>
 
 namespace fstd
 {

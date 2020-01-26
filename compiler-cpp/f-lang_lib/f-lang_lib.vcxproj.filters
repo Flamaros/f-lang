@@ -115,6 +115,12 @@
     <ClInclude Include="..\sources\fstd\memory\hash_table.hpp">
       <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\types.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\core\assert.hpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -158,6 +164,9 @@
     </ClCompile>
     <ClCompile Include="..\sources\tests.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\core\assert.cpp">
+      <Filter>Source Files\fstd\core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

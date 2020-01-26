@@ -2,7 +2,7 @@
 
 #include <fstd/platform.hpp>
 
-#include <cstdint>
+#include <fstd/language/types.hpp>
 
 namespace fstd
 {

@@ -5,7 +5,7 @@
 
 #include <fstd/memory/array.hpp>
 
-#include <assert.h>
+#include <fstd/core/assert.hpp>
 
 namespace fstd
 {
@@ -24,14 +24,14 @@ namespace fstd
 		}
 
 		inline bool is_eof(Memory_Stream& stream) {
-			assert(stream.buffer_ptr);
+			fstd::core::assert(stream.buffer_ptr);
 
 			return stream.position >= stream.buffer_ptr->size;
 		}
 
 		// General
 		inline void skip(Memory_Stream& stream, size_t size) {
-			assert(stream.buffer_ptr);
+			fstd::core::assert(stream.buffer_ptr);
 
 			stream.position = stream.position + size;
 		}
@@ -41,21 +41,21 @@ namespace fstd
 		}
 
 		inline uint8_t	get(Memory_Stream& stream) {
-			assert(stream.buffer_ptr);
+			fstd::core::assert(stream.buffer_ptr);
 
 			return *memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
 		inline const uint8_t*	get_pointer(Memory_Stream& stream) {	// @Warning return pointer at current position
-			assert(stream.buffer_ptr);
+			fstd::core::assert(stream.buffer_ptr);
 
 			return memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
 		// UTF-8
 		inline bool is_uft8_bom(Memory_Stream& stream, bool skip_it) {
-			assert(stream.buffer_ptr);
-			assert(is_eof(stream) == false);
+			fstd::core::assert(stream.buffer_ptr);
+			fstd::core::assert(is_eof(stream) == false);
 
 			bool result = *memory::get_array_element(*stream.buffer_ptr, stream.position + 0) == 0xEF
 				&& *memory::get_array_element(*stream.buffer_ptr, stream.position + 1) == 0xBB

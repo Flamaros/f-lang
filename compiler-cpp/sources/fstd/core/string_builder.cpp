@@ -2,7 +2,7 @@
 
 #include <fstd/language/intrinsic.hpp>
 
-#include <cassert>
+#include <fstd/core/assert.hpp>
 
 using namespace fstd::system;
 

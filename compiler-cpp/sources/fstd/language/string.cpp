@@ -2,6 +2,8 @@
 
 #include <fstd/language/intrinsic.hpp>
 
+#include <fstd/core/assert.hpp>
+
 namespace fstd
 {
 	namespace language
@@ -78,7 +80,7 @@ namespace fstd
 
 		string to_string(int32_t number, int8_t base)
 		{
-			assert(base >= 2 && base <= 16);
+			fstd::core::assert(base >= 2 && base <= 16);
 
 			string		result;
 			wchar_t*	string;

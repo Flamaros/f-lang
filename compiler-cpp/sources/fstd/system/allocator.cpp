@@ -6,8 +6,8 @@
 #	include <Windows.h>
 #endif
 
-#include <cmath>
-#include <cassert>
+//#include <cmath>
+#include <fstd/core/assert.hpp>
 
 // Need we use VirtualAlloc instead of HeapAlloc, to support allocation of bigger buffers?
 
@@ -161,7 +161,7 @@ namespace fstd
 
 		void allocator_initialize()
 		{
-			assert(sizeof(Memory_Header) == 2);
+			fstd::core::assert(sizeof(Memory_Header) == 2);
 
 #if defined(POOL_32)
 			if (chunks_32 == nullptr) {

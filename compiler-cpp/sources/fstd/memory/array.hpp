@@ -2,7 +2,7 @@
 
 #include <fstd/system/allocator.hpp>
 
-#include <cassert>
+#include <fstd/core/assert.hpp>
 
 namespace fstd
 {
@@ -90,7 +90,7 @@ namespace fstd
 		template<typename Type>
 		Type* get_array_element(const Array<Type>& array, size_t index)
 		{
-			assert(array.size > index);
+			fstd::core::assert(array.size > index);
 			return &array.buffer[index];
 		}
 
@@ -104,7 +104,7 @@ namespace fstd
 		template<typename Type>
 		Type* get_array_last_element(const Array<Type>& array)
 		{
-			assert(array.size);
+			fstd::core::assert(array.size);
 			return &array.buffer[array.size - 1];
 		}
 

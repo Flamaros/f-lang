@@ -2,8 +2,6 @@
 
 #include <fstd/language/string.hpp>
 
-#include <cstdint>
-
 namespace fstd
 {
 	namespace system

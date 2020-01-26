@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <fstd/language/types.hpp>
 
 template<typename T>
 inline void set_flag(T& value, T flag) {

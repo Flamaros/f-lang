@@ -3,7 +3,7 @@
 #include <array>
 #include <limits>
 
-#include <cassert>
+#include <fstd/core/assert.hpp>
 
 /// !!! Warning the Key type have to be unsigned fundamental type
 /// A pure hash table
@@ -39,7 +39,7 @@ public:
             m_table[i] = default_value;
         for (auto& value_pair : values)
         {
-            assert(m_table[value_pair.first] == default_value);  // check against conflict
+            fstd::core::assert(m_table[value_pair.first] == default_value);  // check against conflict
             m_table[value_pair.first] = value_pair.second;
         }
     }

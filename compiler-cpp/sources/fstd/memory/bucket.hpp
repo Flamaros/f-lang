@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fstd/language/types.hpp>
+
 namespace fstd
 {
 	namespace memory

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <fstd/language/types.hpp>
 
 // This module contains basic memory manipulation
 // It is not thread-safe.

@@ -7,6 +7,8 @@
 
 #include <fstd/memory/array.hpp>
 
+#include <fstd/core/assert.hpp>
+
 /*
 Notice:
  - Inspired by Dlang lexer (https://dlang.org/spec/lex.html#IntegerLiteral), flang lexer don't support
@@ -201,7 +203,7 @@ namespace f
 	
 	inline bool operator ==(const Token& lhs, const Token& rhs)
 	{
-        assert(false);
+        fstd::core::assert(false);
         return false;
 //		return lhs.text == rhs.text;
 	}

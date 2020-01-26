@@ -1,6 +1,6 @@
-#include <time.h>
-#include <assert.h>
-#include <cstdint>
+#include <fstd/core/assert.hpp>
+
+#include <fstd/language/types.hpp>
 
 #include <fstd/platform.hpp>
 
@@ -23,7 +23,7 @@ namespace fstd
 			LARGE_INTEGER count;
 			QueryPerformanceCounter(&count);
 			QueryPerformanceFrequency(&freq);
-			assert(freq.LowPart != 0 || freq.HighPart != 0);
+			fstd::core::assert(freq.LowPart != 0 || freq.HighPart != 0);
 
 			// This code overflow in nanoseconds but works in microseconds
 			// And is certainly more efficient and accurate than passing by a

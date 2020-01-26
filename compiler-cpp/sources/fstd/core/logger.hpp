@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <fstd/language/types.hpp>
 
 namespace fstd
 {

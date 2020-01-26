@@ -23,8 +23,7 @@
 
 #include <fstd/memory/array.hpp>
 
-#include <cstdint>
-#include <cassert>
+#include <fstd/language/types.hpp>
 
 namespace fstd
 {
