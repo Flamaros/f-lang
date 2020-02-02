@@ -259,16 +259,28 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
                     current_column++;
                 }
                 else {
-                    // @TODO handle multiple characters punctuations here
-                    // generate a token here
+                    // @TODO
+                    //
+                    // Before starting we have to check if it is not a multiple characters punctuations.
+                    //
+                    // With some punctions emit a particular kind of token, like for comments and string literals.
+                    //
+                    // Flamaros - 02 february 2020
 
                     language::assign(current_view, stream::get_pointer(stream), 0);
+
 
                     stream::peek(stream);
                     current_column++;
                 }
             }
-/*            else if (is_digit(current_character)) { // Will be a number literal
+/*            else if (is_digit(current_character)) { // Will be a numeric literal
+
+                // @TODO
+                //
+                // Be sure to check that the numeric literal is followed by a white punctuation.
+                //
+                // Flamaros - 02 february 2020
 
             }*/
             else {  // Will be an identifier
@@ -294,6 +306,7 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
                         token.type = Token_Type::IDENTIFIER;
 
                         token.text = current_view;
+                        token.value.punctuation = Punctuation::UNKNOWN;
                     }
                     else {
                         break;
