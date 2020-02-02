@@ -4,6 +4,6 @@ namespace fstd
 {
 	namespace core
 	{
-		void	assert(bool condition);
+		void	Assert(bool condition);
 	}
 }

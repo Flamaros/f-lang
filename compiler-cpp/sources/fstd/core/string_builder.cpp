@@ -36,7 +36,7 @@ namespace fstd
 
 		static void print_to_builder(String_Builder& builder, int32_t value, int32_t base)
 		{
-			assert(base >= 2 && base <= 16);
+			Assert(base >= 2 && base <= 16);
 
 			language::string*	string_buffer;
 

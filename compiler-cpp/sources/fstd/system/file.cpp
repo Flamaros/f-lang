@@ -6,13 +6,34 @@
 #	include <Windows.h>
 #endif
 
+#undef max
+#include <tracy/Tracy.hpp>
+#include <tracy/common/TracySystem.hpp>
+
+#include <fstd/core/assert.hpp>
+
+// @TODO
+//
+// Windows Store restricted access APIS:
+// - CreateFile2
+// - GetFileInformationByHandle(Ex)
+// - ...
+//
+// Flamaros - 26 january 2020
+
+using namespace fstd;
+
 namespace fstd
 {
 	namespace system
 	{
 		bool open_file(File& file, const Path& path, File::Opening_Flag flags)
 		{
-			close_file(file);
+			ZoneScopedNC("fstd::system::open_file", 0x1a237e);
+
+			core::Assert(file.handle == nullptr);
+
+			file.is_eof = false;
 
 #if defined(FSTD_OS_WINDOWS)
 			DWORD	dwDesiredAccess = 0;
@@ -46,6 +67,7 @@ namespace fstd
 
 		void close_file(File& file)
 		{
+			ZoneScopedNC("fstd::system::close_file", 0x1a237e);
 #if defined(FSTD_OS_WINDOWS)
 			if (file.handle != nullptr) {
 				CloseHandle(file.handle);
@@ -56,8 +78,16 @@ namespace fstd
 #endif
 		}
 
+		bool is_file_eof(File& file)
+		{
+			return file.is_eof;
+		}
+
 		uint64_t get_file_size(const File& file)
 		{
+			ZoneScopedNC("fstd::system::get_file_size", 0x1a237e);
+
+			fstd::core::Assert(file.handle != nullptr);
 #if defined(FSTD_OS_WINDOWS)
 			LARGE_INTEGER	size;
 
@@ -71,6 +101,8 @@ namespace fstd
 
 		memory::Array<uint8_t> get_file_content(File& file)
 		{
+			ZoneScopedN("fstd::system::get_file_content");
+
 #if defined(FSTD_OS_WINDOWS)
 			memory::Array<uint8_t>	content;
 			DWORD					read = 0;
@@ -83,10 +115,55 @@ namespace fstd
 				&read,								// lpNumberOfBytesRead
 				NULL								// lpOverlapped
 			) == TRUE) {
+				file.is_eof = true;
 				return content;
 			}
 			memory::release(content);
 			return content;
+#else
+#	error
+#endif
+		}
+
+		memory::Array<uint8_t> initiate_get_file_content_asynchronously(File& file)
+		{
+			ZoneScopedNC("fstd::system::initiate_get_file_content_asynchronously", 0x534bae);
+			// @TODO implement it correctly
+			//
+			// We need to initiate an asynchronous read with ReadEx and Overlapped struct
+			// under Window platform.
+			// We will read step by steps with a fixed size.
+			//
+			// The capacity of the returned buffer should be pre-allocated.
+			//
+			// Even this function should not lock on the first read, this will allow the user
+			// to do some operation in the background.
+			//
+			// Flamaros - 01 february 2020
+			return get_file_content(file);
+		}
+
+		bool get_file_content_asynchronously(File& file, memory::Array<uint8_t>& buffer)
+		{
+			ZoneScopedNC("fstd::system::get_file_content_asynchronously", 0x534bae);
+			// @TODO implement it
+			//
+			// 
+			//
+			// Flamaros - 01 february 2020
+
+#if defined(FSTD_OS_WINDOWS)
+			return true;
+#else
+#	error
+#endif
+		}
+
+		bool wait_for_availabe_asynchronous_content(File& file, size_t size)
+		{
+			ZoneScopedNC("fstd::system::wait_for_availabe_asynchronous_content", 0x534bae);
+#if defined(FSTD_OS_WINDOWS)
+			return true;
 #else
 #	error
 #endif

@@ -90,21 +90,21 @@ namespace fstd
 		template<typename Type>
 		Type* get_array_element(const Array<Type>& array, size_t index)
 		{
-			fstd::core::assert(array.size > index);
+			fstd::core::Assert(array.size > index);
 			return &array.buffer[index];
 		}
 
 		template<typename Type>
 		Type* get_array_first_element(const Array<Type>& array)
 		{
-			assert(array.size);
+			Assert(array.size);
 			return &array.buffer[0];
 		}
 
 		template<typename Type>
 		Type* get_array_last_element(const Array<Type>& array)
 		{
-			fstd::core::assert(array.size);
+			fstd::core::Assert(array.size);
 			return &array.buffer[array.size - 1];
 		}
 

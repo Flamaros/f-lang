@@ -54,13 +54,13 @@ int main(int ac, char** av)
 		language::release(formatted_string);
 	};
 
-	language::assign(format, L"test: %d %d %d\n");
-	core::print_to_builder(string_builder, &format, -12340, 1234, 12340);
+	//language::assign(format, L"test: %d %d %d\n");
+	//core::print_to_builder(string_builder, &format, -12340, 1234, 12340);
 
-	formatted_string = core::to_string(string_builder);
-	system::print(formatted_string);
+	//formatted_string = core::to_string(string_builder);
+	//system::print(formatted_string);
 
-	run_tests();
+	//run_tests();
 
 	FrameMark;
 	// Initialization and tests ================================================

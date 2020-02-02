@@ -203,7 +203,7 @@ namespace f
 	
 	inline bool operator ==(const Token& lhs, const Token& rhs)
 	{
-        fstd::core::assert(false);
+        fstd::core::Assert(false);
         return false;
 //		return lhs.text == rhs.text;
 	}

@@ -9,6 +9,10 @@
 #include <time.h>
 #include <assert.h>
 
+#include <fstd/core/assert.hpp>
+
+using namespace fstd;
+
 constexpr DWORD	image_base = 0x00400000;
 constexpr DWORD	section_alignment = 4096;	// 4;	// @Warning should be greater or equal to file_alignment
 constexpr DWORD	file_alignment = 512;		// 4;		// @TODO check that because the default value according to the official documentation is 512
@@ -191,7 +195,7 @@ bool generate_hello_world()
 
 
 
-    assert(image_nt_header.FileHeader.NumberOfSections <= 96);
+    core::Assert(image_nt_header.FileHeader.NumberOfSections <= 96);
 
     // .text section
     {

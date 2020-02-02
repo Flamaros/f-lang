@@ -39,7 +39,7 @@ public:
             m_table[i] = default_value;
         for (auto& value_pair : values)
         {
-            fstd::core::assert(m_table[value_pair.first] == default_value);  // check against conflict
+            fstd::core::Assert(m_table[value_pair.first] == default_value);  // check against conflict
             m_table[value_pair.first] = value_pair.second;
         }
     }

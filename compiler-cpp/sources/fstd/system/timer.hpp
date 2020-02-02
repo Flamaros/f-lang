@@ -23,7 +23,7 @@ namespace fstd
 			LARGE_INTEGER count;
 			QueryPerformanceCounter(&count);
 			QueryPerformanceFrequency(&freq);
-			fstd::core::assert(freq.LowPart != 0 || freq.HighPart != 0);
+			fstd::core::Assert(freq.LowPart != 0 || freq.HighPart != 0);
 
 			// This code overflow in nanoseconds but works in microseconds
 			// And is certainly more efficient and accurate than passing by a

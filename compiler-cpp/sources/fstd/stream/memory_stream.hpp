@@ -21,17 +21,18 @@ namespace fstd
 
 		inline void initialize_memory_stream(Memory_Stream& stream, fstd::memory::Array<uint8_t>& buffer) {
 			stream.buffer_ptr = &buffer;
+			stream.position = 0;
 		}
 
 		inline bool is_eof(Memory_Stream& stream) {
-			fstd::core::assert(stream.buffer_ptr);
+			fstd::core::Assert(stream.buffer_ptr);
 
 			return stream.position >= stream.buffer_ptr->size;
 		}
 
 		// General
 		inline void skip(Memory_Stream& stream, size_t size) {
-			fstd::core::assert(stream.buffer_ptr);
+			fstd::core::Assert(stream.buffer_ptr);
 
 			stream.position = stream.position + size;
 		}
@@ -41,21 +42,26 @@ namespace fstd
 		}
 
 		inline uint8_t	get(Memory_Stream& stream) {
-			fstd::core::assert(stream.buffer_ptr);
+			fstd::core::Assert(stream.buffer_ptr);
 
 			return *memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
 		inline const uint8_t*	get_pointer(Memory_Stream& stream) {	// @Warning return pointer at current position
-			fstd::core::assert(stream.buffer_ptr);
+			fstd::core::Assert(stream.buffer_ptr);
 
 			return memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
+		inline size_t get_position(Memory_Stream& stream)
+		{
+			return stream.position;
+		}
+
 		// UTF-8
 		inline bool is_uft8_bom(Memory_Stream& stream, bool skip_it) {
-			fstd::core::assert(stream.buffer_ptr);
-			fstd::core::assert(is_eof(stream) == false);
+			fstd::core::Assert(stream.buffer_ptr);
+			fstd::core::Assert(is_eof(stream) == false);
 
 			bool result = *memory::get_array_element(*stream.buffer_ptr, stream.position + 0) == 0xEF
 				&& *memory::get_array_element(*stream.buffer_ptr, stream.position + 1) == 0xBB

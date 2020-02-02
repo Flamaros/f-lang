@@ -80,7 +80,7 @@ namespace fstd
 
 		string to_string(int32_t number, int8_t base)
 		{
-			fstd::core::assert(base >= 2 && base <= 16);
+			fstd::core::Assert(base >= 2 && base <= 16);
 
 			string		result;
 			wchar_t*	string;

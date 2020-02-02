@@ -18,7 +18,7 @@
 
 void test_integer_to_string_performances()
 {
-	ZoneScopedN("test_integer_to_string_performances");
+	ZoneScopedNC("test_integer_to_string_performances", 0xf05545);
 
 	std::vector<int32_t>	numbers;
 	uint64_t				start_time;
@@ -29,7 +29,7 @@ void test_integer_to_string_performances()
 	std::srand((uint32_t)time(nullptr));
 
 	{
-		ZoneScopedN("Initialize random numbers");
+		ZoneScopedNC("Initialize random numbers", 0xf05545);
 
 		numbers.resize(10'000'000);
 		for (auto& number : numbers) {
@@ -38,7 +38,7 @@ void test_integer_to_string_performances()
 	}
 
 	{
-		ZoneScopedN("f-lang to_string");
+		ZoneScopedNC("f-lang to_string", 0xf05545);
 
 		fstd::language::string f_string;
 		start_time = fstd::system::get_time_in_nanoseconds();
@@ -51,7 +51,7 @@ void test_integer_to_string_performances()
 	}
 
 	{
-		ZoneScopedN("stl to_string");
+		ZoneScopedNC("stl to_string", 0xf05545);
 
 		std::string std_string;
 		start_time = fstd::system::get_time_in_nanoseconds();
@@ -67,7 +67,7 @@ void test_integer_to_string_performances()
 
 void run_tests()
 {
-	ZoneScopedN("run_tests");
+	ZoneScopedNC("run_tests", 0xb71c1c);
 
 	test_integer_to_string_performances();
 }

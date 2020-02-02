@@ -12,7 +12,7 @@ namespace fstd
 {
 	namespace core
 	{
-		void assert(bool condition)
+		void Assert(bool condition)
 		{
 			if (condition == false) {
 				// __asm { int 3 };	// @TODO Replace by direct ASM code: debugger interrupt 0xCC opcode in x86 and 0xCCH opcode in x64

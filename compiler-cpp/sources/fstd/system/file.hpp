@@ -12,6 +12,17 @@ typedef HANDLE	File_Handle;
 #	error
 #endif
 
+// @TODO
+//
+// Add an implementation that is garanty to be working with Windows Store like CreateFile2 instead of CreateFileW.
+// As some for some applications the Windows Store will not be a target, there is no need to use restricted OS APIs.
+// We may want to manage this by using a compilation flag that switch the implementation of this module.
+//
+// Flamaros - 26 january 2020
+
+
+// @TODO check if mapping file into memory can be faster, than using traditional read by chunk method.
+
 namespace fstd
 {
 	namespace system
@@ -25,12 +36,21 @@ namespace fstd
 				CREATE	= 0x04
 			};
 
-			File_Handle	handle = nullptr;
+			constexpr static uint8_t	nb_buffers = 2;
+			constexpr static size_t		buffers_size = 512;
+
+			File_Handle					handle = nullptr;
+			bool						is_eof = false;
 		};
 
-		bool					open_file(File& file, const Path& path, File::Opening_Flag flags);
-		void					close_file(File& file);
-		uint64_t				get_file_size(const File& file);
-		memory::Array<uint8_t>	get_file_content(File& file);
+		bool							open_file(File& file, const Path& path, File::Opening_Flag flags);
+		void							close_file(File& file);
+		bool							is_file_eof(File& file);
+		uint64_t						get_file_size(const File& file);
+		memory::Array<uint8_t>			get_file_content(File& file);
+
+		memory::Array<uint8_t>			initiate_get_file_content_asynchronously(File& file);
+		bool							get_file_content_asynchronously(File& file, memory::Array<uint8_t>& buffer);	// return true if succeed
+		bool							wait_for_availabe_asynchronous_content(File& file, size_t size);	// return true if succeed
 	}
 }

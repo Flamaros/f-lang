@@ -161,7 +161,7 @@ namespace fstd
 
 		void allocator_initialize()
 		{
-			fstd::core::assert(sizeof(Memory_Header) == 2);
+			fstd::core::Assert(sizeof(Memory_Header) == 2);
 
 #if defined(POOL_32)
 			if (chunks_32 == nullptr) {
