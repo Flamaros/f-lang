@@ -262,14 +262,9 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
                     Token       token;
                     Punctuation punctuation_2 = Punctuation::UNKNOWN;
 
-                    // @TODO
-                    //
-                    // Before starting we have to check if it is not a multiple characters punctuations.
-                    //
-                    // With some punctions emit a particular kind of token, like for comments and string literals.
-                    //
-                    // Flamaros - 02 february 2020
-
+                    token.line = current_line;
+                    token.column = current_column;
+                    
                     language::assign(current_view, stream::get_pointer(stream), 0);
 
                     if (stream::get_remaining_size(stream) >= 2) {
@@ -277,7 +272,16 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
                     }
 
                     if (punctuation_2 == Punctuation::LINE_COMMENT) {
-                        stream::peek(stream);
+                        while (stream::is_eof(stream) == false)
+                        {
+                            uint8_t     current_character;
+
+                            current_character = stream::get(stream);
+                            if (current_character == '\n') {
+                                break;
+                            }
+                            stream::peek(stream);   // @Warning We don't peek the '\n' character (it will be peeked later for the line count increment)
+                        }
                     }
                     else if (punctuation_2 == Punctuation::OPEN_BLOCK_COMMENT) {
                         stream::peek(stream);
@@ -309,9 +313,9 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
                             token.value.punctuation = punctuation;
                             stream::skip(stream, 1);
                         }
-                    }
 
-                    memory::array_push_back(tokens, token);
+                        memory::array_push_back(tokens, token);
+                    }
 
                     current_column++;
                 }
