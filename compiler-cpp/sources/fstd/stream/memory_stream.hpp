@@ -24,10 +24,19 @@ namespace fstd
 			stream.position = 0;
 		}
 
-		inline bool is_eof(Memory_Stream& stream) {
+		inline bool is_eof(const Memory_Stream& stream) {
 			fstd::core::Assert(stream.buffer_ptr);
 
 			return stream.position >= stream.buffer_ptr->size;
+		}
+
+		inline size_t get_remaining_size(const Memory_Stream& stream) {
+			fstd::core::Assert(stream.buffer_ptr);
+
+			if (is_eof(stream)) {
+				return 0;
+			}
+			return stream.buffer_ptr->size - stream.position;
 		}
 
 		// General
@@ -41,19 +50,19 @@ namespace fstd
 			skip(stream, 1);
 		}
 
-		inline uint8_t	get(Memory_Stream& stream) {
+		inline uint8_t	get(const Memory_Stream& stream) {
 			fstd::core::Assert(stream.buffer_ptr);
 
 			return *memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
-		inline const uint8_t*	get_pointer(Memory_Stream& stream) {	// @Warning return pointer at current position
+		inline const uint8_t*	get_pointer(const Memory_Stream& stream) {	// @Warning return pointer at current position
 			fstd::core::Assert(stream.buffer_ptr);
 
 			return memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
-		inline size_t get_position(Memory_Stream& stream)
+		inline size_t get_position(const Memory_Stream& stream)
 		{
 			return stream.position;
 		}

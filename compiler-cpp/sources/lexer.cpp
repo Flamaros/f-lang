@@ -259,6 +259,9 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
                     current_column++;
                 }
                 else {
+                    Token       token;
+                    Punctuation punctuation_2 = Punctuation::UNKNOWN;
+
                     // @TODO
                     //
                     // Before starting we have to check if it is not a multiple characters punctuations.
@@ -269,8 +272,47 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
 
                     language::assign(current_view, stream::get_pointer(stream), 0);
 
+                    if (stream::get_remaining_size(stream) >= 2) {
+                        punctuation_2 = punctuation_table_2[punctuation_key_2(stream::get_pointer(stream))];
+                    }
 
-                    stream::peek(stream);
+                    if (punctuation_2 == Punctuation::LINE_COMMENT) {
+                        stream::peek(stream);
+                    }
+                    else if (punctuation_2 == Punctuation::OPEN_BLOCK_COMMENT) {
+                        stream::peek(stream);
+                    }
+                    else if (punctuation == Punctuation::DOUBLE_QUOTE) {
+                        stream::peek(stream);
+                    }
+                    else if (punctuation == Punctuation::SINGLE_QUOTE) {
+                        stream::peek(stream);
+                        //while (stream::is_eof(stream) == false)
+                        //{
+                        //    uint8_t     current_character;
+
+                        //    current_character = stream::get(stream);
+                        //}
+                    }
+                    else {
+                        token.type = Token_Type::SYNTAXE_OPERATOR;
+
+                        if (punctuation_2 != Punctuation::UNKNOWN) {
+                            language::assign(current_view, stream::get_pointer(stream), 2);
+                            token.text = current_view;
+                            token.value.punctuation = punctuation_2;
+                            stream::skip(stream, 2);
+                        }
+                        else {
+                            language::assign(current_view, stream::get_pointer(stream), 1);
+                            token.text = current_view;
+                            token.value.punctuation = punctuation;
+                            stream::skip(stream, 1);
+                        }
+                    }
+
+                    memory::array_push_back(tokens, token);
+
                     current_column++;
                 }
             }

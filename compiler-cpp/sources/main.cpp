@@ -45,14 +45,14 @@ int main(int ac, char** av)
 
 	initialize_globals();
 
-	core::String_Builder	string_builder;
-	language::string		format;
-	language::string		formatted_string;
+	//core::String_Builder	string_builder;
+	//language::string		format;
+	//language::string		formatted_string;
 
-	defer{
-		core::free_buffers(string_builder);
-		language::release(formatted_string);
-	};
+	//defer{
+	//	core::free_buffers(string_builder);
+	//	language::release(formatted_string);
+	//};
 
 	//language::assign(format, L"test: %d %d %d\n");
 	//core::print_to_builder(string_builder, &format, -12340, 1234, 12340);
