@@ -87,24 +87,9 @@ static Hash_Table<std::uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_t
     {'?', Punctuation::QUESTION_MARK}
 };
 
-static bool is_white_punctuation(Punctuation punctuation)
+static inline bool is_white_punctuation(Punctuation punctuation)
 {
     return punctuation >= Punctuation::WHITE_CHARACTER;
-}
-
-static Punctuation ending_punctuation(const language::string_view& text, int& punctuation_length)
-{
-    Punctuation punctuation = Punctuation::UNKNOWN;
-
-    punctuation_length = 2;
-    if (language::get_string_length(text) >= 2)
-        punctuation = punctuation_table_2[punctuation_key_2(language::get_data(text) + language::get_string_length(text) - 2)];
-    if (punctuation != Punctuation::UNKNOWN)
-        return punctuation;
-    punctuation_length = 1;
-    if (language::get_string_length(text) >= 1)
-        punctuation = punctuation_table_1[*(language::get_data(text) + language::get_string_length(text) - 1)];
-    return punctuation;
 }
 
 static fstd::memory::Hash_Table_S<uint16_t, fstd::language::string, Keyword, 65536 / 1024>	keywords_safe;
@@ -166,7 +151,7 @@ static std::unordered_map<std::string_view, Keyword> keywords = {
 	{"__VERSION__"sv,			Keyword::SPECIAL_COMPILER_VERSION},
 };*/
 
-static Keyword is_keyword(const std::string_view& text)
+static inline Keyword is_keyword(const std::string_view& text)
 {
     Assert(false);
     //const auto& it = keywords.find(text);
@@ -175,7 +160,7 @@ static Keyword is_keyword(const std::string_view& text)
     return Keyword::UNKNOWN;
 }
 
-static bool is_digit(char character)
+static inline bool is_digit(char character)
 {
 	if (character >= '0' && character <= '9') {
 		return true;
@@ -183,28 +168,22 @@ static bool is_digit(char character)
 	return false;
 }
 
-enum class State
-{
-    BOM,
-    TOKEN,
-};
-
 bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
 {
 	ZoneScopedNC("f::lex", 0x1b5e20);
 
 	system::File	        file;
     stream::Memory_Stream	stream;
-    State                   state = State::BOM;
     size_t	                nb_tokens_prediction = 0;
     memory::Array<uint8_t>  file_buffer;
     uint64_t                file_size;
     language::string_view   current_view;
     int					    current_line = 1;
     int					    current_column = 1;
-    
 
 	system::open_file(file, path, fstd::system::File::Opening_Flag::READ);
+    // @TODO handle open_file erros
+
     defer{ system::close_file(file); };
 
     file_size = system::get_file_size(file);
@@ -214,6 +193,10 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
 
     stream::initialize_memory_stream(stream, file_buffer);
 
+    if (stream::is_eof(stream) == true) {
+        return true;
+    }
+
     // @Warning
     //
     // We read the file in background asynchronously, so be careful to not relly on file states.
@@ -221,146 +204,158 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
     //
     // Flamaros - 01 february 2020
 
+    nb_tokens_prediction = file_size / tokens_length_heuristic;
+
+    memory::reserve_array(tokens, nb_tokens_prediction);
+
+    language::assign(current_view, stream::get_pointer(stream), 0);
+
+    wait_for_availabe_asynchronous_content(file, stream::get_position(stream) + 4);
+    bool has_utf8_boom = fstd::stream::is_uft8_bom(stream, true);
+
+    if (has_utf8_boom == false) {
+        log(*globals.logger, Log_Level::warning, "[f::lexer] File: '%s' doesn't have UTF8 BOM.", system::to_native(path));
+        // @TODO print a user warning about that the utf8 BOM is missing
+    }
+
     while (stream::is_eof(stream) == false)
     {
-        if (state == State::BOM)
-        {
-            wait_for_availabe_asynchronous_content(file, stream::get_position(stream) + 4);
-            bool has_utf8_boom = fstd::stream::is_uft8_bom(stream, true);
-
-            if (has_utf8_boom == false) {
-                log(*globals.logger, Log_Level::warning, "[f::lexer] File: '%s' doesn't have UTF8 BOM.", system::to_native(path));
-                // @TODO print a user warning about that the utf8 BOM is missing
-            }
-
-            size_t	nb_tokens_prediction = file_size / tokens_length_heuristic;
-
-            memory::reserve_array(tokens, nb_tokens_prediction);
-            state = State::TOKEN;
-
-            language::assign(current_view, stream::get_pointer(stream), 0);
-        }
-        else if (state == State::TOKEN)
-        {
-            Punctuation punctuation;
-            uint8_t     current_character;
+        Punctuation punctuation;
+        uint8_t     current_character;
             
-            current_character = stream::get(stream);
+        current_character = stream::get(stream);
 
-            punctuation = punctuation_table_1[current_character];
-            if (punctuation != Punctuation::UNKNOWN) { // Punctuation to analyse
-                if (is_white_punctuation(punctuation)) {    // Punctuation to ignore
-                    if (punctuation == Punctuation::NEW_LINE_CHARACTER) {
-                        current_line++;
-                        current_column = 0; // @Warning 0 because the will be incremented just after
-                    }
-
-                    stream::peek(stream);
-                    current_column++;
+        punctuation = punctuation_table_1[current_character];
+        if (punctuation != Punctuation::UNKNOWN) { // Punctuation to analyse
+            if (is_white_punctuation(punctuation)) {    // Punctuation to ignore
+                if (punctuation == Punctuation::NEW_LINE_CHARACTER) {
+                    current_line++;
+                    current_column = 0; // @Warning 0 because the will be incremented just after
                 }
-                else {
-                    Token       token;
-                    Punctuation punctuation_2 = Punctuation::UNKNOWN;
 
-                    token.line = current_line;
-                    token.column = current_column;
-                    
-                    language::assign(current_view, stream::get_pointer(stream), 0);
-
-                    if (stream::get_remaining_size(stream) >= 2) {
-                        punctuation_2 = punctuation_table_2[punctuation_key_2(stream::get_pointer(stream))];
-                    }
-
-                    if (punctuation_2 == Punctuation::LINE_COMMENT) {
-                        while (stream::is_eof(stream) == false)
-                        {
-                            uint8_t     current_character;
-
-                            current_character = stream::get(stream);
-                            if (current_character == '\n') {
-                                break;
-                            }
-                            stream::peek(stream);   // @Warning We don't peek the '\n' character (it will be peeked later for the line count increment)
-                        }
-                    }
-                    else if (punctuation_2 == Punctuation::OPEN_BLOCK_COMMENT) {
-                        stream::peek(stream);
-                    }
-                    else if (punctuation == Punctuation::DOUBLE_QUOTE) {
-                        stream::peek(stream);
-                    }
-                    else if (punctuation == Punctuation::SINGLE_QUOTE) {
-                        stream::peek(stream);
-                        //while (stream::is_eof(stream) == false)
-                        //{
-                        //    uint8_t     current_character;
-
-                        //    current_character = stream::get(stream);
-                        //}
-                    }
-                    else {
-                        token.type = Token_Type::SYNTAXE_OPERATOR;
-
-                        if (punctuation_2 != Punctuation::UNKNOWN) {
-                            language::assign(current_view, stream::get_pointer(stream), 2);
-                            token.text = current_view;
-                            token.value.punctuation = punctuation_2;
-                            stream::skip(stream, 2);
-                        }
-                        else {
-                            language::assign(current_view, stream::get_pointer(stream), 1);
-                            token.text = current_view;
-                            token.value.punctuation = punctuation;
-                            stream::skip(stream, 1);
-                        }
-
-                        memory::array_push_back(tokens, token);
-                    }
-
-                    current_column++;
-                }
+                stream::peek(stream);
+                current_column++;
             }
-/*            else if (is_digit(current_character)) { // Will be a numeric literal
-
-                // @TODO
-                //
-                // Be sure to check that the numeric literal is followed by a white punctuation.
-                //
-                // Flamaros - 02 february 2020
-
-            }*/
-            else {  // Will be an identifier
-                Token   token;
+            else {
+                Token       token;
+                Punctuation punctuation_2 = Punctuation::UNKNOWN;
 
                 token.line = current_line;
                 token.column = current_column;
                     
                 language::assign(current_view, stream::get_pointer(stream), 0);
-                while (stream::is_eof(stream) == false)
-                {
-                    uint8_t     current_character;
 
-                    current_character = stream::get(stream);
-
-                    punctuation = punctuation_table_1[current_character];
-                    if (punctuation == Punctuation::UNKNOWN) {  // @Warning any kind of punctuation stop the definition of an identifier
-                        stream::peek(stream);
-                        language::resize(current_view, language::get_string_length(current_view) + 1);
-                        current_column++;
-
-                        // @TODO check if it is a keyword
-                        token.type = Token_Type::IDENTIFIER;
-
-                        token.text = current_view;
-                        token.value.punctuation = Punctuation::UNKNOWN;
-                    }
-                    else {
-                        break;
-                    }
+                if (stream::get_remaining_size(stream) >= 2) {
+                    punctuation_2 = punctuation_table_2[punctuation_key_2(stream::get_pointer(stream))];
                 }
 
-                memory::array_push_back(tokens, token);
+                if (punctuation_2 == Punctuation::LINE_COMMENT) {
+                    while (stream::is_eof(stream) == false)
+                    {
+                        uint8_t     current_character;
+
+                        current_character = stream::get(stream);
+                        if (current_character == '\n') {
+                            break;
+                        }
+                        stream::peek(stream);   // @Warning We don't peek the '\n' character (it will be peeked later for the line count increment)
+                    }
+                }
+                else if (punctuation_2 == Punctuation::OPEN_BLOCK_COMMENT) {
+                    bool    comment_block_closed = false;
+                    while (stream::is_eof(stream) == false)
+                    {
+                        if (stream::get_remaining_size(stream) >= 2) {
+                            punctuation_2 = punctuation_table_2[punctuation_key_2(stream::get_pointer(stream))];
+                        }
+
+                        if (punctuation_2 == Punctuation::CLOSE_BLOCK_COMMENT) {
+                            stream::skip(stream, 2);
+                            comment_block_closed = true;
+                            break;
+                        }
+
+                        stream::peek(stream);
+                    }
+
+                    if (comment_block_closed == false) {
+                        // @TODO throw a user error
+                    }
+                }
+                else if (punctuation == Punctuation::DOUBLE_QUOTE) {
+                    stream::peek(stream);
+                }
+                else if (punctuation == Punctuation::SINGLE_QUOTE) {
+                    stream::peek(stream);
+                    //while (stream::is_eof(stream) == false)
+                    //{
+                    //    uint8_t     current_character;
+
+                    //    current_character = stream::get(stream);
+                    //}
+                }
+                else {
+                    token.type = Token_Type::SYNTAXE_OPERATOR;
+
+                    if (punctuation_2 != Punctuation::UNKNOWN) {
+                        language::assign(current_view, stream::get_pointer(stream), 2);
+                        token.text = current_view;
+                        token.value.punctuation = punctuation_2;
+                        stream::skip(stream, 2);
+                    }
+                    else {
+                        language::assign(current_view, stream::get_pointer(stream), 1);
+                        token.text = current_view;
+                        token.value.punctuation = punctuation;
+                        stream::skip(stream, 1);
+                    }
+
+                    memory::array_push_back(tokens, token);
+                }
+
+                current_column++;
             }
+        }
+/*            else if (is_digit(current_character)) { // Will be a numeric literal
+
+            // @TODO
+            //
+            // Be sure to check that the numeric literal is followed by a white punctuation.
+            //
+            // Flamaros - 02 february 2020
+
+        }*/
+        else {  // Will be an identifier
+            Token   token;
+
+            token.line = current_line;
+            token.column = current_column;
+                    
+            language::assign(current_view, stream::get_pointer(stream), 0);
+            while (stream::is_eof(stream) == false)
+            {
+                uint8_t     current_character;
+
+                current_character = stream::get(stream);
+
+                punctuation = punctuation_table_1[current_character];
+                if (punctuation == Punctuation::UNKNOWN) {  // @Warning any kind of punctuation stop the definition of an identifier
+                    stream::peek(stream);
+                    language::resize(current_view, language::get_string_length(current_view) + 1);
+                    current_column++;
+
+                    // @TODO check if it is a keyword
+                    token.type = Token_Type::IDENTIFIER;
+
+                    token.text = current_view;
+                    token.value.punctuation = Punctuation::UNKNOWN;
+                }
+                else {
+                    break;
+                }
+            }
+
+            memory::array_push_back(tokens, token);
         }
     }
 

@@ -1,4 +1,12 @@
-Optimize to_string function, it is actually much slower than the stl implementation.
+- Mettre en place le mécanisme de log d'erreurs pour l'utilisateur
+ - Le programme doit tout de suite arrêter son execution
+- Finir la hash_table
+ - Ajouter une fonction d'initialisation dans le lex pour remplir la hash_table (qui est static)
+ - A utiliser pour les keywords
+- string_literals
+- numeric_literals
+
+
 
 FSTD:
  - Is it better to use the Win32 equivalent of std::contional in a thread_pool implementation than a while(true) with a mutex (to lock the task container)
