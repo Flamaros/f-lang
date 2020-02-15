@@ -4,6 +4,8 @@
 
 #include <fstd/core/assert.hpp>
 
+#include <cstdarg>	// @TODO remove it
+
 using namespace fstd::system;
 
 namespace fstd

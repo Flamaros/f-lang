@@ -1,9 +1,12 @@
 #include "lexer.hpp"
 
 #include "hash_table.hpp"
-#include "globals.hpp"
+#include "keyword_hash_table.hpp"
+
+#include "../globals.hpp"
 
 #include <fstd/core/logger.hpp>
+#include <fstd/core/string_builder.hpp>
 
 #include <fstd/system/file.hpp>
 
@@ -13,8 +16,6 @@
 #include <fstd/language/flags.hpp>
 #include <fstd/language/string.hpp>
 
-#include <fstd/memory/hash_table.hpp>
-
 #undef max
 #include <tracy/Tracy.hpp>
 
@@ -23,15 +24,21 @@ using namespace f;
 using namespace fstd;
 using namespace fstd::core;
 
-static const std::size_t    tokens_length_heuristic = 5;
+static const size_t    tokens_length_heuristic = 5;
 
 /// Return a key for the punctuation of 2 characters
-constexpr static std::uint16_t punctuation_key_2(const uint8_t* str)
+constexpr static uint16_t punctuation_key_2(const uint8_t* str)
 {
-    return ((std::uint16_t)str[0] << 8) | (std::uint16_t)str[1];
+    return ((uint16_t)str[0] << 8) | (uint16_t)str[1];
 }
 
-static Hash_Table<std::uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
+// @Warning
+// Following Hash_Table should be filled at compile time not runtime.
+// I actually didn't check how it goes in C++, but in f-lang it should be
+// explicite than there is no initialization at runtime.
+//
+// Flamaros - 15 february 2020
+static Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
     {punctuation_key_2((uint8_t*)"//"),	Punctuation::LINE_COMMENT},
     {punctuation_key_2((uint8_t*)"/*"),	Punctuation::OPEN_BLOCK_COMMENT},
     {punctuation_key_2((uint8_t*)"*/"),	Punctuation::CLOSE_BLOCK_COMMENT},
@@ -45,7 +52,7 @@ static Hash_Table<std::uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_
 	{punctuation_key_2((uint8_t*)"\\\""),	Punctuation::ESCAPED_DOUBLE_QUOTE},
 };
 
-static Hash_Table<std::uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1 = {
+static Hash_Table<uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1 = {
     // White characters (aren't handle for an implicit skip/separation between tokens)
     {' ', Punctuation::WHITE_CHARACTER},       // space
     {'\t', Punctuation::WHITE_CHARACTER},      // horizontal tab
@@ -92,72 +99,16 @@ static inline bool is_white_punctuation(Punctuation punctuation)
     return punctuation >= Punctuation::WHITE_CHARACTER;
 }
 
-static fstd::memory::Hash_Table_S<uint16_t, fstd::language::string, Keyword, 65536 / 1024>	keywords_safe;
-
-/*
-// @TODO in c++20 put the key as std::string
-static std::unordered_map<std::string_view, Keyword> keywords = {
-    {"import"sv,				Keyword::IMPORT},
-    {"enum"sv,					Keyword::ENUM},
-    {"struct"sv,				Keyword::STRUCT},
-    {"typedef"sv,				Keyword::TYPEDEF},
-    {"inline"sv,				Keyword::INLINE},
-    {"static"sv,				Keyword::STATIC},
-    {"true"sv,					Keyword::TRUE},
-    {"false"sv,					Keyword::FALSE},
-	{"nullptr"sv,				Keyword::NULLPTR},
-	{"immutable"sv,				Keyword::IMMUTABLE},
-
-    // Control flow
-    {"if"sv,					Keyword::IF},
-    {"else"sv,					Keyword::ELSE},
-    {"do"sv,					Keyword::DO},
-    {"while"sv,					Keyword::WHILE},
-    {"for"sv,					Keyword::FOR},
-    {"foreach"sv,				Keyword::FOREACH},
-    {"switch"sv,				Keyword::SWITCH},
-    {"case"sv,					Keyword::CASE},
-    {"default"sv,				Keyword::DEFAULT},
-    {"final"sv,					Keyword::FINAL},
-    {"return"sv,				Keyword::RETURN},
-    {"exit"sv,					Keyword::EXIT},
-
-    // Reserved for futur usage
-    {"public,"sv,				Keyword::PUBLIC},
-    {"protected,"sv,			Keyword::PROTECTED},
-    {"private,"sv,				Keyword::PRIVATE},
-
-    // Types
-    {"bool"sv,					Keyword::BOOL},
-    {"i8"sv,					Keyword::I8},
-    {"ui8"sv,					Keyword::UI8},
-    {"i16"sv,					Keyword::I16},
-    {"ui16"sv,					Keyword::UI16},
-    {"i32"sv,					Keyword::I32},
-    {"ui32"sv,					Keyword::UI32},
-    {"i64"sv,					Keyword::I64},
-    {"ui64"sv,					Keyword::UI64},
-    {"f32"sv,					Keyword::F32},
-    {"f64"sv,					Keyword::F64},
-    {"string"sv,				Keyword::STRING},
-
-	// Special keywords (interpreted by the lexer)
-	{"__FILE__"sv,				Keyword::SPECIAL_FILE},
-	{"__FILE_FULL_PATH__"sv,	Keyword::SPECIAL_FULL_PATH_FILE},
-	{"__LINE__"sv,				Keyword::SPECIAL_LINE},
-	{"__MODULE__"sv,			Keyword::SPECIAL_MODULE},
-	{"__EOF__"sv,				Keyword::SPECIAL_EOF},
-	{"__VENDOR__"sv,			Keyword::SPECIAL_COMPILER_VENDOR},
-	{"__VERSION__"sv,			Keyword::SPECIAL_COMPILER_VERSION},
-};*/
-
-static inline Keyword is_keyword(const std::string_view& text)
+constexpr static uint16_t keyword_key(const uint8_t* str)
 {
-    Assert(false);
-    //const auto& it = keywords.find(text);
-    //if (it != keywords.end())
-    //    return it->second;
-    return Keyword::UNKNOWN;
+    return ((uint16_t)str[0] << 8) | (uint16_t)str[1];
+}
+
+static Keyword_Hash_Table<uint16_t, const uint8_t*, Keyword, nullptr, Keyword::UNKNOWN>  keywords;
+
+static inline Keyword is_keyword(const fstd::language::string_view& text)
+{
+    return keywords.find(keyword_key(language::get_data(text)), language::get_data(text));
 }
 
 static inline bool is_digit(char character)
@@ -168,9 +119,86 @@ static inline bool is_digit(char character)
 	return false;
 }
 
+// @TODO remplace it by a nested inlined function in f-lang
+#define INSERT_KEYWORD(KEY, VALUE) keywords.insert(keyword_key((uint8_t*)(KEY)), (uint8_t*)(KEY), (Keyword::VALUE))
+
+void f::initialize_lexer()
+{
+    INSERT_KEYWORD("import", IMPORT);
+
+    INSERT_KEYWORD("enum", ENUM);
+    INSERT_KEYWORD("struct", STRUCT);
+    INSERT_KEYWORD("typedef", TYPEDEF);
+    INSERT_KEYWORD("inline", INLINE);
+    INSERT_KEYWORD("static", STATIC);
+    INSERT_KEYWORD("true", TRUE);
+    INSERT_KEYWORD("false", FALSE);
+    INSERT_KEYWORD("nullptr", NULLPTR);
+    INSERT_KEYWORD("immutable", IMMUTABLE);
+
+        // Control flow
+    INSERT_KEYWORD("if", IF);
+    INSERT_KEYWORD("else", ELSE);
+    INSERT_KEYWORD("do", DO);
+    INSERT_KEYWORD("while", WHILE);
+    INSERT_KEYWORD("for", FOR);
+    INSERT_KEYWORD("foreach", FOREACH);
+    INSERT_KEYWORD("switch", SWITCH);
+    INSERT_KEYWORD("case", CASE);
+    INSERT_KEYWORD("default", DEFAULT);
+    INSERT_KEYWORD("final", FINAL);
+    INSERT_KEYWORD("return", RETURN);
+    INSERT_KEYWORD("exit", EXIT);
+
+        // Reserved for futur usage
+    INSERT_KEYWORD("public,", PUBLIC);
+    INSERT_KEYWORD("protected,", PROTECTED);
+    INSERT_KEYWORD("private,", PRIVATE);
+
+        // Types
+    INSERT_KEYWORD("bool", BOOL);
+    INSERT_KEYWORD("i8", I8);
+    INSERT_KEYWORD("ui8", UI8);
+    INSERT_KEYWORD("i16", I16);
+    INSERT_KEYWORD("ui16", UI16);
+    INSERT_KEYWORD("i32", I32);
+    INSERT_KEYWORD("ui32", UI32);
+    INSERT_KEYWORD("i64", I64);
+    INSERT_KEYWORD("ui64", UI64);
+    INSERT_KEYWORD("f32", F32);
+    INSERT_KEYWORD("f64", F64);
+    INSERT_KEYWORD("string", STRING);
+
+        // Special keywords (interpreted by the lexer)
+    INSERT_KEYWORD("__FILE__", SPECIAL_FILE);
+    INSERT_KEYWORD("__FILE_FULL_PATH__",  SPECIAL_FULL_PATH_FILE);
+    INSERT_KEYWORD("__LINE__", SPECIAL_LINE);
+    INSERT_KEYWORD("__MODULE__", SPECIAL_MODULE);
+    INSERT_KEYWORD("__EOF__", SPECIAL_EOF);
+    INSERT_KEYWORD("__VENDOR__", SPECIAL_COMPILER_VENDOR);
+    INSERT_KEYWORD("__VERSION__", SPECIAL_COMPILER_VERSION);
+
+    // == Log
+
+	core::String_Builder	string_builder;
+	language::string		format;
+	language::string		formatted_string;
+
+	defer{
+		core::free_buffers(string_builder);
+		language::release(formatted_string);
+	};
+
+	language::assign(format, L"[lexer] keywords hash table: nb_used_buckets: %d - nb_collisions: %d\n");
+	core::print_to_builder(string_builder, &format, keywords.nb_used_buckets(), keywords.nb_collisions());
+
+	formatted_string = core::to_string(string_builder);
+	system::print(formatted_string);
+}
+
 bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
 {
-	ZoneScopedNC("f::lex", 0x1b5e20);
+	ZoneScopedNC("f::lex",  0x1b5e20);
 
 	system::File	        file;
     stream::Memory_Stream	stream;
@@ -214,7 +242,7 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
     bool has_utf8_boom = fstd::stream::is_uft8_bom(stream, true);
 
     if (has_utf8_boom == false) {
-        log(*globals.logger, Log_Level::warning, "[f::lexer] File: '%s' doesn't have UTF8 BOM.", system::to_native(path));
+        log(*globals.logger, Log_Level::warning, "[f::lexer] File: '%s' doesn't have UTF8 BOM.",  system::to_native(path));
         // @TODO print a user warning about that the utf8 BOM is missing
     }
 
@@ -294,6 +322,9 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
                     //    current_character = stream::get(stream);
                     //}
                 }
+                else if (punctuation == Punctuation::BACKQUOTE) {
+                    stream::peek(stream);
+                }
                 else {
                     token.type = Token_Type::SYNTAXE_OPERATOR;
 
@@ -360,7 +391,7 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
     }
 
 	if (nb_tokens_prediction < memory::get_array_size(tokens)) {
-		log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f", nb_tokens_prediction, memory::get_array_size(tokens), (float)memory::get_array_size(tokens) / (float)file_size);
+		log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f",  nb_tokens_prediction, memory::get_array_size(tokens), (float)memory::get_array_size(tokens) / (float)file_size);
 	}
 
 	return true;

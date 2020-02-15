@@ -6,8 +6,6 @@
 
 #include <fstd/memory/array.hpp>
 
-#include <cstdarg>
-
 namespace fstd
 {
 	namespace core

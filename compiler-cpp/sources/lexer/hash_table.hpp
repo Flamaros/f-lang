@@ -1,8 +1,5 @@
 #pragma once
 
-#include <array>
-#include <limits>
-
 #include <fstd/core/assert.hpp>
 
 /// !!! Warning the Key type have to be unsigned fundamental type
@@ -18,15 +15,9 @@
 template<typename Hash_Type, typename Value_Type, Value_Type default_value = Value_Type()>
 class Hash_Table
 {
-    static const size_t   max_nb_values = std::numeric_limits<Hash_Type>::max() + 1;
+    static const size_t   max_nb_values = (Hash_Type)0xffffffff'ffffffff + 1;
 
 public:
-    struct Hash_Pair
-    {
-        Hash_Type    HASH;
-        Value_Type   value;
-    };
-
     Hash_Table()
     {
         for (size_t i = 0; i < max_nb_values; i++)
@@ -48,5 +39,5 @@ public:
 
 
 private:
-    std::array<Value_Type, max_nb_values>   m_table;
+    Value_Type  m_table[max_nb_values];
 };

@@ -1,9 +1,10 @@
 #include "native_generator.hpp"
 
-#include "lexer.hpp"
-#include "parser.hpp"
 #include "globals.hpp"
-#include "tests.hpp"
+
+#include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
+#include "tests/tests.hpp"
 
 #include <fstd/core/string_builder.hpp>
 
@@ -74,6 +75,7 @@ int main(int ac, char** av)
 
 		system::from_native(path, LR"(.\compiler-f\main.f)"s);
 
+		f::initialize_lexer();
 		f::lex(path, tokens);
 		f::parse(tokens, parsing_result);
 	}

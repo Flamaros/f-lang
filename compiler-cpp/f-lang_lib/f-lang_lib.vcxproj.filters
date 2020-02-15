@@ -32,6 +32,15 @@
     <Filter Include="Source Files\fstd\language">
       <UniqueIdentifier>{324ac387-8e63-407e-9c81-7960b10990a9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\lexer">
+      <UniqueIdentifier>{8ebba8ea-28f9-4980-ac7f-83c6aeeae473}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\parser">
+      <UniqueIdentifier>{541cff7c-2fcb-4d1d-a2bd-b8ec7d60d814}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tests">
+      <UniqueIdentifier>{f3bff053-5343-4809-b80f-1beb8e9908d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
@@ -40,16 +49,10 @@
     <ClInclude Include="..\sources\globals.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\lexer.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\macros.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\native_generator.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\parser.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\third-party\magic_enum.hpp">
@@ -109,9 +112,6 @@
     <ClInclude Include="..\sources\fstd\language\intrinsic.hpp">
       <Filter>Source Files\fstd\language</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\tests.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\fstd\memory\hash_table.hpp">
       <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
@@ -121,18 +121,27 @@
     <ClInclude Include="..\sources\fstd\core\assert.hpp">
       <Filter>Source Files\fstd\core</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\lexer\lexer.hpp">
+      <Filter>Source Files\lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\parser\parser.hpp">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\tests\tests.hpp">
+      <Filter>Source Files\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\lexer\hash_table.hpp">
+      <Filter>Source Files\lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp">
+      <Filter>Source Files\lexer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\lexer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\native_generator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\fstd\system\file.cpp">
@@ -162,11 +171,17 @@
     <ClCompile Include="..\sources\fstd\language\string.cpp">
       <Filter>Source Files\fstd\language</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\tests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\fstd\core\assert.cpp">
       <Filter>Source Files\fstd\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\lexer\lexer.cpp">
+      <Filter>Source Files\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\parser\parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\tests\tests.cpp">
+      <Filter>Source Files\tests</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

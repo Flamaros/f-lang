@@ -208,5 +208,6 @@ namespace f
 //		return lhs.text == rhs.text;
 	}
 
+    void    initialize_lexer();
 	bool    lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens);
 }

@@ -1,15 +1,13 @@
 #include "parser.hpp"
 
-#include "lexer.hpp"
-
 #include <third-party/magic_enum.hpp>
 
+// @TODO remove it
 #include <string>
 #include <vector>
 #include <iostream>
 #include <stack>
-
-#include <assert.h>
+#include <cassert>
 
 #undef max
 #include <tracy/Tracy.hpp>

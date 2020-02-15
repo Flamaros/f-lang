@@ -49,11 +49,13 @@
     <ClInclude Include="..\sources\fstd\system\stdio.hpp" />
     <ClInclude Include="..\sources\fstd\system\timer.hpp" />
     <ClInclude Include="..\sources\globals.hpp" />
-    <ClInclude Include="..\sources\lexer.hpp" />
+    <ClInclude Include="..\sources\lexer\hash_table.hpp" />
+    <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp" />
+    <ClInclude Include="..\sources\lexer\lexer.hpp" />
     <ClInclude Include="..\sources\macros.hpp" />
     <ClInclude Include="..\sources\native_generator.hpp" />
-    <ClInclude Include="..\sources\parser.hpp" />
-    <ClInclude Include="..\sources\tests.hpp" />
+    <ClInclude Include="..\sources\parser\parser.hpp" />
+    <ClInclude Include="..\sources\tests\tests.hpp" />
     <ClInclude Include="..\sources\third-party\magic_enum.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
   </ItemGroup>
@@ -69,10 +71,10 @@
     <ClCompile Include="..\sources\fstd\system\path.cpp" />
     <ClCompile Include="..\sources\fstd\system\stdio.cpp" />
     <ClCompile Include="..\sources\globals.cpp" />
-    <ClCompile Include="..\sources\lexer.cpp" />
+    <ClCompile Include="..\sources\lexer\lexer.cpp" />
     <ClCompile Include="..\sources\native_generator.cpp" />
-    <ClCompile Include="..\sources\parser.cpp" />
-    <ClCompile Include="..\sources\tests.cpp" />
+    <ClCompile Include="..\sources\parser\parser.cpp" />
+    <ClCompile Include="..\sources\tests\tests.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
