@@ -99,9 +99,16 @@ static inline bool is_white_punctuation(Punctuation punctuation)
     return punctuation >= Punctuation::WHITE_CHARACTER;
 }
 
-constexpr static uint16_t keyword_key(const uint8_t* str)
+static uint16_t keyword_key(const language::string_view& str)
 {
-    return ((uint16_t)str[0] << 8) | (uint16_t)str[1];
+    if (language::get_string_length(str) == 0) {
+        return 0;
+    }
+    else if (language::get_string_length(str) == 1) {
+        return (uint16_t)1 << 8 | (uint16_t)str.ptr[0];
+    }
+
+    return (uint16_t)str.length << 11 | ((uint16_t)(str.ptr[0] - '_') << 5) | (uint16_t)str.ptr[1] - '_';
 }
 
 static language::string_view keyword_invalid_key;
@@ -110,7 +117,7 @@ static Keyword_Hash_Table<uint16_t, language::string_view, Keyword, &keyword_inv
 
 static inline Keyword is_keyword(const fstd::language::string_view& text)
 {
-    return keywords.find(keyword_key(language::to_uft8(text)), text);
+    return keywords.find(keyword_key(text), text);
 }
 
 static inline bool is_digit(char character)
@@ -126,7 +133,7 @@ static inline bool is_digit(char character)
     { \
         language::string_view   str_view; \
         language::assign(str_view, (uint8_t*)(KEY)); \
-        keywords.insert(keyword_key((uint8_t*)(KEY)), str_view, (Keyword::VALUE)); \
+        keywords.insert(keyword_key(str_view), str_view, (Keyword::VALUE)); \
     }
 
 void f::initialize_lexer()
