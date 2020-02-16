@@ -1,16 +1,8 @@
 #pragma once
 
-// Our string object hold string as UTF16 under Windows and UFT8 on other platforms
-// This choice is made to reduce the number of conversions, as under Windows we use
-// Wide char APIs in favor of ASCII versions.
-// This can be a problem only for compatibility for serialized data, but we will
-// provide some conversion functions.
-
-
 // In f-lang string will be in utf-8 as this is the file format of source, string literals
 // will be directly in utf-8
 // to build path, there will be a conversion made by the path object when calling win32 APIs
-
 
 
 // As in f-lang we will not use the c runtime library we should not have a lot of functions that
@@ -29,13 +21,7 @@ namespace fstd
 {
 	namespace language
 	{
-		struct immutable_string
-		{
-			const wchar_t*	data = nullptr;
-			size_t			length = 0;
-		};
-
-		inline size_t	string_literal_length(const wchar_t* string)
+		inline size_t	string_literal_length(const uint8_t* string)
 		{
 			size_t	result = 0;
 
@@ -44,32 +30,14 @@ namespace fstd
 			return result;
 		}
 
-		inline void assign(immutable_string& str, const wchar_t* string)
-		{
-			str.length = string_literal_length(string);
-			str.data = string;
-		}
-
-		// @Warning be careful when using the resulting buffer
-		// there is no ending '/0'
-		inline const wchar_t* to_uft16(const immutable_string& str)
-		{
-			return str.data;
-		}
-
-		inline size_t get_string_length(const immutable_string& str)
-		{
-			return str.length;
-		}
-
 		// =====================================================================
 
 		struct string
 		{
-			memory::Array<wchar_t>	buffer;
+			memory::Array<uint8_t>	buffer;
 		};
 
-		inline void assign(string& str, const wchar_t* string)
+		inline void assign(string& str, const uint8_t* string)
 		{
 			memory::resize_array(str.buffer, string_literal_length(string));
 			system::memory_copy(memory::get_array_data(str.buffer), string, memory::get_array_bytes_size(str.buffer));
@@ -85,7 +53,7 @@ namespace fstd
 			memory::resize_array(str.buffer, length);
 		}
 
-		inline void copy(string& str, size_t position, const wchar_t* string, size_t length)
+		inline void copy(string& str, size_t position, const uint8_t* string, size_t length)
 		{
 			memory::array_copy(str.buffer, position, string, length);
 		}
@@ -102,7 +70,12 @@ namespace fstd
 
 		// @Warning be careful when using the resulting buffer
 		// there is no ending '/0'
-		inline const wchar_t* to_uft16(const string& str)
+		//inline const wchar_t* to_uft16(const string& str)
+		//{
+		//	return memory::get_array_data(str.buffer);
+		//}
+
+		inline const uint8_t* to_uft8(const string& str)
 		{
 			return memory::get_array_data(str.buffer);
 		}

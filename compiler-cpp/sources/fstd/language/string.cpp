@@ -8,10 +8,10 @@ namespace fstd
 {
 	namespace language
 	{
-		static const wchar_t* ordered_digits = L"0123456789ABCDEF";
+		static const uint8_t* ordered_digits = (uint8_t*)"0123456789ABCDEF";
 
-		static const wchar_t* base_10_digits =
-			L"0001020304050607080910111213141516171819"
+		static const uint8_t* base_10_digits = (uint8_t*)
+			"0001020304050607080910111213141516171819"
 			"2021222324252627282930313233343536373839"
 			"4041424344454647484950515253545556575859"
 			"6061626364656667686970717273747576777879"
@@ -28,14 +28,14 @@ namespace fstd
 		string to_string(int32_t number)
 		{
 			string		result;
-			wchar_t*	string;
+			uint8_t*	string;
 			size_t		string_length = 0;	// doesn't contains the sign
 			bool		is_negative = false;
 
 			// value range is from -2,147,483,647 to +2,147,483,647
 			// without decoration we need at most 10 + 1 characters (+1 for the sign)
 			reserve(result, 10 + 1);
-			string = (wchar_t*)to_uft16(result);
+			string = (uint8_t*)to_uft8(result);
 
 			// @TODO May we optimize this code?
 			{
@@ -83,14 +83,14 @@ namespace fstd
 			fstd::core::Assert(base >= 2 && base <= 16);
 
 			string		result;
-			wchar_t*	string;
+			uint8_t*	string;
 			size_t		string_length = 0;	// doesn't contains the sign
 			bool		is_negative = false;
 
 			// value range is from -2,147,483,647 to +2,147,483,647
 			// without decoration we need at most 10 + 1 characters (+1 for the sign)
 			reserve(result, 10 + 1);
-			string = (wchar_t*)to_uft16(result);
+			string = (uint8_t*)to_uft8(result);
 
 			// @TODO May we optimize this code?
 			{

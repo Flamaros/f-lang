@@ -104,11 +104,13 @@ constexpr static uint16_t keyword_key(const uint8_t* str)
     return ((uint16_t)str[0] << 8) | (uint16_t)str[1];
 }
 
-static Keyword_Hash_Table<uint16_t, const uint8_t*, Keyword, nullptr, Keyword::UNKNOWN>  keywords;
+static language::string_view keyword_invalid_key;
+
+static Keyword_Hash_Table<uint16_t, language::string_view, Keyword, &keyword_invalid_key, Keyword::UNKNOWN>  keywords;
 
 static inline Keyword is_keyword(const fstd::language::string_view& text)
 {
-    return keywords.find(keyword_key(language::get_data(text)), language::get_data(text));
+    return keywords.find(keyword_key(language::to_uft8(text)), text);
 }
 
 static inline bool is_digit(char character)
@@ -120,10 +122,17 @@ static inline bool is_digit(char character)
 }
 
 // @TODO remplace it by a nested inlined function in f-lang
-#define INSERT_KEYWORD(KEY, VALUE) keywords.insert(keyword_key((uint8_t*)(KEY)), (uint8_t*)(KEY), (Keyword::VALUE))
+#define INSERT_KEYWORD(KEY, VALUE) \
+    { \
+        language::string_view   str_view; \
+        language::assign(str_view, (uint8_t*)(KEY)); \
+        keywords.insert(keyword_key((uint8_t*)(KEY)), str_view, (Keyword::VALUE)); \
+    }
 
 void f::initialize_lexer()
 {
+    keywords.set_key_matching_function(&language::are_equals);
+
     INSERT_KEYWORD("import", IMPORT);
 
     INSERT_KEYWORD("enum", ENUM);
@@ -189,7 +198,7 @@ void f::initialize_lexer()
 		language::release(formatted_string);
 	};
 
-	language::assign(format, L"[lexer] keywords hash table: nb_used_buckets: %d - nb_collisions: %d\n");
+	language::assign(format, (uint8_t*)"[lexer] keywords hash table: nb_used_buckets: %d - nb_collisions: %d\n");
 	core::print_to_builder(string_builder, &format, keywords.nb_used_buckets(), keywords.nb_collisions());
 
 	formatted_string = core::to_string(string_builder);
@@ -375,17 +384,16 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
                     language::resize(current_view, language::get_string_length(current_view) + 1);
                     current_column++;
 
-                    // @TODO check if it is a keyword
                     token.type = Token_Type::IDENTIFIER;
 
                     token.text = current_view;
-                    token.value.punctuation = Punctuation::UNKNOWN;
                 }
                 else {
                     break;
                 }
             }
 
+            token.value.keyword = is_keyword(token.text);
             memory::array_push_back(tokens, token);
         }
     }

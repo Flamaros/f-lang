@@ -11,12 +11,19 @@
 // Flamaros - 15 february 2020
 
 
-template<typename Hash_Type, typename Key_Type, typename Value_Type, Key_Type invalid_key, Value_Type default_value = Value_Type()>
+// @TODO @F
+// Key_Type* invalid_key should be a pointer https://docs.microsoft.com/fr-fr/cpp/error-messages/compiler-errors-2/compiler-error-c2993?view=vs-2019
+//
+// We don't want a such restriction in f-lang
+
+template<typename Hash_Type, typename Key_Type, typename Value_Type, Key_Type* invalid_key, Value_Type default_value = Value_Type()>
 class Keyword_Hash_Table
 {
     static const size_t max_nb_values = (Hash_Type)0xffffffff'ffffffff + 1;
     static const size_t bucket_size = 32;
     static const size_t nb_buckets = max_nb_values / bucket_size;
+
+    typedef bool (*Are_Keys_Equals_Func)(const Key_Type&, const Key_Type&);
 
     struct Full_Key_Value
     {
@@ -41,8 +48,14 @@ public:
         m_nb_collisions = 0;
     }
 
+    void set_key_matching_function(Are_Keys_Equals_Func function) {
+        m_are_keys_equals = function;
+    }
+
     void insert(const Hash_Type& hash, const Key_Type& key, const Value_Type& value)
     {
+        fstd::core::Assert(m_are_keys_equals);
+
         size_t  bucket_index = hash / bucket_size;
         size_t  i = hash % bucket_size;
 
@@ -56,13 +69,13 @@ public:
             }
             else {  // In this case we may have a collision of hash
                 for (; i < bucket_size; i++) {
-                    if (m_buckets[j][i].key == invalid_key) {
+                    if (m_are_keys_equals(m_buckets[j][i].key, *invalid_key)) {
                         break;
                     }
                     m_nb_collisions++;
                 }
 
-                if (m_buckets[j][i].key == invalid_key) {
+                if (m_are_keys_equals(m_buckets[j][i].key, *invalid_key)) {
                     m_buckets[j][i].key = key;
                     m_buckets[j][i].value = value;
                     return;
@@ -74,6 +87,8 @@ public:
 
     Value_Type  find(const Hash_Type& hash, const Key_Type& key)
     {
+        fstd::core::Assert(m_are_keys_equals);
+
         size_t  bucket_index = hash / bucket_size;
 
         if (m_buckets[bucket_index] == nullptr) {
@@ -84,10 +99,10 @@ public:
 
         for (size_t j = bucket_index; j < nb_buckets; j++) {
             for (size_t i = in_bucket_index; i < bucket_size; i++) {
-                if (m_buckets[j][i].key == invalid_key) {
+                if (m_are_keys_equals(m_buckets[j][i].key, *invalid_key)) {
                     return default_value;
                 }
-                else if (m_buckets[j][i].key == key) {
+                else if (m_are_keys_equals(m_buckets[j][i].key, key)) {
                     return m_buckets[j][i].value;
                 }
             }
@@ -115,13 +130,14 @@ private:
 
         m_buckets[bucket_index] = new Full_Key_Value[bucket_size];
         for (size_t i = 0; i < bucket_size; i++) {
-            m_buckets[bucket_index][i].key = invalid_key;
+            m_buckets[bucket_index][i].key = *invalid_key;
         }
 
         m_nb_used_buckets++;
     }
 
-    Full_Key_Value* m_buckets[nb_buckets];
-    size_t          m_nb_used_buckets = 0;
-    size_t          m_nb_collisions = 0;
+    Full_Key_Value*         m_buckets[nb_buckets];
+    size_t                  m_nb_used_buckets = 0;
+    size_t                  m_nb_collisions = 0;
+    Are_Keys_Equals_Func    m_are_keys_equals = nullptr;
 };
