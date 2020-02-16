@@ -1,3 +1,6 @@
+- Fix bug d'affichage dans la console
+- Ajouter une implémentation de crc32
+
 - Hash_Table et Keyword_Hash_Table: à passer en struct avec fonctions libres
 - Mettre en place le mécanisme de log d'erreurs pour l'utilisateur
  - Le programme doit tout de suite arrêter son execution
@@ -20,7 +23,6 @@ Logs:
 Lexer:
  - Optimize the Token structure size (removing aliasing,...)
  - Add string literal support with escape sequences
- - Add lexer/parsing errors log
  - Test lexer performances
  - Add hexadecimal floating point support
  - Analyse if with tokens_length_heuristic at 6 there is some allocations, find a strategy for the allocation if needed

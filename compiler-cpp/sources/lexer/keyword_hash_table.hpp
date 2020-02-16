@@ -19,9 +19,9 @@
 template<typename Hash_Type, typename Key_Type, typename Value_Type, Key_Type* invalid_key, Value_Type default_value = Value_Type()>
 class Keyword_Hash_Table
 {
-    static const size_t max_nb_values = (Hash_Type)0xffffffff'ffffffff + 1;
-    static const size_t bucket_size = 32;
-    static const size_t nb_buckets = max_nb_values / bucket_size;
+    static const uint64_t   max_nb_values = (uint64_t)((Hash_Type)0xffffffff'ffffffff) + 1;
+    static const size_t     bucket_size = 32;
+    static const size_t     nb_buckets = max_nb_values / bucket_size;
 
     typedef bool (*Are_Keys_Equals_Func)(const Key_Type&, const Key_Type&);
 
@@ -46,6 +46,8 @@ public:
         }
         m_nb_used_buckets = 0;
         m_nb_collisions = 0;
+        m_nb_find_calls = 0;
+        m_nb_collisions_in_find = 0;
     }
 
     void set_key_matching_function(Are_Keys_Equals_Func function) {
@@ -91,6 +93,8 @@ public:
 
         size_t  bucket_index = hash / bucket_size;
 
+        m_nb_find_calls++;
+
         if (m_buckets[bucket_index] == nullptr) {
             return default_value;
         }
@@ -105,6 +109,7 @@ public:
                 else if (m_are_keys_equals(m_buckets[j][i].key, key)) {
                     return m_buckets[j][i].value;
                 }
+                m_nb_collisions_in_find++;
             }
             in_bucket_index = 0;    // We'll go in the next bucket so we'll scan it from start
         }
@@ -118,6 +123,18 @@ public:
 
     size_t nb_collisions() const {
         return m_nb_collisions;
+    }
+
+    size_t nb_find_calls() const {
+        return m_nb_find_calls;
+    }
+
+    size_t nb_collisions_in_find() const {
+        return m_nb_collisions_in_find;
+    }
+
+    size_t compute_used_memory_in_bytes() const{
+        return nb_buckets * sizeof(m_buckets) + m_nb_used_buckets * bucket_size * sizeof(Full_Key_Value);
     }
 
 private:
@@ -136,8 +153,10 @@ private:
         m_nb_used_buckets++;
     }
 
-    Full_Key_Value*         m_buckets[nb_buckets];
+    Full_Key_Value*         m_buckets[nb_buckets];  // @TODO allocate the first level dynamically
     size_t                  m_nb_used_buckets = 0;
     size_t                  m_nb_collisions = 0;
+    size_t                  m_nb_find_calls = 0;
+    size_t                  m_nb_collisions_in_find = 0;
     Are_Keys_Equals_Func    m_are_keys_equals = nullptr;
 };

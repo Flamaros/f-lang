@@ -163,6 +163,7 @@ namespace f
         F32,
         F64,
         STRING,
+        STRING_VIEW,
         // @TODO @Critical add types that have the size of ptr (like size_t and ptrdiff_t,...)
 
 		// Special keywords (interpreted by the lexer)

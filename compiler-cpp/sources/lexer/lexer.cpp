@@ -99,21 +99,29 @@ static inline bool is_white_punctuation(Punctuation punctuation)
     return punctuation >= Punctuation::WHITE_CHARACTER;
 }
 
-static uint16_t keyword_key(const language::string_view& str)
+static uint32_t keyword_key(const language::string_view& str)
 {
-    if (language::get_string_length(str) == 0) {
-        return 0;
-    }
-    else if (language::get_string_length(str) == 1) {
-        return (uint16_t)1 << 8 | (uint16_t)str.ptr[0];
-    }
+    // @TODO test with a crc32 implementation (that call be better to reduce number of collision instead of this weird thing)
 
-    return (uint16_t)str.length << 11 | ((uint16_t)(str.ptr[0] - '_') << 5) | (uint16_t)str.ptr[1] - '_';
+    fstd::core::Assert(language::get_string_length(str) > 0);
+
+    if (language::get_string_length(str) == 1) {
+        return (uint32_t)1 << 8 | (uint32_t)str.ptr[0];
+    }
+    else if (language::get_string_length(str) == 2) {
+        return (uint32_t)2 << 24 | (uint32_t)str.ptr[0] << 8 | (uint32_t)str.ptr[1];
+    }
+    else if (language::get_string_length(str) < 5) {
+        return (uint32_t)str.length << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[1]) << 8) | (uint32_t)str.ptr[2];
+    }
+    else {
+        return (uint32_t)str.length << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[2]) << 8) | (uint32_t)str.ptr[4];
+    }
 }
 
 static language::string_view keyword_invalid_key;
 
-static Keyword_Hash_Table<uint16_t, language::string_view, Keyword, &keyword_invalid_key, Keyword::UNKNOWN>  keywords;
+static Keyword_Hash_Table<uint32_t, language::string_view, Keyword, &keyword_invalid_key, Keyword::UNKNOWN>  keywords;
 
 static inline Keyword is_keyword(const fstd::language::string_view& text)
 {
@@ -184,6 +192,7 @@ void f::initialize_lexer()
     INSERT_KEYWORD("f32", F32);
     INSERT_KEYWORD("f64", F64);
     INSERT_KEYWORD("string", STRING);
+    INSERT_KEYWORD("string_view", STRING_VIEW);
 
         // Special keywords (interpreted by the lexer)
     INSERT_KEYWORD("__FILE__", SPECIAL_FILE);
@@ -205,8 +214,8 @@ void f::initialize_lexer()
 		language::release(formatted_string);
 	};
 
-	language::assign(format, (uint8_t*)"[lexer] keywords hash table: nb_used_buckets: %d - nb_collisions: %d\n");
-	core::print_to_builder(string_builder, &format, keywords.nb_used_buckets(), keywords.nb_collisions());
+	language::assign(format, (uint8_t*)"[lexer] keywords hash table: size in bytes: %d - nb_used_buckets: %d - nb_collisions: %d\n");
+	core::print_to_builder(string_builder, &format, keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
 
 	formatted_string = core::to_string(string_builder);
 	system::print(formatted_string);
@@ -408,6 +417,23 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
 	if (nb_tokens_prediction < memory::get_array_size(tokens)) {
 		log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f",  nb_tokens_prediction, memory::get_array_size(tokens), (float)memory::get_array_size(tokens) / (float)file_size);
 	}
+
+    // == Log
+
+    core::String_Builder	string_builder;
+    language::string		format;
+    language::string		formatted_string;
+
+    defer{
+        core::free_buffers(string_builder);
+        language::release(formatted_string);
+    };
+
+    language::assign(format, (uint8_t*)"[lexer] keywords hash table: nb_find_calls: %d - nb_collisions_in_find: %d\n");
+    core::print_to_builder(string_builder, &format, keywords.nb_find_calls(), keywords.nb_collisions_in_find());
+
+    formatted_string = core::to_string(string_builder);
+    system::print(formatted_string);
 
 	return true;
 }
