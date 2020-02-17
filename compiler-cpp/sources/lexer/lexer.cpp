@@ -38,6 +38,13 @@ constexpr static uint16_t punctuation_key_2(const uint8_t* str)
 // explicite than there is no initialization at runtime.
 //
 // Flamaros - 15 february 2020
+
+// @TODO
+// Check if naive chain of if - else if isn't faster than those Hash_Table for punctuation.
+// For punctuation with many characters we can also make the tests of other caracters only if
+// previous can be followed by an other one.
+//
+// Flamaros - 17 february 2020
 static Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
     {punctuation_key_2((uint8_t*)"//"),	Punctuation::LINE_COMMENT},
     {punctuation_key_2((uint8_t*)"/*"),	Punctuation::OPEN_BLOCK_COMMENT},
