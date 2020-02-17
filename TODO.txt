@@ -1,3 +1,4 @@
+- Fix mauvaise gestion du handle des fichiers INVALID_HANDLE doit etre utilise pour detecte qu'un fichier n'est pas ouvert
 - Fix bug d'affichage dans la console
 - Ajouter une implémentation de crc32
 
