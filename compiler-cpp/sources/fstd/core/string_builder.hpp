@@ -6,6 +6,8 @@
 
 #include <fstd/memory/array.hpp>
 
+#include <cstdarg>	// @TODO remove it
+
 namespace fstd
 {
 	namespace core
@@ -21,6 +23,7 @@ namespace fstd
 		//
 		// Flamaros - 03 january 2020
 		void				print_to_builder(String_Builder& builder, const fstd::language::string* format, ...);
+		void				print_to_builder(String_Builder& builder, const language::string* format, va_list arg);
 
 		void				free_buffers(String_Builder& builder);
 		language::string	to_string(String_Builder& builder);

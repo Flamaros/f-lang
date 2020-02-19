@@ -216,22 +216,7 @@ void f::initialize_lexer()
     INSERT_KEYWORD("__VENDOR__", SPECIAL_COMPILER_VENDOR);
     INSERT_KEYWORD("__VERSION__", SPECIAL_COMPILER_VERSION);
 
-    // == Log
-
-	core::String_Builder	string_builder;
-	language::string		format;
-	language::string		formatted_string;
-
-	defer{
-		core::free_buffers(string_builder);
-		language::release(formatted_string);
-	};
-
-	language::assign(format, (uint8_t*)"[lexer] keywords hash table: size: %d bytes - nb_used_buckets: %d - nb_collisions: %d\n");
-	core::print_to_builder(string_builder, &format, keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
-
-	formatted_string = core::to_string(string_builder);
-	system::print(formatted_string);
+    core::log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: size: %d bytes - nb_used_buckets: %d - nb_collisions: %d\n", keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
 }
 
 bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
@@ -431,22 +416,7 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
 		log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f",  nb_tokens_prediction, memory::get_array_size(tokens), (float)memory::get_array_size(tokens) / (float)file_size);
 	}
 
-    // == Log
-
-    core::String_Builder	string_builder;
-    language::string		format;
-    language::string		formatted_string;
-
-    defer{
-        core::free_buffers(string_builder);
-        language::release(formatted_string);
-    };
-
-    language::assign(format, (uint8_t*)"[lexer] keywords hash table: nb_find_calls: %d - nb_collisions_in_find: %d\n");
-    core::print_to_builder(string_builder, &format, keywords.nb_find_calls(), keywords.nb_collisions_in_find());
-
-    formatted_string = core::to_string(string_builder);
-    system::print(formatted_string);
+    log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: nb_find_calls: %d - nb_collisions_in_find: %d\n", keywords.nb_find_calls(), keywords.nb_collisions_in_find());
 
 	return true;
 }

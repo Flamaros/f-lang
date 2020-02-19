@@ -1,12 +1,14 @@
 #include "native_generator.hpp"
 
 #include "globals.hpp"
+#include "macros.hpp"
 
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 #include "tests/tests.hpp"
 
 #include <fstd/core/string_builder.hpp>
+#include <fstd/core/logger.hpp>
 
 #include <fstd/language/defer.hpp>
 
@@ -46,6 +48,10 @@ int main(int ac, char** av)
 
 	initialize_globals();
 
+#if defined(FSTD_DEBUG)
+	core::set_log_level(*globals.logger, core::Log_Level::verbose);
+#endif
+
 	//core::String_Builder	string_builder;
 	//language::string		format;
 	//language::string		formatted_string;
@@ -77,6 +83,7 @@ int main(int ac, char** av)
 
 		f::initialize_lexer();
 		f::lex(path, tokens);
+
 		f::parse(tokens, parsing_result);
 	}
 

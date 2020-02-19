@@ -50,13 +50,20 @@ namespace fstd
 
 		void print_to_builder(String_Builder& builder, const language::string* format, ...)
 		{
+			va_list args;
+			va_start(args, format);
+
+			print_to_builder(builder, format, args);
+
+			va_end(args);
+		}
+
+		void print_to_builder(String_Builder& builder, const language::string* format, va_list args)
+		{
 			size_t		position = 0;
 			size_t		start_print_position = 0;
 			size_t		next_print_length = 0;
 			size_t		format_length = language::get_string_length(*format);
-
-			va_list args;
-			va_start(args, format);
 
 			while (position < format_length) {
 				if (language::to_uft8(*format)[position] == '%')
@@ -92,8 +99,6 @@ namespace fstd
 			if (next_print_length) {
 				print_to_builder(builder, &language::to_uft8(*format)[start_print_position], next_print_length);
 			}
-
-			va_end(args);
 		}
 
 		void free_buffers(String_Builder& builder)
