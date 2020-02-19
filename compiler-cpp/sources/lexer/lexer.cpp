@@ -227,7 +227,7 @@ void f::initialize_lexer()
 		language::release(formatted_string);
 	};
 
-	language::assign(format, (uint8_t*)"[lexer] keywords hash table: size in bytes: %d - nb_used_buckets: %d - nb_collisions: %d\n");
+	language::assign(format, (uint8_t*)"[lexer] keywords hash table: size: %d bytes - nb_used_buckets: %d - nb_collisions: %d\n");
 	core::print_to_builder(string_builder, &format, keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
 
 	formatted_string = core::to_string(string_builder);

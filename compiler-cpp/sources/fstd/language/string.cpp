@@ -70,7 +70,7 @@ namespace fstd
 				// Reverse the string
 				size_t middle_cursor = string_length / 2;
 				for (size_t i = 0; i < middle_cursor; i++) {
-					intrinsic::swap((uint16_t*)&string[i], (uint16_t*)&string[string_length - i - 1]);
+					intrinsic::swap((uint8_t*)&string[i], (uint8_t*)&string[string_length - i - 1]);
 				}
 			}
 
@@ -114,7 +114,7 @@ namespace fstd
 					// Reverse the string
 					size_t middle_cursor = string_length / 2;
 					for (size_t i = 0; i < middle_cursor; i++) {
-						intrinsic::swap((uint16_t*)&string[i], (uint16_t*)&string[string_length - i - 1]);
+						intrinsic::swap((uint8_t*)&string[i], (uint8_t*)&string[string_length - i - 1]);
 					}
 				}
 				else {

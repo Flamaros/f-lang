@@ -13,7 +13,17 @@ namespace fstd
 			// https://c9x.me/x86/html/file_module_x86_id_328.html
 			// xchg is certainly not faster as the C implementation
 			// xchg does a lock (memory barrier)
-			wchar_t	temp = *a;
+			uint16_t	temp = *a;
+			*a = *b;
+			*b = temp;
+		}
+
+		inline void swap(uint8_t* a, uint8_t* b)
+		{
+			// https://c9x.me/x86/html/file_module_x86_id_328.html
+			// xchg is certainly not faster as the C implementation
+			// xchg does a lock (memory barrier)
+			uint8_t	temp = *a;
 			*a = *b;
 			*b = temp;
 		}
