@@ -128,6 +128,12 @@ static uint32_t keyword_key(const language::string_view& str)
 
 static language::string_view keyword_invalid_key;
 
+// @TODO Can't we reduce the size key?
+// To avoid collisions, we may have to find a better way to generate a hash than simply encode the keyword size with the first
+// two characters.
+// @SpeedUp
+//
+// Flamaros - 19 february 2020
 static Keyword_Hash_Table<uint32_t, language::string_view, Keyword, &keyword_invalid_key, Keyword::UNKNOWN>  keywords;
 
 static inline Keyword is_keyword(const fstd::language::string_view& text)

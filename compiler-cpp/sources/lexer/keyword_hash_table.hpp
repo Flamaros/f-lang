@@ -154,6 +154,7 @@ private:
     }
 
     // @TODO do we need to have 2 levels of indirections?
+    // This may help to reduce memory usage.
     Full_Key_Value*         m_buckets[nb_buckets];  // @TODO allocate the first level dynamically
     size_t                  m_nb_used_buckets = 0;
     size_t                  m_nb_collisions = 0;
