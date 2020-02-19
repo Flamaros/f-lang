@@ -8,6 +8,7 @@
 #if defined(FSTD_OS_WINDOWS)
 typedef void*	HANDLE;
 typedef HANDLE	File_Handle;
+const File_Handle Invalid_File_Handle = (File_Handle)0xffffffff'ffffffff;
 #else
 #	error
 #endif
@@ -39,7 +40,7 @@ namespace fstd
 			constexpr static uint8_t	nb_buffers = 2;
 			constexpr static size_t		buffers_size = 512;
 
-			File_Handle					handle = nullptr;
+			File_Handle					handle = Invalid_File_Handle;
 			bool						is_eof = false;
 		};
 

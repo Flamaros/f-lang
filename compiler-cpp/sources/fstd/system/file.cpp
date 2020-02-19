@@ -31,7 +31,7 @@ namespace fstd
 		{
 			ZoneScopedNC("fstd::system::open_file", 0x1a237e);
 
-			core::Assert(file.handle == nullptr);
+			core::Assert(file.handle == Invalid_File_Handle);
 
 			file.is_eof = false;
 
@@ -69,9 +69,9 @@ namespace fstd
 		{
 			ZoneScopedNC("fstd::system::close_file", 0x1a237e);
 #if defined(FSTD_OS_WINDOWS)
-			if (file.handle != nullptr) {
+			if (file.handle != INVALID_HANDLE_VALUE) {
 				CloseHandle(file.handle);
-				file.handle = nullptr;
+				file.handle = INVALID_HANDLE_VALUE;
 			}
 #else
 #	error
@@ -87,7 +87,7 @@ namespace fstd
 		{
 			ZoneScopedNC("fstd::system::get_file_size", 0x1a237e);
 
-			fstd::core::Assert(file.handle != nullptr);
+			fstd::core::Assert(file.handle != Invalid_File_Handle);
 #if defined(FSTD_OS_WINDOWS)
 			LARGE_INTEGER	size;
 
