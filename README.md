@@ -27,6 +27,9 @@ So the syntax and features that I'll try to implement will be close to Jai or ot
 1. X64 ASM code generator
 1. ARM ASM code generator
 
+## Git
+Don't forget to initialize sub-modules, to be able to build.
+
 ## Compile/Run
 Visual Studio 2019:
 1. Open solution that is in compiler-cpp folder
