@@ -21,8 +21,8 @@ namespace fstd
 			DWORD	nb_written = 0;
 
 			// @TODO use the WriteConsoleW
-//			WriteConsoleW(os::windows::get_std_out_handle(), language::to_uft16(string), (DWORD)language::get_string_length(string), &nb_written, NULL);
-			WriteConsoleA(os::windows::get_std_out_handle(), language::to_uft8(string), (DWORD)language::get_string_length(string), &nb_written, NULL);
+//			WriteConsoleW(os::windows::get_std_out_handle(), language::to_utf16(string), (DWORD)language::get_string_length(string), &nb_written, NULL);
+			WriteConsoleA(os::windows::get_std_out_handle(), language::to_utf8(string), (DWORD)language::get_string_length(string), &nb_written, NULL);
 #else
 #	error
 #endif
@@ -35,8 +35,8 @@ namespace fstd
 			DWORD	nb_written = 0;
 
 			// @TODO use the WriteConsoleW
-//			WriteConsoleW(os::windows::get_std_out_handle(), language::to_uft16(string), (DWORD)language::get_string_length(string), &nb_written, NULL);
-			WriteConsoleA(os::windows::get_std_out_handle(), language::to_uft8(string), (DWORD)language::get_string_length(string), &nb_written, NULL);
+//			WriteConsoleW(os::windows::get_std_out_handle(), language::to_utf16(string), (DWORD)language::get_string_length(string), &nb_written, NULL);
+			WriteConsoleA(os::windows::get_std_out_handle(), language::to_utf8(string), (DWORD)language::get_string_length(string), &nb_written, NULL);
 #else
 #	error
 #endif

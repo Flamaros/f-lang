@@ -30,6 +30,7 @@
     <ClInclude Include="..\sources\fstd\core\assert.hpp" />
     <ClInclude Include="..\sources\fstd\core\logger.hpp" />
     <ClInclude Include="..\sources\fstd\core\string_builder.hpp" />
+    <ClInclude Include="..\sources\fstd\core\unicode.hpp" />
     <ClInclude Include="..\sources\fstd\language\defer.hpp" />
     <ClInclude Include="..\sources\fstd\language\flags.hpp" />
     <ClInclude Include="..\sources\fstd\language\intrinsic.hpp" />
@@ -46,6 +47,7 @@
     <ClInclude Include="..\sources\fstd\system\allocator.hpp" />
     <ClInclude Include="..\sources\fstd\system\file.hpp" />
     <ClInclude Include="..\sources\fstd\system\path.hpp" />
+    <ClInclude Include="..\sources\fstd\system\process.hpp" />
     <ClInclude Include="..\sources\fstd\system\stdio.hpp" />
     <ClInclude Include="..\sources\fstd\system\timer.hpp" />
     <ClInclude Include="..\sources\globals.hpp" />
@@ -69,6 +71,7 @@
     <ClCompile Include="..\sources\fstd\system\allocator.cpp" />
     <ClCompile Include="..\sources\fstd\system\file.cpp" />
     <ClCompile Include="..\sources\fstd\system\path.cpp" />
+    <ClCompile Include="..\sources\fstd\system\process.cpp" />
     <ClCompile Include="..\sources\fstd\system\stdio.cpp" />
     <ClCompile Include="..\sources\globals.cpp" />
     <ClCompile Include="..\sources\lexer\lexer.cpp" />

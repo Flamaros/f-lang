@@ -25,7 +25,7 @@ namespace fstd
 		//
 		// Flamaros - 23 january 2020
 
-		string to_string(int32_t number)
+		string to_string(int64_t number)
 		{
 			string		result;
 			uint8_t*	string;
@@ -35,12 +35,12 @@ namespace fstd
 			// value range is from -2,147,483,647 to +2,147,483,647
 			// without decoration we need at most 10 + 1 characters (+1 for the sign)
 			reserve(result, 10 + 1);
-			string = (uint8_t*)to_uft8(result);
+			string = (uint8_t*)to_utf8(result);
 
 			// @TODO May we optimize this code?
 			{
-				uint32_t	quotien = number;
-				uint32_t	reminder;
+				uint64_t	quotien = number;
+				uint64_t	reminder;
 
 				if (number < 0) {
 					is_negative = true;
@@ -90,7 +90,7 @@ namespace fstd
 			// value range is from -2,147,483,647 to +2,147,483,647
 			// without decoration we need at most 10 + 1 characters (+1 for the sign)
 			reserve(result, 10 + 1);
-			string = (uint8_t*)to_uft8(result);
+			string = (uint8_t*)to_utf8(result);
 
 			// @TODO May we optimize this code?
 			{

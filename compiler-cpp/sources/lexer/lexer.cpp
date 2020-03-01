@@ -9,6 +9,7 @@
 #include <fstd/core/string_builder.hpp>
 
 #include <fstd/system/file.hpp>
+#include <fstd/system/path.hpp>
 
 #include <fstd/stream/memory_stream.hpp>
 
@@ -110,7 +111,7 @@ static uint32_t keyword_key(const language::string_view& str)
 {
     // @TODO test with a crc32 implementation (that call be better to reduce number of collision instead of this weird thing)
 
-    fstd::core::Assert(language::get_string_length(str) > 0);
+    core::Assert(language::get_string_length(str) > 0);
 
     if (language::get_string_length(str) == 1) {
         return (uint32_t)1 << 8 | (uint32_t)str.ptr[0];
@@ -136,7 +137,7 @@ static language::string_view keyword_invalid_key;
 // Flamaros - 19 february 2020
 static Keyword_Hash_Table<uint32_t, language::string_view, Keyword, &keyword_invalid_key, Keyword::UNKNOWN>  keywords;
 
-static inline Keyword is_keyword(const fstd::language::string_view& text)
+static inline Keyword is_keyword(const language::string_view& text)
 {
     return keywords.find(keyword_key(text), text);
 }
@@ -219,11 +220,12 @@ void f::initialize_lexer()
     core::log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: size: %d bytes - nb_used_buckets: %d - nb_collisions: %d\n", keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
 }
 
-bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
+bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
 {
 	ZoneScopedNC("f::lex",  0x1b5e20);
 
 	system::File	        file;
+    Token                   file_token;
     stream::Memory_Stream	stream;
     size_t	                nb_tokens_prediction = 0;
     memory::Array<uint8_t>  file_buffer;
@@ -232,8 +234,14 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
     int					    current_line = 1;
     int					    current_column = 1;
 
-	system::open_file(file, path, fstd::system::File::Opening_Flag::READ);
-    // @TODO handle open_file erros
+    memory::array_push_back(globals.lexed_file_paths, to_string(path));
+    if (system::open_file(file, path, system::File::Opening_Flag::READ) == false) {
+        file_token.type = Token_Type::UNKNOWN;
+        file_token.file_path = system::to_string(path);
+        file_token.line = 0;
+        file_token.column = 0;
+        report_error(Compiler_Error::error, file_token, "Failed to open source file.");
+    }
 
     defer{ system::close_file(file); };
 
@@ -262,11 +270,10 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
     language::assign(current_view, stream::get_pointer(stream), 0);
 
     wait_for_availabe_asynchronous_content(file, stream::get_position(stream) + 4);
-    bool has_utf8_boom = fstd::stream::is_uft8_bom(stream, true);
+    bool has_utf8_boom = stream::is_uft8_bom(stream, true);
 
     if (has_utf8_boom == false) {
-        log(*globals.logger, Log_Level::warning, "[f::lexer] File: '%s' doesn't have UTF8 BOM.",  system::to_native(path));
-        // @TODO print a user warning about that the utf8 BOM is missing
+        report_error(Compiler_Error::warning, file_token, "This file doens't have a UTF8 BOM");
     }
 
     while (stream::is_eof(stream) == false)
@@ -291,6 +298,7 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
                 Token       token;
                 Punctuation punctuation_2 = Punctuation::UNKNOWN;
 
+                token.file_path = system::to_string(path);
                 token.line = current_line;
                 token.column = current_column;
                     
@@ -382,6 +390,7 @@ bool f::lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens)
         else {  // Will be an identifier
             Token   token;
 
+            token.file_path = system::to_string(path);
             token.line = current_line;
             token.column = current_column;
                     

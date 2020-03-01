@@ -27,6 +27,7 @@ namespace f
 {
 	enum class Token_Type : uint8_t
 	{
+        UNKNOWN,
 		IDENTIFIER,	/// Every word that isn't a part of the language
 		KEYWORD,
 		SYNTAXE_OPERATOR,
@@ -195,11 +196,12 @@ namespace f
 			fstd::language::string* string;
 		};
 
-		Token_Type			        type;
-        fstd::language::string_view text;
-		size_t				        line;       // Starting from 1
-		size_t				        column;     // Starting from 1
-		Value				        value;
+		Token_Type			                type;
+        fstd::language::utf16_string_view   file_path;
+        fstd::language::string_view         text;
+		size_t				                line;       // Starting from 1
+		size_t				                column;     // Starting from 1
+		Value				                value;
 	};
 	
 	inline bool operator ==(const Token& lhs, const Token& rhs)

@@ -136,6 +136,12 @@
     <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp">
       <Filter>Source Files\lexer</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\system\process.hpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\core\unicode.hpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -182,6 +188,9 @@
     </ClCompile>
     <ClCompile Include="..\sources\tests\tests.cpp">
       <Filter>Source Files\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\process.cpp">
+      <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

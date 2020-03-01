@@ -1,6 +1,17 @@
+- Unicode dans unicode.hpp
+- file.cpp/path.cpp gérer les flag absolute pour savoir si je peux utiliser le préfixe \\?\
+- to_string(uint64) est-ce que ce doit être une version template pour gérer à la fois le 32 et 64 bits?
+- Fixer warning
+
 - Mettre en place le mécanisme de log d'erreurs pour l'utilisateur
  - Le programme doit tout de suite arrêter son execution
 
+
+Add utf16_string and utf16_string_view
+ - And conversion functions from/to string
+ - fix path API according to
+ - Fix stdio::print too
+   - Add %ls to print utf16_string
 
 - Hash_Table et Keyword_Hash_Table: à passer en struct avec fonctions libres
 - string_literals (utiliser ` (back tick) plutot pour les string raw à la place de ' qui reste valable pour un unique caractère) https://odin-lang.org/docs/overview/#string-and-character-literals
@@ -14,6 +25,7 @@ fstd/system/path:
 FSTD:
  - Is it better to use the Win32 equivalent of std::contional in a thread_pool implementation than a while(true) with a mutex (to lock the task container)
    and a yield (check if a CPU core stay at 100% while there is no task to run) ?
+ - Logger and report_error() should be able to share the same lock on the stdout (need we put it in globals or in stdio module?)
 
 Logs:
  - We need logs for the end user

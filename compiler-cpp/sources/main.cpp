@@ -104,5 +104,5 @@ int main(int ac, char** av)
 
 	FrameMark;
 
-	return 1;
+	return 0;
 }

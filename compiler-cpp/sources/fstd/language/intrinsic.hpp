@@ -69,5 +69,11 @@ namespace fstd
 			*reminder = value % divisor;
 //#endif
 		}
+
+		inline void divide(uint64_t value, uint64_t divisor, uint64_t* quotien, uint64_t* reminder)
+		{
+			*quotien = value / divisor;
+			*reminder = value % divisor;
+		}
 	}
 }

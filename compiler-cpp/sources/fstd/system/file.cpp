@@ -49,8 +49,9 @@ namespace fstd
 				dwDesiredAccess = CREATE_ALWAYS;
 			}
 
+			LPCWSTR foo = (LPCWSTR)data(path);
 			file.handle = CreateFileW(
-				to_native(path),
+				is_absolute(path) ? (LPCWSTR)data(path) : (LPCWSTR)&data(path)[Path_Header_Size],
 				dwDesiredAccess,
 				0,						// dwShareMode,
 				NULL,					// lpSecurityAttributes,

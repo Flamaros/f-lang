@@ -56,7 +56,7 @@ namespace fstd
 			return *memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
-		inline const uint8_t*	get_pointer(const Memory_Stream& stream) {	// @Warning return pointer at current position
+		inline uint8_t*	get_pointer(const Memory_Stream& stream) {	// @Warning return pointer at current position
 			fstd::core::Assert(stream.buffer_ptr);
 
 			return memory::get_array_element(*stream.buffer_ptr, stream.position);
