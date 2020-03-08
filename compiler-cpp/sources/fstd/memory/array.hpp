@@ -74,10 +74,10 @@ namespace fstd
 		}
 
 		template<typename Type>
-		void array_copy(Array<Type>& array, size_t index, const Type* raw_array, size_t length)
+		void array_copy(Array<Type>& array, size_t index, const Type* raw_array, size_t size)
 		{
-			resize_array(array, index + length);
-			system::memory_copy(&array.ptr[index], raw_array, length * sizeof(Type));
+			resize_array(array, index + size);
+			system::memory_copy(&array.ptr[index], raw_array, size * sizeof(Type));
 		}
 
 		template<typename Type>
@@ -90,7 +90,7 @@ namespace fstd
 		template<typename Type>
 		Type* get_array_element(const Array<Type>& array, size_t index)
 		{
-			fstd::core::Assert(array.size > index);
+			fstd::core::Assert(array.reserved > index);
 			return &array.ptr[index];
 		}
 

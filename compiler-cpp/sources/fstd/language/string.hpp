@@ -1,15 +1,17 @@
 #pragma once
 
 // In f-lang string will be in utf-8 as this is the file format of source, string literals
-// will be directly in utf-8
-// to build path, there will be a conversion made by the path object when calling win32 APIs
-
+// will be directly in utf-8.
 
 // As in f-lang we will not use the c runtime library we should not have a lot of functions that
 // need the '/0' ending character. Maybe for very few OS functions. So it is not planned to store
 // it in our strings.
 // If it is really needed, the best strategy is certainly to always add this ending character and cheating
-// the about length.
+// the about size.
+//
+// We don't have the length of string as it requires to decode all utf8 points to know what is the number of
+// characters, and this is often useless to know that. Almost only unicode conversion functions have to take
+// care of it.
 //
 // Flamaros - 03 january 2020
 
@@ -21,20 +23,20 @@ namespace fstd
 {
 	namespace language
 	{
-		inline size_t	string_literal_length(const uint8_t* string)
+		inline size_t	string_literal_size(const uint8_t* utf8_string)
 		{
 			size_t	result = 0;
 
-			for (; string[result] != 0; result++) {
+			for (; utf8_string[result] != 0; result++) {
 			}
 			return result;
 		}
 
-		inline size_t	string_literal_length(const uint16_t* string)
+		inline size_t	string_literal_size(const uint16_t* utf16le_string)
 		{
 			size_t	result = 0;
 
-			for (; string[result] != 0; result++) {
+			for (; utf16le_string[result] != 0; result++) {
 			}
 			return result;
 		}
@@ -44,27 +46,34 @@ namespace fstd
 		struct string
 		{
 			memory::Array<uint8_t>	buffer;
+
+			// @TODO @CleanUp
+			// I don't really want to put the operator here (directly in the struct)
+			inline uint8_t& operator[](size_t index)
+			{
+				return *memory::get_array_element(buffer, index);
+			}
 		};
 
 		inline void assign(string& str, const uint8_t* string)
 		{
-			memory::resize_array(str.buffer, string_literal_length(string));
+			memory::resize_array(str.buffer, string_literal_size(string));
 			system::memory_copy(memory::get_array_data(str.buffer), string, memory::get_array_bytes_size(str.buffer));
 		}
 
-		inline void reserve(string& str, size_t length)
+		inline void reserve(string& str, size_t size)
 		{
-			memory::reserve_array(str.buffer, length);
+			memory::reserve_array(str.buffer, size);
 		}
 
-		inline void resize(string& str, size_t length)
+		inline void resize(string& str, size_t size)
 		{
-			memory::resize_array(str.buffer, length);
+			memory::resize_array(str.buffer, size);
 		}
 
-		inline void copy(string& str, size_t position, const uint8_t* string, size_t length)
+		inline void copy(string& str, size_t position, const uint8_t* string, size_t size)
 		{
-			memory::array_copy(str.buffer, position, string, length);
+			memory::array_copy(str.buffer, position, string, size);
 		}
 
 		inline void copy(string& str, size_t position, const string& string)
@@ -79,7 +88,7 @@ namespace fstd
 
 		// @Warning be careful when using the resulting buffer
 		// there is no ending '/0'
-		//inline const wchar_t* to_utf16(const string& str)
+		//inline const wchar_t* to_utf16(const utf8_string& str)
 		//{
 		//	return memory::get_array_data(str.buffer);
 		//}
@@ -89,7 +98,7 @@ namespace fstd
 			return memory::get_array_data(str.buffer);
 		}
 
-		inline size_t get_string_length(const string& str)
+		inline size_t get_string_size(const string& str)
 		{
 			return memory::get_array_size(str.buffer);
 		}
@@ -106,60 +115,67 @@ namespace fstd
 
 		// =====================================================================
 
-		struct utf16_string
+		struct UTF16LE_string
 		{
 			memory::Array<uint16_t>	buffer;
+
+			// @TODO @CleanUp
+			// I don't really want to put the operator here (directly in the struct)
+			inline uint16_t& operator[](size_t index)
+			{
+				return *memory::get_array_element(buffer, index);
+			}
 		};
 
-		inline void assign(utf16_string& str, const uint16_t* string)
+		inline void assign(UTF16LE_string& str, const uint16_t* string)
 		{
-			memory::resize_array(str.buffer, string_literal_length(string));
+			memory::resize_array(str.buffer, string_literal_size(string));
 			system::memory_copy(memory::get_array_data(str.buffer), string, memory::get_array_bytes_size(str.buffer));
 		}
 
-		inline void reserve(utf16_string& str, size_t length)
+		inline void reserve(UTF16LE_string& str, size_t size)
 		{
-			memory::reserve_array(str.buffer, length);
+			memory::reserve_array(str.buffer, size);
 		}
 
-		inline void resize(utf16_string& str, size_t length)
+		inline void resize(UTF16LE_string& str, size_t size)
 		{
-			memory::resize_array(str.buffer, length);
+			memory::resize_array(str.buffer, size);
 		}
 
-		inline void copy(utf16_string& str, size_t position, const uint16_t* string, size_t length)
+		inline void copy(UTF16LE_string& str, size_t position, const uint16_t* string, size_t size)
 		{
-			memory::array_copy(str.buffer, position, string, length);
+			memory::array_copy(str.buffer, position, string, size);
 		}
 
-		inline void copy(utf16_string& str, size_t position, const utf16_string& string)
+		inline void copy(UTF16LE_string& str, size_t position, const UTF16LE_string& string)
 		{
 			memory::array_copy(str.buffer, position, string.buffer);
 		}
 
-		inline void release(utf16_string& str)
+		inline void release(UTF16LE_string& str)
 		{
 			memory::release(str.buffer);
 		}
 
 		// @Warning be careful when using the resulting buffer
 		// there is no ending '/0'
-		//inline const wchar_t* to_utf16(const string& str)
+		//inline const wchar_t* to_utf16(const utf8_string& str)
 		//{
 		//	return memory::get_array_data(str.buffer);
 		//}
 
-		inline uint16_t* to_utf16(const utf16_string& str)
+		inline uint16_t* to_utf16(const UTF16LE_string& str)
 		{
 			return memory::get_array_data(str.buffer);
 		}
 
-		inline size_t get_string_length(const utf16_string& str)
+		inline size_t get_string_size(const UTF16LE_string& str)
 		{
 			return memory::get_array_size(str.buffer);
 		}
 
-		inline bool are_equals(const utf16_string& a, const utf16_string& b)
+		inline bool are_equals(const UTF16LE_string& a, const UTF16LE_string& b)
 		{
 			if (a.buffer.size != b.buffer.size) {
 				return false;

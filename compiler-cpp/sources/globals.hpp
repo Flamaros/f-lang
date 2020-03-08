@@ -2,7 +2,7 @@
 
 #include <fstd/memory/array.hpp>
 
-#include <fstd/language/string_view.hpp>
+#include <fstd/system/path.hpp>
 
 namespace fstd
 {
@@ -19,8 +19,8 @@ namespace f
 
 struct Globals
 {
-	fstd::core::Logger*										logger = nullptr;
-	fstd::memory::Array<fstd::language::utf16_string_view>	lexed_file_paths;
+	fstd::core::Logger*						logger = nullptr;
+	fstd::memory::Array<fstd::system::Path>	lexed_file_paths;
 };
 
 void initialize_globals();

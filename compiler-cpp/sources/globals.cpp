@@ -35,16 +35,15 @@ void report_error(Compiler_Error error, const f::Token& token, const char* error
 	language::string_view   header;
 	
 	if (error == Compiler_Error::error) {
-		language::assign(header, (uint8_t*)"\033[38;5;196;4mError:\033[0m ");
+		language::assign(header, (uint8_t*)"\033[38;5;196;4mError:\033[0m");
 	}
 	else {
-		language::assign(header, (uint8_t*)"\033[38;5;208mWarning:\033[0m ");
+		language::assign(header, (uint8_t*)"\033[38;5;208mWarning:\033[0m");
 	}
-	system::print(header);
 
 	language::assign(error_message_string, (uint8_t*)error_message);
-	language::assign(format_string, (uint8_t*)"%lv(%d, %d): %v%s");
-	core::print_to_builder(string_builder, &format_string, token.file_path, token.line, token.column, header, error_message_string);
+	language::assign(format_string, (uint8_t*)"%v %v(%d, %d): %s");
+	core::print_to_builder(string_builder, &format_string, header, token.file_path, token.line, token.column, error_message_string);
 
 	// @TODO print the token in a particular color
 

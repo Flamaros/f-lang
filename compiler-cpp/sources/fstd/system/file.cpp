@@ -1,6 +1,8 @@
 #include "file.hpp"
 
 #include <fstd/language/flags.hpp>
+#include <fstd/core/unicode.hpp>
+#include <fstd/language/string.hpp>
 
 #if defined(FSTD_OS_WINDOWS)
 #	include <Windows.h>
@@ -49,9 +51,16 @@ namespace fstd
 				dwDesiredAccess = CREATE_ALWAYS;
 			}
 
-			LPCWSTR foo = (LPCWSTR)data(path);
+			// We have to convert the path in utf16 as Windows doesn't support UTF8.
+			// We also may preprend \\?\ prefix if the path is absolut to be able to manage path longer than 260 characters.
+			// @TODO
+
+			language::UTF16LE_string	utf16_path;
+
+			core::from_utf8_to_utf16LE(to_string(path), utf16_path, true);
+
 			file.handle = CreateFileW(
-				is_absolute(path) ? (LPCWSTR)data(path) : (LPCWSTR)&data(path)[Path_Header_Size],
+				(LPCWSTR)language::to_utf16(utf16_path),
 				dwDesiredAccess,
 				0,						// dwShareMode,
 				NULL,					// lpSecurityAttributes,

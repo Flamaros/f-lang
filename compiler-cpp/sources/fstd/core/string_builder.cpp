@@ -13,9 +13,9 @@ namespace fstd
 {
 	namespace core
 	{
-		static void print_to_builder(String_Builder& builder, const uint8_t* string, size_t length)
+		static void print_to_builder(String_Builder& builder, const uint8_t* string, size_t size)
 		{
-			if (length == 0) {
+			if (size == 0) {
 				return;
 			}
 
@@ -24,7 +24,7 @@ namespace fstd
 			memory::array_push_back(builder.strings, language::string());
 			string_buffer = memory::get_array_last_element(builder.strings);
 
-			language::copy(*string_buffer, 0, string, length);
+			language::copy(*string_buffer, 0, string, size);
 		}
 
 		static void print_to_builder(String_Builder& builder, int32_t value)
@@ -67,26 +67,6 @@ namespace fstd
 			language::copy(*string_buffer, 0, value);
 		}
 
-		static void print_to_builder(String_Builder& builder, language::utf16_string value)
-		{
-			language::string* string_buffer;
-
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
-
-			core::copy(*string_buffer, 0, value);
-		}
-
-		static void print_to_builder(String_Builder& builder, language::utf16_string_view value)
-		{
-			language::string* string_buffer;
-
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
-
-			core::copy(*string_buffer, 0, value);
-		}
-
 		static void print_to_builder(String_Builder& builder, int32_t value, int32_t base)
 		{
 			Assert(base >= 2 && base <= 16);
@@ -114,7 +94,7 @@ namespace fstd
 			size_t		position = 0;
 			size_t		start_print_position = 0;
 			size_t		next_print_length = 0;
-			size_t		format_length = language::get_string_length(*format);
+			size_t		format_length = language::get_string_size(*format);
 
 			while (position < format_length) {
 				if (language::to_utf8(*format)[position] == '%')
@@ -158,19 +138,6 @@ namespace fstd
 							print_to_builder(builder, value);
 							position++;
 						}
-						else if (language::to_utf8(*format)[position] == 's') { // utf16_string
-							language::utf16_string value = va_arg(args, language::utf16_string);
-
-							print_to_builder(builder, value);
-							position++;
-						}
-						else if (language::to_utf8(*format)[position] == 'v') { // utf16_string_view
-							language::utf16_string_view value = va_arg(args, language::utf16_string_view);
-
-							print_to_builder(builder, value);
-							position++;
-						}
-
 					}
 
 					start_print_position = position;
@@ -203,15 +170,15 @@ namespace fstd
 			size_t				position = 0;
 
 			for (size_t i = 0; i < memory::get_array_size(builder.strings); i++) {
-				total_length += language::get_string_length(*memory::get_array_element(builder.strings, i));
+				total_length += language::get_string_size(*memory::get_array_element(builder.strings, i));
 			}
 
 			language::reserve(result, total_length);
 			for (size_t i = 0; i < memory::get_array_size(builder.strings); i++) {
-				size_t length = language::get_string_length(*memory::get_array_element(builder.strings, i));
+				size_t size = language::get_string_size(*memory::get_array_element(builder.strings, i));
 
 				language::copy(result, position, *memory::get_array_element(builder.strings, i));
-				position += length;
+				position += size;
 			}
 
 			return result;

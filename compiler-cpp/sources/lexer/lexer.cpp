@@ -6,7 +6,6 @@
 #include "../globals.hpp"
 
 #include <fstd/core/logger.hpp>
-#include <fstd/core/string_builder.hpp>
 
 #include <fstd/system/file.hpp>
 #include <fstd/system/path.hpp>
@@ -46,6 +45,8 @@ constexpr static uint16_t punctuation_key_2(const uint8_t* str)
 // previous can be followed by an other one.
 //
 // Flamaros - 17 february 2020
+
+// @TODO remove the use of the initializer list in the Hash_Table
 static Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
     {punctuation_key_2((uint8_t*)"//"),	Punctuation::LINE_COMMENT},
     {punctuation_key_2((uint8_t*)"/*"),	Punctuation::OPEN_BLOCK_COMMENT},
@@ -111,19 +112,19 @@ static uint32_t keyword_key(const language::string_view& str)
 {
     // @TODO test with a crc32 implementation (that call be better to reduce number of collision instead of this weird thing)
 
-    core::Assert(language::get_string_length(str) > 0);
+    core::Assert(language::get_string_size(str) > 0);
 
-    if (language::get_string_length(str) == 1) {
+    if (language::get_string_size(str) == 1) {
         return (uint32_t)1 << 8 | (uint32_t)str.ptr[0];
     }
-    else if (language::get_string_length(str) == 2) {
+    else if (language::get_string_size(str) == 2) {
         return (uint32_t)2 << 24 | (uint32_t)str.ptr[0] << 8 | (uint32_t)str.ptr[1];
     }
-    else if (language::get_string_length(str) < 5) {
-        return (uint32_t)str.length << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[1]) << 8) | (uint32_t)str.ptr[2];
+    else if (language::get_string_size(str) < 5) {
+        return (uint32_t)str.size << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[1]) << 8) | (uint32_t)str.ptr[2];
     }
     else {
-        return (uint32_t)str.length << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[2]) << 8) | (uint32_t)str.ptr[4];
+        return (uint32_t)str.size << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[2]) << 8) | (uint32_t)str.ptr[4];
     }
 }
 
@@ -234,7 +235,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
     int					    current_line = 1;
     int					    current_column = 1;
 
-    memory::array_push_back(globals.lexed_file_paths, to_string(path));
+    memory::array_push_back(globals.lexed_file_paths, path);
     if (system::open_file(file, path, system::File::Opening_Flag::READ) == false) {
         file_token.type = Token_Type::UNKNOWN;
         file_token.file_path = system::to_string(path);
@@ -404,7 +405,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                 punctuation = punctuation_table_1[current_character];
                 if (punctuation == Punctuation::UNKNOWN) {  // @Warning any kind of punctuation stop the definition of an identifier
                     stream::peek(stream);
-                    language::resize(current_view, language::get_string_length(current_view) + 1);
+                    language::resize(current_view, language::get_string_size(current_view) + 1);
                     current_column++;
 
                     token.type = Token_Type::IDENTIFIER;

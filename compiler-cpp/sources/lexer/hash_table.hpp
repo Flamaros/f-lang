@@ -12,6 +12,12 @@
 //
 // Take a look if it is possible to fragment the table in multiple with a very simple
 // division mecanisme, this will allow to have only used table allocated
+
+
+// @TODO remove that
+#include <initializer_list>
+#include <utility>
+
 template<typename Hash_Type, typename Value_Type, Value_Type default_value = Value_Type()>
 class Hash_Table
 {

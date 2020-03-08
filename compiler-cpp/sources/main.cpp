@@ -1,4 +1,4 @@
-#include "native_generator.hpp"
+﻿#include "native_generator.hpp"
 
 #include "globals.hpp"
 #include "macros.hpp"
@@ -24,13 +24,10 @@
 #include <tracy/Tracy.hpp>
 #include <tracy/common/TracySystem.hpp>
 
-using namespace std::string_literals; // enables s-suffix for std::string literals
-
 using namespace fstd;
 
 int main(int ac, char** av)
 {
-    std::string             input_file_content;
 	memory::Array<f::Token>	tokens;
     f::AST					parsing_result;
 	int						result = 0;
@@ -79,7 +76,7 @@ int main(int ac, char** av)
 
 		defer{ system::reset_path(path); };
 
-		system::from_native(path, LR"(.\compiler-f\main.f)"s);
+		system::from_native(path, (uint8_t*)u8R"(.\compiler-f\main.f)");
 
 		f::initialize_lexer();
 		f::lex(path, tokens);

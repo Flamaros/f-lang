@@ -20,6 +20,8 @@ Add utf16_string and utf16_string_view
 
 fstd/system/path:
  - Remove STL dependency
+ - Do the path always be absolut internally? Or at least when the path exceed 260 characters under Windows
+   - Maybe the conversion to absolute and the prefix path should be only be done when opening the file as this is specific to Windows and path should be 100% portable (in this case the path should be stored as utf8 string)
 
 
 FSTD:
