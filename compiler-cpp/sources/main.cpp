@@ -1,12 +1,16 @@
-#include "native_generator.hpp"
+﻿#include "native_generator.hpp"
 
-#include "lexer.hpp"
-#include "parser.hpp"
-#include "c_generator.hpp"
+#include "globals.hpp"
+#include "macros.hpp"
 
-#include <utilities/file.hpp>
-#include <utilities/string.hpp>
-#include <utilities/exit_scope.hpp>
+#include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
+#include "tests/tests.hpp"
+
+#include <fstd/core/string_builder.hpp>
+#include <fstd/core/logger.hpp>
+
+#include <fstd/language/defer.hpp>
 
 #include <fstd/memory/array.hpp>
 
@@ -16,115 +20,86 @@
 
 #include <fstd/os/windows/console.hpp>
 
-#include <iostream>
-#include <chrono>
-#include <string>
+#undef max
+#include <tracy/Tracy.hpp>
+#include <tracy/common/TracySystem.hpp>
 
-#include <cstdlib>
-
-using namespace std::string_literals; // enables s-suffix for std::string literals
-
-#define TEST_PARSING_SPEED
-
-void	test_parsing_speed()
-{
-	typedef std::chrono::high_resolution_clock	Clock;
-	typedef std::chrono::time_point<Clock>		Time_Point;
-
-	Time_Point	start;
-	Time_Point	start_tokenize;
-	Time_Point	start_parse;
-	Time_Point	end;
-	Time_Point	end_tokenize;
-	Time_Point	end_parse;
-
-	start = Clock::now();
-
-	std::string             input_file_content;
-	std::vector<f::Token>   tokens;
-	f::AST					parsing_result;
-	int						result = 0;
-
-	if (utilities::read_all_file("./tests/big_file.f", input_file_content) == true) {
-		start_tokenize = Clock::now();
-		f::tokenize(input_file_content, tokens);
-		end_tokenize = Clock::now();
-
-		start_parse = Clock::now();
-		f::parse(tokens, parsing_result);
-		end_parse = Clock::now();
-	}
-
-	end = Clock::now();
-
-	size_t	nb_lines = tokens.back().line;
-
-	std::chrono::duration<double> tokenize_s = end_tokenize - start_tokenize;
-	std::chrono::duration<double> parse_s = end_parse - start_parse;
-	std::chrono::duration<double> total_s = end - start;
-
-	std::cout << "./tests/big_file.f" << std::endl;
-	std::cout << "    tokenize: " << tokenize_s.count() << " s - lines/s: " << nb_lines / tokenize_s.count() << std::endl;
-	std::cout << "    parse:    " << parse_s.count() << " s - lines/s: " << nb_lines / parse_s.count() << std::endl;
-	std::cout << "    total:    " << total_s.count() << " s - lines/s: " << nb_lines / total_s.count() << std::endl;
-}
+using namespace fstd;
 
 int main(int ac, char** av)
 {
-    std::string             input_file_content;
-    std::vector<f::Token>   tokens;
+	memory::Array<f::Token>	tokens;
     f::AST					parsing_result;
 	int						result = 0;
 
-#if defined(PLATFORM_WINDOWS)
-	fstd::os::windows::enable_default_console_configuration();
+	system::allocator_initialize();
+
+#if defined(FSTD_OS_WINDOWS)
+	os::windows::enable_default_console_configuration();
+	defer { os::windows::close_console(); };
 #endif
 
-	defer{ 
-
-#if defined(PLATFORM_WINDOWS)
-	fstd::os::windows::close_console();
-#endif
-	};
-
-#if defined(TEST_PARSING_SPEED)
-	test_parsing_speed();
+#if defined(TRACY_ENABLE)
+	tracy::SetThreadName("Main thread");
 #endif
 
-    if (utilities::read_all_file("./compiler-f/main.f", input_file_content) == false) {
-        return 1;
-    }
+	initialize_globals();
 
-	fstd::system::File	file;
-	fstd::system::Path	path;
+#if defined(FSTD_DEBUG)
+	core::set_log_level(*globals.logger, core::Log_Level::verbose);
+#endif
 
-	fstd::system::from_native(path, LR"(.\compiler-f\main.f)"s);
-	fstd::system::from_native(path, LR"(C:\Users\Xavier\Documents\development\f-lang\compiler-f\main.f)"s);
+	//core::String_Builder	string_builder;
+	//language::string		format;
+	//language::string		formatted_string;
 
-	fstd::system::open_file(file, path, fstd::system::File::Opening_Flag::READ);
-	fstd::memory::Array<uint8_t>	source_file_content = fstd::system::get_file_content(file);
+	//defer{
+	//	core::free_buffers(string_builder);
+	//	language::release(formatted_string);
+	//};
 
-	fstd::stream::Memory_Stream	stream;
+	//language::assign(format, L"test: %d %d %d\n");
+	//core::print_to_builder(string_builder, &format, -12340, 1234, 12340);
 
-	fstd::stream::initialize_memory_stream(stream, source_file_content);
-	bool has_utf8_boom = fstd::stream::is_uft8_bom(stream, true);
+	//formatted_string = core::to_string(string_builder);
+	//system::print(formatted_string);
 
-    f::tokenize(input_file_content, tokens);
-    f::parse(tokens, parsing_result);
+	//run_tests();
 
-	std::filesystem::path output_directory_path = "./build";
-	std::filesystem::path output_file_name = "f-compiler.exe";
+	FrameMark;
+	// Initialization and tests ================================================
 
-    std::filesystem::create_directory(output_directory_path);   // @Warning hacky thing, the canonical may failed if the directory doesn't exist
-	if (output_directory_path.is_relative()) {
-		output_directory_path = std::filesystem::canonical(output_directory_path);
+	{
+		ZoneScopedN("f-lang parsing");
+
+		system::Path	path;
+
+		defer{ system::reset_path(path); };
+
+		system::from_native(path, (uint8_t*)u8R"(.\compiler-f\main.f)");
+
+		f::initialize_lexer();
+		f::lex(path, tokens);
+
+		f::parse(tokens, parsing_result);
 	}
 
-    if (c_generator::generate(output_directory_path, output_file_name, parsing_result)) {
-		return 0;
-    }
+	//std::filesystem::path output_directory_path = "./build";
+	//std::filesystem::path output_file_name = "f-compiler.exe";
+
+ //   std::filesystem::create_directory(output_directory_path);   // @Warning hacky thing, the canonical may failed if the directory doesn't exist
+	//if (output_directory_path.is_relative()) {
+	//	output_directory_path = std::filesystem::canonical(output_directory_path);
+	//}
+
+  //  if (c_generator::generate(output_directory_path, output_file_name, parsing_result)) {
+		//return 0;
+  //  }
 
 //    generate_hello_world();
 
-	return 1;
+
+	FrameMark;
+
+	return 0;
 }

@@ -1,9 +1,6 @@
 #pragma once
 
-#include <array>
-#include <limits>
-
-#include <cassert>
+#include <fstd/core/assert.hpp>
 
 /// !!! Warning the Key type have to be unsigned fundamental type
 /// A pure hash table
@@ -15,18 +12,18 @@
 //
 // Take a look if it is possible to fragment the table in multiple with a very simple
 // division mecanisme, this will allow to have only used table allocated
+
+
+// @TODO remove that
+#include <initializer_list>
+#include <utility>
+
 template<typename Hash_Type, typename Value_Type, Value_Type default_value = Value_Type()>
 class Hash_Table
 {
-    static const size_t   max_nb_values = std::numeric_limits<Hash_Type>::max() + 1;
+    static const size_t   max_nb_values = (Hash_Type)0xffffffff'ffffffff + 1;
 
 public:
-    struct Hash_Pair
-    {
-        Hash_Type    HASH;
-        Value_Type   value;
-    };
-
     Hash_Table()
     {
         for (size_t i = 0; i < max_nb_values; i++)
@@ -39,7 +36,7 @@ public:
             m_table[i] = default_value;
         for (auto& value_pair : values)
         {
-            assert(m_table[value_pair.first] == default_value);  // check against conflict
+            fstd::core::Assert(m_table[value_pair.first] == default_value);  // check against conflict
             m_table[value_pair.first] = value_pair.second;
         }
     }
@@ -48,5 +45,5 @@ public:
 
 
 private:
-    std::array<Value_Type, max_nb_values>   m_table;
+    Value_Type  m_table[max_nb_values];
 };

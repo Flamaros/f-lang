@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fstd/system/path.hpp>
+
 #include <vector>
 #include <string_view>
 #include <string>
@@ -201,5 +203,5 @@ namespace f
 		return lhs.text == rhs.text;
 	}
 
-	void    tokenize(const std::string& text, std::vector<Token>& tokens);
+	bool    lex(const fstd::system::Path& path, std::vector<Token>& tokens);
 }

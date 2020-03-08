@@ -1,6 +1,6 @@
 #include "native_generator.hpp"
 
-#include <utilities/file.hpp>
+#include <fstd/system/file.hpp>
 
 #include <iostream>
 
@@ -8,6 +8,10 @@
 
 #include <time.h>
 #include <assert.h>
+
+#include <fstd/core/assert.hpp>
+
+using namespace fstd;
 
 constexpr DWORD	image_base = 0x00400000;
 constexpr DWORD	section_alignment = 4096;	// 4;	// @Warning should be greater or equal to file_alignment
@@ -191,7 +195,7 @@ bool generate_hello_world()
 
 
 
-    assert(image_nt_header.FileHeader.NumberOfSections <= 96);
+    core::Assert(image_nt_header.FileHeader.NumberOfSections <= 96);
 
     // .text section
     {

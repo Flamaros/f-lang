@@ -5,9 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\utilities">
-      <UniqueIdentifier>{48b05944-f114-4e91-b8e5-d3ca38447a6d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\third-party">
       <UniqueIdentifier>{5a709e23-9252-4f65-8bc1-1f7b055662e3}</UniqueIdentifier>
     </Filter>
@@ -29,51 +26,33 @@
     <Filter Include="Source Files\fstd\stream">
       <UniqueIdentifier>{f9f7bf4f-a246-49fc-a9b3-f77d577fa635}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\fstd\core">
+      <UniqueIdentifier>{15969bb9-5b5a-49e9-aaee-e3e23a5cb027}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\fstd\language">
+      <UniqueIdentifier>{324ac387-8e63-407e-9c81-7960b10990a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\lexer">
+      <UniqueIdentifier>{8ebba8ea-28f9-4980-ac7f-83c6aeeae473}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\parser">
+      <UniqueIdentifier>{541cff7c-2fcb-4d1d-a2bd-b8ec7d60d814}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\tests">
+      <UniqueIdentifier>{f3bff053-5343-4809-b80f-1beb8e9908d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\utilities\string.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\timer.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\vector.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\exit_scope.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\file.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\flags.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\utilities\logger.hpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
       <Filter>Source Files\third-party</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\c_generator.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\globals.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\lexer.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\macros.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\native_generator.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\parser.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\platform.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\third-party\magic_enum.hpp">
@@ -83,12 +62,6 @@
       <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\string.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\string_ref.hpp">
       <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\fstd\system\file.hpp">
@@ -115,34 +88,70 @@
     <ClInclude Include="..\sources\fstd\stream\memory_stream.hpp">
       <Filter>Source Files\fstd\stream</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\core\logger.hpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\defer.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\flags.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\system\timer.hpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\string.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\string_view.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\core\string_builder.hpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\intrinsic.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\memory\hash_table.hpp">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\types.hpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\core\assert.hpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\lexer\lexer.hpp">
+      <Filter>Source Files\lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\parser\parser.hpp">
+      <Filter>Source Files\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\tests\tests.hpp">
+      <Filter>Source Files\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\lexer\hash_table.hpp">
+      <Filter>Source Files\lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp">
+      <Filter>Source Files\lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\system\process.hpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\core\unicode.hpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\utilities\string.cpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\utilities\logger.cpp">
-      <Filter>Source Files\utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\c_generator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\globals.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\lexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\native_generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\parser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\fstd\system\file.cpp">
       <Filter>Source Files\fstd\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\utilities\_file.cpp">
-      <Filter>Source Files\utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\fstd\system\path.cpp">
       <Filter>Source Files\fstd\system</Filter>
@@ -158,6 +167,30 @@
     </ClCompile>
     <ClCompile Include="..\sources\fstd\stream\memory_stream.cpp">
       <Filter>Source Files\fstd\stream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\core\logger.cpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\core\string_builder.cpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\language\string.cpp">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\core\assert.cpp">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\lexer\lexer.cpp">
+      <Filter>Source Files\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\parser\parser.cpp">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\tests\tests.cpp">
+      <Filter>Source Files\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\process.cpp">
+      <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

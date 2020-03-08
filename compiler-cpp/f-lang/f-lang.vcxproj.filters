@@ -8,10 +8,19 @@
     <Filter Include="data">
       <UniqueIdentifier>{b0f337d0-8db1-485c-8ab7-6aa4165a18f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\third-party">
+      <UniqueIdentifier>{a565b5d4-808c-4306-85c9-7d9c96bb2871}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\third-party\tracy">
+      <UniqueIdentifier>{d165c925-9211-45ef-85e3-e34ceeac84bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third-party\tracy\TracyClient.cpp">
+      <Filter>Source Files\third-party\tracy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -5,6 +5,14 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release-Tracy|Win32">
+      <Configuration>Release-Tracy</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release-Tracy|x64">
+      <Configuration>Release-Tracy</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -19,50 +27,57 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\c_generator.hpp" />
+    <ClInclude Include="..\sources\fstd\core\assert.hpp" />
+    <ClInclude Include="..\sources\fstd\core\logger.hpp" />
+    <ClInclude Include="..\sources\fstd\core\string_builder.hpp" />
+    <ClInclude Include="..\sources\fstd\core\unicode.hpp" />
+    <ClInclude Include="..\sources\fstd\language\defer.hpp" />
+    <ClInclude Include="..\sources\fstd\language\flags.hpp" />
+    <ClInclude Include="..\sources\fstd\language\intrinsic.hpp" />
+    <ClInclude Include="..\sources\fstd\language\string.hpp" />
+    <ClInclude Include="..\sources\fstd\language\string_view.hpp" />
+    <ClInclude Include="..\sources\fstd\language\types.hpp" />
     <ClInclude Include="..\sources\fstd\memory\array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\string.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\string_ref.hpp" />
+    <ClInclude Include="..\sources\fstd\memory\hash_table.hpp" />
     <ClInclude Include="..\sources\fstd\os\windows\console.hpp" />
     <ClInclude Include="..\sources\fstd\platform.hpp" />
     <ClInclude Include="..\sources\fstd\stream\memory_stream.hpp" />
     <ClInclude Include="..\sources\fstd\system\allocator.hpp" />
     <ClInclude Include="..\sources\fstd\system\file.hpp" />
     <ClInclude Include="..\sources\fstd\system\path.hpp" />
+    <ClInclude Include="..\sources\fstd\system\process.hpp" />
     <ClInclude Include="..\sources\fstd\system\stdio.hpp" />
+    <ClInclude Include="..\sources\fstd\system\timer.hpp" />
     <ClInclude Include="..\sources\globals.hpp" />
-    <ClInclude Include="..\sources\lexer.hpp" />
+    <ClInclude Include="..\sources\lexer\hash_table.hpp" />
+    <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp" />
+    <ClInclude Include="..\sources\lexer\lexer.hpp" />
     <ClInclude Include="..\sources\macros.hpp" />
     <ClInclude Include="..\sources\native_generator.hpp" />
-    <ClInclude Include="..\sources\parser.hpp" />
-    <ClInclude Include="..\sources\platform.hpp" />
+    <ClInclude Include="..\sources\parser\parser.hpp" />
+    <ClInclude Include="..\sources\tests\tests.hpp" />
     <ClInclude Include="..\sources\third-party\magic_enum.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
-    <ClInclude Include="..\sources\utilities\exit_scope.hpp" />
-    <ClInclude Include="..\sources\utilities\file.hpp" />
-    <ClInclude Include="..\sources\utilities\flags.hpp" />
-    <ClInclude Include="..\sources\utilities\logger.hpp" />
-    <ClInclude Include="..\sources\utilities\string.hpp" />
-    <ClInclude Include="..\sources\utilities\timer.hpp" />
-    <ClInclude Include="..\sources\utilities\vector.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\c_generator.cpp" />
+    <ClCompile Include="..\sources\fstd\core\assert.cpp" />
+    <ClCompile Include="..\sources\fstd\core\logger.cpp" />
+    <ClCompile Include="..\sources\fstd\core\string_builder.cpp" />
+    <ClCompile Include="..\sources\fstd\language\string.cpp" />
     <ClCompile Include="..\sources\fstd\os\windows\console.cpp" />
     <ClCompile Include="..\sources\fstd\stream\memory_stream.cpp" />
     <ClCompile Include="..\sources\fstd\system\allocator.cpp" />
     <ClCompile Include="..\sources\fstd\system\file.cpp" />
     <ClCompile Include="..\sources\fstd\system\path.cpp" />
+    <ClCompile Include="..\sources\fstd\system\process.cpp" />
     <ClCompile Include="..\sources\fstd\system\stdio.cpp" />
     <ClCompile Include="..\sources\globals.cpp" />
-    <ClCompile Include="..\sources\lexer.cpp" />
+    <ClCompile Include="..\sources\lexer\lexer.cpp" />
     <ClCompile Include="..\sources\native_generator.cpp" />
-    <ClCompile Include="..\sources\parser.cpp" />
-    <ClCompile Include="..\sources\utilities\logger.cpp" />
-    <ClCompile Include="..\sources\utilities\string.cpp" />
-    <ClCompile Include="..\sources\utilities\_file.cpp" />
+    <ClCompile Include="..\sources\parser\parser.cpp" />
+    <ClCompile Include="..\sources\tests\tests.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -76,27 +91,41 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -109,10 +138,16 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -125,7 +160,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -137,8 +178,9 @@
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)sources</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -154,8 +196,9 @@
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)sources</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -173,8 +216,31 @@
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)sources</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;TRACY_ENABLE;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <ExceptionHandling>false</ExceptionHandling>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
+      <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -194,8 +260,31 @@
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)sources</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;TRACY_ENABLE;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <ExceptionHandling>false</ExceptionHandling>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
+      <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
