@@ -222,6 +222,18 @@ void f::initialize_lexer()
     core::log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: size: %d bytes - nb_used_buckets: %d - nb_collisions: %d\n", keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
 }
 
+static inline void peek(stream::Memory_Stream& stream, int& current_column)
+{
+    stream::peek(stream);
+    current_column++;
+}
+
+static inline void skip(stream::Memory_Stream& stream, size_t size, int& current_column)
+{
+    stream::skip(stream, size);
+    current_column += size;
+}
+
 bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
 {
 	ZoneScopedNC("f::lex",  0x1b5e20);
@@ -292,8 +304,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                     current_column = 0; // @Warning 0 because the will be incremented just after
                 }
 
-                stream::peek(stream);
-                current_column++;
+                peek(stream, current_column);
             }
             else {
                 Token       token;
@@ -318,7 +329,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                         if (current_character == '\n') {
                             break;
                         }
-                        stream::peek(stream);   // @Warning We don't peek the '\n' character (it will be peeked later for the line count increment)
+                        peek(stream, current_column);   // @Warning We don't peek the '\n' character (it will be peeked later for the line count increment)
                     }
                 }
                 else if (punctuation_2 == Punctuation::OPEN_BLOCK_COMMENT) {
@@ -330,12 +341,12 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                         }
 
                         if (punctuation_2 == Punctuation::CLOSE_BLOCK_COMMENT) {
-                            stream::skip(stream, 2);
+                            skip(stream, 2, current_column);
                             comment_block_closed = true;
                             break;
                         }
 
-                        stream::peek(stream);
+                        peek(stream, current_column);
                     }
 
                     if (comment_block_closed == false) {
@@ -343,10 +354,10 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                     }
                 }
                 else if (punctuation == Punctuation::DOUBLE_QUOTE) {
-                    stream::peek(stream);
+                    peek(stream, current_column);
                 }
                 else if (punctuation == Punctuation::SINGLE_QUOTE) {
-                    stream::peek(stream);
+                    peek(stream, current_column);
                     //while (stream::is_eof(stream) == false)
                     //{
                     //    uint8_t     current_character;
@@ -355,7 +366,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                     //}
                 }
                 else if (punctuation == Punctuation::BACKQUOTE) {
-                    stream::peek(stream);
+                    peek(stream, current_column);
                 }
                 else {
                     token.type = Token_Type::SYNTAXE_OPERATOR;
@@ -364,19 +375,17 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                         language::assign(current_view, stream::get_pointer(stream), 2);
                         token.text = current_view;
                         token.value.punctuation = punctuation_2;
-                        stream::skip(stream, 2);
+                        skip(stream, 2, current_column);
                     }
                     else {
                         language::assign(current_view, stream::get_pointer(stream), 1);
                         token.text = current_view;
                         token.value.punctuation = punctuation;
-                        stream::skip(stream, 1);
+                        skip(stream, 1, current_column);
                     }
 
                     memory::array_push_back(tokens, token);
                 }
-
-                current_column++;
             }
         }
 /*            else if (is_digit(current_character)) { // Will be a numeric literal
@@ -404,9 +413,8 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
 
                 punctuation = punctuation_table_1[current_character];
                 if (punctuation == Punctuation::UNKNOWN) {  // @Warning any kind of punctuation stop the definition of an identifier
-                    stream::peek(stream);
+                    peek(stream, current_column);
                     language::resize(current_view, language::get_string_size(current_view) + 1);
-                    current_column++;
 
                     token.type = Token_Type::IDENTIFIER;
 
