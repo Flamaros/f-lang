@@ -388,40 +388,41 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                 }
 				else if (punctuation == Punctuation::SINGLE_QUOTE) {
                     peek(stream, current_column);
-                    
-                    bool        raw_string_closed = false;
-					uint8_t*    string_literal = stream::get_pointer(stream);
-					size_t      string_size = 0;
-
-					while (stream::is_eof(stream) == false)
-					{
-						uint8_t     current_character;
-
-						current_character = stream::get(stream);
-						if (punctuation_table_1[current_character] == Punctuation::SINGLE_QUOTE) { // @TODO @SpeedUp we can just check the character here directly
-							peek(stream, current_column);
-							raw_string_closed = true;
-							break;
-						}
-
-						peek(stream, current_column);
-						string_size++;
-					}
-
-					if (raw_string_closed == false) {
-						// @TODO throw a user error
-					}
-					else {
-						language::assign(current_view, string_literal, string_size);
-						token.text = current_view;
-                        token.type = Token_Type::STRING_LITERAL_RAW;
-
-						memory::array_push_back(tokens, token);
-					}
+                    // @TODO single character, can be the same as string literal???
 				}
 				else if (punctuation == Punctuation::BACKQUOTE) {
-					peek(stream, current_column);
-				}
+                    peek(stream, current_column);
+
+                    bool        raw_string_closed = false;
+                    uint8_t* string_literal = stream::get_pointer(stream);
+                    size_t      string_size = 0;
+
+                    while (stream::is_eof(stream) == false)
+                    {
+                        uint8_t     current_character;
+
+                        current_character = stream::get(stream);
+                        if (punctuation_table_1[current_character] == Punctuation::SINGLE_QUOTE) { // @TODO @SpeedUp we can just check the character here directly
+                            peek(stream, current_column);
+                            raw_string_closed = true;
+                            break;
+                        }
+
+                        peek(stream, current_column);
+                        string_size++;
+                    }
+
+                    if (raw_string_closed == false) {
+                        // @TODO throw a user error
+                    }
+                    else {
+                        language::assign(current_view, string_literal, string_size);
+                        token.text = current_view;
+                        token.type = Token_Type::STRING_LITERAL_RAW;
+
+                        memory::array_push_back(tokens, token);
+                    }
+                }
 				else {
 					token.type = Token_Type::SYNTAXE_OPERATOR;
 
