@@ -353,30 +353,84 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                         // @TODO throw a user error
                     }
                 }
-                else if (punctuation == Punctuation::DOUBLE_QUOTE) {
+				else if (punctuation == Punctuation::DOUBLE_QUOTE) {
                     peek(stream, current_column);
-                }
-                else if (punctuation == Punctuation::SINGLE_QUOTE) {
-                    peek(stream, current_column);
-                    //while (stream::is_eof(stream) == false)
-                    //{
-                    //    uint8_t     current_character;
 
-                    //    current_character = stream::get(stream);
-                    //}
-                }
-                else if (punctuation == Punctuation::BACKQUOTE) {
-                    peek(stream, current_column);
-                }
-                else {
-                    token.type = Token_Type::SYNTAXE_OPERATOR;
+                    bool        raw_string_closed = false;
+                    uint8_t*    string_literal = stream::get_pointer(stream);
+                    size_t      string_size = 0;
 
-                    if (punctuation_2 != Punctuation::UNKNOWN) {
-                        language::assign(current_view, stream::get_pointer(stream), 2);
-                        token.text = current_view;
-                        token.value.punctuation = punctuation_2;
-                        skip(stream, 2, current_column);
+                    while (stream::is_eof(stream) == false)
+                    {
+                        uint8_t     current_character;
+
+                        current_character = stream::get(stream);
+                        if (punctuation_table_1[current_character] == Punctuation::DOUBLE_QUOTE) { // @TODO @SpeedUp we can just check the character here directly
+                            peek(stream, current_column);
+                            raw_string_closed = true;
+                            break;
+                        }
+
+                        peek(stream, current_column);
+                        string_size++;
                     }
+
+                    if (raw_string_closed == false) {
+                        // @TODO throw a user error
+                    }
+                    else {
+                        language::assign(current_view, string_literal, string_size);
+                        token.text = current_view;
+                        token.type = Token_Type::STRING_LITERAL;
+
+                        memory::array_push_back(tokens, token);
+                    }
+                }
+				else if (punctuation == Punctuation::SINGLE_QUOTE) {
+                    peek(stream, current_column);
+                    
+                    bool        raw_string_closed = false;
+					uint8_t*    string_literal = stream::get_pointer(stream);
+					size_t      string_size = 0;
+
+					while (stream::is_eof(stream) == false)
+					{
+						uint8_t     current_character;
+
+						current_character = stream::get(stream);
+						if (punctuation_table_1[current_character] == Punctuation::SINGLE_QUOTE) { // @TODO @SpeedUp we can just check the character here directly
+							peek(stream, current_column);
+							raw_string_closed = true;
+							break;
+						}
+
+						peek(stream, current_column);
+						string_size++;
+					}
+
+					if (raw_string_closed == false) {
+						// @TODO throw a user error
+					}
+					else {
+						language::assign(current_view, string_literal, string_size);
+						token.text = current_view;
+                        token.type = Token_Type::STRING_LITERAL_RAW;
+
+						memory::array_push_back(tokens, token);
+					}
+				}
+				else if (punctuation == Punctuation::BACKQUOTE) {
+					peek(stream, current_column);
+				}
+				else {
+					token.type = Token_Type::SYNTAXE_OPERATOR;
+
+					if (punctuation_2 != Punctuation::UNKNOWN) {
+						language::assign(current_view, stream::get_pointer(stream), 2);
+						token.text = current_view;
+						token.value.punctuation = punctuation_2;
+						skip(stream, 2, current_column);
+					}
                     else {
                         language::assign(current_view, stream::get_pointer(stream), 1);
                         token.text = current_view;
@@ -473,13 +527,13 @@ void f::print(fstd::memory::Array<Token>& tokens)
             print_to_builder(string_builder, "%d, %d - \033[38;5;10mSYNTAXE_OPERATOR\033[0m: \033[38;5;10m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
             break;
         case Token_Type::STRING_LITERAL_RAW:
-            print_to_builder(string_builder, "%d, %d - \033[38;5;6mSTRING_LITERAL_RAW\033[0m: \033[38;5;6m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            print_to_builder(string_builder, "%d, %d - \033[38;5;3mSTRING_LITERAL_RAW\033[0m: \033[38;5;3m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
             break;
         case Token_Type::STRING_LITERAL:
-            print_to_builder(string_builder, "%d, %d - \033[38;5;6mSTRING_LITERAL\033[0m: \033[38;5;6m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            print_to_builder(string_builder, "%d, %d - \033[38;5;3mSTRING_LITERAL\033[0m: \033[38;5;3m\"%v\"\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
             break;
         case Token_Type::NUMERIC_LITERAL_I32:
-            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_I32\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_I32\033[0m: \033[38;5;14m'%v'\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
             break;
         case Token_Type::NUMERIC_LITERAL_UI32:
             print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_UI32\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
