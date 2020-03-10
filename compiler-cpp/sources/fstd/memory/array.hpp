@@ -14,6 +14,19 @@ namespace fstd
 			Type*	ptr = nullptr;
 			size_t	reserved = 0;
 			size_t	size = 0;				// Number of elements
+
+											// @TODO @CleanUp
+			// I don't really want to put the operator here (directly in the struct)
+			inline Type& operator[](size_t index)
+			{
+				return ptr[index];
+			}
+
+			// @TODO @WTF??? Why I need a const version???
+			inline const Type& operator[](size_t index) const
+			{
+				return ptr[index];
+			}
 		};
 
 		template<typename Type>

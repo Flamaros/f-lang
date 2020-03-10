@@ -22,6 +22,12 @@ namespace fstd
 		// Getting type safe variadic without templates,...
 		//
 		// Flamaros - 03 january 2020
+		void				print_to_builder(String_Builder& builder, const uint8_t* string, size_t size);
+		void				print_to_builder(String_Builder& builder, int32_t value);
+		void				print_to_builder(String_Builder& builder, int64_t value);
+		void				print_to_builder(String_Builder& builder, language::string value);
+		void				print_to_builder(String_Builder& builder, language::string_view string);
+		void				print_to_builder(String_Builder& builder, const char* format, ...); // Assume that format an utf8 C string
 		void				print_to_builder(String_Builder& builder, const fstd::language::string* format, ...);
 		void				print_to_builder(String_Builder& builder, const language::string* format, va_list arg);
 

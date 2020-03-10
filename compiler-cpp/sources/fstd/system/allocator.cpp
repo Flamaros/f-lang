@@ -19,7 +19,7 @@
 // https://stackoverflow.com/questions/47981/how-do-you-set-clear-and-toggle-a-single-bit
 
 
-#define POOL_32
+//#define POOL_32
 
 namespace fstd
 {

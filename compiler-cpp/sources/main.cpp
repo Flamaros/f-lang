@@ -81,6 +81,8 @@ int main(int ac, char** av)
 		f::initialize_lexer();
 		f::lex(path, tokens);
 
+		f::print(tokens);
+
 		f::parse(tokens, parsing_result);
 	}
 

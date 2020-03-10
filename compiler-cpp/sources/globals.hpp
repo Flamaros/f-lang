@@ -1,5 +1,7 @@
 #pragma once
 
+#include "lexer/lexer.hpp"
+
 #include <fstd/memory/array.hpp>
 
 #include <fstd/system/path.hpp>
@@ -19,8 +21,8 @@ namespace f
 
 struct Globals
 {
-	fstd::core::Logger*						logger = nullptr;
-	fstd::memory::Array<fstd::system::Path>	lexed_file_paths;
+	fstd::core::Logger*					logger = nullptr;
+	fstd::memory::Array<f::Lexer_Data>	lexer_data;
 };
 
 void initialize_globals();

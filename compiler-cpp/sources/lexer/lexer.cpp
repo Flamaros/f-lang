@@ -6,6 +6,7 @@
 #include "../globals.hpp"
 
 #include <fstd/core/logger.hpp>
+#include <fstd/core/string_builder.hpp>
 
 #include <fstd/system/file.hpp>
 #include <fstd/system/path.hpp>
@@ -225,17 +226,16 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
 {
 	ZoneScopedNC("f::lex",  0x1b5e20);
 
-	system::File	        file;
+    Lexer_Data              lexer_data;
+    system::File	        file;
     Token                   file_token;
     stream::Memory_Stream	stream;
     size_t	                nb_tokens_prediction = 0;
-    memory::Array<uint8_t>  file_buffer;
     uint64_t                file_size;
     language::string_view   current_view;
     int					    current_line = 1;
     int					    current_column = 1;
 
-    memory::array_push_back(globals.lexed_file_paths, path);
     if (system::open_file(file, path, system::File::Opening_Flag::READ) == false) {
         file_token.type = Token_Type::UNKNOWN;
         file_token.file_path = system::to_string(path);
@@ -248,10 +248,10 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
 
     file_size = system::get_file_size(file);
 
-    file_buffer = system::initiate_get_file_content_asynchronously(file);
-    defer{ memory::release(file_buffer); };
+    lexer_data.file_buffer = system::initiate_get_file_content_asynchronously(file);
+    memory::array_push_back(globals.lexer_data, lexer_data);
 
-    stream::initialize_memory_stream(stream, file_buffer);
+    stream::initialize_memory_stream(stream, lexer_data.file_buffer);
 
     if (stream::is_eof(stream) == true) {
         return true;
@@ -418,6 +418,9 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
             }
 
             token.value.keyword = is_keyword(token.text);
+            if (token.value.keyword != Keyword::UNKNOWN) {
+                token.type = Token_Type::KEYWORD;
+            }
             memory::array_push_back(tokens, token);
         }
     }
@@ -429,4 +432,75 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
     log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: nb_find_calls: %d - nb_collisions_in_find: %d\n", keywords.nb_find_calls(), keywords.nb_collisions_in_find());
 
 	return true;
+}
+
+void f::print(fstd::memory::Array<Token>& tokens)
+{
+    String_Builder  string_builder;
+
+    defer { free_buffers(string_builder); };
+
+    if (memory::get_array_size(tokens)) {
+        print_to_builder(string_builder, "--- tokens list of: ");
+        print_to_builder(string_builder, tokens[0].file_path);
+        print_to_builder(string_builder, " ---\n");
+    }
+
+    // @TODO add colors on types,...
+
+    for (size_t i = 0; i < memory::get_array_size(tokens); i++)
+    {
+        switch (tokens[i].type)
+        {
+        case Token_Type::UNKNOWN:
+            print_to_builder(string_builder, "%d, %d - UNKNOWN\033[0m: %v", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::IDENTIFIER:
+            print_to_builder(string_builder, "%d, %d - IDENTIFIER\033[0m: %v", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::KEYWORD:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;12mKEYWORD\033[0m: \033[38;5;12m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::SYNTAXE_OPERATOR:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;10mSYNTAXE_OPERATOR\033[0m: \033[38;5;10m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::STRING_LITERAL_RAW:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;6mSTRING_LITERAL_RAW\033[0m: \033[38;5;6m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::STRING_LITERAL:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;6mSTRING_LITERAL\033[0m: \033[38;5;6m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::NUMERIC_LITERAL_I32:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_I32\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::NUMERIC_LITERAL_UI32:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_UI32\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::NUMERIC_LITERAL_I64:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_I64\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::NUMERIC_LITERAL_UI64:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_UI64\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::NUMERIC_LITERAL_F32:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_F32\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::NUMERIC_LITERAL_F64:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_F64\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        case Token_Type::NUMERIC_LITERAL_REAL:
+            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_REAL\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            break;
+        default:
+            print_to_builder(string_builder, "%d, %d - Invalid token type!!!", tokens[i].line, tokens[i].column);
+            break;
+        }
+        print_to_builder(string_builder, "\n");
+    }
+
+    if (memory::get_array_size(tokens)) {
+        print_to_builder(string_builder, "---\n");
+    }
+
+    system::print(to_string(string_builder));
 }

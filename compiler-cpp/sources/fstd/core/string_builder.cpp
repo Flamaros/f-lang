@@ -1,6 +1,7 @@
 #include "string_builder.hpp"
 
 #include <fstd/language/intrinsic.hpp>
+#include <fstd/language/defer.hpp>
 
 #include <fstd/core/assert.hpp>
 #include <fstd/core/unicode.hpp>
@@ -13,7 +14,7 @@ namespace fstd
 {
 	namespace core
 	{
-		static void print_to_builder(String_Builder& builder, const uint8_t* string, size_t size)
+		void print_to_builder(String_Builder& builder, const uint8_t* string, size_t size)
 		{
 			if (size == 0) {
 				return;
@@ -27,7 +28,7 @@ namespace fstd
 			language::copy(*string_buffer, 0, string, size);
 		}
 
-		static void print_to_builder(String_Builder& builder, int32_t value)
+		void print_to_builder(String_Builder& builder, int32_t value)
 		{
 			language::string* string_buffer;
 
@@ -37,7 +38,7 @@ namespace fstd
 			*string_buffer = language::to_string(value);
 		}
 
-		static void print_to_builder(String_Builder& builder, int64_t value)
+		void print_to_builder(String_Builder& builder, int64_t value)
 		{
 			language::string* string_buffer;
 
@@ -47,7 +48,7 @@ namespace fstd
 			*string_buffer = language::to_string(value);
 		}
 
-		static void print_to_builder(String_Builder& builder, language::string value)
+		void print_to_builder(String_Builder& builder, language::string value)
 		{
 			language::string* string_buffer;
 
@@ -57,7 +58,7 @@ namespace fstd
 			language::copy(*string_buffer, 0, value);
 		}
 
-		static void print_to_builder(String_Builder& builder, language::string_view value)
+		void print_to_builder(String_Builder& builder, language::string_view value)
 		{
 			language::string* string_buffer;
 
@@ -77,6 +78,21 @@ namespace fstd
 			string_buffer = memory::get_array_last_element(builder.strings);
 
 			*string_buffer = language::to_string(value, base);
+		}
+
+		void print_to_builder(String_Builder& builder, const char* format, ...)
+		{
+			va_list args;
+			va_start(args, format);
+
+			language::string	format_string;
+
+			language::assign(format_string, (uint8_t*)format);
+			defer { language::release(format_string); };
+
+			print_to_builder(builder, &format_string, args);
+
+			va_end(args);
 		}
 
 		void print_to_builder(String_Builder& builder, const language::string* format, ...)

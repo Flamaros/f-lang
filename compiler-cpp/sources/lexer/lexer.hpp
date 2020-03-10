@@ -211,6 +211,13 @@ namespace f
 //		return lhs.text == rhs.text;
 	}
 
+    struct Lexer_Data
+    {
+        fstd::system::Path		        file_path;
+        fstd::memory::Array<uint8_t>	file_buffer;
+    };
+
     void    initialize_lexer();
 	bool    lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens);
+    void    print(fstd::memory::Array<Token>& tokens);
 }
