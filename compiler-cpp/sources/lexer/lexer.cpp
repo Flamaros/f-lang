@@ -350,13 +350,13 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                     }
 
                     if (comment_block_closed == false) {
-                        // @TODO throw a user error
+                        report_error(Compiler_Error::error, token, "Multiline comment block was not closed.");
                     }
                 }
 				else if (punctuation == Punctuation::DOUBLE_QUOTE) {
                     peek(stream, current_column);
 
-                    bool        raw_string_closed = false;
+                    bool        string_closed = false;
                     uint8_t*    string_literal = stream::get_pointer(stream);
                     size_t      string_size = 0;
 
@@ -367,7 +367,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                         current_character = stream::get(stream);
                         if (punctuation_table_1[current_character] == Punctuation::DOUBLE_QUOTE) { // @TODO @SpeedUp we can just check the character here directly
                             peek(stream, current_column);
-                            raw_string_closed = true;
+                            string_closed = true;
                             break;
                         }
 
@@ -375,8 +375,8 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                         string_size++;
                     }
 
-                    if (raw_string_closed == false) {
-                        // @TODO throw a user error
+                    if (string_closed == false) {
+                        report_error(Compiler_Error::error, token, "String literal was not closed.");
                     }
                     else {
                         language::assign(current_view, string_literal, string_size);
@@ -413,7 +413,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                     }
 
                     if (raw_string_closed == false) {
-                        // @TODO throw a user error
+                        report_error(Compiler_Error::error, token, "Raw string literal was not closed.");
                     }
                     else {
                         language::assign(current_view, string_literal, string_size);
