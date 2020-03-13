@@ -71,7 +71,7 @@ namespace fstd
 				fstd::core::Assert(false);
 				break;
 			}
-			system::print(header);
+			core::print_to_builder(string_builder, header);
 
 			language::assign(format_string, (uint8_t*)format);
 			core::print_to_builder(string_builder, &format_string, args);

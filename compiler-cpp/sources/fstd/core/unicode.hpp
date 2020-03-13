@@ -33,27 +33,25 @@ namespace fstd
 		// peek parameter is incremented by the number of units used to decode the utf8 character.
 		inline Code_Point from_utf8(uint8_t code_unit_1, uint8_t code_unit_2, uint8_t code_unit_3, uint8_t code_unit_4, size_t& peek)
 		{
-			uint8_t nb_leading_zeros = __lzcnt16((uint8_t)~code_unit_1) - 8; // @TODO does the __lzcnt16 exist for 8 bits, because here we have to substract 8 because of that (the high part of the word if full of zeros)
-
-			if (nb_leading_zeros == 0)
+			if ((code_unit_1 & 0xF0) == 0xF0) // 4 bytes
 			{
-				peek += 1;
-				return code_unit_1;
+				peek += 4;
+				return ((code_unit_1 ^ 0xF0) << 18) | ((code_unit_2 ^ 0x80) << 12) | ((code_unit_3 ^ 0x80) << 6) | (code_unit_4 ^ 0x80);
 			}
-			else if (nb_leading_zeros == 2) // 2 bytes
-			{
-				peek += 2;
-				return ((code_unit_1 ^ 0xC0) << 6) | (code_unit_2 ^ 0x80);
-			}
-			else if (nb_leading_zeros == 3) // 3 bytes
+			else if ((code_unit_1 & 0xE0) == 0xE0) // 3 bytes
 			{
 				peek += 3;
 				return ((code_unit_1 ^ 0xE0) << 12) | ((code_unit_2 ^ 0x80) << 6) | (code_unit_3 ^ 0x80);
 			}
-			else // 4 bytes
+			else if ((code_unit_1 & 0xC0) == 0xC0) // 2 bytes
 			{
-				peek += 4;
-				return ((code_unit_1 ^ 0xF0) << 18) | ((code_unit_2 ^ 0x80) << 12) | ((code_unit_3 ^ 0x80) << 6) | (code_unit_4 ^ 0x80);
+				peek += 2;
+				return ((code_unit_1 ^ 0xC0) << 6) | (code_unit_2 ^ 0x80);
+			}
+			else
+			{
+				peek += 1;
+				return code_unit_1;
 			}
 		}
 
@@ -109,28 +107,9 @@ namespace fstd
 				uint8_t code_unit_2 = utf8_string[code_unit_index + 1];
 				uint8_t code_unit_3 = utf8_string[code_unit_index + 2];
 				uint8_t code_unit_4 = utf8_string[code_unit_index + 3];
-				uint8_t nb_leading_zeros = __lzcnt16((uint8_t)~code_unit_1) - 8; // @TODO does the __lzcnt16 exist for 8 bits, because here we have to substract 8 because of that (the high part of the word if full of zeros)
 				uint16_t* output = (uint16_t*)&utf16LE_string[result_size];
 
-				if (nb_leading_zeros == 0)
-				{
-					code_unit_index += 1;
-					nb_utf16_code_points_added = 1;
-					output[0] = code_unit_1;
-				}
-				else if (nb_leading_zeros == 2) // 2 bytes
-				{
-					code_unit_index += 2;
-					nb_utf16_code_points_added = 1;
-					output[0] = ((code_unit_1 ^ 0xC0) << 6) | (code_unit_2 ^ 0x80);
-				}
-				else if (nb_leading_zeros == 3) // 3 bytes
-				{
-					code_unit_index += 3;
-					nb_utf16_code_points_added = 1;
-					output[0] = ((code_unit_1 ^ 0xE0) << 12) | ((code_unit_2 ^ 0x80) << 6) | (code_unit_3 ^ 0x80);
-				}
-				else // 4 bytes, only case for which the code point is > to 0x10000 (and need 2 utf16 code units)
+				if ((code_unit_1 & 0xF0) == 0xF0) // 4 bytes, only case for which the code point is > to 0x10000 (and need 2 utf16 code units)
 				{
 					code_unit_index += 4;
 					nb_utf16_code_points_added = 2;
@@ -146,6 +125,24 @@ namespace fstd
 					code_point = code_point ^ 0x10000;	// We add to substract 0x10000
 					output[0] = (code_point >> 10) | 0xD800;
 					output[1] = ((uint16_t)code_point) | 0xDC00;
+				}
+				else if ((code_unit_1 & 0xE0) == 0xE0) // 3 bytes
+				{
+					code_unit_index += 3;
+					nb_utf16_code_points_added = 1;
+					output[0] = ((code_unit_1 ^ 0xE0) << 12) | ((code_unit_2 ^ 0x80) << 6) | (code_unit_3 ^ 0x80);
+				}
+				else if ((code_unit_1 & 0xC0) == 0xC0) // 2 bytes
+				{
+					code_unit_index += 2;
+					nb_utf16_code_points_added = 1;
+					output[0] = ((code_unit_1 ^ 0xC0) << 6) | (code_unit_2 ^ 0x80);
+				}
+				else
+				{
+					code_unit_index += 1;
+					nb_utf16_code_points_added = 1;
+					output[0] = code_unit_1;
 				}
 
 				result_size += nb_utf16_code_points_added;

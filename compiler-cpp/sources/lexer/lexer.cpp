@@ -1,4 +1,4 @@
-#include "lexer.hpp"
+﻿#include "lexer.hpp"
 
 #include "hash_table.hpp"
 #include "keyword_hash_table.hpp"
@@ -231,7 +231,7 @@ static inline void peek(stream::Memory_Stream& stream, int& current_column)
 static inline void skip(stream::Memory_Stream& stream, size_t size, int& current_column)
 {
     stream::skip(stream, size);
-    current_column += size;
+    current_column += (int)size;
 }
 
 bool f::lex(const system::Path& path, memory::Array<Token>& tokens)

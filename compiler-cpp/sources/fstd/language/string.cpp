@@ -59,7 +59,7 @@ namespace fstd
 					string[string_length++] = base_10_digits[reminder];
 				}
 				if (quotien < 10) {
-					string[string_length++] = '0' + quotien;
+					string[string_length++] = '0' + (uint8_t)quotien;
 				}
 				else {
 					reminder = quotien * 2;
