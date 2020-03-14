@@ -1,8 +1,6 @@
 - to_string(uint64) est-ce que ce doit être une version template pour gérer à la fois le 32 et 64 bits?
-- Fixer warning
 
 - Hash_Table et Keyword_Hash_Table: à passer en struct avec fonctions libres
-- numeric_literals
 
 
 fstd/system/path:
@@ -18,9 +16,11 @@ FSTD:
 
 Lexer:
  - Optimize the Token structure size (removing aliasing,...)
- - Add string literal support with escape sequences
  - Test lexer performances
- - Add hexadecimal floating point support
+ - Numeric literals:
+   - Add hexadecimal floating point support
+   - Need support suffix for binary and hexadecimal numbers?
+   - Binary and hexadecimal numbers should be unsigned by default?
  - Analyse if with tokens_length_heuristic at 6 there is some allocations, find a strategy for the allocation if needed
  - Do we need to use crc32 for the keys of the keywords hash table?
 
