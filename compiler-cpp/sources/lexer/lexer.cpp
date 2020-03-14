@@ -234,6 +234,52 @@ static inline void skip(stream::Memory_Stream& stream, size_t size, int& current
     current_column += (int)size;
 }
 
+static inline void polish_string_literal(f::Token& token)
+{
+    fstd::core::Assert(token.type == Token_Type::STRING_LITERAL);
+
+    language::string* string = (language::string*)system::allocate(sizeof(language::string));
+    init(*string);
+
+    memory::reserve_array(string->buffer, language::get_string_size(token.text));
+
+    size_t      position = 0;
+    size_t      literal_length = 0;
+    uint8_t*    output = (uint8_t*)&string[0];
+    size_t      token_length = language::get_string_size(token.text);
+
+    while (position < token_length)
+    {
+        if (language::to_utf8(token.text)[position] == '\\') {
+            position++;
+            if (language::to_utf8(token.text)[position] == 'n') {
+                output[literal_length] = '\n';
+            }
+            else if (language::to_utf8(token.text)[position] == 'r') {
+                output[literal_length] = '\r';
+            }
+            else if (language::to_utf8(token.text)[position] == 't') {
+                output[literal_length] = '\t';
+            }
+            else if (language::to_utf8(token.text)[position] == 'v') {
+                output[literal_length] = '\v';
+            }
+            else if (language::to_utf8(token.text)[position] == '\\') {
+                output[literal_length] = '\\';
+            }
+            literal_length++;
+        }
+        else {
+            output[literal_length] = language::to_utf8(token.text)[position];
+            literal_length++;
+        }
+        position++;
+    }
+
+    language::resize(*string, literal_length);
+    token.value.string = string;
+}
+
 bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
 {
 	ZoneScopedNC("f::lex",  0x1b5e20);
@@ -382,6 +428,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                         language::assign(current_view, string_literal, string_size);
                         token.text = current_view;
                         token.type = Token_Type::STRING_LITERAL;
+                        polish_string_literal(token);
 
                         memory::array_push_back(tokens, token);
                     }

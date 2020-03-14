@@ -30,6 +30,14 @@ namespace fstd
 		};
 
 		template<typename Type>
+		void init(Array<Type>& array)
+		{
+			array.ptr = nullptr;
+			array.reserved = 0;
+			array.size = 0;
+		}
+
+		template<typename Type>
 		void resize_array(Array<Type>& array, size_t size)
 		{
 			if (array.reserved >= size) {

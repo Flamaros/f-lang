@@ -55,6 +55,11 @@ namespace fstd
 			}
 		};
 
+		inline void init(string& _string)
+		{
+			init(_string.buffer);
+		}
+
 		inline void assign(string& str, const uint8_t* string)
 		{
 			memory::resize_array(str.buffer, string_literal_size(string));
