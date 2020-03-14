@@ -152,6 +152,19 @@ static inline bool is_digit(char character)
 	return false;
 }
 
+enum class Numeric_Value_Flag
+{
+    IS_DEFAULT              = 0x0000,
+    IS_FLOATING_POINT       = 0x0001,
+    HAS_EXPONENT            = 0x0002,
+
+    // @Warning suffixes should be at end for has_suffix method
+    UNSIGNED_SUFFIX         = 0x0004,
+    LONG_SUFFIX             = 0x0008,
+    FLOAT_SUFFIX            = 0x0010,
+    DOUBLE_SUFFIX           = 0x0020,
+};
+
 // @TODO remplace it by a nested inlined function in f-lang
 #define INSERT_KEYWORD(KEY, VALUE) \
     { \
@@ -441,7 +454,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                     peek(stream, current_column);
 
                     bool        raw_string_closed = false;
-                    uint8_t* string_literal = stream::get_pointer(stream);
+                    uint8_t*    string_literal = stream::get_pointer(stream);
                     size_t      string_size = 0;
 
                     while (stream::is_eof(stream) == false)
@@ -490,16 +503,248 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
                 }
             }
         }
-/*            else if (is_digit(current_character)) { // Will be a numeric literal
+		else if (is_digit(current_character)) { // Will be a numeric literal
+            Token               token;
+            Numeric_Value_Flag  numeric_literal_flags = Numeric_Value_Flag::IS_DEFAULT;
+            uint8_t             next_char = 0;
 
-            // @TODO
-            //
-            // Be sure to check that the numeric literal is followed by a white punctuation.
-            //
-            // Flamaros - 02 february 2020
+            token.file_path = system::to_string(path);
+            token.line = current_line;
+            token.column = current_column;
+            token.type = Token_Type::UNKNOWN;
 
-        }*/
-        else {  // Will be an identifier
+            language::assign(token.text, stream::get_pointer(stream), 0); // Storing the starting pointer of the text string view
+
+            if (stream::get_remaining_size(stream) >= 1) {
+                next_char = stream::get_pointer(stream)[1];
+            }
+
+		    if (current_character == '0' && (next_char == 'x' || next_char == 'b')) { // format prefix (0x or 0b)
+                peek(stream, current_column);
+
+                current_character = stream::get(stream);
+                if (current_character == 'x') { // hexadecimal
+                    peek(stream, current_column);
+                    while (true) {
+                        current_character = stream::get(stream);
+
+                        if (current_character >= '0' && current_character <= '9') {
+                            token.value.unsigned_integer = token.value.unsigned_integer * 16 + (current_character - '0');
+                            peek(stream, current_column);
+                        }
+                        else if (current_character >= 'a' && current_character <= 'f') {
+                            token.value.unsigned_integer = token.value.unsigned_integer * 16 + (current_character - 'a') + 10;
+                            peek(stream, current_column);
+                        }
+                        else if (current_character >= 'A' && current_character <= 'F') {
+                            token.value.unsigned_integer = token.value.unsigned_integer * 16 + (current_character - 'A') + 10;
+                            peek(stream, current_column);
+                        }
+                        else if (current_character == '.') {
+                            // @TODO
+                            core::Assert(false);
+                            report_error(Compiler_Error::error, token, "f-lang does't support hexadecimal floating points for the moment.");
+                        }
+                        else if (current_character == 'p') {
+                            // @TODO
+                            core::Assert(false);
+                            report_error(Compiler_Error::error, token, "f-lang does't support hexadecimal floating points for the moment.");
+                        }
+                        else if (current_character == '_') {
+                            peek(stream, current_column);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+                else if (current_character == 'b') { // binary
+                    peek(stream, current_column);
+                    while (true) {
+                        current_character = stream::get(stream);
+
+                        if (current_character == '0' || current_character == '1') {
+                            token.value.unsigned_integer = token.value.unsigned_integer * 2 + (current_character - '0');
+                            peek(stream, current_column);
+                        }
+                        else if (current_character == '_') {
+                            peek(stream, current_column);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+                else {
+                    core::Assert(false);
+                }
+		    }
+            else {
+                token.value.unsigned_integer = current_character - '0';
+
+                peek(stream, current_column);
+                while (true) {
+                    current_character = stream::get(stream);
+
+                    if (current_character >= '0' && current_character <= '9') {
+                        token.value.unsigned_integer = token.value.unsigned_integer * 10 + (current_character - '0');
+                        peek(stream, current_column);
+                    }
+                    else if (current_character == '.') {
+                        int64_t divider = 10;
+
+                        if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::HAS_EXPONENT) == true) {
+                            report_error(Compiler_Error::error, token, "Numeric literal can't have a floating point exponent.");
+                        }
+
+                        set_flag(numeric_literal_flags, Numeric_Value_Flag::IS_FLOATING_POINT);
+                        peek(stream, current_column);
+
+                        token.value.real_max = (long double)token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+                        while (true) {
+                            current_character = stream::get(stream);
+
+                            if (current_character >= '0' && current_character <= '9') {
+                                token.value.real_max += (current_character - '0') / divider;
+                                divider *= 10;
+                                peek(stream, current_column);
+                            }
+                            else if (current_character == 'e') {
+                                break; // We don't peed this character to let the previous level handle it
+                            }
+                            else if (current_character == '_') {
+                                peek(stream, current_column);
+                            }
+                            else {
+                                break;
+                            }
+                        }
+
+                        if (divider == 10) {
+                            report_error(Compiler_Error::error, token, "Floating points literal must not ended by '.' character, a digit should follow the '.'.");
+                        }
+                    }
+                    else if (current_character == 'e') {
+                        int64_t exponent = 0;
+
+                        if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::IS_FLOATING_POINT) == false) {
+                            set_flag(numeric_literal_flags, Numeric_Value_Flag::IS_FLOATING_POINT);
+                            token.value.real_max = (long double)token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+                        }
+                        set_flag(numeric_literal_flags, Numeric_Value_Flag::HAS_EXPONENT);
+                        peek(stream, current_column);
+
+                        while (true) {
+                            current_character = stream::get(stream);
+
+                            if (current_character == '+') {
+                                peek(stream, current_column);
+                            }
+                            else if (current_character == '-') {
+                                exponent = -0;
+                                peek(stream, current_column);
+                            }
+                            else if (current_character >= '0' && current_character <= '9') {
+                                exponent = exponent * 10 + (current_character - '0');
+                                peek(stream, current_column);
+                            }
+                            else if (current_character == '_') {
+                                peek(stream, current_column);
+                            }
+                            else {
+                                break;
+                            }
+                        }
+
+                        token.value.real_max = token.value.real_max * powl(10, (long double)exponent);
+                    }
+                    else if (current_character == 'u' && !is_flag_set(numeric_literal_flags, Numeric_Value_Flag::UNSIGNED_SUFFIX)) {
+                        if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::IS_FLOATING_POINT)) {
+                            report_error(Compiler_Error::error, token, "Floating point numeric literal can't have unsigned suffix.");
+                        }
+
+                        peek(stream, current_column);
+                        set_flag(numeric_literal_flags, Numeric_Value_Flag::UNSIGNED_SUFFIX);
+                    }
+                    else if (current_character == 'L' && !is_flag_set(numeric_literal_flags, Numeric_Value_Flag::LONG_SUFFIX)) {
+                        peek(stream, current_column);
+                        set_flag(numeric_literal_flags, Numeric_Value_Flag::LONG_SUFFIX);
+ 
+                        if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::IS_FLOATING_POINT)) {
+                            token.type = Token_Type::NUMERIC_LITERAL_REAL;
+                            break;
+                        }
+                    }
+                    else if (current_character == 'd') {
+                        if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::IS_FLOATING_POINT) == false) {
+                            set_flag(numeric_literal_flags, Numeric_Value_Flag::IS_FLOATING_POINT);
+                            token.value.real_64 = (double)token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+                        }
+                        else {
+                            token.value.real_64 = (double)token.value.real_max;	// @Warning this operate a conversion from integer to floating point
+                        }
+
+                        peek(stream, current_column);
+                        set_flag(numeric_literal_flags, Numeric_Value_Flag::DOUBLE_SUFFIX);
+                        token.type = Token_Type::NUMERIC_LITERAL_F64;
+                        break;
+                    }
+                    else if (current_character == 'f') {
+                        if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::IS_FLOATING_POINT) == false) {
+                            set_flag(numeric_literal_flags, Numeric_Value_Flag::IS_FLOATING_POINT);
+                            token.value.real_32 = (float)token.value.unsigned_integer;	// @Warning this operate a conversion from integer to floating point
+                        }
+                        else {
+                            token.value.real_32 = (float)token.value.real_max;	// @Warning this operate a conversion from integer to floating point
+                        }
+
+                        peek(stream, current_column);
+                        set_flag(numeric_literal_flags, Numeric_Value_Flag::FLOAT_SUFFIX);
+                        token.type = Token_Type::NUMERIC_LITERAL_F32;
+                        break;
+                    }
+                    else if (current_character == '_') {
+                        peek(stream, current_column);
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+
+            // Polish numeric literal types
+            if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::IS_FLOATING_POINT)) {
+                // Float with suffix are already done
+                if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::LONG_SUFFIX) == false
+                    && is_flag_set(numeric_literal_flags, Numeric_Value_Flag::DOUBLE_SUFFIX) == false
+                    && is_flag_set(numeric_literal_flags, Numeric_Value_Flag::FLOAT_SUFFIX) == false) {
+                    token.value.real_64 = (double)token.value.real_max;	// @Warning this operate a conversion from integer to floating point
+                    token.type = Token_Type::NUMERIC_LITERAL_F64;
+                }
+            }
+            else {
+                token.type = Token_Type::NUMERIC_LITERAL_I32;
+
+                if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::UNSIGNED_SUFFIX)
+                    && is_flag_set(numeric_literal_flags, Numeric_Value_Flag::LONG_SUFFIX)) {
+                    token.type = Token_Type::NUMERIC_LITERAL_UI64;
+                }
+                else if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::LONG_SUFFIX)) {
+                    token.type = Token_Type::NUMERIC_LITERAL_I64;
+                }
+                else if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::UNSIGNED_SUFFIX)) {
+                    token.type = token.value.unsigned_integer > 4'294'967'295 ? Token_Type::NUMERIC_LITERAL_UI64 : Token_Type::NUMERIC_LITERAL_UI32;
+                }
+                else if (token.value.unsigned_integer > 2'147'483'647) {
+                    token.type = Token_Type::NUMERIC_LITERAL_I64;
+                }
+            }
+
+            // We can simply compute the size of text by comparing the position on the stream with the one at the beginning of the numeric literal
+            language::resize(token.text, stream::get_pointer(stream) - language::to_utf8(token.text));
+            memory::array_push_back(tokens, token);
+		}
+		else {  // Will be an identifier
             Token   token;
 
             token.file_path = system::to_string(path);
@@ -509,8 +754,6 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
             language::assign(current_view, stream::get_pointer(stream), 0);
             while (stream::is_eof(stream) == false)
             {
-                uint8_t     current_character;
-
                 current_character = stream::get(stream);
 
                 punctuation = punctuation_table_1[current_character];
@@ -556,8 +799,6 @@ void f::print(fstd::memory::Array<Token>& tokens)
         print_to_builder(string_builder, " ---\n");
     }
 
-    // @TODO add colors on types,...
-
     for (size_t i = 0; i < memory::get_array_size(tokens); i++)
     {
         switch (tokens[i].type)
@@ -581,7 +822,7 @@ void f::print(fstd::memory::Array<Token>& tokens)
             print_to_builder(string_builder, "%d, %d - \033[38;5;3mSTRING_LITERAL\033[0m: \033[38;5;3m\"%v\"\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
             break;
         case Token_Type::NUMERIC_LITERAL_I32:
-            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_I32\033[0m: \033[38;5;14m'%v'\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+            print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_I32\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
             break;
         case Token_Type::NUMERIC_LITERAL_UI32:
             print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_UI32\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
