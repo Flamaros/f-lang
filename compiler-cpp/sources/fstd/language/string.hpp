@@ -12,6 +12,9 @@
 // We don't have the length of string as it requires to decode all utf8 points to know what is the number of
 // characters, and this is often useless to know that. Almost only unicode conversion functions have to take
 // care of it.
+// Take a look at http://utf8everywhere.org/ to understand on how it can be difficult to count characters, it
+// is better to do nothing than doing it wrong here (Ã can be a A followed by ~,...). A font rendering engine
+// will have to handle that, so we just have to provide enough functions for it.
 //
 // Flamaros - 03 january 2020
 
