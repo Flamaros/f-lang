@@ -181,7 +181,7 @@ void f::initialize_lexer()
 
     INSERT_KEYWORD("enum", ENUM);
     INSERT_KEYWORD("struct", STRUCT);
-    INSERT_KEYWORD("typedef", TYPEDEF);
+    INSERT_KEYWORD("alias", ALIAS);
     INSERT_KEYWORD("inline", INLINE);
     INSERT_KEYWORD("static", STATIC);
     INSERT_KEYWORD("true", TRUE);
@@ -189,7 +189,7 @@ void f::initialize_lexer()
     INSERT_KEYWORD("nullptr", NULLPTR);
     INSERT_KEYWORD("immutable", IMMUTABLE);
 
-        // Control flow
+    // Control flow
     INSERT_KEYWORD("if", IF);
     INSERT_KEYWORD("else", ELSE);
     INSERT_KEYWORD("do", DO);
@@ -203,12 +203,12 @@ void f::initialize_lexer()
     INSERT_KEYWORD("return", RETURN);
     INSERT_KEYWORD("exit", EXIT);
 
-        // Reserved for futur usage
+    // Reserved for futur usage
     INSERT_KEYWORD("public,", PUBLIC);
     INSERT_KEYWORD("protected,", PROTECTED);
     INSERT_KEYWORD("private,", PRIVATE);
 
-        // Types
+    // Types
     INSERT_KEYWORD("bool", BOOL);
     INSERT_KEYWORD("i8", I8);
     INSERT_KEYWORD("ui8", UI8);
@@ -223,7 +223,7 @@ void f::initialize_lexer()
     INSERT_KEYWORD("string", STRING);
     INSERT_KEYWORD("string_view", STRING_VIEW);
 
-        // Special keywords (interpreted by the lexer)
+    // Special keywords (interpreted by the lexer)
     INSERT_KEYWORD("__FILE__", SPECIAL_FILE);
     INSERT_KEYWORD("__FILE_FULL_PATH__",  SPECIAL_FULL_PATH_FILE);
     INSERT_KEYWORD("__LINE__", SPECIAL_LINE);
@@ -789,6 +789,8 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
 
 void f::print(fstd::memory::Array<Token>& tokens)
 {
+    ZoneScopedNC("f::print[tokens]", 0x1b5e20);
+
     String_Builder  string_builder;
 
     defer { free_buffers(string_builder); };

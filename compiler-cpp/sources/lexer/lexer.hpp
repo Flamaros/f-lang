@@ -124,7 +124,7 @@ namespace f
         IMPORT,
         ENUM,
         STRUCT,
-        TYPEDEF,
+        ALIAS,
         INLINE,
         STATIC,
         TRUE,
