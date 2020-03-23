@@ -1,19 +1,18 @@
 #include "parser.hpp"
 
-#include <third-party/magic_enum.hpp>
+#include "globals.hpp"
 
-// @TODO remove it
-#include <string>
-#include <vector>
-#include <iostream>
-#include <stack>
-#include <cassert>
+#include <fstd/memory/array.hpp>
+
+#include <fstd/stream/array_stream.hpp>
 
 #undef max
 #include <tracy/Tracy.hpp>
 
 // Typedef complexity
 // https://en.cppreference.com/w/cpp/language/typedef
+
+using namespace fstd;
 
 namespace f
 {
@@ -22,20 +21,31 @@ namespace f
 		GLOBAL_SCOPE,
 		COMMENT_LINE,
 		COMMENT_BLOCK,
-		MACRO_EXPRESSION,
         IMPORT_DIRECTIVE,
 
 		eof
 	};
 
-	static bool	is_one_line_state(State state)
+	void parse(fstd::memory::Array<Token>& tokens, AST& ast)
 	{
-		return state == State::MACRO_EXPRESSION	// Actually we don't manage every macro directive (we stay on this state)
-			|| state == State::COMMENT_LINE;
-	}
+		ZoneScopedNC("f::parse", 0xff6f00);
 
-	void parse(const fstd::memory::Array<Token>& tokens, AST& ast)
-	{
-		ZoneScoped;
+		stream::Array_Stream<Token>	stream;
+
+		// It is impossible to have more nodes than tokens, so we can easily pre-allocate them.
+		//
+		// Flamaros - 23 march 2020
+		memory::reserve_array(globals.ast_nodes, memory::get_array_size(tokens));
+
+		stream::initialize_memory_stream<Token>(stream, tokens);
+
+		if (stream::is_eof(stream) == true) {
+			return;
+		}
+
+		while (stream::is_eof(stream) == false)
+		{
+			stream::peek<Token>(stream);
+		}
 	}
 }

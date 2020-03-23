@@ -37,5 +37,5 @@ namespace f
 		AST_Node*	root;
 	};
 
-    void parse(const fstd::memory::Array<Token>& tokens, AST& ast);
+    void parse(fstd::memory::Array<Token>& tokens, AST& ast);
 }

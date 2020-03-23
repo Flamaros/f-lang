@@ -11,7 +11,7 @@
 #include <fstd/system/file.hpp>
 #include <fstd/system/path.hpp>
 
-#include <fstd/stream/memory_stream.hpp>
+#include <fstd/stream/array_stream.hpp>
 
 #include <fstd/language/defer.hpp>
 #include <fstd/language/flags.hpp>
@@ -235,15 +235,15 @@ void f::initialize_lexer()
     core::log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: size: %d bytes - nb_used_buckets: %d - nb_collisions: %d\n", keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
 }
 
-static inline void peek(stream::Memory_Stream& stream, int& current_column)
+static inline void peek(stream::Array_Stream<uint8_t>& stream, int& current_column)
 {
-    stream::peek(stream);
+    stream::peek<uint8_t>(stream);
     current_column++;
 }
 
-static inline void skip(stream::Memory_Stream& stream, size_t size, int& current_column)
+static inline void skip(stream::Array_Stream<uint8_t>& stream, size_t size, int& current_column)
 {
-    stream::skip(stream, size);
+    stream::skip<uint8_t>(stream, size);
     current_column += (int)size;
 }
 
@@ -297,15 +297,15 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
 {
 	ZoneScopedNC("f::lex",  0x1b5e20);
 
-    Lexer_Data              lexer_data;
-    system::File	        file;
-    Token                   file_token;
-    stream::Memory_Stream	stream;
-    size_t	                nb_tokens_prediction = 0;
-    uint64_t                file_size;
-    language::string_view   current_view;
-    int					    current_line = 1;
-    int					    current_column = 1;
+    Lexer_Data                      lexer_data;
+    system::File	                file;
+    Token                           file_token;
+    stream::Array_Stream<uint8_t>   stream;
+    size_t	                        nb_tokens_prediction = 0;
+    uint64_t                        file_size;
+    language::string_view           current_view;
+    int					            current_line = 1;
+    int					            current_column = 1;
 
     if (system::open_file(file, path, system::File::Opening_Flag::READ) == false) {
         file_token.type = Token_Type::UNKNOWN;
@@ -322,7 +322,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
     lexer_data.file_buffer = system::initiate_get_file_content_asynchronously(file);
     memory::array_push_back(globals.lexer_data, lexer_data);
 
-    stream::initialize_memory_stream(stream, lexer_data.file_buffer);
+    stream::initialize_memory_stream<uint8_t>(stream, lexer_data.file_buffer);
 
     if (stream::is_eof(stream) == true) {
         return true;

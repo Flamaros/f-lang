@@ -85,9 +85,6 @@
     <ClInclude Include="..\sources\fstd\memory\array.hpp">
       <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\fstd\stream\memory_stream.hpp">
-      <Filter>Source Files\fstd\stream</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\fstd\core\logger.hpp">
       <Filter>Source Files\fstd\core</Filter>
     </ClInclude>
@@ -142,6 +139,9 @@
     <ClInclude Include="..\sources\fstd\core\unicode.hpp">
       <Filter>Source Files\fstd\core</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\stream\array_stream.hpp">
+      <Filter>Source Files\fstd\stream</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -164,9 +164,6 @@
     </ClCompile>
     <ClCompile Include="..\sources\fstd\system\stdio.cpp">
       <Filter>Source Files\fstd\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\fstd\stream\memory_stream.cpp">
-      <Filter>Source Files\fstd\stream</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\fstd\core\logger.cpp">
       <Filter>Source Files\fstd\core</Filter>

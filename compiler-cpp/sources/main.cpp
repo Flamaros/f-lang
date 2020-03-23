@@ -14,8 +14,6 @@
 
 #include <fstd/memory/array.hpp>
 
-#include <fstd/stream/memory_stream.hpp>
-
 #include <fstd/system/file.hpp>
 
 #include <fstd/os/windows/console.hpp>
@@ -48,23 +46,6 @@ int main(int ac, char** av)
 #if defined(FSTD_DEBUG)
 	core::set_log_level(*globals.logger, core::Log_Level::verbose);
 #endif
-
-	//core::String_Builder	string_builder;
-	//language::string		format;
-	//language::string		formatted_string;
-
-	//defer{
-	//	core::free_buffers(string_builder);
-	//	language::release(formatted_string);
-	//};
-
-	//language::assign(format, L"test: %d %d %d\n");
-	//core::print_to_builder(string_builder, &format, -12340, 1234, 12340);
-
-	//formatted_string = core::to_string(string_builder);
-	//system::print(formatted_string);
-
-	//run_tests();
 
 	FrameMark;
 	// Initialization and tests ================================================

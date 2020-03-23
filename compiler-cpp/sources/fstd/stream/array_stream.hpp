@@ -13,24 +13,28 @@ namespace fstd
 	{
 		typedef uint32_t	Code_Point;
 
-		struct Memory_Stream
+		template<typename Array_Type>
+		struct Array_Stream
 		{
-			fstd::memory::Array<uint8_t>*	buffer_ptr = nullptr;
-			size_t							position = 0;
+			fstd::memory::Array<Array_Type>*	buffer_ptr = nullptr;
+			size_t								position = 0;
 		};
 
-		inline void initialize_memory_stream(Memory_Stream& stream, fstd::memory::Array<uint8_t>& buffer) {
+		template<typename Array_Type>
+		inline void initialize_memory_stream(Array_Stream<Array_Type>& stream, fstd::memory::Array<Array_Type>& buffer) {
 			stream.buffer_ptr = &buffer;
 			stream.position = 0;
 		}
 
-		inline bool is_eof(const Memory_Stream& stream) {
+		template<typename Array_Type>
+		inline bool is_eof(const Array_Stream<Array_Type>& stream) {
 			fstd::core::Assert(stream.buffer_ptr);
 
 			return stream.position >= stream.buffer_ptr->size;
 		}
 
-		inline size_t get_remaining_size(const Memory_Stream& stream) {
+		template<typename Array_Type>
+		inline size_t get_remaining_size(const Array_Stream<Array_Type>& stream) {
 			fstd::core::Assert(stream.buffer_ptr);
 
 			if (is_eof(stream)) {
@@ -40,35 +44,40 @@ namespace fstd
 		}
 
 		// General
-		inline void skip(Memory_Stream& stream, size_t size) {
+		template<typename Array_Type>
+		inline void skip(Array_Stream<Array_Type>& stream, size_t size) {
 			fstd::core::Assert(stream.buffer_ptr);
 
 			stream.position = stream.position + size;
 		}
 
-		inline void peek(Memory_Stream& stream) {
+		template<typename Array_Type>
+		inline void peek(Array_Stream<Array_Type>& stream) {
 			skip(stream, 1);
 		}
 
-		inline uint8_t	get(const Memory_Stream& stream) {
+		template<typename Array_Type>
+		inline Array_Type	get(const Array_Stream<Array_Type>& stream) {
 			fstd::core::Assert(stream.buffer_ptr);
 
 			return *memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
-		inline uint8_t*	get_pointer(const Memory_Stream& stream) {	// @Warning return pointer at current position
+		template<typename Array_Type>
+		inline Array_Type*	get_pointer(const Array_Stream<Array_Type>& stream) {	// @Warning return pointer at current position
 			fstd::core::Assert(stream.buffer_ptr);
 
 			return memory::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
-		inline size_t get_position(const Memory_Stream& stream)
+		template<typename Array_Type>
+		inline size_t get_position(const Array_Stream<Array_Type>& stream)
 		{
 			return stream.position;
 		}
 
 		// UTF-8
-		inline bool is_uft8_bom(Memory_Stream& stream, bool skip_it) {
+		inline bool is_uft8_bom(Array_Stream<uint8_t>& stream, bool skip_it) {
 			fstd::core::Assert(stream.buffer_ptr);
 			fstd::core::Assert(is_eof(stream) == false);
 
@@ -82,25 +91,5 @@ namespace fstd
 
 			return result;
 		}
-
-		//void peek_utf8(Memory_Stream& stream) {
-		//	assert(stream.buffer_ptr);
-		//	assert(is_eof(stream) == false);
-
-		//}
-
-		//Code_Point take_utf8(Memory_Stream& stream) {
-		//	assert(stream.buffer_ptr);
-		//	assert(is_eof(stream) == false);
-
-		//	
-
-		//	if (*memory::get_array_element(*stream.buffer_ptr, stream.position) <= 0x7F) {
-		//		return *memory::get_array_element(*stream.buffer_ptr, stream.position);
-		//	}
-		//	else if ()
-
-		//	return 0;
-		//}
 	}
 }

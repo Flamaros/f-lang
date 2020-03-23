@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lexer/lexer.hpp"
+#include "parser/parser.hpp"
 
 #include <fstd/memory/array.hpp>
 
@@ -23,6 +24,7 @@ struct Globals
 {
 	fstd::core::Logger*					logger = nullptr;
 	fstd::memory::Array<f::Lexer_Data>	lexer_data;
+	fstd::memory::Array<f::AST_Node>	ast_nodes;
 };
 
 void initialize_globals();
