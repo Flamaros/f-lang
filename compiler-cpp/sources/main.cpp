@@ -61,10 +61,17 @@ int main(int ac, char** av)
 
 		f::initialize_lexer();
 		f::lex(path, tokens);
+		f::print(tokens);	// Optionnal
 
-		f::print(tokens);
+
+		system::Path	dot_file_path;
+
+		defer{ system::reset_path(dot_file_path); };
+
+		system::from_native(dot_file_path, (uint8_t*)u8R"(.\AST.dot)");
 
 		f::parse(tokens, parsing_result);
+		f::generate_dot_file(parsing_result, dot_file_path);	// Optionnal
 	}
 
 	//std::filesystem::path output_directory_path = "./build";

@@ -131,6 +131,9 @@ namespace f
         FALSE,
 		NULLPTR,
 		IMMUTABLE,
+        USING,
+        NEW,
+        DELETE,
 
         // Reserved for futur usage
         PUBLIC,
@@ -218,6 +221,6 @@ namespace f
     };
 
     void    initialize_lexer();
-	bool    lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens);
+	void    lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens);
     void    print(fstd::memory::Array<Token>& tokens);
 }

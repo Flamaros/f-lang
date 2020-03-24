@@ -24,7 +24,7 @@ struct Globals
 {
 	fstd::core::Logger*					logger = nullptr;
 	fstd::memory::Array<f::Lexer_Data>	lexer_data;
-	fstd::memory::Array<f::AST_Node>	ast_nodes;
+	f::Parser_Data						parser_data;
 };
 
 void initialize_globals();

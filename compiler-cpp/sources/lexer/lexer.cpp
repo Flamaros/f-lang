@@ -188,6 +188,9 @@ void f::initialize_lexer()
     INSERT_KEYWORD("false", FALSE);
     INSERT_KEYWORD("nullptr", NULLPTR);
     INSERT_KEYWORD("immutable", IMMUTABLE);
+    INSERT_KEYWORD("using", USING);
+    INSERT_KEYWORD("new", NEW);
+    INSERT_KEYWORD("delete", DELETE);
 
     // Control flow
     INSERT_KEYWORD("if", IF);
@@ -293,7 +296,7 @@ static inline void polish_string_literal(f::Token& token)
     token.value.string = string;
 }
 
-bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
+void f::lex(const system::Path& path, memory::Array<Token>& tokens)
 {
 	ZoneScopedNC("f::lex",  0x1b5e20);
 
@@ -325,7 +328,7 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
     stream::initialize_memory_stream<uint8_t>(stream, lexer_data.file_buffer);
 
     if (stream::is_eof(stream) == true) {
-        return true;
+        return;
     }
 
     // @Warning
@@ -783,8 +786,6 @@ bool f::lex(const system::Path& path, memory::Array<Token>& tokens)
 	}
 
     log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: nb_find_calls: %d - nb_collisions_in_find: %d\n", keywords.nb_find_calls(), keywords.nb_collisions_in_find());
-
-	return true;
 }
 
 void f::print(fstd::memory::Array<Token>& tokens)

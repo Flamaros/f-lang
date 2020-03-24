@@ -1,5 +1,10 @@
 ﻿// import f_language_definitions;
 
+myenum :: enum {
+	first,
+	second
+}
+
 alias DWORD = ui32;
 alias HANDLE = void*;
 
