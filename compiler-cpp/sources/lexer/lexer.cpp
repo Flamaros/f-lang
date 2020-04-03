@@ -398,6 +398,13 @@ void f::lex(const system::Path& path, memory::Array<Token>& tokens)
                     bool    comment_block_closed = false;
                     while (stream::is_eof(stream) == false)
                     {
+                        current_character = stream::get(stream);
+                        punctuation = punctuation_table_1[current_character];   // @TODO a simple if is enough, think to remove hash tables
+                        if (punctuation == Punctuation::NEW_LINE_CHARACTER) {
+                            current_line++;
+                            current_column = 0; // @Warning 0 because the will be incremented just after
+                        }
+
                         if (stream::get_remaining_size(stream) >= 2) {
                             punctuation_2 = punctuation_table_2[punctuation_key_2(stream::get_pointer(stream))];
                         }
