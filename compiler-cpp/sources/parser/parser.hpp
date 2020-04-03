@@ -8,13 +8,17 @@
 
 namespace f
 {
+	struct Type_Qualifier
+	{
+		Token	name;
+		bool	is_pointer;
+	};
+
 	enum class Expression_Type
 	{
 		NUMBER,
 		IDENTIFIER,				/// Variable identifier
 		BINARY_OPERATION,		/// Operation that takes 2 arguments (+ - * / %)
-
-
 
 		MODULE,					/// A source file is an implicit module
 		IMPORT,
@@ -26,6 +30,7 @@ namespace f
 
 	enum class Node_Type
 	{
+		TYPE_QUALIFIER, // Just the name of a type with its modifier (like pointer)
 		TYPE_ALIAS,
 		TYPE_ENUM,
 		TYPE_STRUCT,
@@ -39,13 +44,8 @@ namespace f
 		FUNCTION_CALL
 	};
 
-	struct AST_Node
-	{
-		Node_Type	type;
-		uint8_t		reserved[8];
-	};
 
-	struct Type_Node
+	struct AST_Node
 	{
 		// @TODO in f-lang we should be able to use C style inheritance
 		// https://youtu.be/ZHqFrNyLlpA?t=1905
@@ -56,6 +56,22 @@ namespace f
 		// In f-lang the AST_Node should not reserve some memory, but instead
 		// we should be able to look at all types that encapsulate AST_Node at compile
 		// time and determinate the size of the largest struct.
+
+		Node_Type	type;
+		uint8_t		reserved[8];
+	};
+
+	struct Type_Enum_Node
+	{
+		Node_Type	type;
+
+	};
+
+	struct Type_Alias_Node
+	{
+		Node_Type		type;
+		Token			type_name; // Should be a pointer to avoid the copy?
+		Type_Qualifier	qualifier;
 	};
 
     struct AST
