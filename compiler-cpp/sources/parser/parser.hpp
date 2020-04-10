@@ -11,7 +11,7 @@ namespace f
 	struct Type_Qualifier
 	{
 		Token	name;
-		bool	is_pointer;
+		bool	is_pointer = false;
 	};
 
 	enum class Expression_Type
@@ -35,8 +35,8 @@ namespace f
 		TYPE_ENUM,
 		TYPE_STRUCT,
 
-		DECLARATION_VARIABLE,
-		DECLARATION_FUNCTION,
+		STATEMENT_VARIABLE,
+		STATEMENT_FUNCTION,
 
 		ASSIGNMENT,
 		BINARY_OP,
@@ -72,6 +72,20 @@ namespace f
 		Node_Type		type;
 		Token			type_name; // Should be a pointer to avoid the copy?
 		Type_Qualifier	qualifier;
+	};
+
+	struct Statement_Variable
+	{
+		Node_Type		type;
+		Token			name;
+		Type_Qualifier	_type;
+	};
+
+	struct Statement_Function
+	{
+		Node_Type			type;
+		Token				name;
+		Statement_Variable* arguments;
 	};
 
     struct AST

@@ -59,8 +59,9 @@ namespace f
         LOGICAL_AND,            //    &&
         LOGICAL_OR,             //    ||
         DOUBLE_COLON,           //    ::                 Used for function or struct declarations
-		DOUBLE_DOT,             //    ..                 Used for ranges
-		EQUALITY_TEST,          //    ==
+        DOUBLE_DOT,             //    ..                 Used for ranges
+        COLON_EQUAL,            //    :=                 Used for variable declarations with type inference
+        EQUALITY_TEST,          //    ==
         DIFFERENCE_TEST,        //    !=
 		ESCAPED_DOUBLE_QUOTE,	//	  \"				To ease the detection of the end of the string litteral by avoiding the necessary to check it in an other way
         // Not sure that must be detected as one token instead of multiples (especially <<, >>, <<= and >>=) because of templates
@@ -139,6 +140,7 @@ namespace f
         PUBLIC,
         PROTECTED,
         PRIVATE,
+        MODULE,
 
         // Control flow
         IF,
@@ -168,6 +170,7 @@ namespace f
         F64,
         STRING,
         STRING_VIEW,
+        TYPE,   // For variables that store a Type (function, ui32, f32,...)
         // @TODO @Critical add types that have the size of ptr (like size_t and ptrdiff_t,...)
 
 		// Special keywords (interpreted by the lexer)

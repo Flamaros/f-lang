@@ -49,3 +49,27 @@ https://drive.google.com/file/d/1OggMRIwsuxse2MtkM6XIbL3pNMDUIzVC/view
 In f-lang:
  - check how to have template specialization to be able to optimize functions like to_string depending on the base value
    can we generate at compile time best code by detecting that the base is a constant and run automatically conditions at compile time.
+   
+Intermediate Representation IR code:
+ - Look at GCC Gimple (IR of gcc)
+ - SSA (lowest level of the 3 that Gimple contains)
+
+Optimization of generated code:
+If you can’t resist poking your foot into that hole, some keywords to get you started are “constant propagation”, “common subexpression elimination”, “loop invariant code motion”, “global value numbering”, “strength reduction”, “scalar replacement of aggregates”, “dead code elimination”, and “loop unrolling”.
+
+
+
+
+#procedure_of_call retourne à la compilation un pointeur sur fonction d'un appel de fonction avec ses paramètres. Utile lorsqu'il y a de la surcharge sur la fonction.
+Les fonctions sont identiques si elles ont les mêmes types paramètres et valeur de retour (même si leur nom et adresse sont différentes)
+
+
+
+For when booststrapped
+Error messages au format:
+Error: MY ERROR MESSAGE
+    LINE NUMBER | line of the code
+
+Put in read the token in error, for multilines errors print the starting line and the last one. For string literals by exemple. Put in red all the range.
+The report error should take the message and the range a string view of what to put in red and string views of 2 lines.
+Find a way to generate error codes.

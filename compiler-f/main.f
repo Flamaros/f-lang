@@ -6,6 +6,8 @@ myenum :: enum {
 	second
 }*/
 
+// foo : Type = u32; // Type is a Type that store a type, this is compile time only. So foo is a compile time variable.
+
 alias DWORD = ui32;
 alias HANDLE = void*;
 

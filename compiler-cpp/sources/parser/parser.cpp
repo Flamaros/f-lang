@@ -36,7 +36,14 @@ inline f::AST_Node* allocate_AST_node()
 inline void parse_type_qualifier(stream::Array_Stream<f::Token>& stream, f::Type_Qualifier* type_qualifier)
 {
 	type_qualifier->name = stream::get(stream);
-	// TODO parse until a token that can't be interpreted
+	stream::peek(stream); // alias name
+	f::Token current_token = stream::get(stream);
+	if (current_token.type == f::Token_Type::SYNTAXE_OPERATOR) {
+		if (current_token.value.punctuation == f::Punctuation::STAR) {
+			type_qualifier->is_pointer = true;
+			stream::peek(stream); // *
+		}
+	}
 }
 
 void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
@@ -64,21 +71,26 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 
 		if (current_token.type == Token_Type::KEYWORD) {
 			if (current_token.value.keyword == Keyword::ALIAS) {
-				stream::peek(stream);
+				stream::peek(stream); // alias
 
 				Type_Alias_Node* new_node = (Type_Alias_Node*)allocate_AST_node();
 
 				new_node->type = Node_Type::TYPE_ALIAS;
 				new_node->type_name = stream::get(stream);
-				stream::peek(stream);
+				stream::peek(stream); // alias name
 				current_token = stream::get(stream);
 				if (current_token.type != Token_Type::SYNTAXE_OPERATOR
 					&& current_token.value.punctuation != Punctuation::EQUALS) {
 					report_error(Compiler_Error::error, current_token, "Expecting '=' punctuation after the alias typename.");
 				}
-				stream::peek(stream);
+				stream::peek(stream); // =
 				parse_type_qualifier(stream, &new_node->qualifier);
 
+				current_token = stream::get(stream);
+				if (current_token.type != Token_Type::SYNTAXE_OPERATOR
+					&& current_token.value.punctuation != Punctuation::SEMICOLON) {
+					report_error(Compiler_Error::error, current_token, "Expecting ';' punctuation after at the end of the alias statement.");
+				}
 				stream::peek(stream); // ;
 			}
 			else if (current_token.value.keyword == Keyword::IMPORT) {
@@ -93,9 +105,40 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 		else if (current_token.type == Token_Type::IDENTIFIER) {
 			// At global scope we can only have variable or function declarations that start with an identifier
 
-			stream::peek<Token>(stream);
-		}
+			Token	identifier = current_token;
 
+			stream::peek<Token>(stream);
+			current_token = stream::get(stream);
+
+			if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+				if (current_token.value.punctuation == Punctuation::DOUBLE_COLON) { // It's a function, struct or enum declaration
+					stream::peek<Token>(stream);
+					current_token = stream::get(stream);
+
+					if (current_token.type == Token_Type::KEYWORD &&
+						current_token.value.keyword == Keyword::STRUCT) {
+					}
+					else if (current_token.type == Token_Type::KEYWORD &&
+						current_token.value.keyword == Keyword::ENUM) {
+					}
+					else if (current_token.type == Token_Type::SYNTAXE_OPERATOR &&
+						current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS) {
+					}
+					else {
+						report_error(Compiler_Error::error, current_token, "Expecting struct, enum or function parameters list after the '::' token.");
+					}
+				}
+				else if (current_token.value.punctuation != Punctuation::COLON) { // It's a variable declaration with type
+
+				}
+				else if (current_token.value.punctuation != Punctuation::COLON_EQUAL) { // It's a variable declaration where type is infered
+
+				}
+				else if (current_token.value.punctuation != Punctuation::EQUALS) { // It's a variable assignement
+
+				}
+			}
+		}
 	}
 }
 

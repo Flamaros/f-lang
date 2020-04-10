@@ -56,8 +56,9 @@ static Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table
     {punctuation_key_2((uint8_t*)"&&"),	Punctuation::LOGICAL_AND},
     {punctuation_key_2((uint8_t*)"||"),	Punctuation::LOGICAL_OR},
     {punctuation_key_2((uint8_t*)"::"),	Punctuation::DOUBLE_COLON},
-	{punctuation_key_2((uint8_t*)".."),	Punctuation::DOUBLE_DOT},
-	{punctuation_key_2((uint8_t*)"=="),	Punctuation::EQUALITY_TEST},
+    {punctuation_key_2((uint8_t*)".."),	Punctuation::DOUBLE_DOT},
+    {punctuation_key_2((uint8_t*)":="),	Punctuation::COLON_EQUAL},
+    {punctuation_key_2((uint8_t*)"=="),	Punctuation::EQUALITY_TEST},
     {punctuation_key_2((uint8_t*)"!="),	Punctuation::DIFFERENCE_TEST},
 	{punctuation_key_2((uint8_t*)"\\\""),	Punctuation::ESCAPED_DOUBLE_QUOTE},
 };
@@ -210,6 +211,7 @@ void f::initialize_lexer()
     INSERT_KEYWORD("public,", PUBLIC);
     INSERT_KEYWORD("protected,", PROTECTED);
     INSERT_KEYWORD("private,", PRIVATE);
+    INSERT_KEYWORD("module,", MODULE);
 
     // Types
     INSERT_KEYWORD("bool", BOOL);
@@ -225,6 +227,7 @@ void f::initialize_lexer()
     INSERT_KEYWORD("f64", F64);
     INSERT_KEYWORD("string", STRING);
     INSERT_KEYWORD("string_view", STRING_VIEW);
+    INSERT_KEYWORD("Type", TYPE);
 
     // Special keywords (interpreted by the lexer)
     INSERT_KEYWORD("__FILE__", SPECIAL_FILE);
