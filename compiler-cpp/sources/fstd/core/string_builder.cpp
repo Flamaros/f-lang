@@ -10,6 +10,9 @@
 
 using namespace fstd::system;
 
+// @SpeedUp
+// Take a look to: https://github.com/nothings/stb/blob/master/stb_sprintf.h
+
 namespace fstd
 {
 	namespace core

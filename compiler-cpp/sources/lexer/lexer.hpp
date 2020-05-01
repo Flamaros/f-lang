@@ -156,7 +156,8 @@ namespace f
         RETURN,
         EXIT,
 
-        // Types
+        // Types (@Warning BOOL should stay first, and TYPE latest)
+        VOID,
         BOOL,
         I8,
         UI8,
@@ -226,4 +227,9 @@ namespace f
     void    initialize_lexer();
 	void    lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens);
     void    print(fstd::memory::Array<Token>& tokens);
+
+
+    inline bool    is_a_basic_type(Keyword keyword) {
+        return keyword >= Keyword::VOID && keyword <= Keyword::TYPE;
+    }
 }

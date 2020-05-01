@@ -27,6 +27,15 @@ using namespace fstd::core;
 
 static const size_t    tokens_length_heuristic = 5;
 
+// @TODO @SpeedUp
+// TODO avoid miss prediction on conditions' branches we may want to store tokens in different arrays per type (SAO)
+// The filling of values like for numeric litteral could be done on a second pass, with a tiny loop, to have hot cache.
+// Same for keywords.
+// We also may want to use a fixed size state machine (that fit in cache line) to reduce the number of if on different characters.
+// Sean Barrett for his implementation of a C compiler, also have a special case for the 0, has it can appear a lot in code.
+//
+// Flamaros - 18 april 2020
+
 /// Return a key for the punctuation of 2 characters
 constexpr static uint16_t punctuation_key_2(const uint8_t* str)
 {
@@ -214,6 +223,7 @@ void f::initialize_lexer()
     INSERT_KEYWORD("module,", MODULE);
 
     // Types
+    INSERT_KEYWORD("void", VOID);
     INSERT_KEYWORD("bool", BOOL);
     INSERT_KEYWORD("i8", I8);
     INSERT_KEYWORD("ui8", UI8);

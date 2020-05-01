@@ -24,25 +24,145 @@ enum class State
 	eof
 };
 
-inline f::AST_Node* allocate_AST_node()
+template<typename Node_Type>
+inline Node_Type* allocate_AST_node(f::AST_Node** previous_sibling_addr)
 {
-	// Ensure that no reallocation could happen during the resize
-	core::Assert(memory::get_array_size(globals.parser_data.ast_nodes) < memory::get_array_reserved(globals.parser_data.ast_nodes));
+	// @TODO f-lang
+	// Check if Node_Type is an AST_Node at compile time
+	//
+	// Flamaros - 13 april 2020
 
-	memory::resize_array(globals.parser_data.ast_nodes, memory::get_array_size(globals.parser_data.ast_nodes) + 1);
-	return memory::get_array_last_element(globals.parser_data.ast_nodes);
+	// Ensure that no reallocation could happen during the resize
+	core::Assert(memory::get_array_size(globals.parser_data.ast_nodes) < memory::get_array_reserved(globals.parser_data.ast_nodes) * sizeof(f::AST_Statement_Variable));
+
+	memory::resize_array(globals.parser_data.ast_nodes, memory::get_array_size(globals.parser_data.ast_nodes) + sizeof(Node_Type));
+
+	Node_Type* new_node = (Node_Type*)(memory::get_array_last_element(globals.parser_data.ast_nodes) - sizeof(Node_Type));
+	if (previous_sibling_addr) {
+		*previous_sibling_addr = (f::AST_Node*)new_node;
+	}
+	return new_node;
 }
 
-inline void parse_type_qualifier(stream::Array_Stream<f::Token>& stream, f::Type_Qualifier* type_qualifier)
+inline void parse_array(stream::Array_Stream<f::Token>& stream, f::AST_Node** type_)
 {
-	type_qualifier->name = stream::get(stream);
-	stream::peek(stream); // alias name
-	f::Token current_token = stream::get(stream);
-	if (current_token.type == f::Token_Type::SYNTAXE_OPERATOR) {
-		if (current_token.value.punctuation == f::Punctuation::STAR) {
-			type_qualifier->is_pointer = true;
-			stream::peek(stream); // *
+	f::Token	current_token;
+
+	stream::peek(stream); // [
+// @TODO Implement it
+	while (true)
+	{
+		current_token = stream::get(stream);
+		if (current_token.value.punctuation == f::Punctuation::CLOSE_BRACKET) {
+			stream::peek(stream);
+			return;
 		}
+		stream::peek(stream);
+	}
+}
+
+inline void parse_type(stream::Array_Stream<f::Token>& stream, f::AST_Node** type_)
+{
+	f::Token		current_token;
+	f::AST_Node**	previous_sibling_addr = nullptr;
+
+	// A type sequence will necessary ends with the type name (basic type keyword or identifier), all modifiers comes before.
+	//
+	// Flamaros - 01 may 2020
+
+	while (true)
+	{
+		current_token = stream::get(stream);
+
+		if (current_token.type == f::Token_Type::SYNTAXE_OPERATOR) {
+			if (current_token.value.punctuation == f::Punctuation::STAR) {
+				f::AST_Statement_Type_Pointer*	pointer_node = allocate_AST_node<f::AST_Statement_Type_Pointer>(previous_sibling_addr);
+				pointer_node->sibling = nullptr;
+				previous_sibling_addr = (f::AST_Node**)&pointer_node->child;
+
+				stream::peek(stream); // *
+			}
+			else if (current_token.value.punctuation == f::Punctuation::OPEN_BRACKET) {
+				parse_array(stream, previous_sibling_addr);
+			}
+		}
+		else if (current_token.type == f::Token_Type::KEYWORD) {
+			if (f::is_a_basic_type(current_token.value.keyword)) {
+				f::AST_Statement_Basic_Type*	basic_type_node = allocate_AST_node<f::AST_Statement_Basic_Type>(previous_sibling_addr);
+				basic_type_node->sibling = nullptr;
+
+				stream::peek(stream); // basic_type keyword
+				break;
+			}
+			else {
+				report_error(Compiler_Error::error, current_token, "Expecting a type qualifier (a type modifier operator, a basic type keyword or a user type identifier).");
+			}
+		}
+		else if (current_token.type == f::Token_Type::IDENTIFIER) {
+			// @TODO Implement it
+			break;
+		}
+		else {
+			report_error(Compiler_Error::error, current_token, "Expecting a type qualifier (a type modifier operator, a basic type keyword or a user type identifier).");
+		}
+	}
+}
+
+inline void parse_function_argument(stream::Array_Stream<f::Token>& stream, f::AST_Statement_Variable** parameter_)
+{
+	f::Token					current_token;
+	f::AST_Statement_Variable*& parameter = *parameter_;
+
+	current_token = stream::get(stream);
+	fstd::core::Assert(current_token.type == f::Token_Type::IDENTIFIER);
+
+	parameter = allocate_AST_node<f::AST_Statement_Variable>(nullptr);
+	parameter->ast_type = f::Node_Type::STATEMENT_VARIABLE;
+	parameter->sibling = nullptr;
+	parameter->name = current_token;
+	parameter->is_function_paramter = true;
+
+	stream::peek(stream); // identifier
+
+	current_token = stream::get(stream);
+	if (current_token.type == f::Token_Type::SYNTAXE_OPERATOR
+		&& current_token.value.punctuation == f::Punctuation::COLON) {
+		stream::peek(stream); // :
+
+		parse_type(stream, &parameter->type);
+		current_token = stream::get(stream);
+
+		if (current_token.type == f::Token_Type::SYNTAXE_OPERATOR
+			&& current_token.value.punctuation == f::Punctuation::EQUALS) {
+			parameter->is_optional = true;
+			parameter->expression;
+			// @TODO
+			fstd::core::Assert(false);
+		}
+		else {
+			parameter->is_optional = false;
+			parameter->expression = nullptr;
+		}
+	}
+	else {
+		report_error(Compiler_Error::error, current_token, "Expecting ':' between the type and the name of the paramater of function.");
+	}
+}
+
+inline void parse_scope(stream::Array_Stream<f::Token>& stream, f::AST_Node** type_)
+{
+	f::Token	current_token;
+
+	stream::peek(stream); // [
+// @TODO Implement it
+	while (true)
+	{
+		current_token = stream::get(stream);
+		if (current_token.value.punctuation == f::Punctuation::CLOSE_BRACE) {
+			stream::peek(stream);
+			return;
+		}
+		stream::peek(stream);
 	}
 }
 
@@ -52,16 +172,22 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 
 	stream::Array_Stream<Token>	stream;
 
-	// It is impossible to have more nodes than tokens, so we can easily pre-allocate them.
+	// It is impossible to have more nodes than tokens, so we can easily pre-allocate them to the maximum possible size.
+	// maximum_size = nb_tokens * largest_node_size
 	//
-	// Flamaros - 23 march 2020
-	memory::reserve_array(globals.parser_data.ast_nodes, memory::get_array_size(tokens));
+	// @TODO
+	// We expect to be able to determine with the meta-programmation which AST_Node type is the largest one.
+	//
+	// Flamaros - 13 april 2020
+	memory::reserve_array(globals.parser_data.ast_nodes, memory::get_array_size(tokens) * sizeof(AST_Statement_Variable));
 
 	stream::initialize_memory_stream<Token>(stream, tokens);
 
 	if (stream::is_eof(stream) == true) {
 		return;
 	}
+
+	AST_Node** previous_sibling_addr = &ast.root;
 
 	while (stream::is_eof(stream) == false)
 	{
@@ -73,10 +199,12 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 			if (current_token.value.keyword == Keyword::ALIAS) {
 				stream::peek(stream); // alias
 
-				Type_Alias_Node* new_node = (Type_Alias_Node*)allocate_AST_node();
+				AST_Alias*	alias_node = allocate_AST_node<AST_Alias>(previous_sibling_addr);
+				previous_sibling_addr = (AST_Node**)&alias_node;
 
-				new_node->type = Node_Type::TYPE_ALIAS;
-				new_node->type_name = stream::get(stream);
+				alias_node->ast_type = Node_Type::TYPE_ALIAS;
+				alias_node->sibling = nullptr;
+				alias_node->type_name = stream::get(stream);
 				stream::peek(stream); // alias name
 				current_token = stream::get(stream);
 				if (current_token.type != Token_Type::SYNTAXE_OPERATOR
@@ -84,9 +212,9 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 					report_error(Compiler_Error::error, current_token, "Expecting '=' punctuation after the alias typename.");
 				}
 				stream::peek(stream); // =
-				parse_type_qualifier(stream, &new_node->qualifier);
-
+				parse_type(stream, &alias_node->type);
 				current_token = stream::get(stream);
+
 				if (current_token.type != Token_Type::SYNTAXE_OPERATOR
 					&& current_token.value.punctuation != Punctuation::SEMICOLON) {
 					report_error(Compiler_Error::error, current_token, "Expecting ';' punctuation after at the end of the alias statement.");
@@ -115,14 +243,71 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 					stream::peek<Token>(stream);
 					current_token = stream::get(stream);
 
-					if (current_token.type == Token_Type::KEYWORD &&
-						current_token.value.keyword == Keyword::STRUCT) {
+					if (current_token.type == Token_Type::KEYWORD
+						&& current_token.value.keyword == Keyword::STRUCT) {
 					}
-					else if (current_token.type == Token_Type::KEYWORD &&
-						current_token.value.keyword == Keyword::ENUM) {
+					else if (current_token.type == Token_Type::KEYWORD
+						&& current_token.value.keyword == Keyword::ENUM) {
 					}
-					else if (current_token.type == Token_Type::SYNTAXE_OPERATOR &&
-						current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS) {
+					else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+						&& current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS) {
+						stream::peek(stream); // (
+
+						AST_Statement_Function* function_node = allocate_AST_node<AST_Statement_Function>(previous_sibling_addr);
+						previous_sibling_addr = (AST_Node**)&function_node;
+
+						function_node->ast_type = Node_Type::STATEMENT_FUNCTION;
+						function_node->sibling = nullptr;
+						function_node->name = identifier;
+						function_node->nb_arguments = 0;
+						function_node->arguments = nullptr;
+
+						current_token = stream::get(stream);
+
+						AST_Statement_Variable** current_arguments = &function_node->arguments;
+						while (!(current_token.type == Token_Type::SYNTAXE_OPERATOR
+							&& current_token.value.punctuation == Punctuation::CLOSE_PARENTHESIS))
+						{
+							if (current_token.type == Token_Type::IDENTIFIER)
+							{
+								parse_function_argument(stream, current_arguments);
+								current_token = stream::get(stream);
+
+								current_arguments = (AST_Statement_Variable**)&(*current_arguments)->sibling;
+								if (current_token.type == Token_Type::SYNTAXE_OPERATOR &&
+									current_token.value.punctuation == Punctuation::COMMA)
+								{
+									stream::peek(stream); // ,
+								}
+							}
+							else {
+								report_error(Compiler_Error::error, current_token, "Expecting an identifier for the paramater name of the function");
+							}
+						}
+						stream::peek(stream); // )
+
+						current_token = stream::get(stream);
+						if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+							&& current_token.value.punctuation == Punctuation::ARROW) {
+							stream::peek(stream); // ->
+							parse_type(stream, nullptr); // @TODO get the return type and put it in the tree
+							current_token = stream::get(stream);
+						}
+						
+						if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+							&& current_token.value.punctuation == Punctuation::SEMICOLON) {
+							// @TODO implement it, this is just a function declaration in this case
+							// @Warning this can also just follow the return value
+							core::Assert(false);
+						}
+						else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+							&& current_token.value.punctuation == Punctuation::OPEN_BRACE) {
+							parse_scope(stream, nullptr);
+							current_token = stream::get(stream);
+						}
+						else {
+							report_error(Compiler_Error::error, current_token, "Expecting '->' to specify the return type of the function or the scope of the function.");
+						}
 					}
 					else {
 						report_error(Compiler_Error::error, current_token, "Expecting struct, enum or function parameters list after the '::' token.");

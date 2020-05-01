@@ -8,11 +8,19 @@
 
 namespace f
 {
-	struct Type_Qualifier
-	{
-		Token	name;
-		bool	is_pointer = false;
-	};
+	// Forward declarations
+	struct AST_Node;
+	struct AST_Enum;
+	struct AST_Alias;
+	struct AST_Expression;
+	struct AST_Statement_Type;
+	struct AST_Statement_Type_Pointer;
+	struct AST_Statement_Type_Array;
+	struct AST_Statement_Variable;
+	struct AST_Statement_Function;
+	struct AST_Statement_Scope;
+
+	//=============================================================================
 
 	enum class Expression_Type
 	{
@@ -30,13 +38,17 @@ namespace f
 
 	enum class Node_Type
 	{
-		TYPE_QUALIFIER, // Just the name of a type with its modifier (like pointer)
 		TYPE_ALIAS,
 		TYPE_ENUM,
 		TYPE_STRUCT,
 
+		STATEMENT_MODULE,
+		STATEMENT_TYPE,
+		STATEMENT_TYPE_POINTER,
+		STATEMENT_TYPE_ARRAY,
 		STATEMENT_VARIABLE,
 		STATEMENT_FUNCTION,
+		STATEMENT_SCOPE,
 
 		ASSIGNMENT,
 		BINARY_OP,
@@ -44,6 +56,15 @@ namespace f
 		FUNCTION_CALL
 	};
 
+	// @Warning
+	// Don't use the constructor or default initialisation of AST_Node* types
+	// constructors (even the default) aren't called
+	//
+	// Flamaros - 13 april 2020
+
+	// @TODO
+	// We may want to use indices instead of pointers to reference AST nodes to be able to resize
+	// the node buffer without having to update all pointers.
 
 	struct AST_Node
 	{
@@ -57,45 +78,95 @@ namespace f
 		// we should be able to look at all types that encapsulate AST_Node at compile
 		// time and determinate the size of the largest struct.
 
-		Node_Type	type;
-		uint8_t		reserved[8];
+		Node_Type	ast_type;
+		AST_Node*	sibling;
 	};
 
-	struct Type_Enum_Node
+	struct AST_Enum
 	{
-		Node_Type	type;
-
+		Node_Type	ast_type;
+		AST_Node*	sibling;
 	};
 
-	struct Type_Alias_Node
+	struct AST_Alias
 	{
-		Node_Type		type;
-		Token			type_name; // Should be a pointer to avoid the copy?
-		Type_Qualifier	qualifier;
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		Token		type_name; // Should be a pointer to avoid the copy?
+		AST_Node*	type;
 	};
 
-	struct Statement_Variable
+	struct AST_Expression
 	{
-		Node_Type		type;
-		Token			name;
-		Type_Qualifier	_type;
+		Node_Type	ast_type;
+		AST_Node*	sibling;
 	};
 
-	struct Statement_Function
+	struct AST_Statement_Module
 	{
-		Node_Type			type;
-		Token				name;
-		Statement_Variable* arguments;
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		AST_Node*	first_child;
+	};
+
+	struct AST_Statement_Basic_Type
+	{
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		Keyword		keyword;
+	};
+
+	struct AST_Statement_Type_Pointer
+	{
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		AST_Node*	child;
+	};
+
+	struct AST_Statement_Type_Array
+	{
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		AST_Node*		child;
+		AST_Expression* array_size; // if null the array is dynamic
+	};
+
+	struct AST_Statement_Variable
+	{
+		Node_Type				ast_type;
+		AST_Node*				sibling;
+		Token					name;
+		AST_Node*				type;
+		bool					is_function_paramter;
+		bool					is_optional;
+		AST_Expression*			expression; // not null if is_optional is true
+	};
+
+	struct AST_Statement_Function
+	{
+		Node_Type				ast_type;
+		AST_Node*				sibling;
+		Token					name;
+		int						nb_arguments;
+		AST_Statement_Variable*	arguments;
+		AST_Statement_Scope*	scope;	 // nullptr is it's only the declaration
+	};
+
+	struct AST_Statement_Scope
+	{
+		Node_Type				ast_type;
+		AST_Node*				sibling;
+		AST_Statement_Variable* variable;
 	};
 
     struct AST
 	{
-		AST_Node*	root;
+		AST_Node*	root; // Should point on the first module
 	};
 
 	struct Parser_Data
 	{
-		fstd::memory::Array<f::AST_Node>	ast_nodes;
+		fstd::memory::Array<uint8_t>	ast_nodes; // This is a raw buffer as all nodes don't have the same type
 	};
 
     void parse(fstd::memory::Array<Token>& tokens, AST& ast);

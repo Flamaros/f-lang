@@ -1,3 +1,18 @@
+// @TODO Implement it
+parse_array
+parse_scope
+
+Pass current_token as parameter to all parse_*** functions? To avoid some stream::get (this is also easy to forget)...
+
+
+Add corresponding token to AST_Node_***???? With pointer or index (ui16, ui32), with a way to find from which sub token array the sub AST tree is linked to?
+
+
+
+
+
+
+
 - to_string(uint64) est-ce que ce doit être une version template pour gérer à la fois le 32 et 64 bits?
 
 - Hash_Table et Keyword_Hash_Table: à passer en struct avec fonctions libres
@@ -18,7 +33,7 @@ Lexer:
  - Optimize the Token structure size (removing aliasing,...)
  - Test lexer performances
  - Numeric literals:
-   - Add hexadecimal floating point support
+   - Add hexadecimal floating point support (voir stb__clex_parse_float: https://github.com/nothings/stb/blob/master/stb_c_lexer.h)
    - Need support suffix for binary and hexadecimal numbers?
    - Binary and hexadecimal numbers should be unsigned by default?
  - Analyse if with tokens_length_heuristic at 6 there is some allocations, find a strategy for the allocation if needed
@@ -52,6 +67,7 @@ In f-lang:
    
 Intermediate Representation IR code:
  - Look at GCC Gimple (IR of gcc)
+ - LLVM: https://llvm.org/devmtg/2017-06/1-Davis-Chisnall-LLVM-2017.pdf  
  - SSA (lowest level of the 3 that Gimple contains)
 
 Optimization of generated code:
@@ -73,3 +89,19 @@ Error: MY ERROR MESSAGE
 Put in read the token in error, for multilines errors print the starting line and the last one. For string literals by exemple. Put in red all the range.
 The report error should take the message and the range a string view of what to put in red and string views of 2 lines.
 Find a way to generate error codes.
+
+
+
+
+
+
+
+#####################################
+NASM pdb?
+try -gcv8 instead of -g
+
+ex: nasm -f win32 -gcv8 sandbox.asm -l sandbox.lst
+    ld -mi386pe -o sandbox.exe sandbox.obj
+
+https://www.nasm.us/doc/nasmdoc2.html#section-2.1.12
+https://sonictk.github.io/asm_tutorial/#hello,worldrevisted/writingabuildscript

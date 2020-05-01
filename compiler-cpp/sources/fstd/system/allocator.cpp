@@ -10,6 +10,7 @@
 #include <fstd/core/assert.hpp>
 
 // Need we use VirtualAlloc instead of HeapAlloc, to support allocation of bigger buffers?
+// A size of 16MB seems good.
 
 // We use some bits operations to reduce the memory footprint and improve performances.
 // Size of the Memory_Header struct is a critical point.
