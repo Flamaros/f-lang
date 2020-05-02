@@ -2,9 +2,19 @@
 
 #include "globals.hpp"
 
+#include <fstd/core/logger.hpp>
+#include <fstd/core/string_builder.hpp>
+
 #include <fstd/memory/array.hpp>
 
 #include <fstd/stream/array_stream.hpp>
+
+#include <fstd/system/file.hpp>
+#include <fstd/system/stdio.hpp>
+
+#include <fstd/language/defer.hpp>
+#include <fstd/language/flags.hpp>
+#include <fstd/language/string.hpp>
 
 #undef max
 #include <tracy/Tracy.hpp>
@@ -13,6 +23,7 @@
 // https://en.cppreference.com/w/cpp/language/typedef
 
 using namespace fstd;
+using namespace fstd::core;
 
 enum class State
 {
@@ -331,4 +342,28 @@ void f::generate_dot_file(AST& ast, const system::Path& output_file_path)
 {
 	ZoneScopedNC("f::generate_dot_file", 0xc43e00s);
 
+	system::File		file;
+	String_Builder		string_builder;
+	language::string	file_content;
+
+	defer {
+		free_buffers(string_builder);
+		close_file(file);
+	};
+
+	if (open_file(file, output_file_path, (system::File::Opening_Flag)
+		((uint32_t)system::File::Opening_Flag::CREATE
+			| (uint32_t)system::File::Opening_Flag::WRITE)) == false) {
+		print_to_builder(string_builder, "Failed to open file: %s", to_string(output_file_path));
+		system::print(to_string(string_builder));
+		return;
+	}
+
+	print_to_builder(string_builder, "digraph {\n");
+
+	print_to_builder(string_builder, "}\n");
+
+	file_content = to_string(string_builder);
+
+	system::write_file(file, language::to_utf8(file_content), (uint32_t)language::get_string_size(file_content));
 }

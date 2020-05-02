@@ -53,5 +53,7 @@ namespace fstd
 		memory::Array<uint8_t>			initiate_get_file_content_asynchronously(File& file);
 		bool							get_file_content_asynchronously(File& file, memory::Array<uint8_t>& buffer);	// return true if succeed
 		bool							wait_for_availabe_asynchronous_content(File& file, size_t size);	// return true if succeed
+
+		bool							write_file(File& file, uint8_t* buffer, uint32_t length);
 	}
 }

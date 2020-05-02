@@ -48,7 +48,7 @@ namespace fstd
 				dwDesiredAccess |= GENERIC_WRITE;
 			}
 			if (is_flag_set(flags, File::Opening_Flag::CREATE)) {
-				dwDesiredAccess = CREATE_ALWAYS;
+				dwCreationDisposition = CREATE_ALWAYS;
 			}
 
 			// We have to convert the path in utf16 as Windows doesn't support UTF8.
@@ -64,7 +64,7 @@ namespace fstd
 				dwDesiredAccess,
 				0,						// dwShareMode,
 				NULL,					// lpSecurityAttributes,
-				OPEN_EXISTING,			// dwCreationDisposition,
+				dwCreationDisposition,	// dwCreationDisposition,
 				FILE_ATTRIBUTE_NORMAL,	// dwFlagsAndAttributes,
 				NULL					// hTemplateFile
 			);
@@ -174,6 +174,26 @@ namespace fstd
 			ZoneScopedNC("fstd::system::wait_for_availabe_asynchronous_content", 0x534bae);
 #if defined(FSTD_OS_WINDOWS)
 			return true;
+#else
+#	error
+#endif
+		}
+
+		bool write_file(File& file, uint8_t* buffer, uint32_t length)
+		{
+			ZoneScopedN("fstd::system::write_file");
+
+			fstd::core::Assert(file.handle != Invalid_File_Handle);
+#if defined(FSTD_OS_WINDOWS)
+			DWORD	nb_bytes_written;
+
+			return WriteFile(
+				file.handle,		// hFile,
+				buffer,				// lpBuffer,
+				length,				// nNumberOfBytesToWrite,
+				&nb_bytes_written,	// lpNumberOfBytesWritten,
+				nullptr				// lpOverlapped
+			) == TRUE;
 #else
 #	error
 #endif
