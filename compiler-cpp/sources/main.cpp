@@ -15,6 +15,7 @@
 #include <fstd/memory/array.hpp>
 
 #include <fstd/system/file.hpp>
+#include <fstd/system/process.hpp>
 
 #include <fstd/os/windows/console.hpp>
 
@@ -23,6 +24,28 @@
 #include <tracy/common/TracySystem.hpp>
 
 using namespace fstd;
+using namespace fstd::core;
+
+void convert_dot_file_to_png(const system::Path& dot_file_path, const system::Path& png_file_path)
+{
+	ZoneScopedN("convert_dot_file_to_png");
+
+	String_Builder	string_builder;
+	system::Path	dot_executable_file_path;
+
+	defer{
+		free_buffers(string_builder);
+	};
+
+	defer{
+		system::reset_path(dot_executable_file_path);
+	};
+
+	system::from_native(dot_executable_file_path, (uint8_t*)u8R"(dot.exe)");
+
+	print_to_builder(string_builder, "%s -Tpng -o %s", dot_file_path, png_file_path);
+	system::execute_process(dot_executable_file_path, to_string(string_builder));
+}
 
 int main(int ac, char** av)
 {
@@ -65,13 +88,21 @@ int main(int ac, char** av)
 
 
 		system::Path	dot_file_path;
+		system::Path	png_file_path;
 
-		defer{ system::reset_path(dot_file_path); };
+		defer{
+			system::reset_path(dot_file_path);
+			system::reset_path(png_file_path);
+		};
 
 		system::from_native(dot_file_path, (uint8_t*)u8R"(.\AST.dot)");
+		system::from_native(png_file_path, (uint8_t*)u8R"(.\AST.png)");
 
 		f::parse(tokens, parsing_result);
-		f::generate_dot_file(parsing_result, dot_file_path);	// Optionnal
+		{
+			f::generate_dot_file(parsing_result, dot_file_path);	// Optionnal
+			convert_dot_file_to_png(dot_file_path, png_file_path);
+		}
 	}
 
 	//std::filesystem::path output_directory_path = "./build";

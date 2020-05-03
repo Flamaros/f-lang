@@ -360,6 +360,7 @@ void f::generate_dot_file(AST& ast, const system::Path& output_file_path)
 	}
 
 	print_to_builder(string_builder, "digraph {\n");
+	print_to_builder(string_builder, "\t" "rankdir = LR\n");
 
 	print_to_builder(string_builder, "}\n");
 
