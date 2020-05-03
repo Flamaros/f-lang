@@ -43,7 +43,7 @@ namespace f
 		TYPE_STRUCT,
 
 		STATEMENT_MODULE,
-		STATEMENT_TYPE,
+		STATEMENT_BASIC_TYPE,
 		STATEMENT_TYPE_POINTER,
 		STATEMENT_TYPE_ARRAY,
 		STATEMENT_VARIABLE,
@@ -149,6 +149,7 @@ namespace f
 		Token					name;
 		int						nb_arguments;
 		AST_Statement_Variable*	arguments;
+		AST_Node*				return_type;
 		AST_Statement_Scope*	scope;	 // nullptr is it's only the declaration
 	};
 

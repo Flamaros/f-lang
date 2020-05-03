@@ -20,6 +20,8 @@
 #undef max
 #include <tracy/Tracy.hpp>
 
+#include <magic_enum/magic_enum.hpp> // @TODO remove it
+
 using namespace f;
 
 using namespace fstd;

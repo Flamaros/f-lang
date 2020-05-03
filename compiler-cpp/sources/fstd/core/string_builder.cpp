@@ -7,6 +7,7 @@
 #include <fstd/core/unicode.hpp>
 
 #include <cstdarg>	// @TODO remove it
+#include <string_view>	// @TODO remove it
 
 using namespace fstd::system;
 
@@ -155,6 +156,17 @@ namespace fstd
 							int64_t value = va_arg(args, int64_t);
 
 							print_to_builder(builder, value);
+							position++;
+						}
+					}
+					else if (language::to_utf8(*format)[position] == 'C') { // C++ modifier @TODO remove that
+						position++;
+
+						// This is only made to ease the print with magic_enum
+						if (language::to_utf8(*format)[position] == 'v') {	// std::string_view
+							std::string_view std_string_view = va_arg(args, std::string_view);
+
+							print_to_builder(builder, (uint8_t*)std_string_view.data(), std_string_view.length());
 							position++;
 						}
 					}

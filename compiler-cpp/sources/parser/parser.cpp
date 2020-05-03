@@ -19,6 +19,8 @@
 #undef max
 #include <tracy/Tracy.hpp>
 
+#include <magic_enum/magic_enum.hpp> // @TODO remove it
+
 // Typedef complexity
 // https://en.cppreference.com/w/cpp/language/typedef
 
@@ -72,7 +74,7 @@ inline void parse_array(stream::Array_Stream<f::Token>& stream, f::AST_Node** ty
 	}
 }
 
-inline void parse_type(stream::Array_Stream<f::Token>& stream, f::AST_Node** type_)
+inline void parse_type(stream::Array_Stream<f::Token>& stream, f::AST_Node** type_node)
 {
 	f::Token		current_token;
 	f::AST_Node**	previous_sibling_addr = nullptr;
@@ -88,6 +90,9 @@ inline void parse_type(stream::Array_Stream<f::Token>& stream, f::AST_Node** typ
 		if (current_token.type == f::Token_Type::SYNTAXE_OPERATOR) {
 			if (current_token.value.punctuation == f::Punctuation::STAR) {
 				f::AST_Statement_Type_Pointer*	pointer_node = allocate_AST_node<f::AST_Statement_Type_Pointer>(previous_sibling_addr);
+				*type_node = (f::AST_Node*)pointer_node;
+
+				pointer_node->ast_type = f::Node_Type::STATEMENT_TYPE_POINTER;
 				pointer_node->sibling = nullptr;
 				previous_sibling_addr = (f::AST_Node**)&pointer_node->child;
 
@@ -100,7 +105,11 @@ inline void parse_type(stream::Array_Stream<f::Token>& stream, f::AST_Node** typ
 		else if (current_token.type == f::Token_Type::KEYWORD) {
 			if (f::is_a_basic_type(current_token.value.keyword)) {
 				f::AST_Statement_Basic_Type*	basic_type_node = allocate_AST_node<f::AST_Statement_Basic_Type>(previous_sibling_addr);
+				*type_node = (f::AST_Node*)basic_type_node;
+
+				basic_type_node->ast_type = f::Node_Type::STATEMENT_BASIC_TYPE;
 				basic_type_node->sibling = nullptr;
+				basic_type_node->keyword = current_token.value.keyword;
 
 				stream::peek(stream); // basic_type keyword
 				break;
@@ -301,7 +310,7 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 						if (current_token.type == Token_Type::SYNTAXE_OPERATOR
 							&& current_token.value.punctuation == Punctuation::ARROW) {
 							stream::peek(stream); // ->
-							parse_type(stream, nullptr); // @TODO get the return type and put it in the tree
+							parse_type(stream, &function_node->return_type); // @TODO get the return type and put it in the tree
 							current_token = stream::get(stream);
 						}
 						
@@ -338,6 +347,66 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 	}
 }
 
+void write_dot_node(String_Builder& file_string_builder, f::AST_Node* node, int64_t parent_index = -1)
+{
+	language::string	dot_node;
+	static uint32_t		nb_nodes = 0;
+	uint32_t			node_index = nb_nodes++;
+	f::AST_Node*		next_node = nullptr;
+
+	defer{
+		release(dot_node);
+	};
+
+	if (parent_index != -1) {
+		print_to_builder(file_string_builder, "\t" "node_%ld -> node_%ld\n", parent_index, node_index);
+	}
+
+	print_to_builder(file_string_builder, "\n\t" "node_%ld [label=\"", node_index);
+	if (node->ast_type == f::Node_Type::TYPE_ALIAS) {
+		f::AST_Alias* alias_node = (f::AST_Alias*)node;
+
+		print_to_builder(file_string_builder,
+			"TYPE_ALIAS"
+			"\n%v", alias_node->type_name.text);
+	}
+	else if (node->ast_type == f::Node_Type::STATEMENT_BASIC_TYPE) {
+		f::AST_Statement_Basic_Type*	basic_type_node = (f::AST_Statement_Basic_Type*)node;
+
+		print_to_builder(file_string_builder,
+			"STATEMENT_BASIC_TYPE"
+			"\n%Cv", magic_enum::enum_name(basic_type_node->keyword));
+	}
+	else {
+		core::Assert(false);
+		print_to_builder(file_string_builder,
+			"UNKNOWN type"
+			"\nnode_%ld", node_index);
+	}
+	print_to_builder(file_string_builder, "\t" "\" shape=box, style=filled, color=black, fillcolor=lightseagreen]\n");
+
+	// Children iteration
+	if (node->ast_type == f::Node_Type::TYPE_ALIAS) {
+		f::AST_Alias*	alias_node = (f::AST_Alias*)node;
+		write_dot_node(file_string_builder, alias_node->type, node_index);
+	}
+	else if (node->ast_type == f::Node_Type::STATEMENT_BASIC_TYPE) {
+		// No children
+	}
+	else {
+		core::Assert(false);
+	}
+
+	// Sibling iteration
+	next_node = node->sibling;
+	while (next_node) {
+		write_dot_node(file_string_builder, next_node, parent_index);
+		next_node = next_node->sibling;
+	}
+
+	dot_node = to_string(file_string_builder);
+}
+
 void f::generate_dot_file(AST& ast, const system::Path& output_file_path)
 {
 	ZoneScopedNC("f::generate_dot_file", 0xc43e00s);
@@ -348,6 +417,7 @@ void f::generate_dot_file(AST& ast, const system::Path& output_file_path)
 
 	defer {
 		free_buffers(string_builder);
+		release(file_content);
 		close_file(file);
 	};
 
@@ -360,7 +430,9 @@ void f::generate_dot_file(AST& ast, const system::Path& output_file_path)
 	}
 
 	print_to_builder(string_builder, "digraph {\n");
-	print_to_builder(string_builder, "\t" "rankdir = LR\n");
+	print_to_builder(string_builder, "\t" "rankdir = TB\n");
+
+	write_dot_node(string_builder, ast.root);
 
 	print_to_builder(string_builder, "}\n");
 
