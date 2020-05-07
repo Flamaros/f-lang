@@ -478,11 +478,8 @@ static void write_dot_node(String_Builder& file_string_builder, f::AST_Node* nod
 	}
 
 	// Sibling iteration
-	f::AST_Node* next_node = node->sibling;
-
-	while (next_node) {
-		write_dot_node(file_string_builder, next_node, parent_index);
-		next_node = next_node->sibling;
+	if (node->sibling) {
+		write_dot_node(file_string_builder, node->sibling, parent_index);
 	}
 
 	dot_node = to_string(file_string_builder);
