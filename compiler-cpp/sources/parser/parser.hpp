@@ -126,8 +126,10 @@ namespace f
 	{
 		Node_Type		ast_type;
 		AST_Node*		sibling;
-		AST_Node*		size;		// can be nullptr
 		AST_Expression* array_size; // if null the array is dynamic
+		// @TODO if the size is a constexpr we certainly want to have the value
+		// then it is also a fixed size.
+		// if array_size not null, can be a fixed size array or a dynamic one, only the attempt of the expression evaluation can tell it.
 	};
 
 	struct AST_Statement_Variable

@@ -57,11 +57,22 @@ inline Node_Type* allocate_AST_node(f::AST_Node** previous_sibling_addr)
 	return new_node;
 }
 
-inline void parse_array(stream::Array_Stream<f::Token>& stream, f::AST_Node** type_)
+inline void parse_array(stream::Array_Stream<f::Token>& stream, f::AST_Statement_Type_Array** array_node_)
 {
 	f::Token	current_token;
 
+	current_token = stream::get(stream);
+	core::Assert(current_token.type == f::Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == f::Punctuation::OPEN_BRACKET);
+
+	f::AST_Statement_Type_Array*	array_node = allocate_AST_node<f::AST_Statement_Type_Array>(nullptr);
+	array_node->ast_type = f::Node_Type::STATEMENT_TYPE_ARRAY;
+	array_node->sibling = nullptr;
+	array_node->array_size = nullptr;
+
+	*array_node_ = array_node;
+
 	stream::peek(stream); // [
+
 // @TODO Implement it
 	while (true)
 	{
@@ -89,6 +100,7 @@ inline void parse_type(stream::Array_Stream<f::Token>& stream, f::AST_Node** typ
 
 		if (current_token.type == f::Token_Type::SYNTAXE_OPERATOR) {
 			if (current_token.value.punctuation == f::Punctuation::STAR) {
+				// @TODO create a parse_pointer
 				f::AST_Statement_Type_Pointer*	pointer_node = allocate_AST_node<f::AST_Statement_Type_Pointer>(previous_sibling_addr);
 				previous_sibling_addr = (f::AST_Node**)&pointer_node->sibling;
 
@@ -102,7 +114,13 @@ inline void parse_type(stream::Array_Stream<f::Token>& stream, f::AST_Node** typ
 				stream::peek(stream); // *
 			}
 			else if (current_token.value.punctuation == f::Punctuation::OPEN_BRACKET) {
-				parse_array(stream, previous_sibling_addr);
+				f::AST_Statement_Type_Array*	array_node;
+				parse_array(stream, &array_node);
+				previous_sibling_addr = (f::AST_Node**)&array_node->sibling;
+
+				if (*type_node == nullptr) {
+					*type_node = (f::AST_Node*)array_node;
+				}
 			}
 		}
 		else if (current_token.type == f::Token_Type::KEYWORD) {
@@ -137,7 +155,7 @@ inline void parse_type(stream::Array_Stream<f::Token>& stream, f::AST_Node** typ
 inline void parse_function_argument(stream::Array_Stream<f::Token>& stream, f::AST_Statement_Variable** parameter_)
 {
 	f::Token					current_token;
-	f::AST_Statement_Variable*& parameter = *parameter_;
+	f::AST_Statement_Variable* parameter;
 
 	current_token = stream::get(stream);
 	fstd::core::Assert(current_token.type == f::Token_Type::IDENTIFIER);
@@ -146,7 +164,10 @@ inline void parse_function_argument(stream::Array_Stream<f::Token>& stream, f::A
 	parameter->ast_type = f::Node_Type::STATEMENT_VARIABLE;
 	parameter->sibling = nullptr;
 	parameter->name = current_token;
+	parameter->type = nullptr;
 	parameter->is_function_paramter = true;
+
+	*parameter_ = parameter;
 
 	stream::peek(stream); // identifier
 
@@ -288,23 +309,27 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 						function_node->name = identifier;
 						function_node->nb_arguments = 0;
 						function_node->arguments = nullptr;
+						function_node->return_type = nullptr;
+						function_node->scope = nullptr;
 
 						current_token = stream::get(stream);
 
-						AST_Statement_Variable** current_arguments = &function_node->arguments;
+						AST_Statement_Variable** current_argument = &function_node->arguments;
 						while (!(current_token.type == Token_Type::SYNTAXE_OPERATOR
 							&& current_token.value.punctuation == Punctuation::CLOSE_PARENTHESIS))
 						{
 							if (current_token.type == Token_Type::IDENTIFIER)
 							{
-								parse_function_argument(stream, current_arguments);
+								parse_function_argument(stream, current_argument);
 								current_token = stream::get(stream);
 
-								current_arguments = (AST_Statement_Variable**)&(*current_arguments)->sibling;
+								function_node->nb_arguments++;
+								current_argument = (AST_Statement_Variable**)&((*current_argument)->sibling);
 								if (current_token.type == Token_Type::SYNTAXE_OPERATOR &&
 									current_token.value.punctuation == Punctuation::COMMA)
 								{
 									stream::peek(stream); // ,
+									current_token = stream::get(stream);
 								}
 							}
 							else {
@@ -354,12 +379,15 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 	}
 }
 
-void write_dot_node(String_Builder& file_string_builder, f::AST_Node* node, int64_t parent_index = -1)
+static void write_dot_node(String_Builder& file_string_builder, f::AST_Node* node, int64_t parent_index = -1)
 {
+	if (!node) {
+		return;
+	}
+
 	language::string	dot_node;
 	static uint32_t		nb_nodes = 0;
 	uint32_t			node_index = nb_nodes++;
-	f::AST_Node*		next_node = nullptr;
 
 	defer{
 		release(dot_node);
@@ -397,6 +425,19 @@ void write_dot_node(String_Builder& file_string_builder, f::AST_Node* node, int6
 			"%Cv"
 			"\nname: %v (%d)", magic_enum::enum_name(node->ast_type), function_node->name.text, function_node->nb_arguments);
 	}
+	else if (node->ast_type == f::Node_Type::STATEMENT_VARIABLE) {
+		f::AST_Statement_Variable*	variable_node = (f::AST_Statement_Variable*)node;
+
+		print_to_builder(file_string_builder,
+			"%Cv"
+			"\nname: %v (is_parameter: %d is_optional: %d)", magic_enum::enum_name(node->ast_type), variable_node->name.text, variable_node->is_function_paramter, variable_node->is_optional);
+	}
+	else if (node->ast_type == f::Node_Type::STATEMENT_TYPE_ARRAY) {
+		f::AST_Statement_Type_Array*	array_node = (f::AST_Statement_Type_Array*)node;
+
+		print_to_builder(file_string_builder,
+			"%Cv", magic_enum::enum_name(node->ast_type));
+	}
 	else {
 		core::Assert(false);
 		print_to_builder(file_string_builder,
@@ -417,14 +458,28 @@ void write_dot_node(String_Builder& file_string_builder, f::AST_Node* node, int6
 		// No children
 	}
 	else if (node->ast_type == f::Node_Type::STATEMENT_FUNCTION) {
-		// @TODO
+		f::AST_Statement_Function*	function_node = (f::AST_Statement_Function*)node;
+		write_dot_node(file_string_builder, (f::AST_Node*)function_node->arguments, node_index);
+		write_dot_node(file_string_builder, function_node->return_type, node_index);
+	}
+	else if (node->ast_type == f::Node_Type::STATEMENT_VARIABLE) {
+		f::AST_Statement_Variable*	variable_node = (f::AST_Statement_Variable*)node;
+
+		write_dot_node(file_string_builder, variable_node->type, node_index);
+		write_dot_node(file_string_builder, (f::AST_Node*)variable_node->expression, node_index);
+	}
+	else if (node->ast_type == f::Node_Type::STATEMENT_TYPE_ARRAY) {
+		f::AST_Statement_Type_Array*	array_node = (f::AST_Statement_Type_Array*)node;
+
+		write_dot_node(file_string_builder, (f::AST_Node*)array_node->array_size, node_index);
 	}
 	else {
 		core::Assert(false);
 	}
 
 	// Sibling iteration
-	next_node = node->sibling;
+	f::AST_Node* next_node = node->sibling;
+
 	while (next_node) {
 		write_dot_node(file_string_builder, next_node, parent_index);
 		next_node = next_node->sibling;

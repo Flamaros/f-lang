@@ -109,6 +109,7 @@ int main(int ac, char** av)
 		// We need to evaluate all constant expressions before the type deduction pass. This is necessary to have a proper
 		// type deduction with a good error checking (sign mismatch, type size,...).
 		// All operations on numeric literals should be processed as cast operations.
+		// This also impact the array that have a fixed size. this is important for function parameters,...
 		//
 		// Check if it should be done for string literals too.
 		// My_Enum::names[enum_value] is also a string literal.
