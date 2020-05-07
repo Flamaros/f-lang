@@ -103,7 +103,37 @@ int main(int ac, char** av)
 			f::generate_dot_file(parsing_result, dot_file_path);	// Optionnal
 			convert_dot_file_to_png(dot_file_path, png_file_path);
 		}
+
+		// @TODO Evaluate all constant expressions.
+		//
+		// We need to evaluate all constant expressions before the type deduction pass. This is necessary to have a proper
+		// type deduction with a good error checking (sign mismatch, type size,...).
+		// All operations on numeric literals should be processed as cast operations.
+		//
+		// Check if it should be done for string literals too.
+		// My_Enum::names[enum_value] is also a string literal.
+		// With string literals is seems a little harder without operators like '+', as for consitancy between compile-time and runtime
+		// code evaluation it certainly should works with String_Builder, but it doesn't seems really pratical and easy to implement. Maybe
+		// having the '+' operator that works only at compile time with string literals is OK.
+		// Here with string literals it seems to be only an optimization pass more than something really useful for type deduction and error
+		// reporting.
+		//
+		// Flamaros - 07 may 2020
+
+		// @TODO Type deduction pass
+		//
+		// Compute size of structs,...
+		// Check that enum values are in the expected range,...
+		// Infer variable types.
+		//
+		// Flamaros - 07 may 2020
 	}
+
+
+	// @TODO Code generation pass
+	//
+	// Flamaros - 07 may 2020
+
 
 	//std::filesystem::path output_directory_path = "./build";
 	//std::filesystem::path output_file_name = "f-compiler.exe";

@@ -120,14 +120,13 @@ namespace f
 	{
 		Node_Type	ast_type;
 		AST_Node*	sibling;
-		AST_Node*	child;
 	};
 
 	struct AST_Statement_Type_Array
 	{
 		Node_Type		ast_type;
 		AST_Node*		sibling;
-		AST_Node*		child;
+		AST_Node*		size;		// can be nullptr
 		AST_Expression* array_size; // if null the array is dynamic
 	};
 

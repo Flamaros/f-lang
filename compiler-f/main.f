@@ -13,6 +13,26 @@ alias HANDLE = *void;
 
 main :: (arguments : [] string) -> i32
 {
+/*
+	x = 1 + 2 * 3 - 4;
+	y = (1 + 2) * 3 - 4;
+	z = 1 + 2 * (3 - 4);
+	w = (1 + 2) * (3 - 4);
+*/
+	
+/*
+	myenum enum_value;
+	
+	if enum_value == {
+		case first:
+		// some code
+		// break isn't requested
+		case second:
+		// some code
+	}
+
+*/
+	
 /*    message:        string  = "Hello World";
     written_bytes:  DWORD   = 0;
     hstdOut:        HANDLE  = GetstdHandle(STD_OUTPUT_HANDLE);

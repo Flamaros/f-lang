@@ -24,6 +24,11 @@ fstd/system/path:
    - Maybe the conversion to absolute and the prefix path should be only be done when opening the file as this is specific to Windows and path should be 100% portable (in this case the path should be stored as utf8 string)
 
 
+Bits operations:
+ - Check over and underflow when shifting bits has behavior is platforme specific by default, ARM and X86 CPU doesn't react in the same way (this is a undefined behavior in C/C++). But adding a runtime check will not impact
+   a lot performances, this is a interesting trade-off compared to having a UB (which is super error-prone). This check must be done for both passes, at compile-time and in the byte-code. This check certainly consist on a simple operation like a cast or a modulo. Having an option to disable it can also be interesting if for some people it is a performance issue (should be a local option. eg. "ui16_value #no_check << n_bits").
+
+
 FSTD:
  - Is it better to use the Win32 equivalent of std::contional in a thread_pool implementation than a while(true) with a mutex (to lock the task container)
    and a yield (check if a CPU core stay at 100% while there is no task to run) ?
@@ -72,6 +77,7 @@ Intermediate Representation IR code:
 
 Optimization of generated code:
 If you can’t resist poking your foot into that hole, some keywords to get you started are “constant propagation”, “common subexpression elimination”, “loop invariant code motion”, “global value numbering”, “strength reduction”, “scalar replacement of aggregates”, “dead code elimination”, and “loop unrolling”.
+How to optimize our if/swicth statement?
 
 
 

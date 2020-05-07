@@ -90,11 +90,14 @@ inline void parse_type(stream::Array_Stream<f::Token>& stream, f::AST_Node** typ
 		if (current_token.type == f::Token_Type::SYNTAXE_OPERATOR) {
 			if (current_token.value.punctuation == f::Punctuation::STAR) {
 				f::AST_Statement_Type_Pointer*	pointer_node = allocate_AST_node<f::AST_Statement_Type_Pointer>(previous_sibling_addr);
-				*type_node = (f::AST_Node*)pointer_node;
+				previous_sibling_addr = (f::AST_Node**)&pointer_node->sibling;
+
+				if (*type_node == nullptr) {
+					*type_node = (f::AST_Node*)pointer_node;
+				}
 
 				pointer_node->ast_type = f::Node_Type::STATEMENT_TYPE_POINTER;
 				pointer_node->sibling = nullptr;
-				previous_sibling_addr = (f::AST_Node**)&pointer_node->child;
 
 				stream::peek(stream); // *
 			}
@@ -105,7 +108,10 @@ inline void parse_type(stream::Array_Stream<f::Token>& stream, f::AST_Node** typ
 		else if (current_token.type == f::Token_Type::KEYWORD) {
 			if (f::is_a_basic_type(current_token.value.keyword)) {
 				f::AST_Statement_Basic_Type*	basic_type_node = allocate_AST_node<f::AST_Statement_Basic_Type>(previous_sibling_addr);
-				*type_node = (f::AST_Node*)basic_type_node;
+
+				if (*type_node == nullptr) {
+					*type_node = (f::AST_Node*)basic_type_node;
+				}
 
 				basic_type_node->ast_type = f::Node_Type::STATEMENT_BASIC_TYPE;
 				basic_type_node->sibling = nullptr;
@@ -220,11 +226,12 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 				stream::peek(stream); // alias
 
 				AST_Alias*	alias_node = allocate_AST_node<AST_Alias>(previous_sibling_addr);
-				previous_sibling_addr = (AST_Node**)&alias_node;
+				previous_sibling_addr = (AST_Node**)&alias_node->sibling;
 
 				alias_node->ast_type = Node_Type::TYPE_ALIAS;
 				alias_node->sibling = nullptr;
 				alias_node->type_name = stream::get(stream);
+				alias_node->type = nullptr;
 				stream::peek(stream); // alias name
 				current_token = stream::get(stream);
 				if (current_token.type != Token_Type::SYNTAXE_OPERATOR
@@ -274,7 +281,7 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 						stream::peek(stream); // (
 
 						AST_Statement_Function* function_node = allocate_AST_node<AST_Statement_Function>(previous_sibling_addr);
-						previous_sibling_addr = (AST_Node**)&function_node;
+						previous_sibling_addr = (AST_Node**)&function_node->sibling;
 
 						function_node->ast_type = Node_Type::STATEMENT_FUNCTION;
 						function_node->sibling = nullptr;
@@ -367,15 +374,28 @@ void write_dot_node(String_Builder& file_string_builder, f::AST_Node* node, int6
 		f::AST_Alias* alias_node = (f::AST_Alias*)node;
 
 		print_to_builder(file_string_builder,
-			"TYPE_ALIAS"
-			"\n%v", alias_node->type_name.text);
+			"%Cv"
+			"\n%v", magic_enum::enum_name(node->ast_type), alias_node->type_name.text);
 	}
 	else if (node->ast_type == f::Node_Type::STATEMENT_BASIC_TYPE) {
 		f::AST_Statement_Basic_Type*	basic_type_node = (f::AST_Statement_Basic_Type*)node;
 
 		print_to_builder(file_string_builder,
-			"STATEMENT_BASIC_TYPE"
-			"\n%Cv", magic_enum::enum_name(basic_type_node->keyword));
+			"%Cv"
+			"\n%Cv", magic_enum::enum_name(node->ast_type), magic_enum::enum_name(basic_type_node->keyword));
+	}
+	else if (node->ast_type == f::Node_Type::STATEMENT_TYPE_POINTER) {
+		f::AST_Statement_Type_Pointer*	basic_type_node = (f::AST_Statement_Type_Pointer*)node;
+
+		print_to_builder(file_string_builder,
+			"%Cv", magic_enum::enum_name(node->ast_type));
+	}
+	else if (node->ast_type == f::Node_Type::STATEMENT_FUNCTION) {
+		f::AST_Statement_Function*	function_node = (f::AST_Statement_Function*)node;
+
+		print_to_builder(file_string_builder,
+			"%Cv"
+			"\nname: %v (%d)", magic_enum::enum_name(node->ast_type), function_node->name.text, function_node->nb_arguments);
 	}
 	else {
 		core::Assert(false);
@@ -392,6 +412,12 @@ void write_dot_node(String_Builder& file_string_builder, f::AST_Node* node, int6
 	}
 	else if (node->ast_type == f::Node_Type::STATEMENT_BASIC_TYPE) {
 		// No children
+	}
+	else if (node->ast_type == f::Node_Type::STATEMENT_TYPE_POINTER) {
+		// No children
+	}
+	else if (node->ast_type == f::Node_Type::STATEMENT_FUNCTION) {
+		// @TODO
 	}
 	else {
 		core::Assert(false);
