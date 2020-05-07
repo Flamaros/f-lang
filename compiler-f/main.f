@@ -2,7 +2,7 @@
 
 /*
 myenum :: enum {
-	first,
+	first = 0,
 	second
 }*/
 

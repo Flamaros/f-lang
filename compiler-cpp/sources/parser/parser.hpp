@@ -82,12 +82,6 @@ namespace f
 		AST_Node*	sibling;
 	};
 
-	struct AST_Enum
-	{
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-	};
-
 	struct AST_Alias
 	{
 		Node_Type	ast_type;
@@ -100,6 +94,22 @@ namespace f
 	{
 		Node_Type	ast_type;
 		AST_Node*	sibling;
+	};
+
+	struct AST_Enum_Value
+	{
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token			value_name;
+		AST_Expression* value;
+	};
+
+	struct AST_Enum
+	{
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token			type_name; // Should be a pointer to avoid the copy?
+		AST_Enum_Value* values;
 	};
 
 	struct AST_Statement_Module

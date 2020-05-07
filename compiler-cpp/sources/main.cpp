@@ -110,6 +110,7 @@ int main(int ac, char** av)
 		// type deduction with a good error checking (sign mismatch, type size,...).
 		// All operations on numeric literals should be processed as cast operations.
 		// This also impact the array that have a fixed size. this is important for function parameters,...
+		// There is also values of enums to compute.
 		//
 		// Check if it should be done for string literals too.
 		// My_Enum::names[enum_value] is also a string literal.
