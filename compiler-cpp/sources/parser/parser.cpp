@@ -65,8 +65,9 @@ static inline void parse_array(stream::Array_Stream<Token>& stream, AST_Statemen
 static inline void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node);
 static inline void parse_function_argument(stream::Array_Stream<Token>& stream, AST_Statement_Variable** parameter_);
 static inline void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
-static inline void parse_enum(stream::Array_Stream<Token>& stream, AST_Enum** enum_node_);
-static inline void parse_scope(stream::Array_Stream<Token>& stream, AST_Node** type_);
+static inline void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static inline void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static inline void parse_scope(stream::Array_Stream<Token>& stream, AST_Node** scope_);
 
 // =============================================================================
 
@@ -272,8 +273,14 @@ inline void parse_function(stream::Array_Stream<Token>& stream, Token& identifie
 	}
 }
 
-inline void parse_enum(stream::Array_Stream<Token>& stream, AST_Enum** enum_node_)
+inline void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
 {
+	core::Assert(false);
+}
+
+inline void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
+{
+	core::Assert(false);
 }
 
 inline void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous_sibling_addr)
@@ -302,7 +309,7 @@ inline void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous
 	stream::peek(stream); // ;
 }
 
-inline void parse_scope(stream::Array_Stream<Token>& stream, AST_Node** type_)
+inline void parse_scope(stream::Array_Stream<Token>& stream, AST_Node** scope)
 {
 	Token	current_token;
 
@@ -380,13 +387,17 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 
 					if (current_token.type == Token_Type::KEYWORD
 						&& current_token.value.keyword == Keyword::STRUCT) {
-						// @TODO implement
-						core::Assert(false);
+						stream::peek(stream); // struct
+
+						parse_struct(stream, identifier, previous_sibling_addr);
+						previous_sibling_addr = &(*previous_sibling_addr)->sibling;
 					}
 					else if (current_token.type == Token_Type::KEYWORD
 						&& current_token.value.keyword == Keyword::ENUM) {
-						// @TODO implement
-						core::Assert(false);
+						stream::peek(stream); // enum
+
+						parse_enum(stream, identifier, previous_sibling_addr);
+						previous_sibling_addr = &(*previous_sibling_addr)->sibling;
 					}
 					else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
 						&& current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS) {
@@ -520,7 +531,7 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 
 void f::generate_dot_file(AST& ast, const system::Path& output_file_path)
 {
-	ZoneScopedNC("f::generate_dot_file", 0xc43e00s);
+	ZoneScopedNC("f::generate_dot_file", 0xc43e00);
 
 	system::File		file;
 	String_Builder		string_builder;
