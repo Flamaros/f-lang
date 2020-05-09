@@ -35,6 +35,7 @@ main :: (arguments : [] string) -> i32
 
 	{
 		{
+			foo : *[]DWORD;
 		}
 	}
 

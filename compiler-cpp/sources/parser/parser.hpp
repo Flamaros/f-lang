@@ -43,7 +43,8 @@ namespace f
 		TYPE_STRUCT,
 
 		STATEMENT_MODULE,
-		STATEMENT_BASIC_TYPE,
+		STATEMENT_BASIC_TYPE, 
+		STATEMENT_USER_TYPE,
 		STATEMENT_TYPE_POINTER,
 		STATEMENT_TYPE_ARRAY,
 		STATEMENT_VARIABLE,
@@ -124,6 +125,13 @@ namespace f
 		Node_Type	ast_type;
 		AST_Node*	sibling;
 		Keyword		keyword;
+	};
+
+	struct AST_Statement_User_Type
+	{
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		Token		identifier;
 	};
 
 	struct AST_Statement_Type_Pointer

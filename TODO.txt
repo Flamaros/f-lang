@@ -1,3 +1,7 @@
+Fix: foo : *[]DWORD;
+Fix: message:        string  = "Hello World";
+
+
 // @TODO Implement it
 parse_array
 parse_scope
