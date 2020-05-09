@@ -1,10 +1,8 @@
-Fix: foo : *[]DWORD;
 Fix: message:        string  = "Hello World";
 
 
 // @TODO Implement it
 parse_array
-parse_scope
 
 Pass current_token as parameter to all parse_*** functions? To avoid some stream::get (this is also easy to forget)...
 

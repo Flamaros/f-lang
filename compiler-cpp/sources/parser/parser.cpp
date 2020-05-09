@@ -67,6 +67,7 @@ static void parse_variable(stream::Array_Stream<Token>& stream, Token& identifie
 static void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expression_node_);
 static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
 
 // =============================================================================
@@ -210,9 +211,7 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 			variable->is_optional = true;
 		}
 
-		variable->expression;
-		// @TODO
-		fstd::core::Assert(false);
+		parse_expression(stream, &variable->expression);
 	}
 
 	if (is_function_parameter == false) {	// @Warning the parse_function method have to be able to read arguments delimiters ',' or ')' characters
@@ -327,6 +326,14 @@ void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous_siblin
 		report_error(Compiler_Error::error, current_token, "Expecting ';' punctuation after at the end of the alias statement.");
 	}
 	stream::peek(stream); // ;
+}
+
+void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expression_node_)
+{
+/*	Token			current_token;
+	AST_Expression*	scope_node = allocate_AST_node<AST_Expression>(nullptr);
+	AST_Node**		current_child = &scope_node->first_child;
+*/
 }
 
 void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node /* = false */)
@@ -459,7 +466,7 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 	parse_scope(stream, (AST_Statement_Scope**)&ast.root, true);
 }
 
-static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, int64_t parent_index = -1)
+static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, int64_t parent_index = -1, int64_t left_node_index = -1)
 {
 	if (!node) {
 		return;
@@ -474,8 +481,21 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 	};
 
 	if (parent_index != -1) {
-		print_to_builder(file_string_builder, "\t" "node_%ld -> node_%ld\n", parent_index, node_index);
+		if (left_node_index == -1) {
+			print_to_builder(file_string_builder, "\t" "node_%ld -> node_%ld\n", parent_index, node_index);
+		}
+		else {
+			print_to_builder(file_string_builder, "\t" "node_%ld -> node_%ld [color=\"dodgerblue\"]\n", parent_index, node_index);
+		}
 	}
+
+	// @TODO Here we could make an arrow between siblings, but we have to use subgraph to make the nodes stay at the right position.
+	// Take a look at:
+	// https://stackoverflow.com/questions/3322827/how-to-set-fixed-depth-levels-in-dot-graphs
+	//
+	// Maybe using colors is enough to ease the understanding of links
+	//
+	// Flamaros - 09 may 2020
 
 	print_to_builder(file_string_builder, "\n\t" "node_%ld [label=\"", node_index);
 	if (node->ast_type == Node_Type::TYPE_ALIAS) {
@@ -581,7 +601,7 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 
 	// Sibling iteration
 	if (node->sibling) {
-		write_dot_node(file_string_builder, node->sibling, parent_index);
+		write_dot_node(file_string_builder, node->sibling, parent_index, node_index);
 	}
 
 	dot_node = to_string(file_string_builder);

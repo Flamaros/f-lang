@@ -14,14 +14,14 @@ alias HANDLE = *void;
 main :: (arguments : [] string) -> i32
 {
 /*
-	x = 1 + 2 * 3 - 4;
-	y = (1 + 2) * 3 - 4;
-	z = 1 + 2 * (3 - 4);
-	w = (1 + 2) * (3 - 4);
+	x := 1 + 2 * 3 - 4;
+	y := (1 + 2) * 3 - 4;
+	z := 1 + 2 * (3 - 4);
+	w := (1 + 2) * (3 - 4);
 */
 	
 /*
-	myenum enum_value;
+	enum_value : myenum;
 	
 	if enum_value == {
 		case first:
