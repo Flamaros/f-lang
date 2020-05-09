@@ -39,6 +39,7 @@ main :: (arguments : [] string) -> i32
 		}
 	}
 
+	neasted_function :: ()
 	{
 	}
 	

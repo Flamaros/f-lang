@@ -67,7 +67,7 @@ static void parse_variable(stream::Array_Stream<Token>& stream, Token& identifie
 static void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
-static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_);
+static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
 
 // =============================================================================
 
@@ -329,7 +329,7 @@ void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous_siblin
 	stream::peek(stream); // ;
 }
 
-void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_)
+void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node /* = false */)
 {
 	Token					current_token;
 	AST_Statement_Scope*	scope_node = allocate_AST_node<AST_Statement_Scope>(nullptr);
@@ -341,74 +341,23 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 	scope_node->first_child = nullptr;
 
 	current_token = stream::get(stream);
-	core::Assert(current_token.type == Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == Punctuation::OPEN_BRACE);
 
-	stream::peek(stream); // {
-	while (true)
-	{
-		current_token = stream::get(stream);
-		if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
-			if (current_token.value.punctuation == Punctuation::CLOSE_BRACE) {
-				stream::peek(stream);
-				return;
-			}
-			else if (current_token.value.punctuation == Punctuation::OPEN_BRACE) {
-				parse_scope(stream, (AST_Statement_Scope**)current_child);
-				current_child = &(*current_child)->sibling;	// Move the current_child to the sibling
-			}
-		}
-		else if (current_token.type == Token_Type::IDENTIFIER) {
-			Token	identifier = current_token;
+	if (is_root_node == false) {
+		core::Assert(current_token.type == Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == Punctuation::OPEN_BRACE);
 
-			stream::peek(stream);
-			current_token = stream::get(stream);
-			if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
-				if (current_token.value.punctuation == Punctuation::COLON) {	// Variable declaration
-					parse_variable(stream, identifier, (AST_Statement_Variable**)current_child);
-				}
-				else if (current_token.value.punctuation == Punctuation::OPEN_BRACKET) {	// Function call
-					core::Assert(false);
-				}
-			}
-		}
+		stream::peek(stream); // {
 	}
-}
-
-void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
-{
-	ZoneScopedNC("f::parse", 0xff6f00);
-
-	stream::Array_Stream<Token>	stream;
-
-	// It is impossible to have more nodes than tokens, so we can easily pre-allocate them to the maximum possible size.
-	// maximum_size = nb_tokens * largest_node_size
-	//
-	// @TODO
-	// We expect to be able to determine with the meta-programmation which AST_Node type is the largest one.
-	//
-	// Flamaros - 13 april 2020
-	memory::reserve_array(globals.parser_data.ast_nodes, memory::get_array_size(tokens) * sizeof(AST_Statement_Variable));
-
-	stream::initialize_memory_stream<Token>(stream, tokens);
-
-	if (stream::is_eof(stream) == true) {
-		return;
-	}
-
-	AST_Node** previous_sibling_addr = &ast.root;
 
 	while (stream::is_eof(stream) == false)
 	{
-		Token	current_token;
-
 		current_token = stream::get(stream);
 
 		if (current_token.type == Token_Type::KEYWORD) {
 			if (current_token.value.keyword == Keyword::ALIAS) {
 				stream::peek(stream); // alias
 
-				parse_alias(stream, previous_sibling_addr);
-				previous_sibling_addr = &(*previous_sibling_addr)->sibling;
+				parse_alias(stream, current_child);
+				current_child = &(*current_child)->sibling;
 			}
 			else if (current_token.value.keyword == Keyword::IMPORT) {
 				stream::peek<Token>(stream);
@@ -437,38 +386,77 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 						&& current_token.value.keyword == Keyword::STRUCT) {
 						stream::peek(stream); // struct
 
-						parse_struct(stream, identifier, previous_sibling_addr);
-						previous_sibling_addr = &(*previous_sibling_addr)->sibling;
+						parse_struct(stream, identifier, current_child);
+						current_child = &(*current_child)->sibling;
 					}
 					else if (current_token.type == Token_Type::KEYWORD
 						&& current_token.value.keyword == Keyword::ENUM) {
 						stream::peek(stream); // enum
 
-						parse_enum(stream, identifier, previous_sibling_addr);
-						previous_sibling_addr = &(*previous_sibling_addr)->sibling;
+						parse_enum(stream, identifier, current_child);
+						current_child = &(*current_child)->sibling;
 					}
 					else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
 						&& current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS) {
 						stream::peek(stream); // (
 
-						parse_function(stream, identifier, previous_sibling_addr);
-						previous_sibling_addr = &(*previous_sibling_addr)->sibling;
+						parse_function(stream, identifier, current_child);
+						current_child = &(*current_child)->sibling;
 					}
 					else {
 						report_error(Compiler_Error::error, current_token, "Expecting struct, enum or function parameters list after the '::' token.");
 					}
 				}
-				else if (current_token.value.punctuation != Punctuation::COLON) { // It's a variable declaration with type
+				else if (current_token.value.punctuation == Punctuation::COLON) { // It's a variable declaration with type
+					parse_variable(stream, identifier, (AST_Statement_Variable**)current_child);
 				}
-				else if (current_token.value.punctuation != Punctuation::COLON_EQUAL) { // It's a variable declaration where type is infered
+				else if (current_token.value.punctuation == Punctuation::COLON_EQUAL) { // It's a variable declaration where type is infered
 
 				}
-				else if (current_token.value.punctuation != Punctuation::EQUALS) { // It's a variable assignement
+				else if (current_token.value.punctuation == Punctuation::EQUALS) { // It's a variable assignement
 
+				}
+				else if (current_token.value.punctuation == Punctuation::OPEN_BRACKET) {	// Function call
+					core::Assert(false);
 				}
 			}
 		}
+		else if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+			if (is_root_node == false
+				&& current_token.value.punctuation == Punctuation::CLOSE_BRACE) {
+				stream::peek(stream);
+				return;
+			}
+			else if (current_token.value.punctuation == Punctuation::OPEN_BRACE) {
+				parse_scope(stream, (AST_Statement_Scope**)current_child);
+				current_child = &(*current_child)->sibling;	// Move the current_child to the sibling
+			}
+		}
 	}
+}
+
+void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
+{
+	ZoneScopedNC("f::parse", 0xff6f00);
+
+	stream::Array_Stream<Token>	stream;
+
+	// It is impossible to have more nodes than tokens, so we can easily pre-allocate them to the maximum possible size.
+	// maximum_size = nb_tokens * largest_node_size
+	//
+	// @TODO
+	// We expect to be able to determine with the meta-programmation which AST_Node type is the largest one.
+	//
+	// Flamaros - 13 april 2020
+	memory::reserve_array(globals.parser_data.ast_nodes, memory::get_array_size(tokens) * sizeof(AST_Statement_Variable));
+
+	stream::initialize_memory_stream<Token>(stream, tokens);
+
+	if (stream::is_eof(stream) == true) {
+		return;
+	}
+
+	parse_scope(stream, (AST_Statement_Scope**)&ast.root, true);
 }
 
 static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, int64_t parent_index = -1)
