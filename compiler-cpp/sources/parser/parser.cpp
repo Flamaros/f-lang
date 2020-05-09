@@ -61,17 +61,17 @@ inline Node_Type* allocate_AST_node(AST_Node** previous_sibling_addr)
 
 // =============================================================================
 
-static inline void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array** array_node_);
-static inline void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node);
-static inline void parse_function_argument(stream::Array_Stream<Token>& stream, AST_Statement_Variable** parameter_);
-static inline void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
-static inline void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
-static inline void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
-static inline void parse_scope(stream::Array_Stream<Token>& stream, AST_Node** scope_);
+static void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array** array_node_);
+static void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node);
+static void parse_function_argument(stream::Array_Stream<Token>& stream, AST_Statement_Variable** parameter_);
+static void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_);
 
 // =============================================================================
 
-inline void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array** array_node_)
+void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array** array_node_)
 {
 	Token	current_token;
 
@@ -99,7 +99,7 @@ inline void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_
 	}
 }
 
-inline void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
+void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
 {
 	Token		current_token;
 	AST_Node**	previous_sibling_addr = nullptr;
@@ -166,7 +166,7 @@ inline void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node
 	}
 }
 
-inline void parse_function_argument(stream::Array_Stream<Token>& stream, AST_Statement_Variable** parameter_)
+void parse_function_argument(stream::Array_Stream<Token>& stream, AST_Statement_Variable** parameter_)
 {
 	Token				current_token;
 	AST_Statement_Variable*	parameter;
@@ -210,7 +210,7 @@ inline void parse_function_argument(stream::Array_Stream<Token>& stream, AST_Sta
 	}
 }
 
-inline void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
+void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
 {
 	Token				current_token;
 	AST_Statement_Function*	function_node = allocate_AST_node<AST_Statement_Function>(previous_sibling_addr);
@@ -265,7 +265,7 @@ inline void parse_function(stream::Array_Stream<Token>& stream, Token& identifie
 	}
 	else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
 		&& current_token.value.punctuation == Punctuation::OPEN_BRACE) {
-		parse_scope(stream, nullptr);
+		parse_scope(stream, &function_node->scope);
 		current_token = stream::get(stream);
 	}
 	else {
@@ -273,20 +273,20 @@ inline void parse_function(stream::Array_Stream<Token>& stream, Token& identifie
 	}
 }
 
-inline void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
+void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
 {
 	core::Assert(false);
 }
 
-inline void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
+void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
 {
 	core::Assert(false);
 }
 
-inline void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous_sibling_addr)
+void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous_sibling_addr)
 {
-	Token				current_token;
-	AST_Alias* alias_node = allocate_AST_node<AST_Alias>(previous_sibling_addr);
+	Token		current_token;
+	AST_Alias*	alias_node = allocate_AST_node<AST_Alias>(previous_sibling_addr);
 
 	alias_node->ast_type = Node_Type::TYPE_ALIAS;
 	alias_node->sibling = nullptr;
@@ -309,20 +309,34 @@ inline void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous
 	stream::peek(stream); // ;
 }
 
-inline void parse_scope(stream::Array_Stream<Token>& stream, AST_Node** scope)
+void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_)
 {
-	Token	current_token;
+	Token					current_token;
+	AST_Statement_Scope*	scope_node = allocate_AST_node<AST_Statement_Scope>(nullptr);
+	AST_Node**				current_child = &scope_node->first_child;
 
-	stream::peek(stream); // [
-// @TODO Implement it
+	*scope_node_ = scope_node;
+	scope_node->ast_type = Node_Type::STATEMENT_SCOPE;
+	scope_node->sibling = nullptr;
+	scope_node->first_child = nullptr;
+
+	current_token = stream::get(stream);
+	core::Assert(current_token.type == Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == Punctuation::OPEN_BRACE);
+
+	stream::peek(stream); // {
 	while (true)
 	{
 		current_token = stream::get(stream);
-		if (current_token.value.punctuation == Punctuation::CLOSE_BRACE) {
-			stream::peek(stream);
-			return;
+		if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+			if (current_token.value.punctuation == Punctuation::CLOSE_BRACE) {
+				stream::peek(stream);
+				return;
+			}
+			else if (current_token.value.punctuation == Punctuation::OPEN_BRACE) {
+				parse_scope(stream, (AST_Statement_Scope**)current_child);
+				current_child = &(*current_child)->sibling;	// Move the current_child to the sibling
+			}
 		}
-		stream::peek(stream);
 	}
 }
 
@@ -482,6 +496,12 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 		print_to_builder(file_string_builder,
 			"%Cv", magic_enum::enum_name(node->ast_type));
 	}
+	else if (node->ast_type == Node_Type::STATEMENT_SCOPE) {
+		AST_Statement_Scope*	scope_node = (AST_Statement_Scope*)node;
+
+		print_to_builder(file_string_builder,
+			"%Cv", magic_enum::enum_name(node->ast_type));
+	}
 	else {
 		core::Assert(false);
 		print_to_builder(file_string_builder,
@@ -505,6 +525,7 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 		AST_Statement_Function*	function_node = (AST_Statement_Function*)node;
 		write_dot_node(file_string_builder, (AST_Node*)function_node->arguments, node_index);
 		write_dot_node(file_string_builder, function_node->return_type, node_index);
+		write_dot_node(file_string_builder, (AST_Node*)function_node->scope, node_index);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
 		AST_Statement_Variable*	variable_node = (AST_Statement_Variable*)node;
@@ -516,6 +537,11 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 		AST_Statement_Type_Array*	array_node = (AST_Statement_Type_Array*)node;
 
 		write_dot_node(file_string_builder, (AST_Node*)array_node->array_size, node_index);
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_SCOPE) {
+		AST_Statement_Scope* scope_node = (AST_Statement_Scope*)node;
+
+		write_dot_node(file_string_builder, (AST_Node*)scope_node->first_child, node_index);
 	}
 	else {
 		core::Assert(false);

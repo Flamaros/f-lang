@@ -166,9 +166,9 @@ namespace f
 
 	struct AST_Statement_Scope
 	{
-		Node_Type				ast_type;
-		AST_Node*				sibling;
-		AST_Statement_Variable* variable;
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		AST_Node*	first_child;
 	};
 
     struct AST
