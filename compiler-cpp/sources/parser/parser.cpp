@@ -64,7 +64,6 @@ inline Node_Type* allocate_AST_node(AST_Node** previous_sibling_addr)
 static void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array** array_node_);
 static void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node);
 static void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_Statement_Variable** variable_, bool is_function_parameter = false);
-static void parse_function_argument(stream::Array_Stream<Token>& stream, AST_Statement_Variable** parameter_);
 static void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
@@ -207,59 +206,17 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 
 	if (current_token.type == Token_Type::SYNTAXE_OPERATOR
 		&& current_token.value.punctuation == Punctuation::EQUALS) {
+		if (is_function_parameter) {
+			variable->is_optional = true;
+		}
+
 		variable->expression;
 		// @TODO
 		fstd::core::Assert(false);
 	}
-	stream::peek(stream); // ;
-}
 
-void parse_function_argument(stream::Array_Stream<Token>& stream, AST_Statement_Variable** parameter_)
-{
-	// @TODO remove it
-	// Use parse_variable instead with the is_function_paramater flag set to true
-	//
-	// Flamaros - 09 may 2020
-
-	Token					current_token;
-	AST_Statement_Variable*	parameter;
-
-	current_token = stream::get(stream);
-	fstd::core::Assert(current_token.type == Token_Type::IDENTIFIER);
-
-	parameter = allocate_AST_node<AST_Statement_Variable>(nullptr);
-	parameter->ast_type = Node_Type::STATEMENT_VARIABLE;
-	parameter->sibling = nullptr;
-	parameter->name = current_token;
-	parameter->type = nullptr;
-	parameter->is_function_paramter = true;
-
-	*parameter_ = parameter;
-
-	stream::peek(stream); // identifier
-
-	current_token = stream::get(stream);
-	if (current_token.type == Token_Type::SYNTAXE_OPERATOR
-		&& current_token.value.punctuation == Punctuation::COLON) {
-		stream::peek(stream); // :
-
-		parse_type(stream, &parameter->type);
-		current_token = stream::get(stream);
-
-		if (current_token.type == Token_Type::SYNTAXE_OPERATOR
-			&& current_token.value.punctuation == Punctuation::EQUALS) {
-			parameter->is_optional = true;
-			parameter->expression;
-			// @TODO
-			fstd::core::Assert(false);
-		}
-		else {
-			parameter->is_optional = false;
-			parameter->expression = nullptr;
-		}
-	}
-	else {
-		report_error(Compiler_Error::error, current_token, "Expecting ':' between the type and the name of the paramater of function.");
+	if (is_function_parameter == false) {	// @Warning the parse_function method have to be able to read arguments delimiters ',' or ')' characters
+		stream::peek(stream); // ;
 	}
 }
 
@@ -284,7 +241,17 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 	{
 		if (current_token.type == Token_Type::IDENTIFIER)
 		{
-			parse_function_argument(stream, current_argument);
+			Token	identifier = current_token;
+
+			stream::peek(stream); // identifier
+			current_token = stream::get(stream);
+
+			if (!(current_token.type == Token_Type::SYNTAXE_OPERATOR
+				&& current_token.value.punctuation == Punctuation::COLON)) {
+				report_error(Compiler_Error::error, current_token, "Expecting ':' between the type and the name of the paramater of function.");
+			}
+
+			parse_variable(stream, identifier, current_argument, true);
 			current_token = stream::get(stream);
 
 			function_node->nb_arguments++;
@@ -555,7 +522,7 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 
 		print_to_builder(file_string_builder,
 			"%Cv"
-			"\nname: %v (%d)", magic_enum::enum_name(node->ast_type), function_node->name.text, function_node->nb_arguments);
+			"\nname: %v (nb_arguments: %d)", magic_enum::enum_name(node->ast_type), function_node->name.text, function_node->nb_arguments);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
 		AST_Statement_Variable*	variable_node = (AST_Statement_Variable*)node;
