@@ -1,5 +1,7 @@
 Fix: message:        string  = "Hello World";
 
+It may miss a lot of error checks, in parse_variable, parse_scope,...
+
 
 // @TODO Implement it
 parse_array
@@ -101,7 +103,8 @@ Find a way to generate error codes.
 
 
 
-
+// Removing the C and C++ Runtimes
+https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows#530
 
 
 #####################################

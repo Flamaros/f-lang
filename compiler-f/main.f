@@ -11,6 +11,19 @@ myenum :: enum {
 alias DWORD = ui32;
 alias HANDLE = *void;
 
+// @TODO I think that it could be
+// DWORD :: ui32;
+// HANDLE :: §void;
+// Alias keyword doesn't seems necessary
+
+
+// For pointers, we may want to use operators that arent used for something else to simplify the parser implementation.
+// § to get a pointer
+// @ for unreferencing a pointer
+// . accessor operator should be able to automatically unreference the pointer to get the member
+
+
+
 main :: (arguments : [] string) -> i32
 {
 /*
@@ -43,8 +56,8 @@ main :: (arguments : [] string) -> i32
 	{
 	}
 	
-/*    message:        string  = "Hello World";
-    written_bytes:  DWORD   = 0;
+    message:        string  = "Hello World";
+/*    written_bytes:  DWORD   = 0;
 /*    hstdOut:        HANDLE  = GetstdHandle(STD_OUTPUT_HANDLE);
 
     WriteFile(hstdOut, message.c_string, message.length, &bytes, 0);

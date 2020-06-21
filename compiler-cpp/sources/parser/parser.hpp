@@ -42,6 +42,8 @@ namespace f
 		TYPE_ENUM,
 		TYPE_STRUCT,
 
+		EXPRESSION,
+
 		STATEMENT_MODULE,
 		STATEMENT_BASIC_TYPE, 
 		STATEMENT_USER_TYPE,
@@ -95,6 +97,11 @@ namespace f
 	{
 		Node_Type	ast_type;
 		AST_Node*	sibling;
+
+		// This node is juste like the AST_Node, but more members that are filled by later passes of the compiler.
+		// It will be just more convenient this way.
+		// I think that it will be pretty useful for the the type checker,...
+		// Additionnal data will be useful for the code generation pass and other checks.
 	};
 
 	struct AST_Enum_Value

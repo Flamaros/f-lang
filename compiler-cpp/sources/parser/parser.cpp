@@ -67,7 +67,7 @@ static void parse_variable(stream::Array_Stream<Token>& stream, Token& identifie
 static void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
-static void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expression_node_);
+static void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expression_node_, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN);
 static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
 
 // =============================================================================
@@ -211,7 +211,14 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 			variable->is_optional = true;
 		}
 
-		parse_expression(stream, &variable->expression);
+		stream::peek(stream); // =
+
+		if (is_function_parameter) {
+			parse_expression(stream, &variable->expression, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
+		}
+		else {
+			parse_expression(stream, &variable->expression, Punctuation::SEMICOLON);
+		}
 	}
 
 	if (is_function_parameter == false) {	// @Warning the parse_function method have to be able to read arguments delimiters ',' or ')' characters
@@ -328,12 +335,68 @@ void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous_siblin
 	stream::peek(stream); // ;
 }
 
-void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expression_node_)
+void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expression_node_, Punctuation delimiter_1, Punctuation delimiter_2 /* = Punctuation::UNKNOWN */)
 {
-/*	Token			current_token;
+	Token			current_token;
+	Token			starting_token;
 	AST_Expression*	scope_node = allocate_AST_node<AST_Expression>(nullptr);
-	AST_Node**		current_child = &scope_node->first_child;
-*/
+
+	scope_node->ast_type = Node_Type::EXPRESSION;
+	scope_node->sibling = nullptr;	// @Warning we have to do this initialization because the expression can be empty
+	*expression_node_ = scope_node;
+
+	starting_token = stream::get(stream);
+
+	while (stream::is_eof(stream) == false)
+	{
+		current_token = stream::get(stream);
+
+		if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+			if (current_token.value.punctuation == delimiter_1 || current_token.value.punctuation == delimiter_2) {
+				stream::peek(stream);
+				return;
+			}
+			else if (current_token.value.punctuation == Punctuation::STAR) {
+
+			}
+			else if (current_token.value.punctuation == Punctuation::SLASH) {
+
+			}
+			else if (current_token.value.punctuation == Punctuation::PERCENT) {
+
+			}
+			else if (current_token.value.punctuation == Punctuation::PLUS) {
+
+			}
+			else if (current_token.value.punctuation == Punctuation::DASH) {
+
+			}
+		}
+		else if (current_token.type == Token_Type::STRING_LITERAL)
+		{
+			stream::peek(stream);
+		}
+		else if (current_token.type == Token_Type::STRING_LITERAL_RAW)
+		{
+
+		}
+		else if (current_token.type == Token_Type::IDENTIFIER)
+		{
+
+		}
+	}
+
+	report_error(Compiler_Error::error, starting_token, "The current expression reach the End Of File."); // @TODO add expected delimiters in the message
+
+	// Identifier followed by ( is a function call
+	// Identifier followed by [ is an array fetch
+	// Identifier followed by an binary operator is a left part of a binary operation
+
+	// Delimiters
+	// In enum, or function parameters: , )
+	// In scope: ;
+	// In array delaclaration: ]
+	// In initialization list: }
 }
 
 void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node /* = false */)
@@ -551,6 +614,12 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 		print_to_builder(file_string_builder,
 			"%Cv", magic_enum::enum_name(node->ast_type));
 	}
+	else if (node->ast_type == Node_Type::EXPRESSION) {
+		AST_Expression* expression_node = (AST_Expression*)node;
+
+		print_to_builder(file_string_builder,
+			"%Cv", magic_enum::enum_name(node->ast_type));
+	}
 	else {
 		core::Assert(false);
 		print_to_builder(file_string_builder,
@@ -594,6 +663,9 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 		AST_Statement_Scope* scope_node = (AST_Statement_Scope*)node;
 
 		write_dot_node(file_string_builder, (AST_Node*)scope_node->first_child, node_index);
+	}
+	else if (node->ast_type == Node_Type::EXPRESSION) {
+		// No children
 	}
 	else {
 		core::Assert(false);

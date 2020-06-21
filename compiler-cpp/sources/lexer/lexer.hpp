@@ -82,16 +82,18 @@ namespace f
         TILDE,                  //    ~                  Should stay the first of single character symbols
         BACKQUOTE,              //    `
         BANG,                   //    !
-        AT,                     //    @
+        AT,                     //    @                 pointer unreferencing operator
         HASH,                   //    #
         DOLLAR,                 //    $
+        POUND,                  //    £
         PERCENT,                //    %
         CARET,                  //    ^
         AMPERSAND,              //    &					 bitwise and
         STAR,                   //    *
+        SECTION,                //    §                  pointer symbol
+        CURRENCY,               //    ¤
         OPEN_PARENTHESIS,       //    (
         CLOSE_PARENTHESIS,      //    )
-        UNDERSCORE,             //    _
         DASH,                   //    -
         PLUS,                   //    +
         EQUALS,                 //    =
