@@ -65,6 +65,7 @@ static void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_
 static void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node);
 static void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_Statement_Variable** variable_, bool is_function_parameter = false);
 static void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** function_call);
 static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expression_node_, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN);
@@ -299,6 +300,36 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 	}
 }
 
+void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** _function_call)
+{
+	Token				current_token;
+	AST_Function_Call*	function_call;
+	AST_Expression**	current_expression_node;
+
+	current_token = stream::get(stream);
+	fstd::core::Assert(current_token.type == Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS);
+
+	function_call = allocate_AST_node<AST_Function_Call>(nullptr);
+	function_call->ast_type = Node_Type::FUNCTION_CALL;
+	function_call->sibling = nullptr;
+	function_call->name = identifier;
+	function_call->nb_arguments = 0;
+
+	// @TODO add the check of eof with the error message
+	current_expression_node = &function_call->parameters;
+	while (!(current_token.type == Token_Type::SYNTAXE_OPERATOR
+		&& current_token.value.punctuation == Punctuation::CLOSE_PARENTHESIS))
+	{
+		stream::peek(stream); // ( or ,
+		parse_expression(stream, current_expression_node, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
+		current_token = stream::get(stream);
+		function_call->nb_arguments++;
+	}
+	stream::peek(stream); // )
+
+	*_function_call = function_call;
+}
+
 void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
 {
 	core::Assert(false);
@@ -392,6 +423,25 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expr
 		}
 		else if (current_token.type == Token_Type::IDENTIFIER)
 		{
+			Token	identifier = current_token;
+
+			stream::peek(stream); // identifier (current_token)
+			current_token = stream::get(stream);
+
+			if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+				&& current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS) {
+				parse_function_call(stream, identifier, (AST_Function_Call**)&expression_node->first_child);
+			}
+			else {
+				// A variable name
+				AST_Identifier* identifier_node = allocate_AST_node<AST_Identifier>(&expression_node->first_child);
+
+				identifier_node->ast_type = Node_Type::STATEMENT_IDENTIFIER;
+				identifier_node->sibling = nullptr;
+				identifier_node->value = identifier;
+				// Identifier was already peeked
+			}
+	
 			// followed by parenthesis it's a function call
 			// followed by brackets it's an array accessor (@TODO take care of multiple arrays)
 		}
@@ -653,6 +703,20 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 			// Actually the string builder doesn't support floats and unsigned intergers
 		}
 	}
+	else if (node->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
+		AST_Identifier* identifier_node = (AST_Identifier*)node;
+
+		print_to_builder(file_string_builder,
+			"%Cv"
+			"\n%v", magic_enum::enum_name(node->ast_type), identifier_node->value.text);
+	}
+	else if (node->ast_type == Node_Type::FUNCTION_CALL) {
+		AST_Function_Call* function_call_node = (AST_Function_Call*)node;
+
+		print_to_builder(file_string_builder,
+			"%Cv"
+			"\nname: %v (nb_arguments: %d)", magic_enum::enum_name(node->ast_type), function_call_node->name.text, function_call_node->nb_arguments);
+	}
 	else {
 		core::Assert(false);
 		print_to_builder(file_string_builder,
@@ -703,6 +767,12 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 		write_dot_node(file_string_builder, (AST_Node*)expression_node->first_child, node_index);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_LITERAL) {
+		// No children
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
+		// No children
+	}
+	else if (node->ast_type == Node_Type::FUNCTION_CALL) {
 		// No children
 	}
 	else {

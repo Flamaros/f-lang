@@ -45,7 +45,7 @@ namespace f
 		EXPRESSION,
 
 		STATEMENT_MODULE,
-		STATEMENT_BASIC_TYPE, 
+		STATEMENT_BASIC_TYPE,
 		STATEMENT_USER_TYPE,
 		STATEMENT_TYPE_POINTER,
 		STATEMENT_TYPE_ARRAY,
@@ -53,6 +53,7 @@ namespace f
 		STATEMENT_FUNCTION,
 		STATEMENT_SCOPE,
 		STATEMENT_LITERAL,
+		STATEMENT_IDENTIFIER,
 
 		ASSIGNMENT,
 		BINARY_OP,
@@ -182,6 +183,15 @@ namespace f
 		AST_Statement_Scope*	scope;	 // nullptr is it's only the declaration
 	};
 
+	struct AST_Function_Call
+	{
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token			name;
+		int				nb_arguments;
+		AST_Expression*	parameters;
+	};
+
 	struct AST_Statement_Scope
 	{
 		Node_Type	ast_type;
@@ -193,6 +203,14 @@ namespace f
 	{
 		// There is no type inference to do on it
 		// The token is a string or a numeric literal
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		Token		value;
+	};
+
+	struct AST_Identifier
+	{
+		// Pretty similar to AST_Literal, should be merged?
 		Node_Type	ast_type;
 		AST_Node*	sibling;
 		Token		value;
