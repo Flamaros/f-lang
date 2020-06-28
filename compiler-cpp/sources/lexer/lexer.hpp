@@ -27,11 +27,15 @@ namespace f
 {
 	enum class Token_Type : uint8_t
 	{
+        // @Warning don't change the order of types
+        // Or take care to update functions like is_literal
+
         UNKNOWN,
 		IDENTIFIER,	/// Every word that isn't a part of the language
 		KEYWORD,
 		SYNTAXE_OPERATOR,
-		STRING_LITERAL_RAW,	// @Warning In this case the text is the value of the token instead of a member of the Value union
+
+        STRING_LITERAL_RAW,	// @Warning In this case the text is the value of the token instead of a member of the Value union
 		STRING_LITERAL,
 		NUMERIC_LITERAL_I32,
 		NUMERIC_LITERAL_UI32,
@@ -233,5 +237,9 @@ namespace f
 
     inline bool    is_a_basic_type(Keyword keyword) {
         return keyword >= Keyword::VOID && keyword <= Keyword::TYPE;
+    }
+
+    inline bool    is_literal(Token_Type token_type) {
+        return token_type >= Token_Type::STRING_LITERAL_RAW && token_type <= Token_Type::NUMERIC_LITERAL_REAL;
     }
 }

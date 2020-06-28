@@ -52,6 +52,7 @@ namespace f
 		STATEMENT_VARIABLE,
 		STATEMENT_FUNCTION,
 		STATEMENT_SCOPE,
+		STATEMENT_LITERAL,
 
 		ASSIGNMENT,
 		BINARY_OP,
@@ -97,6 +98,8 @@ namespace f
 	{
 		Node_Type	ast_type;
 		AST_Node*	sibling;
+
+		AST_Node*	first_child;
 
 		// This node is juste like the AST_Node, but more members that are filled by later passes of the compiler.
 		// It will be just more convenient this way.
@@ -184,6 +187,15 @@ namespace f
 		Node_Type	ast_type;
 		AST_Node*	sibling;
 		AST_Node*	first_child;
+	};
+
+	struct AST_Literal
+	{
+		// There is no type inference to do on it
+		// The token is a string or a numeric literal
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		Token		value;
 	};
 
     struct AST

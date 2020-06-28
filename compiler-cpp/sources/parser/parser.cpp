@@ -339,11 +339,11 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expr
 {
 	Token			current_token;
 	Token			starting_token;
-	AST_Expression*	scope_node = allocate_AST_node<AST_Expression>(nullptr);
+	AST_Expression*	expression_node = allocate_AST_node<AST_Expression>(nullptr);
 
-	scope_node->ast_type = Node_Type::EXPRESSION;
-	scope_node->sibling = nullptr;	// @Warning we have to do this initialization because the expression can be empty
-	*expression_node_ = scope_node;
+	expression_node->ast_type = Node_Type::EXPRESSION;
+	expression_node->sibling = nullptr;	// @Warning we have to do this initialization because the expression can be empty
+	*expression_node_ = expression_node;
 
 	starting_token = stream::get(stream);
 
@@ -351,10 +351,18 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expr
 	{
 		current_token = stream::get(stream);
 
+		// @TODO
+		// Add a method to switch node that will be used when discovering binary operators
+		// And finaly add an other method that reorder the expression sub-tree depending of the operators priorities (this method will be called just before the return, use the defer?).
+
 		if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
 			if (current_token.value.punctuation == delimiter_1 || current_token.value.punctuation == delimiter_2) {
-				stream::peek(stream);
+				// The delimiter will be peek be the caller
 				return;
+			}
+			else if (current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS)
+			{
+				// @TODO adjust sub-tree now?
 			}
 			else if (current_token.value.punctuation == Punctuation::STAR) {
 
@@ -371,18 +379,21 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expr
 			else if (current_token.value.punctuation == Punctuation::DASH) {
 
 			}
+			// @TODO add other arithmetic operators (bits operations,...)
 		}
-		else if (current_token.type == Token_Type::STRING_LITERAL)
+		else if (is_literal(current_token.type))
 		{
-			stream::peek(stream);
-		}
-		else if (current_token.type == Token_Type::STRING_LITERAL_RAW)
-		{
+			AST_Literal* literal_node = allocate_AST_node<AST_Literal>(&expression_node->first_child);
 
+			literal_node->ast_type = Node_Type::STATEMENT_LITERAL;
+			literal_node->sibling = nullptr;
+			literal_node->value = current_token;
+			stream::peek(stream);
 		}
 		else if (current_token.type == Token_Type::IDENTIFIER)
 		{
-
+			// followed by parenthesis it's a function call
+			// followed by brackets it's an array accessor (@TODO take care of multiple arrays)
 		}
 	}
 
@@ -479,6 +490,7 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 				}
 				else if (current_token.value.punctuation == Punctuation::COLON) { // It's a variable declaration with type
 					parse_variable(stream, identifier, (AST_Statement_Variable**)current_child);
+					current_child = &(*current_child)->sibling;
 				}
 				else if (current_token.value.punctuation == Punctuation::COLON_EQUAL) { // It's a variable declaration where type is infered
 
@@ -620,6 +632,27 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 		print_to_builder(file_string_builder,
 			"%Cv", magic_enum::enum_name(node->ast_type));
 	}
+	else if (node->ast_type == Node_Type::STATEMENT_LITERAL) {
+		AST_Literal* literal_node = (AST_Literal*)node;
+
+		if (literal_node->value.type == Token_Type::STRING_LITERAL) {
+			print_to_builder(file_string_builder,
+				"%Cv"
+				"\n%v", magic_enum::enum_name(node->ast_type), literal_node->value.text);
+			// @TODO use the *literal_node->value.value.string instead of the token's text
+		}
+		else if (literal_node->value.type == Token_Type::NUMERIC_LITERAL_I32
+			|| literal_node->value.type == Token_Type::NUMERIC_LITERAL_I64) {
+			print_to_builder(file_string_builder,
+				"%Cv"
+				"\n%ld", magic_enum::enum_name(node->ast_type), literal_node->value.value.integer);
+		}
+		else {
+			core::Assert(false);
+			// @TODO implement it
+			// Actually the string builder doesn't support floats and unsigned intergers
+		}
+	}
 	else {
 		core::Assert(false);
 		print_to_builder(file_string_builder,
@@ -665,6 +698,11 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 		write_dot_node(file_string_builder, (AST_Node*)scope_node->first_child, node_index);
 	}
 	else if (node->ast_type == Node_Type::EXPRESSION) {
+		AST_Expression* expression_node = (AST_Expression*)node;
+
+		write_dot_node(file_string_builder, (AST_Node*)expression_node->first_child, node_index);
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_LITERAL) {
 		// No children
 	}
 	else {
