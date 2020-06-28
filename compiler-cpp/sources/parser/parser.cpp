@@ -502,6 +502,7 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 		}
 		else if (current_token.type == Token_Type::IDENTIFIER) {
 			// At global scope we can only have variable or function declarations that start with an identifier
+			// @TODO We should check at which level we are
 
 			Token	identifier = current_token;
 
@@ -546,10 +547,14 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 
 				}
 				else if (current_token.value.punctuation == Punctuation::EQUALS) { // It's a variable assignement
-
 				}
-				else if (current_token.value.punctuation == Punctuation::OPEN_BRACKET) {	// Function call
-					core::Assert(false);
+				else if (current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS) {	// Function call
+					// @TODO Should we need to call parse_expression?
+					// but is it really valid to call a function to do an operation with assigning the result to a variable?
+
+					parse_function_call(stream, identifier, (AST_Function_Call**)current_child);
+					current_child = &(*current_child)->sibling;
+					stream::peek(stream); // ;
 				}
 			}
 		}

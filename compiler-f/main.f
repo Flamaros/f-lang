@@ -60,8 +60,8 @@ main :: (arguments : [] string) -> i32
     written_bytes:  DWORD   = 0;
     hstdOut:        HANDLE  = GetStdHandle(STD_OUTPUT_HANDLE);
 
-/*    WriteFile(hstdOut, message.c_string, message.length, &bytes, 0);
+    WriteFile(hstdOut, message/*.c_string*/, message/*.length*/, /*&*/bytes, 0);
 
     // ExitProcess(0);
-    return 0;*/
+    /*return 0;*/
 }
