@@ -1,4 +1,12 @@
-Fix: message:        string  = "Hello World";
+Improve the expression parsing with support of operators:
+ - Member access (with .)
+ - Address of (with §)
+
+Take a look at for precedence:
+https://en.cppreference.com/w/cpp/language/operator_precedence
+ 
+Rewrite alias parsing
+
 
 It may miss a lot of error checks, in parse_variable, parse_scope,...
 
@@ -116,3 +124,9 @@ ex: nasm -f win32 -gcv8 sandbox.asm -l sandbox.lst
 
 https://www.nasm.us/doc/nasmdoc2.html#section-2.1.12
 https://sonictk.github.io/asm_tutorial/#hello,worldrevisted/writingabuildscript
+
+
+#####################################
+JIT:
+https://stackoverflow.com/questions/4911993/how-to-generate-and-run-native-code-dynamically 
+Libjit 

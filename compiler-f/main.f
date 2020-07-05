@@ -9,7 +9,7 @@ myenum :: enum {
 // foo : Type = u32; // Type is a Type that store a type, this is compile time only. So foo is a compile time variable.
 
 alias DWORD = ui32;
-alias HANDLE = *void;
+alias HANDLE = §void;
 
 // @TODO I think that it could be
 // DWORD :: ui32;
@@ -22,7 +22,7 @@ alias HANDLE = *void;
 // @ for unreferencing a pointer
 // . accessor operator should be able to automatically unreference the pointer to get the member
 
-
+// foo : Type = u32; // Type is a Type that store a type, this is compile time only. So foo is a compile time variable.
 
 main :: (arguments : [] string) -> i32
 {
@@ -48,7 +48,7 @@ main :: (arguments : [] string) -> i32
 
 	{
 		{
-			foo : *[]DWORD;
+			foo : §[]DWORD;
 		}
 	}
 
@@ -60,7 +60,7 @@ main :: (arguments : [] string) -> i32
     written_bytes:  DWORD   = 0;
     hstdOut:        HANDLE  = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    WriteFile(hstdOut, message/*.c_string*/, message/*.length*/, /*&*/bytes, 0);
+    WriteFile(hstdOut, message/*.c_string*/, message/*.length*/, /*@*/bytes, 0);
 
     // ExitProcess(0);
     /*return 0;*/

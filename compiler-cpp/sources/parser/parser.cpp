@@ -115,7 +115,7 @@ void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
 		current_token = stream::get(stream);
 
 		if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
-			if (current_token.value.punctuation == Punctuation::STAR) {
+			if (current_token.value.punctuation == Punctuation::SECTION) {
 				// @TODO create a parse_pointer
 				AST_Statement_Type_Pointer*	pointer_node = allocate_AST_node<AST_Statement_Type_Pointer>(previous_sibling_addr);
 				previous_sibling_addr = (AST_Node**)&pointer_node->sibling;
@@ -127,7 +127,7 @@ void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
 				pointer_node->ast_type = Node_Type::STATEMENT_TYPE_POINTER;
 				pointer_node->sibling = nullptr;
 
-				stream::peek(stream); // *
+				stream::peek(stream); // §
 			}
 			else if (current_token.value.punctuation == Punctuation::OPEN_BRACKET) {
 				AST_Statement_Type_Array* array_node;

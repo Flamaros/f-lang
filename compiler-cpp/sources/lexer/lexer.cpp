@@ -60,6 +60,11 @@ constexpr static uint16_t punctuation_key_2(const uint8_t* str)
 
 // @TODO remove the use of the initializer list in the Hash_Table
 static Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
+    // Utf8 characters that use 2 runes
+    {punctuation_key_2((uint8_t*)u8"¤"), Punctuation::CURRENCY},
+    {punctuation_key_2((uint8_t*)u8"£"), Punctuation::POUND},
+    {punctuation_key_2((uint8_t*)u8"§"), Punctuation::SECTION},
+
     {punctuation_key_2((uint8_t*)"//"),	Punctuation::LINE_COMMENT},
     {punctuation_key_2((uint8_t*)"/*"),	Punctuation::OPEN_BLOCK_COMMENT},
     {punctuation_key_2((uint8_t*)"*/"),	Punctuation::CLOSE_BLOCK_COMMENT},
@@ -88,13 +93,10 @@ static Hash_Table<uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_
     {'@', Punctuation::AT},
     {'#', Punctuation::HASH},
     {'$', Punctuation::DOLLAR},
-    {'£', Punctuation::POUND},
     {'%', Punctuation::PERCENT},
     {'^', Punctuation::CARET},
     {'&', Punctuation::AMPERSAND},
     {'*', Punctuation::STAR},
-    {'§', Punctuation::SECTION},
-    {'¤', Punctuation::CURRENCY},
     {'(', Punctuation::OPEN_PARENTHESIS},
     {')', Punctuation::CLOSE_PARENTHESIS},
     {'-', Punctuation::DASH},
@@ -371,12 +373,17 @@ void f::lex(const system::Path& path, memory::Array<Token>& tokens)
     while (stream::is_eof(stream) == false)
     {
         Punctuation punctuation;
+        Punctuation punctuation_2 = Punctuation::UNKNOWN;
         uint8_t     current_character;
             
         current_character = stream::get(stream);
 
         punctuation = punctuation_table_1[current_character];
-        if (punctuation != Punctuation::UNKNOWN) { // Punctuation to analyse
+        if (stream::get_remaining_size(stream) >= 2) {
+            punctuation_2 = punctuation_table_2[punctuation_key_2(stream::get_pointer(stream))];
+        }
+
+        if (punctuation != Punctuation::UNKNOWN || punctuation_2 != Punctuation::UNKNOWN) { // Punctuation to analyse
             if (is_white_punctuation(punctuation)) {    // Punctuation to ignore
                 if (punctuation == Punctuation::NEW_LINE_CHARACTER) {
                     current_line++;
@@ -387,17 +394,12 @@ void f::lex(const system::Path& path, memory::Array<Token>& tokens)
             }
             else {
                 Token       token;
-                Punctuation punctuation_2 = Punctuation::UNKNOWN;
 
                 token.file_path = system::to_string(path);
                 token.line = current_line;
                 token.column = current_column;
                     
                 language::assign(current_view, stream::get_pointer(stream), 0);
-
-                if (stream::get_remaining_size(stream) >= 2) {
-                    punctuation_2 = punctuation_table_2[punctuation_key_2(stream::get_pointer(stream))];
-                }
 
                 if (punctuation_2 == Punctuation::LINE_COMMENT) {
                     while (stream::is_eof(stream) == false)
