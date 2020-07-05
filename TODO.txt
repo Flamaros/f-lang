@@ -1,3 +1,8 @@
+Fix: missing parameters in the graph of function_call node
+Add: Add name of link in the dot graph
+
+
+
 Improve the expression parsing with support of operators:
  - Member access (with .)
  - Address of (with §)
