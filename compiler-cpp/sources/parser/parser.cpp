@@ -371,6 +371,7 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expr
 	Token			current_token;
 	Token			starting_token;
 	AST_Expression*	expression_node = allocate_AST_node<AST_Expression>(nullptr);
+	AST_Node*		previous_child = nullptr;
 
 	expression_node->ast_type = Node_Type::EXPRESSION;
 	expression_node->sibling = nullptr;	// @Warning we have to do this initialization because the expression can be empty
@@ -393,7 +394,7 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expr
 			}
 			else if (current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS)
 			{
-				// @TODO adjust sub-tree now?
+				// @TODO fix sub-tree now?
 			}
 			else if (current_token.value.punctuation == Punctuation::STAR) {
 
@@ -410,6 +411,18 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expr
 			else if (current_token.value.punctuation == Punctuation::DASH) {
 
 			}
+			else if (current_token.value.punctuation == Punctuation::DOT) {
+				core::Assert(previous_child != nullptr);
+				AST_MEMBER_ACCESS* member_access_node = allocate_AST_node<AST_MEMBER_ACCESS>(&expression_node->first_child);
+
+				member_access_node->ast_type = Node_Type::MEMBER_ACCESS;
+				member_access_node->sibling = nullptr;
+				member_access_node->left = previous_child;
+				member_access_node->right = nullptr;
+
+				previous_child = (AST_Node*)member_access_node;
+				stream::peek(stream); // .
+			}
 			// @TODO add other arithmetic operators (bits operations,...)
 		}
 		else if (is_literal(current_token.type))
@@ -419,6 +432,8 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expr
 			literal_node->ast_type = Node_Type::STATEMENT_LITERAL;
 			literal_node->sibling = nullptr;
 			literal_node->value = current_token;
+
+			previous_child = (AST_Node*)literal_node;
 			stream::peek(stream);
 		}
 		else if (current_token.type == Token_Type::IDENTIFIER)
@@ -434,11 +449,19 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expr
 			}
 			else {
 				// A variable name
-				AST_Identifier* identifier_node = allocate_AST_node<AST_Identifier>(&expression_node->first_child);
+				AST_Identifier* identifier_node;
+				if (is_binary_operator(previous_child)) {
+					identifier_node = allocate_AST_node<AST_Identifier>(&((AST_Binary_Operator*)previous_child)->right);
+				}
+				else {
+					identifier_node = allocate_AST_node<AST_Identifier>(&expression_node->first_child);
+				}
 
 				identifier_node->ast_type = Node_Type::STATEMENT_IDENTIFIER;
 				identifier_node->sibling = nullptr;
 				identifier_node->value = identifier;
+
+				previous_child = (AST_Node*)identifier_node;
 				// Identifier was already peeked
 			}
 	
@@ -722,6 +745,12 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 			"%Cv"
 			"\nname: %v (nb_arguments: %d)", magic_enum::enum_name(node->ast_type), function_call_node->name.text, function_call_node->nb_arguments);
 	}
+	else if (node->ast_type == Node_Type::MEMBER_ACCESS) {
+		AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;
+
+		print_to_builder(file_string_builder,
+			"%Cv", magic_enum::enum_name(node->ast_type));
+	}
 	else {
 		core::Assert(false);
 		print_to_builder(file_string_builder,
@@ -779,6 +808,12 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 	}
 	else if (node->ast_type == Node_Type::FUNCTION_CALL) {
 		// No children
+	}
+	else if (node->ast_type == Node_Type::MEMBER_ACCESS) {
+		AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;
+
+		write_dot_node(file_string_builder, (AST_Node*)member_access_node->left, node_index);
+		write_dot_node(file_string_builder, (AST_Node*)member_access_node->right, node_index);
 	}
 	else {
 		core::Assert(false);

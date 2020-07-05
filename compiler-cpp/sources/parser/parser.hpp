@@ -58,7 +58,8 @@ namespace f
 		ASSIGNMENT,
 		BINARY_OP,
 		UNARY_OP,
-		FUNCTION_CALL
+		FUNCTION_CALL,
+		MEMBER_ACCESS,
 	};
 
 	// @Warning
@@ -85,6 +86,14 @@ namespace f
 
 		Node_Type	ast_type;
 		AST_Node*	sibling;
+	};
+
+	struct AST_Binary_Operator
+	{
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		AST_Node*	left;
+		AST_Node*	right;
 	};
 
 	struct AST_Alias
@@ -216,6 +225,14 @@ namespace f
 		Token		value;
 	};
 
+	struct AST_MEMBER_ACCESS
+	{
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		AST_Node*	left;
+		AST_Node*	right;
+	};
+
     struct AST
 	{
 		AST_Node*	root; // Should point on the first module
@@ -227,5 +244,14 @@ namespace f
 	};
 
     void parse(fstd::memory::Array<Token>& tokens, AST& ast);
+	inline bool is_binary_operator(const AST_Node* node);
 	void generate_dot_file(AST& ast, const fstd::system::Path& output_file_path);
+
+	inline bool is_binary_operator(const AST_Node* node)
+	{
+		if (node == nullptr)
+			return false;
+
+		return node->ast_type == Node_Type::BINARY_OP || node->ast_type == Node_Type::MEMBER_ACCESS;
+	}
 }
