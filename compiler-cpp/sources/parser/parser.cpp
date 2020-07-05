@@ -422,6 +422,8 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Expression** expr
 
 				previous_child = (AST_Node*)member_access_node;
 				stream::peek(stream); // .
+
+				parse_expression(stream, (AST_Expression**)&member_access_node->right, delimiter_1, delimiter_2);
 			}
 			// @TODO add other arithmetic operators (bits operations,...)
 		}
