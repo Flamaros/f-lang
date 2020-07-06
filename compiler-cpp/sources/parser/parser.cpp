@@ -65,10 +65,10 @@ static void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_
 static void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node);
 static void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_Statement_Variable** variable_, bool is_function_parameter = false);
 static void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
-static void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** function_call);
+static void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** emplace_node);
 static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
-static void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** parent_node, bool is_sub_expression, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN);
+static void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, bool is_sub_expression, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN);
 static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
 
 // =============================================================================
@@ -300,7 +300,7 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 	}
 }
 
-void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** _function_call)
+void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** emplace_node)
 {
 	Token				current_token;
 	AST_Function_Call*	function_call;
@@ -324,10 +324,11 @@ void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier,
 		parse_expression(stream, (AST_Node**)current_expression_node, false, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
 		current_token = stream::get(stream);
 		function_call->nb_arguments++;
+		current_expression_node = (AST_Expression**)&(*current_expression_node)->sibling;
 	}
 	stream::peek(stream); // )
 
-	*_function_call = function_call;
+	*emplace_node = function_call;
 }
 
 void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
@@ -366,7 +367,7 @@ void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous_siblin
 	stream::peek(stream); // ;
 }
 
-void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** parent_node, bool is_sub_expression, Punctuation delimiter_1, Punctuation delimiter_2 /* = Punctuation::UNKNOWN */)
+void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, bool is_sub_expression, Punctuation delimiter_1, Punctuation delimiter_2 /* = Punctuation::UNKNOWN */)
 {
 	Token			current_token;
 	Token			starting_token;
@@ -374,7 +375,7 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** parent_nod
 
 	if (is_sub_expression == false) {
 		// We should add an intermediate expression node
-		AST_Expression* expression_node = allocate_AST_node<AST_Expression>(parent_node);
+		AST_Expression* expression_node = allocate_AST_node<AST_Expression>(emplace_node);
 		expression_node->ast_type = Node_Type::EXPRESSION;
 		expression_node->sibling = nullptr;	// @Warning we have to do this initialization because the expression can be empty
 
@@ -419,7 +420,7 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** parent_nod
 			}
 			else if (current_token.value.punctuation == Punctuation::DOT) {
 				core::Assert(previous_child != nullptr);
-				AST_MEMBER_ACCESS* member_access_node = allocate_AST_node<AST_MEMBER_ACCESS>(parent_node);
+				AST_MEMBER_ACCESS* member_access_node = allocate_AST_node<AST_MEMBER_ACCESS>(emplace_node);
 
 				member_access_node->ast_type = Node_Type::MEMBER_ACCESS;
 				member_access_node->sibling = nullptr;
@@ -436,7 +437,7 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** parent_nod
 		}
 		else if (is_literal(current_token.type))
 		{
-			AST_Literal* literal_node = allocate_AST_node<AST_Literal>(parent_node);
+			AST_Literal* literal_node = allocate_AST_node<AST_Literal>(emplace_node);
 
 			literal_node->ast_type = Node_Type::STATEMENT_LITERAL;
 			literal_node->sibling = nullptr;
@@ -454,7 +455,7 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** parent_nod
 
 			if (current_token.type == Token_Type::SYNTAXE_OPERATOR
 				&& current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS) {
-				parse_function_call(stream, identifier, (AST_Function_Call**)parent_node);
+				parse_function_call(stream, identifier, (AST_Function_Call**)emplace_node);
 			}
 			else {
 				// A variable name
@@ -463,7 +464,7 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** parent_nod
 					identifier_node = allocate_AST_node<AST_Identifier>(&((AST_Binary_Operator*)previous_child)->right);
 				}
 				else {
-					identifier_node = allocate_AST_node<AST_Identifier>(parent_node);
+					identifier_node = allocate_AST_node<AST_Identifier>(emplace_node);
 				}
 
 				identifier_node->ast_type = Node_Type::STATEMENT_IDENTIFIER;
@@ -818,9 +819,7 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 	else if (node->ast_type == Node_Type::FUNCTION_CALL) {
 		AST_Function_Call* function_call_node = (AST_Function_Call*)node;
 
-		for (AST_Expression* parameter = function_call_node->parameters; parameter; parameter = (AST_Expression*)parameter->sibling) {
-			write_dot_node(file_string_builder, (AST_Node*)parameter, node_index);
-		}
+		write_dot_node(file_string_builder, (AST_Node*)function_call_node->parameters, node_index);
 	}
 	else if (node->ast_type == Node_Type::MEMBER_ACCESS) {
 		AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;
