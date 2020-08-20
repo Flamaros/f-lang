@@ -533,6 +533,12 @@ void f::lex(const system::Path& path, memory::Array<Token>& tokens)
             }
         }
 		else if (is_digit(current_character)) { // Will be a numeric literal
+            // @TODO
+            // We may want to improve the floating point parsing quality and speed.
+            // We also may want to add the support of hexa float
+            // Put similar code in the base library
+            // https://github.com/ulfjack/ryu/blob/master/ryu/s2f.c
+
             Token               token;
             Numeric_Value_Flag  numeric_literal_flags = Numeric_Value_Flag::IS_DEFAULT;
             uint8_t             next_char = 0;
@@ -639,7 +645,7 @@ void f::lex(const system::Path& path, memory::Array<Token>& tokens)
                                 peek(stream, current_column);
                             }
                             else if (current_character == 'e') {
-                                break; // We don't peed this character to let the previous level handle it
+                                break; // We don't peek this character to let the previous level handle it
                             }
                             else if (current_character == '_') {
                                 peek(stream, current_column);

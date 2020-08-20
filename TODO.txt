@@ -1,4 +1,3 @@
-Fix: missing parameters in the graph of function_call node
 Add: Add name of link in the dot graph
 
 
@@ -81,6 +80,22 @@ https://www.youtube.com/watch?v=9-EYWLbmiG0
 
 Expression types
 https://drive.google.com/file/d/1OggMRIwsuxse2MtkM6XIbL3pNMDUIzVC/view
+
+################################################################################
+Floats:
+Support print of floats
+Test "-0" et "-0.0" sign must stay
+
+Take a look at Ryu&Ryu s2f.c for an implementation of string to float!
+
+Check the number of digit my float parsing can handle with precision, the lexer may have to go to error after a certain number of digits due to the lack of precision.
+
+To print floats:
+Dtoa-fast
+https://github.com/achan001/dtoa-fast
+
+How should I handle nan and inf numbers? I think that it should be defines that comes with the maths module of the default library.
+
 
 ################################################################################
 In f-lang:

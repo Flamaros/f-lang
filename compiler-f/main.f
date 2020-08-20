@@ -60,6 +60,7 @@ main :: (arguments : [] string) -> i32
     written_bytes:  DWORD   = 0;
     hstdOut:        HANDLE  = GetStdHandle(STD_OUTPUT_HANDLE);
 	strlen:         ui32 = message.length.test;
+	//test			f32 = -0.0;
 
     WriteFile(hstdOut, message/*.c_string*/, message/*.length*/, /*@*/bytes, 0);
 
