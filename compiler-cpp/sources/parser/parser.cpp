@@ -418,11 +418,24 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 			else if (current_token.value.punctuation == Punctuation::DASH) {
 
 			}
+			else if (current_token.value.punctuation == Punctuation::SECTION) {
+				core::Assert(previous_child == nullptr);
+				AST_ADDRESS_OF* address_of_node = allocate_AST_node<AST_ADDRESS_OF>(emplace_node);
+
+				address_of_node->ast_type = Node_Type::OPERATOR_ADDRESS_OF;
+				address_of_node->sibling = nullptr;
+				address_of_node->right = nullptr;
+
+				previous_child = (AST_Node*)address_of_node;
+				stream::peek(stream); // §
+
+				parse_expression(stream, &address_of_node->right, true, delimiter_1, delimiter_2);
+			}
 			else if (current_token.value.punctuation == Punctuation::DOT) {
 				core::Assert(previous_child != nullptr);
 				AST_MEMBER_ACCESS* member_access_node = allocate_AST_node<AST_MEMBER_ACCESS>(emplace_node);
 
-				member_access_node->ast_type = Node_Type::MEMBER_ACCESS;
+				member_access_node->ast_type = Node_Type::OPERATOR_MEMBER_ACCESS;
 				member_access_node->sibling = nullptr;
 				member_access_node->left = previous_child;
 				member_access_node->right = nullptr;
@@ -431,7 +444,6 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 				stream::peek(stream); // .
 
 				parse_expression(stream, &member_access_node->right, true, delimiter_1, delimiter_2);
-
 			}
 			// @TODO add other arithmetic operators (bits operations,...)
 		}
@@ -755,7 +767,13 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 			"%Cv"
 			"\nname: %v (nb_arguments: %d)", magic_enum::enum_name(node->ast_type), function_call_node->name.text, function_call_node->nb_arguments);
 	}
-	else if (node->ast_type == Node_Type::MEMBER_ACCESS) {
+	else if (node->ast_type == Node_Type::OPERATOR_ADDRESS_OF) {
+		AST_ADDRESS_OF* address_of_node = (AST_ADDRESS_OF*)node;
+
+		print_to_builder(file_string_builder,
+			"%Cv", magic_enum::enum_name(node->ast_type));
+	}
+	else if (node->ast_type == Node_Type::OPERATOR_MEMBER_ACCESS) {
 		AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;
 
 		print_to_builder(file_string_builder,
@@ -821,7 +839,12 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 
 		write_dot_node(file_string_builder, (AST_Node*)function_call_node->parameters, node_index);
 	}
-	else if (node->ast_type == Node_Type::MEMBER_ACCESS) {
+	else if (node->ast_type == Node_Type::OPERATOR_ADDRESS_OF) {
+		AST_ADDRESS_OF* address_of_node = (AST_ADDRESS_OF*)node;
+
+		write_dot_node(file_string_builder, (AST_Node*)address_of_node->right, node_index);
+	}
+	else if (node->ast_type == Node_Type::OPERATOR_MEMBER_ACCESS) {
 		AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;
 
 		write_dot_node(file_string_builder, (AST_Node*)member_access_node->left, node_index);

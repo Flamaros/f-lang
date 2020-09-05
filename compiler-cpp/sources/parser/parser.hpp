@@ -56,10 +56,15 @@ namespace f
 		STATEMENT_IDENTIFIER,
 
 		ASSIGNMENT,
-		BINARY_OP,
-		UNARY_OP,
 		FUNCTION_CALL,
-		MEMBER_ACCESS,
+
+		// ===================
+		// Operators
+		// ===================
+
+		// Member and pointers operators
+		OPERATOR_ADDRESS_OF,	// Unary
+		OPERATOR_MEMBER_ACCESS,	// Binary
 	};
 
 	// @Warning
@@ -225,6 +230,13 @@ namespace f
 		Token		value;
 	};
 
+	struct AST_ADDRESS_OF
+	{
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		AST_Node*	right;
+	};
+
 	struct AST_MEMBER_ACCESS
 	{
 		Node_Type	ast_type;
@@ -252,6 +264,6 @@ namespace f
 		if (node == nullptr)
 			return false;
 
-		return node->ast_type == Node_Type::BINARY_OP || node->ast_type == Node_Type::MEMBER_ACCESS;
+		return node->ast_type == Node_Type::OPERATOR_MEMBER_ACCESS;
 	}
 }
