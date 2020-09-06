@@ -3,6 +3,9 @@
 #include "globals.hpp"
 #include "macros.hpp"
 
+#include "IR_generator.hpp"
+#include "CPP_backend.hpp"
+
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 #include "tests/tests.hpp"
@@ -51,6 +54,7 @@ int main(int ac, char** av)
 {
 	memory::Array<f::Token>	tokens;
     f::AST					parsing_result;
+	f::IR					ir;
 	int						result = 0;
 
 	system::allocator_initialize();
@@ -78,7 +82,7 @@ int main(int ac, char** av)
 
 		system::Path	path;
 
-		defer{ system::reset_path(path); };
+		defer { system::reset_path(path); };
 
 		system::from_native(path, (uint8_t*)u8R"(.\compiler-f\main.f)");
 
@@ -86,22 +90,39 @@ int main(int ac, char** av)
 		f::lex(path, tokens);
 		f::print(tokens);	// Optionnal
 
-
-		system::Path	dot_file_path;
-		system::Path	png_file_path;
-
-		defer{
-			system::reset_path(dot_file_path);
-			system::reset_path(png_file_path);
-		};
-
-		system::from_native(dot_file_path, (uint8_t*)u8R"(.\AST.dot)");
-		system::from_native(png_file_path, (uint8_t*)u8R"(.\AST.png)");
-
 		f::parse(tokens, parsing_result);
+
+		// Optionnal Dot graph output
 		{
-			f::generate_dot_file(parsing_result, dot_file_path);	// Optionnal
+			system::Path	dot_file_path;
+			system::Path	png_file_path;
+
+			defer {
+				system::reset_path(dot_file_path);
+				system::reset_path(png_file_path);
+			};
+
+			system::from_native(dot_file_path, (uint8_t*)u8R"(.\AST.dot)");
+			system::from_native(png_file_path, (uint8_t*)u8R"(.\AST.png)");
+
+			f::generate_dot_file(parsing_result, dot_file_path);
 			convert_dot_file_to_png(dot_file_path, png_file_path);
+		}
+
+		// Generate the IRL
+		{
+			f::generate_irl(parsing_result, ir);
+		}
+
+		// Optionnal C++ backend
+		{
+			system::Path	cpp_file_path;
+
+			defer { system::reset_path(cpp_file_path); };
+
+			system::from_native(cpp_file_path, (uint8_t*)u8R"(.\output.exe)");
+
+			f::CPP_backend::compile(ir, cpp_file_path);
 		}
 
 		// @TODO Evaluate all constant expressions.
