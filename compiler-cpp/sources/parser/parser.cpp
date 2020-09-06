@@ -785,7 +785,7 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 			"UNKNOWN type"
 			"\nnode_%ld", node_index);
 	}
-	print_to_builder(file_string_builder, "\t" "\" shape=box, style=filled, color=black, fillcolor=lightseagreen]\n");
+	print_to_builder(file_string_builder, "\" shape=box, style=filled, color=black, fillcolor=lightseagreen]\n");
 
 	// Children iteration
 	if (node->ast_type == Node_Type::TYPE_ALIAS) {

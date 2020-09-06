@@ -2,9 +2,6 @@ Add: Add name of link in the dot graph
 
 
 
-Improve the expression parsing with support of operators:
- - Member access (with .)
- - Address of (with §)
 
 Take a look at for precedence:
 https://en.cppreference.com/w/cpp/language/operator_precedence
