@@ -1,4 +1,11 @@
-Add: Add name of link in the dot graph
+!!! Finish the conversion from utf16 to utf8. (from_utf16LE_to_utf8 and to_utf8)
+!!! Add tests for unicode conversions.
+
+Finish the calls to compile the generated cpp file.
+
+
+
+
 
 
 

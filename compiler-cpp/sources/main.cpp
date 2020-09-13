@@ -111,7 +111,7 @@ int main(int ac, char** av)
 
 		// Generate the IRL
 		{
-			f::generate_irl(parsing_result, ir);
+			f::generate_ir(parsing_result, ir);
 		}
 
 		// Optionnal C++ backend

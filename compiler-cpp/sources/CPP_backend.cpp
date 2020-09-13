@@ -12,7 +12,10 @@
 #undef max
 #include <tracy/Tracy.hpp>
 
-#include <magic_enum/magic_enum.hpp> // @TODO remove it
+#include <third-party/magic_enum.hpp> // @TODO remove it
+
+#define MICROSOFT_CRAZINESS_IMPLEMENTATION
+#include <third-party/microsoft_craziness.h> // @TODO remove it
 
 using namespace fstd;
 using namespace fstd::core;
@@ -248,13 +251,22 @@ void f::CPP_backend::compile(IR& irl, const fstd::system::Path& output_file_path
 	String_Builder		string_builder;
 	language::string	file_content;
 
-	defer{
+
+	system::Path		cpp_file_path;
+
+	defer{ system::reset_path(cpp_file_path); };
+
+	print_to_builder(string_builder, "%v.cpp", to_string(output_file_path));
+	system::from_native(cpp_file_path, to_string(string_builder));
+	free_buffers(string_builder);
+
+	defer {
 		free_buffers(string_builder);
 		release(file_content);
 		close_file(file);
 	};
 
-	if (open_file(file, output_file_path, (system::File::Opening_Flag)
+	if (open_file(file, cpp_file_path, (system::File::Opening_Flag)
 		((uint32_t)system::File::Opening_Flag::CREATE
 			| (uint32_t)system::File::Opening_Flag::WRITE)) == false) {
 		print_to_builder(string_builder, "Failed to open file: %s", to_string(output_file_path));
@@ -262,14 +274,114 @@ void f::CPP_backend::compile(IR& irl, const fstd::system::Path& output_file_path
 		return;
 	}
 
-	print_to_builder(string_builder, "digraph {\n");
-	print_to_builder(string_builder, "\t" "rankdir = TB\n");
+	language::string	win32_api_declarations;
 
-	write_dot_node(string_builder, irl.ast->root);
+	language::assign(win32_api_declarations, (uint8_t*)
+		"// Calling conventions defines\n"
+		"#define WINBASEAPI __declspec(dllimport)\n"
+		"#define WINAPI      __stdcall\n"
+		"#define WINAPIV     __cdecl\n"
+		"#define APIENTRY    WINAPI\n"
+		"\n"
+		"// Types defines\n"
+		"typedef unsigned long       DWORD;\n"
+		"typedef int                 BOOL;\n"
+		"typedef unsigned char       BYTE;\n"
+		"typedef unsigned short      WORD;\n"
+		"typedef float               FLOAT;\n"
+		"typedef FLOAT               *PFLOAT;\n"
+		"typedef BOOL near           *PBOOL;\n"
+		"typedef BOOL far            *LPBOOL;\n"
+		"typedef BYTE near           *PBYTE;\n"
+		"typedef BYTE far            *LPBYTE;\n"
+		"typedef int near            *PINT;\n"
+		"typedef int far             *LPINT;\n"
+		"typedef WORD near           *PWORD;\n"
+		"typedef WORD far            *LPWORD;\n"
+		"typedef long far            *LPLONG;\n"
+		"typedef DWORD near          *PDWORD;\n"
+		"typedef DWORD far           *LPDWORD;\n"
+		"typedef void far            *LPVOID;\n"
+		"typedef CONST void far      *LPCVOID;\n"
+		"\n"
+		"typedef int                 INT;\n"
+		"typedef unsigned int        UINT;\n"
+		"typedef unsigned int        *PUINT;\n"
+		"\n"
+		"typedef void *HANDLE;\n"
+		"\n"
+		"// From minwinbase.h\n"
+		"typedef struct _SECURITY_ATTRIBUTES {\n"
+		"    DWORD nLength;\n"
+		"    LPVOID lpSecurityDescriptor;\n"
+		"    BOOL bInheritHandle;\n"
+		"} SECURITY_ATTRIBUTES, *PSECURITY_ATTRIBUTES, *LPSECURITY_ATTRIBUTES;\n"
+		"\n"
+		"typedef struct _OVERLAPPED {\n"
+		"    ULONG_PTR Internal;\n"
+		"    ULONG_PTR InternalHigh;\n"
+		"    union {\n"
+		"        struct {\n"
+		"            DWORD Offset;\n"
+		"            DWORD OffsetHigh;\n"
+		"        } DUMMYSTRUCTNAME;\n"
+		"        PVOID Pointer;\n"
+		"    } DUMMYUNIONNAME;\n"
+		"\n"
+		"    HANDLE  hEvent;\n"
+		"} OVERLAPPED, *LPOVERLAPPED;\n"
+		"\n"
+		"typedef struct _OVERLAPPED_ENTRY {\n"
+		"    ULONG_PTR lpCompletionKey;\n"
+		"    LPOVERLAPPED lpOverlapped;\n"
+		"    ULONG_PTR Internal;\n"
+		"    DWORD dwNumberOfBytesTransferred;\n"
+		"} OVERLAPPED_ENTRY, *LPOVERLAPPED_ENTRY;\n"
+		"\n"
+		"// Function declarations\n"
+		"WINBASEAPI\n"
+		"BOOL\n"
+		"WINAPI\n"
+		"WriteFile(\n"
+		"	HANDLE hFile,\n"
+		"	LPCVOID lpBuffer,\n"
+		"	DWORD nNumberOfBytesToWrite,\n"
+		"	LPDWORD lpNumberOfBytesWritten,\n"
+		"	LPOVERLAPPED lpOverlapped\n"
+		");\n");
 
-	print_to_builder(string_builder, "}\n");
+	print_to_builder(string_builder, win32_api_declarations);
+
+//	write_dot_node(string_builder, irl.ast->root);
+
+//	print_to_builder(string_builder, "}\n");
 
 	file_content = to_string(string_builder);
 
 	system::write_file(file, language::to_utf8(file_content), (uint32_t)language::get_string_size(file_content));
+
+	// =========================================================================
+	// Compile the cpp generated file
+	// =========================================================================
+
+	Find_Result find_result = find_visual_studio_and_windows_sdk();
+	
+	system::Path	cl_path;
+	system::Path	link_path;
+
+	defer {
+		system::reset_path(cl_path);
+		system::reset_path(link_path);
+	};
+
+	free_buffers(string_builder);
+	print_to_builder(string_builder, "%Cw\\cl.exe", find_result.vs_exe_path);
+	system::from_native(cl_path, to_string(string_builder));
+
+	free_buffers(string_builder);
+	print_to_builder(string_builder, "%Cw\\link.exe", find_result.vs_exe_path);
+	system::from_native(link_path, to_string(string_builder));
+
+
+	free_resources(&find_result);
 }

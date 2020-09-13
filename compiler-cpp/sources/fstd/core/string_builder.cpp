@@ -32,6 +32,23 @@ namespace fstd
 			language::copy(*string_buffer, 0, string, size);
 		}
 
+		void print_to_builder(String_Builder& builder, const uint16_t* string, size_t size)
+		{
+			if (size == 0) {
+				return;
+			}
+
+			language::string* string_buffer;
+
+			memory::array_push_back(builder.strings, language::string());
+			string_buffer = memory::get_array_last_element(builder.strings);
+
+			language::UTF16LE_string_view	string_view;
+
+			language::assign(string_view, const_cast<uint16_t*>(string), size);
+			from_utf16LE_to_utf8(string_view, *string_buffer, false);
+		}
+
 		void print_to_builder(String_Builder& builder, int32_t value)
 		{
 			language::string* string_buffer;
@@ -169,6 +186,25 @@ namespace fstd
 							print_to_builder(builder, (uint8_t*)std_string_view.data(), std_string_view.length());
 							position++;
 						}
+						else if (language::to_utf8(*format)[position] == 's') {	// std::string_view
+							char* c_string = va_arg(args, char*);
+
+							print_to_builder(builder, (uint8_t*)c_string, language::string_literal_size((uint8_t*)c_string));
+							position++;
+						}
+						else if (language::to_utf8(*format)[position] == 'w') {	// std::string_view
+							wchar_t* w_string = va_arg(args, wchar_t*);
+
+							print_to_builder(builder, (uint16_t*)w_string, language::string_literal_size((uint16_t*)w_string));
+							position++;
+						}
+						else {
+							core::Assert(false);
+						}
+
+					}
+					else {
+						core::Assert(false);
 					}
 
 					start_print_position = position;

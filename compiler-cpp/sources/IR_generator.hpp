@@ -11,5 +11,5 @@ namespace f
 		AST*	ast;
 	};
 
-	void generate_irl(AST& ast, IR& ir);
+	void generate_ir(AST& ast, IR& ir);
 }
