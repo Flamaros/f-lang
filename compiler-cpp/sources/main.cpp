@@ -52,6 +52,8 @@ void convert_dot_file_to_png(const system::Path& dot_file_path, const system::Pa
 
 int main(int ac, char** av)
 {
+	run_tests();
+
 	memory::Array<f::Token>	tokens;
     f::AST					parsing_result;
 	f::IR					ir;

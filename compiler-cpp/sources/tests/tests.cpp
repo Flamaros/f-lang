@@ -2,7 +2,11 @@
 
 #include <fstd/system/timer.hpp>
 
+#include <fstd/core/assert.hpp>
+#include <fstd/core/unicode.hpp>
+
 #include <fstd/language/string.hpp>
+#include <fstd/language/defer.hpp>
 
 // @TODO remove it
 #include <vector>
@@ -63,9 +67,35 @@ void test_integer_to_string_performances()
 	printf("to_string performances (%llu iterations):\n    f-lang: %0.3lf ms\n    std: %0.3lf ms\n", (uint64_t)numbers.size(), f_implemenation_time, std_implemenation_time);
 }
 
+void test_unicode_convversions()
+{
+	fstd::language::string			utf8_string;
+	fstd::language::UTF16LE_string	utf16_string;
+
+	fstd::language::string			to_utf8_string;
+	fstd::language::UTF16LE_string	to_utf16_string;
+
+	defer {
+		release(utf8_string);
+		release(to_utf16_string);
+	};
+
+	fstd::language::assign(utf8_string, (uint8_t*)u8"a0-A9-#%-éù-€-𝄞-𠀀-£-¤");
+	fstd::language::assign(utf16_string, (uint16_t*)u"a0-A9-#%-éù-€-𝄞-𠀀-£-¤");
+
+	fstd::core::from_utf8_to_utf16LE(utf8_string, to_utf16_string, true);
+	fstd::core::from_utf16LE_to_utf8(utf16_string, to_utf8_string, true);
+
+	fstd::core::Assert(are_equals(to_utf16_string, utf16_string));
+	fstd::core::Assert(are_equals(to_utf8_string, utf8_string));
+}
+
 void run_tests()
 {
 	ZoneScopedNC("run_tests", 0xb71c1c);
 
+#if !defined(_DEBUG)
 	test_integer_to_string_performances();
+#endif
+	test_unicode_convversions();
 }

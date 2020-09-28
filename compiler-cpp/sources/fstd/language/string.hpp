@@ -111,6 +111,16 @@ namespace fstd
 			return memory::get_array_size(str.buffer);
 		}
 
+		inline bool are_equals(const string& a, const string& b)
+		{
+			if (a.buffer.size != b.buffer.size) {
+				return false;
+			}
+			else {
+				return system::memory_compare(a.buffer.ptr, b.buffer.ptr, a.buffer.size);
+			}
+		}
+
 		// @SpeedUp @CleanUp
 		// Generic version with the base should the only version
 		// but if the base is a constant the compiler should be
