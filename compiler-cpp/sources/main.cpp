@@ -47,7 +47,15 @@ void convert_dot_file_to_png(const system::Path& dot_file_path, const system::Pa
 	system::from_native(dot_executable_file_path, (uint8_t*)u8R"(dot.exe)");
 
 	print_to_builder(string_builder, "%s -Tpng -o %s", dot_file_path, png_file_path);
-	system::execute_process(dot_executable_file_path, to_string(string_builder));
+	if (!system::execute_process(dot_executable_file_path, to_string(string_builder))) {
+		f::Token dummy_token;
+
+		dummy_token.type = f::Token_Type::UNKNOWN;
+		dummy_token.file_path = system::to_string(dot_executable_file_path);
+		dummy_token.line = 0;
+		dummy_token.column = 0;
+		report_error(Compiler_Error::warning, dummy_token, "Failed to generate the dot image. Please check that dot.exe is in your PATH.\n");
+	}
 }
 
 int main(int ac, char** av)
