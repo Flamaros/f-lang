@@ -74,22 +74,38 @@ void test_unicode_code_point_convversions()
 	// UTF8
 	uint8_t	utf8_buffer[4];
 
-	fstd::core::Assert(fstd::core::from_utf8(0x24, 0x00, 0x00, 0x00, peek) == 0x0024);		// '$'
+	fstd::core::Assert(fstd::core::from_utf8(0x24, 0x00, 0x00, 0x00, peek) == 0x24);		// '$'
+	fstd::core::Assert(fstd::core::from_utf8(0xC3, 0xA9, 0x00, 0x00, peek) == 0xE9);		// 'é'
 	fstd::core::Assert(fstd::core::from_utf8(0xE2, 0x82, 0xAC, 0x00, peek) == 0x20AC);		// '€'
+	fstd::core::Assert(fstd::core::from_utf8(0xF0, 0x9D, 0x84, 0x9E, peek) == 0x1D11E);		// '𝄞'
 	fstd::core::Assert(fstd::core::from_utf8(0xF0, 0x90, 0x90, 0xB7, peek) == 0x10437);		// '𐐷'
+	fstd::core::Assert(fstd::core::from_utf8(0xF0, 0xA0, 0x80, 0x80, peek) == 0x20000);		// '𠀀'
 	fstd::core::Assert(fstd::core::from_utf8(0xF0, 0xA4, 0xAD, 0xA2, peek) == 0x24B62);		// '𤭢'
 
 	fstd::core::to_utf8(0x24, utf8_buffer);
 	fstd::core::Assert(utf8_buffer[0] == 0x24);	// '$'
+	fstd::core::to_utf8(0xE9, utf8_buffer);
+	fstd::core::Assert(utf8_buffer[0] == 0xC3);	// 'é'
+	fstd::core::Assert(utf8_buffer[1] == 0xA9);	// 'é'
 	fstd::core::to_utf8(0x20AC, utf8_buffer);
 	fstd::core::Assert(utf8_buffer[0] == 0xE2);	// '€'
 	fstd::core::Assert(utf8_buffer[1] == 0x82);	// '€'
 	fstd::core::Assert(utf8_buffer[2] == 0xAC);	// '€'
+	fstd::core::to_utf8(0x1D11E, utf8_buffer);
+	fstd::core::Assert(utf8_buffer[0] == 0xF0);	// '𝄞'
+	fstd::core::Assert(utf8_buffer[1] == 0x9D);	// '𝄞'
+	fstd::core::Assert(utf8_buffer[2] == 0x84);	// '𝄞'
+	fstd::core::Assert(utf8_buffer[3] == 0x9E);	// '𝄞'
 	fstd::core::to_utf8(0x10437, utf8_buffer);
 	fstd::core::Assert(utf8_buffer[0] == 0xF0);	// '𐐷'
 	fstd::core::Assert(utf8_buffer[1] == 0x90);	// '𐐷'
 	fstd::core::Assert(utf8_buffer[2] == 0x90);	// '𐐷'
 	fstd::core::Assert(utf8_buffer[3] == 0xB7);	// '𐐷'
+	fstd::core::to_utf8(0x20000, utf8_buffer);
+	fstd::core::Assert(utf8_buffer[0] == 0xF0);	// '𠀀'
+	fstd::core::Assert(utf8_buffer[1] == 0xA0);	// '𠀀'
+	fstd::core::Assert(utf8_buffer[2] == 0x80);	// '𠀀'
+	fstd::core::Assert(utf8_buffer[3] == 0x80);	// '𠀀'
 	fstd::core::to_utf8(0x24B62, utf8_buffer);
 	fstd::core::Assert(utf8_buffer[0] == 0xF0);	// '𤭢'
 	fstd::core::Assert(utf8_buffer[1] == 0xA4);	// '𤭢'
@@ -100,17 +116,28 @@ void test_unicode_code_point_convversions()
 	uint16_t	utf16_buffer[2];
 
 	fstd::core::Assert(fstd::core::from_utf16LE(0x0024, 0x00, peek) == 0x24);		// '$'
+	fstd::core::Assert(fstd::core::from_utf16LE(0x00E9, 0x00, peek) == 0xE9);		// 'é'
 	fstd::core::Assert(fstd::core::from_utf16LE(0x20AC, 0x00, peek) == 0x20AC);		// '€'
+	fstd::core::Assert(fstd::core::from_utf16LE(0xD834, 0xDD1E, peek) == 0x1D11E);	// '𝄞'
 	fstd::core::Assert(fstd::core::from_utf16LE(0xD801, 0xDC37, peek) == 0x10437);	// '𐐷'
+	fstd::core::Assert(fstd::core::from_utf16LE(0xD840, 0xDC00, peek) == 0x20000);	// '𠀀'
 	fstd::core::Assert(fstd::core::from_utf16LE(0xD852, 0xDF62, peek) == 0x24B62);	// '𤭢'
 
 	fstd::core::to_utf16LE(0x24, utf16_buffer);
 	fstd::core::Assert(utf16_buffer[0] == 0x0024);	// '$'
+	fstd::core::to_utf16LE(0xE9, utf16_buffer);
+	fstd::core::Assert(utf16_buffer[0] == 0x00E9);	// 'é'
 	fstd::core::to_utf16LE(0x20AC, utf16_buffer);
 	fstd::core::Assert(utf16_buffer[0] == 0x20AC);	// '€'
+	fstd::core::to_utf16LE(0x1D11E, utf16_buffer);
+	fstd::core::Assert(utf16_buffer[0] == 0xD834);	// '𝄞'
+	fstd::core::Assert(utf16_buffer[1] == 0xDD1E);	// '𝄞'
 	fstd::core::to_utf16LE(0x10437, utf16_buffer);
 	fstd::core::Assert(utf16_buffer[0] == 0xD801);	// '𐐷'
 	fstd::core::Assert(utf16_buffer[1] == 0xDC37);	// '𐐷'
+	fstd::core::to_utf16LE(0x20000, utf16_buffer);
+	fstd::core::Assert(utf16_buffer[0] == 0xD840);	// '𠀀'
+	fstd::core::Assert(utf16_buffer[1] == 0xDC00);	// '𠀀'
 	fstd::core::to_utf16LE(0x24B62, utf16_buffer);
 	fstd::core::Assert(utf16_buffer[0] == 0xD852);	// '𤭢'
 	fstd::core::Assert(utf16_buffer[1] == 0xDF62);	// '𤭢'

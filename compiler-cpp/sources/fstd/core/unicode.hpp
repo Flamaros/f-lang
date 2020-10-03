@@ -59,6 +59,7 @@ namespace fstd
 		// The function return the number of code units written.
 		inline size_t to_utf8(Code_Point code_point, uint8_t* buffer)
 		{
+			// & 0x3F Because we keep only 6 bits
 			if (code_point < 0x00000080)
 			{
 				buffer[0] = (uint8_t)code_point;
@@ -66,23 +67,23 @@ namespace fstd
 			}
 			else if (code_point < 0x00000800)
 			{
-				buffer[0] = (code_point >> 6) | 0xC0;
-				buffer[1] = ((uint8_t)code_point) | 0x80;
+				buffer[0] = ((code_point >> 6) & 0x3F) | 0xC0;
+				buffer[1] = (((uint8_t)code_point) & 0x3F) | 0x80;
 				return 2;
 			}
 			else if (code_point < 0x00010000)
 			{
-				buffer[0] = (code_point >> 12) | 0xE0;
-				buffer[1] = (code_point >> 6) | 0x80;
-				buffer[2] = ((uint8_t)code_point) | 0x80;
+				buffer[0] = ((code_point >> 12) & 0x3F) | 0xE0;
+				buffer[1] = ((code_point >> 6) & 0x3F) | 0x80;
+				buffer[2] = (((uint8_t)code_point) & 0x3F) | 0x80;
 				return 3;
 			}
 			else /*if (code_point < 0x00200000)*/
 			{
-				buffer[0] = (code_point >> 18) | 0xF0;
-				buffer[1] = (code_point >> 12) | 0x80;
-				buffer[2] = (code_point >> 6) | 0x80;
-				buffer[3] = (((uint8_t)code_point) & 0x3F) | 0x80; // & 0x3F Because we keep only the lesser 6 bits
+				buffer[0] = ((code_point >> 18) & 0x3F) | 0xF0;
+				buffer[1] = ((code_point >> 12) & 0x3F) | 0x80;
+				buffer[2] = ((code_point >> 6) & 0x3F) | 0x80;
+				buffer[3] = (((uint8_t)code_point) & 0x3F) | 0x80;
 				return 4;
 			}
 		}
