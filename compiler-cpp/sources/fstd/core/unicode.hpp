@@ -57,21 +57,33 @@ namespace fstd
 
 		// Encode a code point to utf8, the utf8 character is directly written in the buffer that have to be big enough for 4 utf8 code units (4bytes).
 		// The function return the number of code units written.
-		inline size_t to_utf8(Code_Point code_point, uint16_t* buffer)
+		inline size_t to_utf8(Code_Point code_point, uint8_t* buffer)
 		{
-			// @TODO
-			//if ()
-
-			if (code_point >= 0x10000) {
-				code_point = code_point ^ 0x10000;	// We add to substract 0x10000
-				buffer[0] = (code_point >> 10) | 0xD800;
-				buffer[1] = ((uint16_t)code_point) | 0xDC00;
+			if (code_point < 0x00000080)
+			{
+				buffer[0] = (uint8_t)code_point;
+				return 1;
+			}
+			else if (code_point < 0x00000800)
+			{
+				buffer[0] = (code_point >> 6) | 0xC0;
+				buffer[1] = ((uint8_t)code_point) | 0x80;
 				return 2;
 			}
-			else
+			else if (code_point < 0x00010000)
 			{
-				buffer[0] = (uint16_t)code_point;
-				return 1;
+				buffer[0] = (code_point >> 12) | 0xE0;
+				buffer[1] = (code_point >> 6) | 0x80;
+				buffer[2] = ((uint8_t)code_point) | 0x80;
+				return 3;
+			}
+			else /*if (code_point < 0x00200000)*/
+			{
+				buffer[0] = (code_point >> 18) | 0xF0;
+				buffer[1] = (code_point >> 12) | 0x80;
+				buffer[2] = (code_point >> 6) | 0x80;
+				buffer[3] = (((uint8_t)code_point) & 0x3F) | 0x80; // & 0x3F Because we keep only the lesser 6 bits
+				return 4;
 			}
 		}
 
@@ -82,7 +94,7 @@ namespace fstd
 			if ((code_unit_1 & 0xD800) == 0xD800)	// 4 bytes
 			{
 				peek += 2;
-				return ((code_unit_1 ^ 0xD800) << 10) | (code_unit_2 ^ 0xDC00) | 0x10000;
+				return (((code_unit_1 ^ 0xD800) << 10) | (code_unit_2 ^ 0xDC00)) + 0x10000;
 			}
 			else	// 2 bytes
 			{
@@ -96,7 +108,7 @@ namespace fstd
 		inline size_t to_utf16LE(Code_Point code_point, uint16_t* buffer)
 		{
 			if (code_point >= 0x10000) {
-				code_point = code_point ^ 0x10000;	// We add to substract 0x10000
+				code_point = code_point - 0x10000;	// We have to substract 0x10000
 				buffer[0] = (code_point >> 10) | 0xD800;
 				buffer[1] = ((uint16_t)code_point) | 0xDC00;
 				return 2;
@@ -230,29 +242,21 @@ namespace fstd
 					core::Assert(language::get_string_size(utf16LE_string) - code_unit_index >= 2);
 
 					uint16_t	code_unit_2 = utf16LE_string[code_unit_index + 1];
-					Code_Point	code_point = ((code_unit_1 ^ 0xD800) << 10) | (code_unit_2 ^ 0xDC00) | 0x10000;
+					Code_Point	code_point = (((code_unit_1 ^ 0xD800) << 10) | (code_unit_2 ^ 0xDC00)) + 0x10000;
 
 					code_unit_index += 2;
-					nb_utf8_code_units_added = 4;
-
-					// @TODO fix that
-					output[0] = (code_point >> 10) | 0xD800;
-					output[1] = ((uint16_t)code_point) | 0xDC00;
-					output[2] = ((uint16_t)code_point) | 0xDC00;
-					output[3] = ((uint16_t)code_point) | 0xDC00;
+					nb_utf8_code_units_added = to_utf8(code_point, output);
 				}
 				else
 				{
 					Code_Point code_point = code_unit_1;
 
 					code_unit_index += 1;
-					nb_utf8_code_units_added = 4;
-
-					// @TODO fix that
-					output[0] = (code_point >> 10) | 0xD800;
-					output[1] = ((uint16_t)code_point) | 0xDC00;
+					nb_utf8_code_units_added = to_utf8(code_point, output);
 				}
+				result_size += nb_utf8_code_units_added;
 			}
+			language::resize(utf8_string, result_size);
 
 			if (null_terminated) {
 				*get_array_element(utf8_string.buffer, result_size) = 0;

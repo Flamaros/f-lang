@@ -67,7 +67,56 @@ void test_integer_to_string_performances()
 	printf("to_string performances (%llu iterations):\n    f-lang: %0.3lf ms\n    std: %0.3lf ms\n", (uint64_t)numbers.size(), f_implemenation_time, std_implemenation_time);
 }
 
-void test_unicode_convversions()
+void test_unicode_code_point_convversions()
+{
+	size_t	peek;
+
+	// UTF8
+	uint8_t	utf8_buffer[4];
+
+	fstd::core::Assert(fstd::core::from_utf8(0x24, 0x00, 0x00, 0x00, peek) == 0x0024);		// '$'
+	fstd::core::Assert(fstd::core::from_utf8(0xE2, 0x82, 0xAC, 0x00, peek) == 0x20AC);		// '€'
+	fstd::core::Assert(fstd::core::from_utf8(0xF0, 0x90, 0x90, 0xB7, peek) == 0x10437);		// '𐐷'
+	fstd::core::Assert(fstd::core::from_utf8(0xF0, 0xA4, 0xAD, 0xA2, peek) == 0x24B62);		// '𤭢'
+
+	fstd::core::to_utf8(0x24, utf8_buffer);
+	fstd::core::Assert(utf8_buffer[0] == 0x24);	// '$'
+	fstd::core::to_utf8(0x20AC, utf8_buffer);
+	fstd::core::Assert(utf8_buffer[0] == 0xE2);	// '€'
+	fstd::core::Assert(utf8_buffer[1] == 0x82);	// '€'
+	fstd::core::Assert(utf8_buffer[2] == 0xAC);	// '€'
+	fstd::core::to_utf8(0x10437, utf8_buffer);
+	fstd::core::Assert(utf8_buffer[0] == 0xF0);	// '𐐷'
+	fstd::core::Assert(utf8_buffer[1] == 0x90);	// '𐐷'
+	fstd::core::Assert(utf8_buffer[2] == 0x90);	// '𐐷'
+	fstd::core::Assert(utf8_buffer[3] == 0xB7);	// '𐐷'
+	fstd::core::to_utf8(0x24B62, utf8_buffer);
+	fstd::core::Assert(utf8_buffer[0] == 0xF0);	// '𤭢'
+	fstd::core::Assert(utf8_buffer[1] == 0xA4);	// '𤭢'
+	fstd::core::Assert(utf8_buffer[2] == 0xAD);	// '𤭢'
+	fstd::core::Assert(utf8_buffer[3] == 0xA2);	// '𤭢'
+
+	// UTF16
+	uint16_t	utf16_buffer[2];
+
+	fstd::core::Assert(fstd::core::from_utf16LE(0x0024, 0x00, peek) == 0x24);		// '$'
+	fstd::core::Assert(fstd::core::from_utf16LE(0x20AC, 0x00, peek) == 0x20AC);		// '€'
+	fstd::core::Assert(fstd::core::from_utf16LE(0xD801, 0xDC37, peek) == 0x10437);	// '𐐷'
+	fstd::core::Assert(fstd::core::from_utf16LE(0xD852, 0xDF62, peek) == 0x24B62);	// '𤭢'
+
+	fstd::core::to_utf16LE(0x24, utf16_buffer);
+	fstd::core::Assert(utf16_buffer[0] == 0x0024);	// '$'
+	fstd::core::to_utf16LE(0x20AC, utf16_buffer);
+	fstd::core::Assert(utf16_buffer[0] == 0x20AC);	// '€'
+	fstd::core::to_utf16LE(0x10437, utf16_buffer);
+	fstd::core::Assert(utf16_buffer[0] == 0xD801);	// '𐐷'
+	fstd::core::Assert(utf16_buffer[1] == 0xDC37);	// '𐐷'
+	fstd::core::to_utf16LE(0x24B62, utf16_buffer);
+	fstd::core::Assert(utf16_buffer[0] == 0xD852);	// '𤭢'
+	fstd::core::Assert(utf16_buffer[1] == 0xDF62);	// '𤭢'
+}
+
+void test_unicode_string_convversions()
 {
 	fstd::language::string			utf8_string;
 	fstd::language::UTF16LE_string	utf16_string;
@@ -77,11 +126,15 @@ void test_unicode_convversions()
 
 	defer {
 		release(utf8_string);
+		release(utf16_string);
+		release(to_utf8_string);
 		release(to_utf16_string);
 	};
 
 	fstd::language::assign(utf8_string, (uint8_t*)u8"a0-A9-#%-éù-€-𝄞-𠀀-£-¤");
 	fstd::language::assign(utf16_string, (uint16_t*)u"a0-A9-#%-éù-€-𝄞-𠀀-£-¤");
+	// Hexa: 61 30  2D  41 39  2D  23 25  2D  E9  F9   2D  20AC	 2D  1D11E   2D  20000   2D  A3  A4
+	// Deci: 97 48  45  65 57  45  35 37  45  233 249  45  8364	 45  119070  45  131072  45  163 164
 
 	fstd::core::from_utf8_to_utf16LE(utf8_string, to_utf16_string, true);
 	fstd::core::from_utf16LE_to_utf8(utf16_string, to_utf8_string, true);
@@ -97,5 +150,6 @@ void run_tests()
 #if !defined(_DEBUG)
 	test_integer_to_string_performances();
 #endif
-	test_unicode_convversions();
+	test_unicode_code_point_convversions();
+	test_unicode_string_convversions();
 }
