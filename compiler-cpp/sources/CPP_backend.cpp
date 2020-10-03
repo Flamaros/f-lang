@@ -1,9 +1,12 @@
 #include "CPP_backend.hpp"
 
+#include "globals.hpp"
+
 #include <fstd/core/string_builder.hpp>
 
 #include <fstd/system/file.hpp>
 #include <fstd/system/stdio.hpp>
+#include <fstd/system/process.hpp>
 
 #include <fstd/language/defer.hpp>
 #include <fstd/language/flags.hpp>
@@ -263,7 +266,6 @@ void f::CPP_backend::compile(IR& irl, const fstd::system::Path& output_file_path
 	defer {
 		free_buffers(string_builder);
 		release(file_content);
-		close_file(file);
 	};
 
 	if (open_file(file, cpp_file_path, (system::File::Opening_Flag)
@@ -290,23 +292,71 @@ void f::CPP_backend::compile(IR& irl, const fstd::system::Path& output_file_path
 		"typedef unsigned short      WORD;\n"
 		"typedef float               FLOAT;\n"
 		"typedef FLOAT               *PFLOAT;\n"
-		"typedef BOOL near           *PBOOL;\n"
-		"typedef BOOL far            *LPBOOL;\n"
-		"typedef BYTE near           *PBYTE;\n"
-		"typedef BYTE far            *LPBYTE;\n"
-		"typedef int near            *PINT;\n"
-		"typedef int far             *LPINT;\n"
-		"typedef WORD near           *PWORD;\n"
-		"typedef WORD far            *LPWORD;\n"
-		"typedef long far            *LPLONG;\n"
-		"typedef DWORD near          *PDWORD;\n"
-		"typedef DWORD far           *LPDWORD;\n"
-		"typedef void far            *LPVOID;\n"
-		"typedef CONST void far      *LPCVOID;\n"
+		"typedef BOOL				 *PBOOL;\n"
+		"typedef BOOL				 *LPBOOL;\n"
+		"typedef BYTE				 *PBYTE;\n"
+		"typedef BYTE				 *LPBYTE;\n"
+		"typedef int				 *PINT;\n"
+		"typedef int				 *LPINT;\n"
+		"typedef WORD				 *PWORD;\n"
+		"typedef WORD				 *LPWORD;\n"
+		"typedef long				 *LPLONG;\n"
+		"typedef DWORD				 *PDWORD;\n"
+		"typedef DWORD				 *LPDWORD;\n"
+		"typedef void				 *LPVOID;\n"
+		"typedef const void			 *LPCVOID;\n"
 		"\n"
 		"typedef int                 INT;\n"
 		"typedef unsigned int        UINT;\n"
 		"typedef unsigned int        *PUINT;\n"
+		"\n"
+		"// From basestd.h\n"
+		"#if !defined(_MAC) && (defined(_M_MRX000) || defined(_WIN64)) && (_MSC_VER >= 1100) && !(defined(MIDL_PASS) || defined(RC_INVOKED))\n"
+		"#define POINTER_64 __ptr64\n"
+		"		typedef unsigned __int64 POINTER_64_INT;\n"
+		"#if defined(_WIN64)\n"
+		"#define POINTER_32 __ptr32\n"
+		"#else\n"
+		"#define POINTER_32\n"
+		"#endif\n"
+		"#else\n"
+		"#if defined(_MAC) && defined(_MAC_INT_64)\n"
+		"#define POINTER_64 __ptr64\n"
+		"		typedef unsigned __int64 POINTER_64_INT;\n"
+		"#else\n"
+		"#if (_MSC_VER >= 1300) && !(defined(MIDL_PASS) || defined(RC_INVOKED))\n"
+		"#define POINTER_64 __ptr64\n"
+		"#else\n"
+		"#define POINTER_64\n"
+		"#endif\n"
+		"		typedef unsigned long POINTER_64_INT;\n"
+		"#endif\n"
+		"#define POINTER_32\n"
+		"#endif\n"
+		"\n"
+		"#if defined(_WIN64)\n"
+		"		typedef __int64 INT_PTR, * PINT_PTR;\n"
+		"	typedef unsigned __int64 UINT_PTR, * PUINT_PTR;\n"
+		"\n"
+		"	typedef __int64 LONG_PTR, * PLONG_PTR;\n"
+		"	typedef unsigned __int64 ULONG_PTR, * PULONG_PTR;\n"
+		"\n"
+		"#define __int3264   __int64\n"
+		"\n"
+		"#else\n"
+		"		typedef _W64 int INT_PTR, * PINT_PTR;\n"
+		"	typedef _W64 unsigned int UINT_PTR, * PUINT_PTR;\n"
+		"\n"
+		"	typedef _W64 long LONG_PTR, * PLONG_PTR;\n"
+		"	typedef _W64 unsigned long ULONG_PTR, * PULONG_PTR;\n"
+		"\n"
+		"#define __int3264   __int32\n"
+		"\n"
+		"#endif\n"
+		"\n"
+		"// From winnt.h\n"
+		"typedef void* PVOID;\n"
+		"typedef void* POINTER_64 PVOID64;\n"
 		"\n"
 		"typedef void *HANDLE;\n"
 		"\n"
@@ -359,6 +409,7 @@ void f::CPP_backend::compile(IR& irl, const fstd::system::Path& output_file_path
 	file_content = to_string(string_builder);
 
 	system::write_file(file, language::to_utf8(file_content), (uint32_t)language::get_string_size(file_content));
+	system::close_file(file);
 
 	// =========================================================================
 	// Compile the cpp generated file
@@ -382,6 +433,18 @@ void f::CPP_backend::compile(IR& irl, const fstd::system::Path& output_file_path
 	print_to_builder(string_builder, "%Cw\\link.exe", find_result.vs_exe_path);
 	system::from_native(link_path, to_string(string_builder));
 
-
 	free_resources(&find_result);
+
+	// Start compilation
+	free_buffers(string_builder);
+	print_to_builder(string_builder, "\"%s\"", cpp_file_path);
+	if (!system::execute_process(cl_path, to_string(string_builder))) {
+		f::Token dummy_token;
+
+		dummy_token.type = f::Token_Type::UNKNOWN;
+		dummy_token.file_path = system::to_string(cl_path);
+		dummy_token.line = 0;
+		dummy_token.column = 0;
+		report_error(Compiler_Error::warning, dummy_token, "Failed to launch cl.exe.\n");
+	}
 }

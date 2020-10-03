@@ -69,7 +69,8 @@ namespace fstd
 				&startup_info,										// lpStartupInfo,
 				&process_info										// lpProcessInformation
 			)) {
-				// @TODO log error here
+				// @TODO log error here ???
+				// Or do we have the let the caller do it?
 				return false;
 			}
 
@@ -82,8 +83,8 @@ namespace fstd
 			return true;
 #else
 #	error
-#endif
 			return false;
+#endif
 		}
 	}
 }
