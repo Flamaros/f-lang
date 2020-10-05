@@ -154,6 +154,7 @@ void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
 				basic_type_node->ast_type = Node_Type::STATEMENT_BASIC_TYPE;
 				basic_type_node->sibling = nullptr;
 				basic_type_node->keyword = current_token.value.keyword;
+				basic_type_node->token = current_token;
 
 				stream::peek(stream); // basic_type keyword
 				break;

@@ -31,13 +31,9 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 		return;
 	}
 
-	language::string	dot_node;
 	static uint32_t		nb_nodes = 0;
 	uint32_t			node_index = nb_nodes++;
-
-	defer {
-		release(dot_node);
-	};
+	bool				recurse_sibling = true;
 
 	//if (parent_index != -1) {
 	//	if (left_node_index == -1) {
@@ -56,13 +52,11 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 		write_generated_code(file_string_builder, alias_node->type);
 		print_to_builder(file_string_builder, " %v;\n", alias_node->type_name.text);
 	}
-	//else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
-	//	AST_Statement_Basic_Type* basic_type_node = (AST_Statement_Basic_Type*)node;
+	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
+		AST_Statement_Basic_Type* basic_type_node = (AST_Statement_Basic_Type*)node;
 
-	//	print_to_builder(file_string_builder,
-	//		"%Cv"
-	//		"\n%Cv", magic_enum::enum_name(node->ast_type), magic_enum::enum_name(basic_type_node->keyword));
-	//}
+		print_to_builder(file_string_builder, "%v", basic_type_node->token.text);
+	}
 	//else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
 	//	AST_Statement_User_Type* user_type_node = (AST_Statement_User_Type*)node;
 
@@ -70,19 +64,24 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 	//		"%Cv"
 	//		"\n%v", magic_enum::enum_name(node->ast_type), user_type_node->identifier.text);
 	//}
-	//else if (node->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
-	//	AST_Statement_Type_Pointer* basic_type_node = (AST_Statement_Type_Pointer*)node;
+	else if (node->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
+		AST_Statement_Type_Pointer* basic_type_node = (AST_Statement_Type_Pointer*)node;
 
-	//	print_to_builder(file_string_builder,
-	//		"%Cv", magic_enum::enum_name(node->ast_type));
-	//}
-	//else if (node->ast_type == Node_Type::STATEMENT_FUNCTION) {
-	//	AST_Statement_Function* function_node = (AST_Statement_Function*)node;
+		write_generated_code(file_string_builder, node->sibling, parent_index, node_index);
+		print_to_builder(file_string_builder, "*");
+		recurse_sibling = false;
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_FUNCTION) {
+		AST_Statement_Function* function_node = (AST_Statement_Function*)node;
 
-	//	print_to_builder(file_string_builder,
-	//		"%Cv"
-	//		"\nname: %v (nb_arguments: %d)", magic_enum::enum_name(node->ast_type), function_node->name.text, function_node->nb_arguments);
-	//}
+		print_to_builder(file_string_builder, "\n");
+		write_generated_code(file_string_builder, function_node->return_type);
+		print_to_builder(file_string_builder, " %v(", function_node->name.text);
+		write_generated_code(file_string_builder, (AST_Node*)function_node->arguments);
+		print_to_builder(file_string_builder, ")\n{\n");
+		write_generated_code(file_string_builder, (AST_Node*)function_node->scope);
+		print_to_builder(file_string_builder, "}\n");
+	}
 	//else if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
 	//	AST_Statement_Variable* variable_node = (AST_Statement_Variable*)node;
 
@@ -165,8 +164,7 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 
 	// Children iteration
 	if (node->ast_type == Node_Type::TYPE_ALIAS) {
-		AST_Alias* alias_node = (AST_Alias*)node;
-		write_generated_code(file_string_builder, alias_node->type, node_index);
+		// No-op
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
 		// No children
@@ -178,10 +176,7 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 		// No children
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_FUNCTION) {
-		AST_Statement_Function* function_node = (AST_Statement_Function*)node;
-		write_generated_code(file_string_builder, (AST_Node*)function_node->arguments, node_index);
-		write_generated_code(file_string_builder, function_node->return_type, node_index);
-		write_generated_code(file_string_builder, (AST_Node*)function_node->scope, node_index);
+		// No-op
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
 		AST_Statement_Variable* variable_node = (AST_Statement_Variable*)node;
@@ -231,11 +226,9 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 	}
 
 	// Sibling iteration
-	if (node->sibling) {
+	if (recurse_sibling && node->sibling) {
 		write_generated_code(file_string_builder, node->sibling, parent_index, node_index);
 	}
-
-	dot_node = to_string(file_string_builder);
 }
 
 void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)

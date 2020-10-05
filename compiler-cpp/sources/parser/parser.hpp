@@ -150,6 +150,7 @@ namespace f
 		Node_Type	ast_type;
 		AST_Node*	sibling;
 		Keyword		keyword;
+		Token		token;
 	};
 
 	struct AST_Statement_User_Type
