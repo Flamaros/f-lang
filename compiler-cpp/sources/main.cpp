@@ -130,7 +130,7 @@ int main(int ac, char** av)
 
 			defer { system::reset_path(cpp_file_path); };
 
-			system::from_native(cpp_file_path, (uint8_t*)u8R"(.\output.exe)");
+			system::from_native(cpp_file_path, (uint8_t*)u8R"(.\output)");
 
 			f::CPP_backend::compile(ir, cpp_file_path);
 		}

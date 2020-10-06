@@ -25,7 +25,7 @@ using namespace fstd::core;
 
 using namespace f;
 
-static void write_generated_code(String_Builder& file_string_builder, AST_Node* node, int64_t parent_index = -1, int64_t left_node_index = -1)
+static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, int64_t parent_index = -1, int64_t left_node_index = -1)
 {
 	if (!node) {
 		return;
@@ -49,7 +49,7 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 		AST_Alias* alias_node = (AST_Alias*)node;
 
 		print_to_builder(file_string_builder, "typedef ");
-		write_generated_code(file_string_builder, alias_node->type);
+		write_generated_code(file_string_builder, ir, alias_node->type);
 		print_to_builder(file_string_builder, " %v;\n", alias_node->type_name.text);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
@@ -57,17 +57,15 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 
 		print_to_builder(file_string_builder, "%v", basic_type_node->token.text);
 	}
-	//else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
-	//	AST_Statement_User_Type* user_type_node = (AST_Statement_User_Type*)node;
+	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
+		AST_Statement_User_Type* user_type_node = (AST_Statement_User_Type*)node;
 
-	//	print_to_builder(file_string_builder,
-	//		"%Cv"
-	//		"\n%v", magic_enum::enum_name(node->ast_type), user_type_node->identifier.text);
-	//}
+		print_to_builder(file_string_builder, "%v", user_type_node->identifier.text);
+	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
 		AST_Statement_Type_Pointer* basic_type_node = (AST_Statement_Type_Pointer*)node;
 
-		write_generated_code(file_string_builder, node->sibling, parent_index, node_index);
+		write_generated_code(file_string_builder, ir, node->sibling, parent_index, node_index);
 		print_to_builder(file_string_builder, "*");
 		recurse_sibling = false;
 	}
@@ -75,12 +73,11 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 		AST_Statement_Function* function_node = (AST_Statement_Function*)node;
 
 		print_to_builder(file_string_builder, "\n");
-		write_generated_code(file_string_builder, function_node->return_type);
+		write_generated_code(file_string_builder, ir, function_node->return_type);
 		print_to_builder(file_string_builder, " %v(", function_node->name.text);
-		write_generated_code(file_string_builder, (AST_Node*)function_node->arguments);
-		print_to_builder(file_string_builder, ")\n{\n");
-		write_generated_code(file_string_builder, (AST_Node*)function_node->scope);
-		print_to_builder(file_string_builder, "}\n");
+		write_generated_code(file_string_builder, ir, (AST_Node*)function_node->arguments);
+		print_to_builder(file_string_builder, ")\n");
+		write_generated_code(file_string_builder, ir, (AST_Node*)function_node->scope);
 	}
 	//else if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
 	//	AST_Statement_Variable* variable_node = (AST_Statement_Variable*)node;
@@ -89,18 +86,26 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 	//		"%Cv"
 	//		"\nname: %v (is_parameter: %d is_optional: %d)", magic_enum::enum_name(node->ast_type), variable_node->name.text, variable_node->is_function_paramter, variable_node->is_optional);
 	//}
-	//else if (node->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
-	//	AST_Statement_Type_Array* array_node = (AST_Statement_Type_Array*)node;
+	else if (node->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
+		AST_Statement_Type_Array* array_node = (AST_Statement_Type_Array*)node;
 
-	//	print_to_builder(file_string_builder,
-	//		"%Cv", magic_enum::enum_name(node->ast_type));
-	//}
-	//else if (node->ast_type == Node_Type::STATEMENT_SCOPE) {
-	//	AST_Statement_Scope* scope_node = (AST_Statement_Scope*)node;
+		write_generated_code(file_string_builder, ir, array_node->sibling, parent_index, node_index);
+		print_to_builder(file_string_builder, "[");
+		if (array_node->array_size) {
+			write_generated_code(file_string_builder, ir, (AST_Node*)array_node->array_size);
+		}
+		print_to_builder(file_string_builder, "]");
+		recurse_sibling = false;
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_SCOPE) {
+		AST_Statement_Scope* scope_node = (AST_Statement_Scope*)node;
 
-	//	print_to_builder(file_string_builder,
-	//		"%Cv", magic_enum::enum_name(node->ast_type));
-	//}
+		if (node != ir.ast->root)
+			print_to_builder(file_string_builder, "{\n");
+		write_generated_code(file_string_builder, ir, (AST_Node*)scope_node->first_child);
+		if (node != ir.ast->root)
+			print_to_builder(file_string_builder, "}\n");
+	}
 	//else if (node->ast_type == Node_Type::EXPRESSION) {
 	//	AST_Expression* expression_node = (AST_Expression*)node;
 
@@ -156,78 +161,12 @@ static void write_generated_code(String_Builder& file_string_builder, AST_Node* 
 	//}
 	//else {
 	//	core::Assert(false);
-	//	print_to_builder(file_string_builder,
-	//		"UNKNOWN type"
-	//		"\nnode_%ld", node_index);
+	// @TODO report error here?
 	//}
-	//print_to_builder(file_string_builder, "\" shape=box, style=filled, color=black, fillcolor=lightseagreen]\n");
-
-	// Children iteration
-	if (node->ast_type == Node_Type::TYPE_ALIAS) {
-		// No-op
-	}
-	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
-		// No children
-	}
-	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
-		// No children
-	}
-	else if (node->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
-		// No children
-	}
-	else if (node->ast_type == Node_Type::STATEMENT_FUNCTION) {
-		// No-op
-	}
-	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
-		AST_Statement_Variable* variable_node = (AST_Statement_Variable*)node;
-
-		write_generated_code(file_string_builder, variable_node->type, node_index);
-		write_generated_code(file_string_builder, (AST_Node*)variable_node->expression, node_index);
-	}
-	else if (node->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
-		AST_Statement_Type_Array* array_node = (AST_Statement_Type_Array*)node;
-
-		write_generated_code(file_string_builder, (AST_Node*)array_node->array_size, node_index);
-	}
-	else if (node->ast_type == Node_Type::STATEMENT_SCOPE) {
-		AST_Statement_Scope* scope_node = (AST_Statement_Scope*)node;
-
-		write_generated_code(file_string_builder, (AST_Node*)scope_node->first_child, node_index);
-	}
-	else if (node->ast_type == Node_Type::EXPRESSION) {
-		AST_Expression* expression_node = (AST_Expression*)node;
-
-		write_generated_code(file_string_builder, (AST_Node*)expression_node->first_child, node_index);
-	}
-	else if (node->ast_type == Node_Type::STATEMENT_LITERAL) {
-		// No children
-	}
-	else if (node->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
-		// No children
-	}
-	else if (node->ast_type == Node_Type::FUNCTION_CALL) {
-		AST_Function_Call* function_call_node = (AST_Function_Call*)node;
-
-		write_generated_code(file_string_builder, (AST_Node*)function_call_node->parameters, node_index);
-	}
-	else if (node->ast_type == Node_Type::OPERATOR_ADDRESS_OF) {
-		AST_ADDRESS_OF* address_of_node = (AST_ADDRESS_OF*)node;
-
-		write_generated_code(file_string_builder, (AST_Node*)address_of_node->right, node_index);
-	}
-	else if (node->ast_type == Node_Type::OPERATOR_MEMBER_ACCESS) {
-		AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;
-
-		write_generated_code(file_string_builder, (AST_Node*)member_access_node->left, node_index);
-		write_generated_code(file_string_builder, (AST_Node*)member_access_node->right, node_index);
-	}
-	else {
-		core::Assert(false);
-	}
 
 	// Sibling iteration
 	if (recurse_sibling && node->sibling) {
-		write_generated_code(file_string_builder, node->sibling, parent_index, node_index);
+		write_generated_code(file_string_builder, ir, node->sibling, parent_index, node_index);
 	}
 }
 
@@ -262,6 +201,7 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 	}
 
 	language::string	win32_api_declarations;
+	language::string	f_lang_basic_types;
 
 	language::assign(win32_api_declarations, (uint8_t*)
 		"// Calling conventions defines\n"
@@ -384,13 +324,26 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 		"	LPDWORD lpNumberOfBytesWritten,\n"
 		"	LPOVERLAPPED lpOverlapped\n"
 		");\n"
-		"\n");
+		"\n"
+	);
+
+	// This part can be specific to the targetted architecture, OS, and compiler!!!
+	language::assign(f_lang_basic_types, (uint8_t*)
+		"// We want to be able to use float without C runtime!!!\n"
+		"extern \"C\" int _fltused;\n"
+		"\n"
+		"// f-lang basic types\n"
+		"typedef int			i32;\n"
+		"typedef unsigned int	ui32;\n"
+		"\n"
+	);
 
 	print_to_builder(string_builder, "// Beginning of compiler code\n");
 	print_to_builder(string_builder, win32_api_declarations);
+	print_to_builder(string_builder, f_lang_basic_types);
 
 	print_to_builder(string_builder, "// Beginning of user code\n");
-	write_generated_code(string_builder, ir.ast->root);
+	write_generated_code(string_builder, ir, ir.ast->root);
 
 //	print_to_builder(string_builder, "}\n");
 
@@ -425,7 +378,9 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 
 	// Start compilation
 	free_buffers(string_builder);
-	print_to_builder(string_builder, "\"%s\"", cpp_file_path);
+	// No C++ runtime
+	// https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows#530
+	print_to_builder(string_builder, "-nologo -Gm- -GR- -EHa- -Oi -GS- -Gs9999999 \"%s\" -link -nodefaultlib /ENTRY:main /SUBSYSTEM:CONSOLE /STACK:0x100000,0x100000", cpp_file_path);
 	if (!system::execute_process(cl_path, to_string(string_builder))) {
 		f::Token dummy_token;
 

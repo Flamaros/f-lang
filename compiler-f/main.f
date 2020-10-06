@@ -8,8 +8,9 @@ myenum :: enum {
 
 // foo : Type = u32; // Type is a Type that store a type, this is compile time only. So foo is a compile time variable.
 
-alias DWORD = ui32;
-alias HANDLE = §void;
+// @TODO put it back when use API declarations will be done directly in f.
+//alias DWORD = ui32;
+//alias HANDLE = §void;
 
 // @TODO I think that it could be
 // DWORD :: ui32;
@@ -46,15 +47,15 @@ main :: (arguments : [] string) -> i32
 
 */
 
-	{
-		{
-			foo : §[]DWORD;
-		}
-	}
+	// {
+		// {
+			// foo : §[]DWORD;
+		// }
+	// }
 
-	neasted_function :: ()
-	{
-	}
+	// neasted_function :: ()
+	// {
+	// }
 	
     message:        string  = "Hello World";
     written_bytes:  DWORD   = 0;
