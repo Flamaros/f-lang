@@ -1,8 +1,13 @@
-!!! Finish the conversion from utf16 to utf8. (from_utf16LE_to_utf8 and to_utf8)
-!!! Add tests for unicode conversions.
+Add a pre-main that get arguments and call ExitProcess or do:
+return exit(main());
 
-Finish the calls to compile the generated cpp file.
 
+Implement everything that is necessary to be able to put win32 declarations directly in f-lang:
+ - Add an interpreter that simplify the tree:
+   - Generate unique function references (extract nested function to put them in the global scope, be able to store adresses,...). The interface of the interpreter should be able to help the cpp-backend to sort functions (maybe not necessary with predeclaration).
+   - Handle operator precedence
+ - Allow external function declarations
+ - Allow imports
 
 
 
