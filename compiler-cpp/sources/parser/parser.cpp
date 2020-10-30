@@ -142,6 +142,9 @@ void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
 					*type_node = (AST_Node*)array_node;
 				}
 			}
+			else {
+				report_error(Compiler_Error::error, current_token, "Expecting a type qualifier (a type modifier operator, a basic type keyword or a user type identifier).");
+			}
 		}
 		else if (current_token.type == Token_Type::KEYWORD) {
 			if (f::is_a_basic_type(current_token.value.keyword)) {

@@ -1,3 +1,9 @@
+Add array expressions in the AST tree
+Generate array expressions
+Generate expressions
+Add indentation
+
+
 Add a pre-main that get arguments and call ExitProcess or do:
 return exit(main());
 
@@ -10,7 +16,11 @@ Implement everything that is necessary to be able to put win32 declarations dire
  - Allow imports
 
 
+Start the implementation of native binary backend.
 
+Add compiler options:
+ - command line (debug/release)
+ - in the main.f directly for advanced configuration (64bit, debug options)
 
 
 
@@ -57,6 +67,7 @@ Bits operations:
 FSTD:
  - Is it better to use the Win32 equivalent of std::contional in a thread_pool implementation than a while(true) with a mutex (to lock the task container)
    and a yield (check if a CPU core stay at 100% while there is no task to run) ?
+   Win32 conditionnal variables: https://docs.microsoft.com/en-us/windows/win32/sync/condition-variables
  - Logger and report_error() should be able to share the same lock on the stdout (need we put it in globals or in stdio module?)
 
 Lexer:

@@ -65,7 +65,7 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
 		AST_Statement_Type_Pointer* basic_type_node = (AST_Statement_Type_Pointer*)node;
 
-		write_generated_code(file_string_builder, ir, node->sibling, parent_index, node_index);
+		write_generated_code(file_string_builder, ir, basic_type_node->sibling, parent_index, node_index);
 		print_to_builder(file_string_builder, "*");
 		recurse_sibling = false;
 	}
@@ -79,22 +79,53 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		print_to_builder(file_string_builder, ")\n");
 		write_generated_code(file_string_builder, ir, (AST_Node*)function_node->scope);
 	}
-	//else if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
-	//	AST_Statement_Variable* variable_node = (AST_Statement_Variable*)node;
+	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
+		// For array take a look at STATEMENT_TYPE_ARRAY
+		// Flamaros - 30 october 2020
 
-	//	print_to_builder(file_string_builder,
-	//		"%Cv"
-	//		"\nname: %v (is_parameter: %d is_optional: %d)", magic_enum::enum_name(node->ast_type), variable_node->name.text, variable_node->is_function_paramter, variable_node->is_optional);
-	//}
+		AST_Statement_Variable* variable_node = (AST_Statement_Variable*)node;
+		AST_Node* type = variable_node->type;
+
+		// Write type
+		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
+			// In this case we have to jump the array modifier
+			write_generated_code(file_string_builder, ir, variable_node->type->sibling, parent_index, node_index);
+		}
+		else {
+			write_generated_code(file_string_builder, ir, variable_node->type, parent_index, node_index);
+		}
+
+		// Write variable name
+		print_to_builder(file_string_builder, " %v", variable_node->name.text);
+
+		// Write array
+		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
+			write_generated_code(file_string_builder, ir, variable_node->type, parent_index, node_index);
+		}
+
+		// End the declaration
+		if (!variable_node->is_function_paramter) {
+			print_to_builder(file_string_builder, ";\n");
+		}
+	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
+		// In cpp with can't declare dynamic arrays on the stack so for simplicity we convert them as pointers.
+		// Flamaros - 30 october 2020
 		AST_Statement_Type_Array* array_node = (AST_Statement_Type_Array*)node;
 
-		write_generated_code(file_string_builder, ir, array_node->sibling, parent_index, node_index);
-		print_to_builder(file_string_builder, "[");
 		if (array_node->array_size) {
-			write_generated_code(file_string_builder, ir, (AST_Node*)array_node->array_size);
+			// It is the variable statement that is responsible to write the siblings of the array (the type and other modifiers)
+			// Because the array modifier appears after the variable name in this case.
+			print_to_builder(file_string_builder, "[");
+			if (array_node->array_size) {
+				write_generated_code(file_string_builder, ir, (AST_Node*)array_node->array_size);
+			}
+			print_to_builder(file_string_builder, "]");
 		}
-		print_to_builder(file_string_builder, "]");
+		else {
+			write_generated_code(file_string_builder, ir, array_node->sibling, parent_index, node_index);
+			print_to_builder(file_string_builder, "*");
+		}
 		recurse_sibling = false;
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_SCOPE) {
@@ -333,8 +364,22 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 		"extern \"C\" int _fltused;\n"
 		"\n"
 		"// f-lang basic types\n"
-		"typedef int			i32;\n"
-		"typedef unsigned int	ui32;\n"
+		"typedef int                   i8;\n"
+		"typedef unsigned int          ui8;\n"
+		"typedef int                   i16;\n"
+		"typedef unsigned int          ui16;\n"
+		"typedef int                   i32;\n"
+		"typedef unsigned int          ui32;\n"
+		"typedef long long             i64;\n"
+		"typedef unsigned long long    ui64;\n"
+		"\n"
+		"// Types that depend on the arch\n" // This section should be generated depending of the targeted architecture
+		"typedef ui64                  size_t;\n"
+		"\n"
+		"struct string {\n"
+		"	ui8*   data;\n"
+		"	size_t size;\n"
+		"};\n"
 		"\n"
 	);
 
@@ -380,7 +425,7 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 	free_buffers(string_builder);
 	// No C++ runtime
 	// https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows#530
-	print_to_builder(string_builder, "-nologo -Gm- -GR- -EHa- -Oi -GS- -Gs9999999 \"%s\" -link -nodefaultlib /ENTRY:main /SUBSYSTEM:CONSOLE /STACK:0x100000,0x100000", cpp_file_path);
+	print_to_builder(string_builder, "/nologo /Gm- /GR- /EHa- /Oi /GS- /Gs9999999 /utf-8 \"%s\" -link -nodefaultlib /ENTRY:main /SUBSYSTEM:CONSOLE /STACK:0x100000,0x100000", cpp_file_path);
 	if (!system::execute_process(cl_path, to_string(string_builder))) {
 		f::Token dummy_token;
 
