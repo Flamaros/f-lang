@@ -1,7 +1,6 @@
 Add array expressions in the AST tree
 Generate array expressions
 Generate expressions
-Add indentation
 
 
 Add a pre-main that get arguments and call ExitProcess or do:

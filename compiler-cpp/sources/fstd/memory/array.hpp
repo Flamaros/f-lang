@@ -62,6 +62,9 @@ namespace fstd
 		template<typename Type>
 		void release(Array<Type>& array)
 		{
+			//if (array.ptr == nullptr) {
+			//	return;
+			//}
 			system::free(array.ptr);
 			array.ptr = nullptr;
 			array.reserved = 0;

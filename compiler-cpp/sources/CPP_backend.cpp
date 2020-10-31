@@ -25,26 +25,45 @@ using namespace fstd::core;
 
 using namespace f;
 
-static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, int64_t parent_index = -1, int64_t left_node_index = -1)
+inline static void write_indentation(String_Builder& file_string_builder, uint8_t indentation)
+{
+	if (indentation == 0) return;
+
+	// Up to 50 tabulations
+	static uint8_t* spaces_buffer = (uint8_t*)u8"\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
+
+	language::string_view	indentation_string;
+
+	if (indentation > 50) indentation = 50; // @TODO use a max intrinsic
+	language::assign(indentation_string, spaces_buffer, indentation);
+	print_to_builder(file_string_builder, "%v", indentation_string);
+}
+
+inline static void indented_print_to_builder(String_Builder& file_string_builder, uint8_t indentation, const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+
+	write_indentation(file_string_builder, indentation);
+
+	language::string	format_string;
+
+	language::assign(format_string, (uint8_t*)format);
+	defer{ language::release(format_string); };
+
+	print_to_builder(file_string_builder, &format_string, args);
+
+	va_end(args);
+}
+
+static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation = 0)
 {
 	if (!node) {
 		return;
 	}
 
-	static uint32_t		nb_nodes = 0;
-	uint32_t			node_index = nb_nodes++;
-	bool				recurse_sibling = true;
+	bool	recurse_sibling = true;
 
-	//if (parent_index != -1) {
-	//	if (left_node_index == -1) {
-	//		print_to_builder(file_string_builder, "\t" "node_%ld -> node_%ld\n", parent_index, node_index);
-	//	}
-	//	else {
-	//		print_to_builder(file_string_builder, "\t" "node_%ld -> node_%ld [color=\"dodgerblue\"]\n", parent_index, node_index);
-	//	}
-	//}
-
-	//print_to_builder(file_string_builder, "\n\t" "node_%ld [label=\"", node_index);
 	if (node->ast_type == Node_Type::TYPE_ALIAS) {
 		AST_Alias* alias_node = (AST_Alias*)node;
 
@@ -55,17 +74,17 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
 		AST_Statement_Basic_Type* basic_type_node = (AST_Statement_Basic_Type*)node;
 
-		print_to_builder(file_string_builder, "%v", basic_type_node->token.text);
+		indented_print_to_builder(file_string_builder, indentation, "%v", basic_type_node->token.text);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
 		AST_Statement_User_Type* user_type_node = (AST_Statement_User_Type*)node;
 
-		print_to_builder(file_string_builder, "%v", user_type_node->identifier.text);
+		indented_print_to_builder(file_string_builder, indentation, "%v", user_type_node->identifier.text);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
 		AST_Statement_Type_Pointer* basic_type_node = (AST_Statement_Type_Pointer*)node;
 
-		write_generated_code(file_string_builder, ir, basic_type_node->sibling, parent_index, node_index);
+		write_generated_code(file_string_builder, ir, basic_type_node->sibling, indentation);
 		print_to_builder(file_string_builder, "*");
 		recurse_sibling = false;
 	}
@@ -83,16 +102,18 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		// For array take a look at STATEMENT_TYPE_ARRAY
 		// Flamaros - 30 october 2020
 
-		AST_Statement_Variable* variable_node = (AST_Statement_Variable*)node;
-		AST_Node* type = variable_node->type;
+		AST_Statement_Variable*	variable_node = (AST_Statement_Variable*)node;
+		AST_Node*				type = variable_node->type;
+
+		uint8_t type_indentation = variable_node->is_function_paramter ? 0 : indentation;
 
 		// Write type
 		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
 			// In this case we have to jump the array modifier
-			write_generated_code(file_string_builder, ir, variable_node->type->sibling, parent_index, node_index);
+			write_generated_code(file_string_builder, ir, variable_node->type->sibling, type_indentation);
 		}
 		else {
-			write_generated_code(file_string_builder, ir, variable_node->type, parent_index, node_index);
+			write_generated_code(file_string_builder, ir, variable_node->type, type_indentation);
 		}
 
 		// Write variable name
@@ -100,7 +121,7 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 
 		// Write array
 		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
-			write_generated_code(file_string_builder, ir, variable_node->type, parent_index, node_index);
+			write_generated_code(file_string_builder, ir, variable_node->type);
 		}
 
 		// End the declaration
@@ -123,7 +144,7 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 			print_to_builder(file_string_builder, "]");
 		}
 		else {
-			write_generated_code(file_string_builder, ir, array_node->sibling, parent_index, node_index);
+			write_generated_code(file_string_builder, ir, array_node->sibling, indentation);
 			print_to_builder(file_string_builder, "*");
 		}
 		recurse_sibling = false;
@@ -132,10 +153,10 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		AST_Statement_Scope* scope_node = (AST_Statement_Scope*)node;
 
 		if (node != ir.ast->root)
-			print_to_builder(file_string_builder, "{\n");
-		write_generated_code(file_string_builder, ir, (AST_Node*)scope_node->first_child);
+			indented_print_to_builder(file_string_builder, indentation, "{\n");
+		write_generated_code(file_string_builder, ir, (AST_Node*)scope_node->first_child, indentation + 1);
 		if (node != ir.ast->root)
-			print_to_builder(file_string_builder, "}\n");
+			indented_print_to_builder(file_string_builder, indentation, "}\n");
 	}
 	//else if (node->ast_type == Node_Type::EXPRESSION) {
 	//	AST_Expression* expression_node = (AST_Expression*)node;
@@ -197,7 +218,7 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 
 	// Sibling iteration
 	if (recurse_sibling && node->sibling) {
-		write_generated_code(file_string_builder, ir, node->sibling, parent_index, node_index);
+		write_generated_code(file_string_builder, ir, node->sibling, indentation);
 	}
 }
 
@@ -389,8 +410,6 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 
 	print_to_builder(string_builder, "// Beginning of user code\n");
 	write_generated_code(string_builder, ir, ir.ast->root);
-
-//	print_to_builder(string_builder, "}\n");
 
 	file_content = to_string(string_builder);
 
