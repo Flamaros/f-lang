@@ -89,16 +89,9 @@ void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array**
 
 	stream::peek(stream); // [
 
-// @TODO Implement it
-	while (true)
-	{
-		current_token = stream::get(stream);
-		if (current_token.value.punctuation == Punctuation::CLOSE_BRACKET) {
-			stream::peek(stream);
-			return;
-		}
-		stream::peek(stream);
-	}
+	parse_expression(stream, (AST_Node**)&array_node->array_size, true, Punctuation::CLOSE_BRACKET);
+
+	stream::peek(stream); // ]
 }
 
 void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
