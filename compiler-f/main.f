@@ -25,6 +25,15 @@ myenum :: enum {
 
 // foo : Type = u32; // Type is a Type that store a type, this is compile time only. So foo is a compile time variable.
 
+//
+// literals (immutable):
+//  numeric_literal :: int.[99, 88, 77, 66, 55];
+//  string_literal  :: "Hello World";
+//
+// pointer1 := numeric_literal.data
+// pointer2 := string_literal.data
+//
+
 main :: (arguments : [] string) -> i32
 {
 /*
