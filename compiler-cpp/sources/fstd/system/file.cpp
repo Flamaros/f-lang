@@ -2,7 +2,7 @@
 
 #include <fstd/language/flags.hpp>
 #include <fstd/core/unicode.hpp>
-#include <fstd/language/string.hpp>
+import fstd.language.string;
 
 #if defined(FSTD_OS_WINDOWS)
 #	include <Windows.h>
@@ -12,7 +12,7 @@
 #include <tracy/Tracy.hpp>
 #include <tracy/common/TracySystem.hpp>
 
-#include <fstd/core/assert.hpp>
+import fstd.core.assert;
 
 // @TODO
 //

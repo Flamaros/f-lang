@@ -2,7 +2,7 @@
 
 #include <fstd/platform.hpp>
 
-#include <fstd/language/string_view.hpp>
+import fstd.language.string_view;
 #include <fstd/core/unicode.hpp>
 
 #include <fstd/os/windows/console.hpp>

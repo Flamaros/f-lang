@@ -1,6 +1,6 @@
 ﻿#include "native_generator.hpp"
 
-#include "globals.hpp"
+import f.globals;
 #include "macros.hpp"
 
 #include "IR_generator.hpp"
@@ -10,17 +10,17 @@
 #include "parser/parser.hpp"
 #include "tests/tests.hpp"
 
-#include <fstd/core/string_builder.hpp>
-#include <fstd/core/logger.hpp>
+import fstd.core.string_builder;
+import fstd.core.logger;
 
-#include <fstd/language/defer.hpp>
+import fstd.language.defer;
 
-#include <fstd/memory/array.hpp>
+import fstd.memory.array;
 
-#include <fstd/system/file.hpp>
-#include <fstd/system/process.hpp>
+import fstd.system.file;
+import fstd.system.process;
 
-#include <fstd/os/windows/console.hpp>
+import fstd.os.windows.console;
 
 #undef max
 #include <tracy/Tracy.hpp>

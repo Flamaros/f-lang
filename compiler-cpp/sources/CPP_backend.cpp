@@ -2,15 +2,15 @@
 
 #include "globals.hpp"
 
-#include <fstd/core/string_builder.hpp>
+import fstd.core.string_builder;
 
 #include <fstd/system/file.hpp>
-#include <fstd/system/stdio.hpp>
+import fstd.system.stdio;
 #include <fstd/system/process.hpp>
 
-#include <fstd/language/defer.hpp>
-#include <fstd/language/flags.hpp>
-#include <fstd/language/string.hpp>
+import fstd.language.defer;
+import fstd.language.flags;
+import fstd.language.string;
 
 #undef max
 #include <tracy/Tracy.hpp>

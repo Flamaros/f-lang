@@ -1,9 +1,9 @@
 #include "string_builder.hpp"
 
 #include <fstd/language/intrinsic.hpp>
-#include <fstd/language/defer.hpp>
+import fstd.language.defer;
 
-#include <fstd/core/assert.hpp>
+import fstd.core.assert;
 #include <fstd/core/unicode.hpp>
 
 #include <cstdarg>	// @TODO remove it

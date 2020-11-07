@@ -2,7 +2,7 @@
 
 #include <fstd/system/allocator.hpp>
 
-#include <fstd/core/assert.hpp>
+import fstd.core.assert;
 
 //#include <iostream>
 

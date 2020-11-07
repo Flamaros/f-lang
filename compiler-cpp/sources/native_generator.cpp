@@ -1,6 +1,6 @@
 #include "native_generator.hpp"
 
-#include <fstd/system/file.hpp>
+import fstd.system.file;
 
 #include <iostream>
 
@@ -9,7 +9,7 @@
 #include <time.h>
 #include <assert.h>
 
-#include <fstd/core/assert.hpp>
+import fstd.core.assert;
 
 using namespace fstd;
 

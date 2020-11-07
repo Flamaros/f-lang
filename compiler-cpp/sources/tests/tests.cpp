@@ -2,11 +2,11 @@
 
 #include <fstd/system/timer.hpp>
 
-#include <fstd/core/assert.hpp>
-#include <fstd/core/unicode.hpp>
+import fstd.core.assert;
+import fstd.core.unicode;
 
-#include <fstd/language/string.hpp>
-#include <fstd/language/defer.hpp>
+import fstd.language.string;
+import fstd.language.defer;
 
 // @TODO remove it
 #include <vector>

@@ -5,7 +5,7 @@
 #include <fstd/core/string_builder.hpp>
 #include <fstd/core/unicode.hpp>
 
-#include <fstd/language/defer.hpp>
+import fstd.language.defer;
 
 #if defined(FSTD_OS_WINDOWS)
 #	include <Windows.h>

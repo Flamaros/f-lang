@@ -46,9 +46,6 @@
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
       <Filter>Source Files\third-party</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\globals.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\macros.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -58,148 +55,100 @@
     <ClInclude Include="..\sources\third-party\magic_enum.hpp">
       <Filter>Source Files\third-party</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\bucket.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\system\file.hpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\fstd\platform.hpp">
       <Filter>Source Files\fstd</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\fstd\system\path.hpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\system\allocator.hpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\os\windows\console.hpp">
-      <Filter>Source Files\fstd\os\windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\system\stdio.hpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\array.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\core\logger.hpp">
-      <Filter>Source Files\fstd\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\language\defer.hpp">
-      <Filter>Source Files\fstd\language</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\language\flags.hpp">
-      <Filter>Source Files\fstd\language</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\system\timer.hpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\language\string.hpp">
-      <Filter>Source Files\fstd\language</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\language\string_view.hpp">
-      <Filter>Source Files\fstd\language</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\core\string_builder.hpp">
-      <Filter>Source Files\fstd\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\language\intrinsic.hpp">
-      <Filter>Source Files\fstd\language</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\hash_table.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\language\types.hpp">
-      <Filter>Source Files\fstd\language</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\core\assert.hpp">
-      <Filter>Source Files\fstd\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\lexer\lexer.hpp">
-      <Filter>Source Files\lexer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\parser\parser.hpp">
-      <Filter>Source Files\parser</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\tests\tests.hpp">
-      <Filter>Source Files\tests</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\lexer\hash_table.hpp">
-      <Filter>Source Files\lexer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp">
-      <Filter>Source Files\lexer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\system\process.hpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\core\unicode.hpp">
-      <Filter>Source Files\fstd\core</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\stream\array_stream.hpp">
-      <Filter>Source Files\fstd\stream</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\IR_generator.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\CPP_backend.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\globals.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\native_generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\fstd\system\file.cpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\fstd\system\path.cpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\fstd\system\allocator.cpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\fstd\os\windows\console.cpp">
-      <Filter>Source Files\fstd\os\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\fstd\system\stdio.cpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\fstd\core\logger.cpp">
+    <ClCompile Include="..\sources\fstd\core\assert.cppm">
       <Filter>Source Files\fstd\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\fstd\core\string_builder.cpp">
+    <ClCompile Include="..\sources\fstd\core\logger.cppm">
       <Filter>Source Files\fstd\core</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\fstd\language\string.cpp">
+    <ClCompile Include="..\sources\fstd\memory\array.cppm">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\memory\bucket.cppm">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\language\defer.cppm">
       <Filter>Source Files\fstd\language</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\fstd\core\assert.cpp">
-      <Filter>Source Files\fstd\core</Filter>
+    <ClCompile Include="..\sources\fstd\language\flags.cppm">
+      <Filter>Source Files\fstd\language</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\lexer\lexer.cpp">
-      <Filter>Source Files\lexer</Filter>
+    <ClCompile Include="..\sources\fstd\language\intrinsic.cppm">
+      <Filter>Source Files\fstd\language</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\parser\parser.cpp">
-      <Filter>Source Files\parser</Filter>
+    <ClCompile Include="..\sources\fstd\language\string.cppm">
+      <Filter>Source Files\fstd\language</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\tests\tests.cpp">
-      <Filter>Source Files\tests</Filter>
+    <ClCompile Include="..\sources\fstd\language\string_view.cppm">
+      <Filter>Source Files\fstd\language</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\fstd\system\process.cpp">
+    <ClCompile Include="..\sources\fstd\language\types.cppm">
+      <Filter>Source Files\fstd\language</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\allocator.cppm">
       <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\IR_generator.cpp">
+    <ClCompile Include="..\sources\fstd\stream\array_stream.cppm">
+      <Filter>Source Files\fstd\stream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\memory\bucket_array.cppm">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\os\windows\console.cppm">
+      <Filter>Source Files\fstd\os\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\CPP_backend.cppm">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\CPP_backend.cpp">
+    <ClCompile Include="..\sources\fstd\system\file.cppm">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\globals.cppm">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\lexer\hash_table.cppm">
+      <Filter>Source Files\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\IR_generator.cppm">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\lexer\keyword_hash_table.cppm">
+      <Filter>Source Files\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\lexer\lexer.cppm">
+      <Filter>Source Files\lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\parser\parser.cppm">
+      <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\path.cppm">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\process.cppm">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\stdio.cppm">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\core\string_builder.cppm">
+      <Filter>Source Files\fstd\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\tests\tests.cppm">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\timer.cppm">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\core\unicode.cppm">
+      <Filter>Source Files\fstd\core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

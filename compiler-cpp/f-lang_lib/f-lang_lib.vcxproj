@@ -27,60 +27,99 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\CPP_backend.hpp" />
-    <ClInclude Include="..\sources\fstd\core\assert.hpp" />
-    <ClInclude Include="..\sources\fstd\core\logger.hpp" />
-    <ClInclude Include="..\sources\fstd\core\string_builder.hpp" />
-    <ClInclude Include="..\sources\fstd\core\unicode.hpp" />
-    <ClInclude Include="..\sources\fstd\language\defer.hpp" />
-    <ClInclude Include="..\sources\fstd\language\flags.hpp" />
-    <ClInclude Include="..\sources\fstd\language\intrinsic.hpp" />
-    <ClInclude Include="..\sources\fstd\language\string.hpp" />
-    <ClInclude Include="..\sources\fstd\language\string_view.hpp" />
-    <ClInclude Include="..\sources\fstd\language\types.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\array.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\bucket.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\hash_table.hpp" />
-    <ClInclude Include="..\sources\fstd\os\windows\console.hpp" />
-    <ClInclude Include="..\sources\fstd\platform.hpp" />
-    <ClInclude Include="..\sources\fstd\stream\array_stream.hpp" />
-    <ClInclude Include="..\sources\fstd\system\allocator.hpp" />
-    <ClInclude Include="..\sources\fstd\system\file.hpp" />
-    <ClInclude Include="..\sources\fstd\system\path.hpp" />
-    <ClInclude Include="..\sources\fstd\system\process.hpp" />
-    <ClInclude Include="..\sources\fstd\system\stdio.hpp" />
-    <ClInclude Include="..\sources\fstd\system\timer.hpp" />
-    <ClInclude Include="..\sources\globals.hpp" />
-    <ClInclude Include="..\sources\IR_generator.hpp" />
-    <ClInclude Include="..\sources\lexer\hash_table.hpp" />
-    <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp" />
-    <ClInclude Include="..\sources\lexer\lexer.hpp" />
+    <ClCompile Include="..\sources\CPP_backend.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\core\string_builder.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\core\unicode.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\language\defer.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\language\flags.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\language\intrinsic.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\language\string.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\language\string_view.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\language\types.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\memory\array.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\memory\bucket.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\memory\bucket_array.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\os\windows\console.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClInclude Include="..\sources\fstd\platform.hpp">
+      <FileType>Document</FileType>
+    </ClInclude>
+    <ClCompile Include="..\sources\fstd\stream\array_stream.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\allocator.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\file.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\path.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\process.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\stdio.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\timer.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\globals.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\IR_generator.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\lexer\hash_table.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\lexer\keyword_hash_table.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\lexer\lexer.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
     <ClInclude Include="..\sources\macros.hpp" />
     <ClInclude Include="..\sources\native_generator.hpp" />
-    <ClInclude Include="..\sources\parser\parser.hpp" />
-    <ClInclude Include="..\sources\tests\tests.hpp" />
+    <ClCompile Include="..\sources\parser\parser.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
+    <ClCompile Include="..\sources\tests\tests.cppm">
+      <FileType>Document</FileType>
+    </ClCompile>
     <ClInclude Include="..\sources\third-party\magic_enum.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\CPP_backend.cpp" />
-    <ClCompile Include="..\sources\fstd\core\assert.cpp" />
-    <ClCompile Include="..\sources\fstd\core\logger.cpp" />
-    <ClCompile Include="..\sources\fstd\core\string_builder.cpp" />
-    <ClCompile Include="..\sources\fstd\language\string.cpp" />
-    <ClCompile Include="..\sources\fstd\os\windows\console.cpp" />
-    <ClCompile Include="..\sources\fstd\system\allocator.cpp" />
-    <ClCompile Include="..\sources\fstd\system\file.cpp" />
-    <ClCompile Include="..\sources\fstd\system\path.cpp" />
-    <ClCompile Include="..\sources\fstd\system\process.cpp" />
-    <ClCompile Include="..\sources\fstd\system\stdio.cpp" />
-    <ClCompile Include="..\sources\globals.cpp" />
-    <ClCompile Include="..\sources\IR_generator.cpp" />
-    <ClCompile Include="..\sources\lexer\lexer.cpp" />
+    <ClCompile Include="..\sources\fstd\core\assert.cppm" />
+    <ClCompile Include="..\sources\fstd\core\logger.cppm" />
     <ClCompile Include="..\sources\native_generator.cpp" />
-    <ClCompile Include="..\sources\parser\parser.cpp" />
-    <ClCompile Include="..\sources\tests\tests.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -180,7 +219,7 @@
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -198,7 +237,7 @@
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -218,7 +257,7 @@
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -240,7 +279,7 @@
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;TRACY_ENABLE;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -262,7 +301,7 @@
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -284,7 +323,7 @@
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;TRACY_ENABLE;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>

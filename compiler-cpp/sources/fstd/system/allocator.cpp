@@ -7,7 +7,7 @@
 #endif
 
 //#include <cmath>
-#include <fstd/core/assert.hpp>
+import fstd.core.assert;
 
 // Need we use VirtualAlloc instead of HeapAlloc, to support allocation of bigger buffers?
 // A size of 16MB seems good.

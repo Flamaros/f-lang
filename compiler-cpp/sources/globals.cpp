@@ -2,14 +2,14 @@
 
 #include "lexer/lexer.hpp"
 
-#include <fstd/language/string.hpp>
-#include <fstd/language/defer.hpp>
+import fstd.language.string;
+import fstd.language.defer;
 
-#include <fstd/core/logger.hpp>
-#include <fstd/core/string_builder.hpp>
+import fstd.core.logger;
+import fstd.core.string_builder;
 
 #include <fstd/system/process.hpp>
-#include <fstd/system/stdio.hpp>
+import fstd.system.stdio;
 
 thread_local Globals    globals;
 
