@@ -75,9 +75,6 @@
     <ClCompile Include="..\sources\fstd\memory\bucket.cppm">
       <Filter>Source Files\fstd\memory</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\fstd\language\defer.cppm">
-      <Filter>Source Files\fstd\language</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\fstd\language\flags.cppm">
       <Filter>Source Files\fstd\language</Filter>
     </ClCompile>
@@ -149,6 +146,9 @@
     </ClCompile>
     <ClCompile Include="..\sources\fstd\core\unicode.cppm">
       <Filter>Source Files\fstd\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\language\defer.hpp">
+      <Filter>Source Files\fstd\language</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

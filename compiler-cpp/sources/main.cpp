@@ -13,7 +13,7 @@ import f.globals;
 import fstd.core.string_builder;
 import fstd.core.logger;
 
-import fstd.language.defer;
+#include <fstd/language/defer.hpp>
 
 import fstd.memory.array;
 

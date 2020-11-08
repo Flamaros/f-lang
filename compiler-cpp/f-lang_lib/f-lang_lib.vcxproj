@@ -36,9 +36,9 @@
     <ClCompile Include="..\sources\fstd\core\unicode.cppm">
       <FileType>Document</FileType>
     </ClCompile>
-    <ClCompile Include="..\sources\fstd\language\defer.cppm">
+    <ClInclude Include="..\sources\fstd\language\defer.hpp">
       <FileType>Document</FileType>
-    </ClCompile>
+    </ClInclude>
     <ClCompile Include="..\sources\fstd\language\flags.cppm">
       <FileType>Document</FileType>
     </ClCompile>
