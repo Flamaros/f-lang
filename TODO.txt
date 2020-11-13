@@ -1,5 +1,5 @@
-Generate array expressions
 Generate expressions
+Generate array expressions
 
 
 Add a pre-main that get arguments and call ExitProcess or do:
@@ -19,6 +19,9 @@ Start the implementation of native binary backend.
 Add compiler options:
  - command line (debug/release)
  - in the main.f directly for advanced configuration (64bit, debug options)
+
+
+Start generating ASM with JIT for the compile time code execution, then look on how to generate the executable from scratch.
 
 
 
