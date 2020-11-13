@@ -58,6 +58,7 @@
     <ClInclude Include="..\sources\fstd\platform.hpp">
       <Filter>Source Files\fstd</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\language\defer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\native_generator.cpp">
@@ -146,9 +147,6 @@
     </ClCompile>
     <ClCompile Include="..\sources\fstd\core\unicode.cppm">
       <Filter>Source Files\fstd\core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\fstd\language\defer.hpp">
-      <Filter>Source Files\fstd\language</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
