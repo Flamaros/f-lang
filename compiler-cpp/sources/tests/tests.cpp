@@ -170,6 +170,19 @@ void test_unicode_string_convversions()
 	fstd::core::Assert(are_equals(to_utf8_string, utf8_string));
 }
 
+void test_AST_operator_precedence()
+{
+	//memory::Array<f::Token>	tokens;
+	//f::AST					parsing_result;
+	//f::IR					ir;
+	//int						result = 0;
+
+	//f::initialize_lexer();
+	//f::lex(path, tokens);
+
+	//f::parse(tokens, parsing_result);
+}
+
 void run_tests()
 {
 	ZoneScopedNC("run_tests", 0xb71c1c);
@@ -179,4 +192,5 @@ void run_tests()
 #endif
 	test_unicode_code_point_convversions();
 	test_unicode_string_convversions();
+	test_AST_operator_precedence();
 }

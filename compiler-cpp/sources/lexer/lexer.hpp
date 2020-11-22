@@ -232,6 +232,7 @@ namespace f
 
     void    initialize_lexer();
 	void    lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens);
+    void    lex(const fstd::system::Path& path, fstd::memory::Array<uint8_t>& file_buffer, fstd::memory::Array<Token>& tokens, fstd::memory::Array<f::Lexer_Data>& lexer_data, Token& file_token);
     void    print(fstd::memory::Array<Token>& tokens);
 
 

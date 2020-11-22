@@ -317,17 +317,11 @@ static inline void polish_string_literal(f::Token& token)
 
 void f::lex(const system::Path& path, memory::Array<Token>& tokens)
 {
-	ZoneScopedNC("f::lex",  0x1b5e20);
+    ZoneScopedNC("f::lex", 0x1b5e20);
 
     Lexer_Data                      lexer_data;
     system::File	                file;
     Token                           file_token;
-    stream::Array_Stream<uint8_t>   stream;
-    size_t	                        nb_tokens_prediction = 0;
-    uint64_t                        file_size;
-    language::string_view           current_view;
-    int					            current_line = 1;
-    int					            current_column = 1;
 
     if (system::open_file(file, path, system::File::Opening_Flag::READ) == false) {
         file_token.type = Token_Type::UNKNOWN;
@@ -339,12 +333,22 @@ void f::lex(const system::Path& path, memory::Array<Token>& tokens)
 
     defer{ system::close_file(file); };
 
-    file_size = system::get_file_size(file);
-
-    lexer_data.file_buffer = system::initiate_get_file_content_asynchronously(file);
+    system::copy(lexer_data.file_path, path);
+    lexer_data.file_buffer = system::get_file_content(file);
     memory::array_push_back(globals.lexer_data, lexer_data);
 
-    stream::initialize_memory_stream<uint8_t>(stream, lexer_data.file_buffer);
+    lex(path, lexer_data.file_buffer, tokens, globals.lexer_data, file_token);
+}
+
+void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer, fstd::memory::Array<Token>& tokens, fstd::memory::Array<f::Lexer_Data>& lexer_data, Token& file_token)
+{
+    stream::Array_Stream<uint8_t>   stream;
+    size_t	                        nb_tokens_prediction = 0;
+    language::string_view           current_view;
+    int					            current_line = 1;
+    int					            current_column = 1;
+
+    stream::initialize_memory_stream<uint8_t>(stream, file_buffer);
 
     if (stream::is_eof(stream) == true) {
         return;
@@ -357,13 +361,12 @@ void f::lex(const system::Path& path, memory::Array<Token>& tokens)
     //
     // Flamaros - 01 february 2020
 
-    nb_tokens_prediction = file_size / tokens_length_heuristic;
+    nb_tokens_prediction = get_array_size(file_buffer) / tokens_length_heuristic;
 
     memory::reserve_array(tokens, nb_tokens_prediction);
 
     language::assign(current_view, stream::get_pointer(stream), 0);
 
-    wait_for_availabe_asynchronous_content(file, stream::get_position(stream) + 4);
     bool has_utf8_boom = stream::is_uft8_bom(stream, true);
 
     if (has_utf8_boom == false) {
@@ -814,7 +817,7 @@ void f::lex(const system::Path& path, memory::Array<Token>& tokens)
     }
 
 	if (nb_tokens_prediction < memory::get_array_size(tokens)) {
-		log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f",  nb_tokens_prediction, memory::get_array_size(tokens), (float)memory::get_array_size(tokens) / (float)file_size);
+		log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f",  nb_tokens_prediction, memory::get_array_size(tokens), (float)memory::get_array_size(tokens) / (float)get_array_size(file_buffer));
 	}
 
     log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: nb_find_calls: %d - nb_collisions_in_find: %d\n", keywords.nb_find_calls(), keywords.nb_collisions_in_find());

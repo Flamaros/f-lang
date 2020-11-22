@@ -170,4 +170,10 @@ https://sonictk.github.io/asm_tutorial/#hello,worldrevisted/writingabuildscript
 #####################################
 JIT:
 https://stackoverflow.com/questions/4911993/how-to-generate-and-run-native-code-dynamically 
-Libjit 
+Libjit
+
+#####################################
+ASM:
+https://software.intel.com/content/www/us/en/develop/download/intel-64-and-ia-32-architectures-sdm-combined-volumes-2a-2b-2c-and-2d-instruction-set-reference-a-z.html
+https://revers.engineering/applied-re-accelerated-assembly-p1/
+https://revers.engineering/applied-re-basic-architecture/

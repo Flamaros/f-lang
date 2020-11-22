@@ -135,50 +135,6 @@ namespace fstd
 #endif
 		}
 
-		memory::Array<uint8_t> initiate_get_file_content_asynchronously(File& file)
-		{
-			ZoneScopedNC("fstd::system::initiate_get_file_content_asynchronously", 0x534bae);
-			// @TODO implement it correctly
-			//
-			// We need to initiate an asynchronous read with ReadEx and Overlapped struct
-			// under Window platform.
-			// We will read step by steps with a fixed size.
-			//
-			// The capacity of the returned buffer should be pre-allocated.
-			//
-			// Even this function should not lock on the first read, this will allow the user
-			// to do some operation in the background.
-			//
-			// Flamaros - 01 february 2020
-			return get_file_content(file);
-		}
-
-		bool get_file_content_asynchronously(File& file, memory::Array<uint8_t>& buffer)
-		{
-			ZoneScopedNC("fstd::system::get_file_content_asynchronously", 0x534bae);
-			// @TODO implement it
-			//
-			// 
-			//
-			// Flamaros - 01 february 2020
-
-#if defined(FSTD_OS_WINDOWS)
-			return true;
-#else
-#	error
-#endif
-		}
-
-		bool wait_for_availabe_asynchronous_content(File& file, size_t size)
-		{
-			ZoneScopedNC("fstd::system::wait_for_availabe_asynchronous_content", 0x534bae);
-#if defined(FSTD_OS_WINDOWS)
-			return true;
-#else
-#	error
-#endif
-		}
-
 		bool write_file(File& file, uint8_t* buffer, uint32_t length)
 		{
 			ZoneScopedN("fstd::system::write_file");

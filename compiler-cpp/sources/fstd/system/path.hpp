@@ -36,5 +36,11 @@ namespace fstd
 		{
 			return path.is_absolute;
 		}
+
+		inline void				copy(Path& path, const Path& source)
+		{
+			language::copy(path.string, 0, source.string);
+			path.is_absolute = source.is_absolute;
+		}
 	}
 }
