@@ -1,6 +1,16 @@
 Generate expressions
 Generate array expressions
 
+**********************************************
+See ryan fleury blog post on scripting language
+Opérator precedence fix
+
+https://ryanfleury.net/blog_a_custom_scripting_language_1
+**********************************************
+
+
+
+
 
 Add a pre-main that get arguments and call ExitProcess or do:
 return exit(main());

@@ -38,9 +38,6 @@
     <Filter Include="Source Files\parser">
       <UniqueIdentifier>{541cff7c-2fcb-4d1d-a2bd-b8ec7d60d814}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\tests">
-      <UniqueIdentifier>{f3bff053-5343-4809-b80f-1beb8e9908d7}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
@@ -124,9 +121,6 @@
     <ClInclude Include="..\sources\parser\parser.hpp">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\tests\tests.hpp">
-      <Filter>Source Files\tests</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\lexer\hash_table.hpp">
       <Filter>Source Files\lexer</Filter>
     </ClInclude>
@@ -188,9 +182,6 @@
     </ClCompile>
     <ClCompile Include="..\sources\parser\parser.cpp">
       <Filter>Source Files\parser</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\tests\tests.cpp">
-      <Filter>Source Files\tests</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\fstd\system\process.cpp">
       <Filter>Source Files\fstd\system</Filter>

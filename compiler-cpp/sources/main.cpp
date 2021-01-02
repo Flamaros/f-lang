@@ -8,7 +8,6 @@
 
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
-#include "tests/tests.hpp"
 
 #include <fstd/core/string_builder.hpp>
 #include <fstd/core/logger.hpp>
@@ -60,12 +59,7 @@ void convert_dot_file_to_png(const system::Path& dot_file_path, const system::Pa
 
 int main(int ac, char** av)
 {
-	run_tests();
-
-	memory::Array<f::Token>	tokens;
-    f::AST					parsing_result;
-	f::IR					ir;
-	int						result = 0;
+	// Begin Initialization ================================================
 
 	system::allocator_initialize();
 
@@ -85,7 +79,12 @@ int main(int ac, char** av)
 #endif
 
 	FrameMark;
-	// Initialization and tests ================================================
+	// End Initialization ================================================
+
+	memory::Array<f::Token>	tokens;
+	f::AST					parsing_result;
+	f::IR					ir;
+	int						result = 0;
 
 	{
 		ZoneScopedN("f-lang parsing");

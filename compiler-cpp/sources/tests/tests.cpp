@@ -1,12 +1,21 @@
 #include "tests.hpp"
 
+#include "globals.hpp"
+
+#include <lexer/lexer.hpp>
+#include <parser/parser.hpp>
+#include <IR_generator.hpp>
+
 #include <fstd/system/timer.hpp>
+#include <fstd/system/path.hpp>
 
 #include <fstd/core/assert.hpp>
 #include <fstd/core/unicode.hpp>
 
 #include <fstd/language/string.hpp>
 #include <fstd/language/defer.hpp>
+
+#include <fstd/os/windows/console.hpp>
 
 // @TODO remove it
 #include <vector>
@@ -172,20 +181,56 @@ void test_unicode_string_convversions()
 
 void test_AST_operator_precedence()
 {
-	//memory::Array<f::Token>	tokens;
-	//f::AST					parsing_result;
-	//f::IR					ir;
-	//int						result = 0;
+	fstd::memory::Array<f::Token>	tokens;
+	f::AST							parsing_result;
+	f::IR							ir;
+	int								result = 0;
+	fstd::system::Path				path;
 
-	//f::initialize_lexer();
-	//f::lex(path, tokens);
+	defer{ fstd::system::reset_path(path); };
 
-	//f::parse(tokens, parsing_result);
+	fstd::system::from_native(path, (uint8_t*)u8R"(.\tests\operators\precedence.f)");
+
+	f::initialize_lexer();
+	f::lex(path, tokens);
+
+	f::parse(tokens, parsing_result);
+
+
+	// @TODO
+	/**********************************************
+		See ryan fleury blog post on scripting language
+		Opérator precedence fix
+
+		https ://ryanfleury.net/blog_a_custom_scripting_language_1
+	**********************************************/
+
 }
 
-void run_tests()
+int main(int ac, char** av)
 {
-	ZoneScopedNC("run_tests", 0xb71c1c);
+	// Begin Initialization ================================================
+
+	fstd::system::allocator_initialize();
+
+#if defined(FSTD_OS_WINDOWS)
+	fstd::os::windows::enable_default_console_configuration();
+	defer{ fstd::os::windows::close_console(); };
+#endif
+
+#if defined(TRACY_ENABLE)
+	tracy::SetThreadName("Main thread");
+#endif
+
+	initialize_globals();
+
+#if defined(FSTD_DEBUG)
+	core::set_log_level(*globals.logger, core::Log_Level::verbose);
+#endif
+
+	FrameMark;
+	// End Initialization ================================================
+
 
 #if !defined(_DEBUG)
 	test_integer_to_string_performances();
@@ -193,4 +238,8 @@ void run_tests()
 	test_unicode_code_point_convversions();
 	test_unicode_string_convversions();
 	test_AST_operator_precedence();
+
+	FrameMark;
+
+	return 0;
 }
