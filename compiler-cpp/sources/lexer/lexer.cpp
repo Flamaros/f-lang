@@ -361,7 +361,7 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
     //
     // Flamaros - 01 february 2020
 
-    nb_tokens_prediction = get_array_size(file_buffer) / tokens_length_heuristic;
+    nb_tokens_prediction = get_array_size(file_buffer) / tokens_length_heuristic + 512;
 
     memory::reserve_array(tokens, nb_tokens_prediction);
 
