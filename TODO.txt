@@ -1,5 +1,13 @@
+// Infinite loop:
+
+
+
+
+
 Generate expressions
 Generate array expressions
+
+// @TODO support print of floats
 
 **********************************************
 See ryan fleury blog post on scripting language

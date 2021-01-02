@@ -11,6 +11,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "f-lang_lib", "f-lang_lib\f-lang_lib.vcxproj", "{C7AA29E6-8C01-4CC5-ADFA-B1F1B5E94FE0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tests", "tests\tests.vcxproj", "{933018DC-3DBB-4DA6-8E19-3F9C4DB12552}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C7AA29E6-8C01-4CC5-ADFA-B1F1B5E94FE0} = {C7AA29E6-8C01-4CC5-ADFA-B1F1B5E94FE0}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

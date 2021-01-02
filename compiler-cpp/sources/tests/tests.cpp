@@ -202,7 +202,7 @@ void test_AST_operator_precedence()
 		See ryan fleury blog post on scripting language
 		Opérator precedence fix
 
-		https ://ryanfleury.net/blog_a_custom_scripting_language_1
+		https://ryanfleury.net/blog_a_custom_scripting_language_1
 	**********************************************/
 
 }
