@@ -1,5 +1,5 @@
-﻿// Infinite loop:
-5 * 3 + 4;
+﻿// Go to error:
+//5 * 3 + 4;
 
 // Infinite loop:
-//x: i32 = 5 * 3 + 4;
+x: i32 = 5 * 3 + 4;

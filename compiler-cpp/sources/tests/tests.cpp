@@ -231,9 +231,10 @@ int main(int ac, char** av)
 	FrameMark;
 	// End Initialization ================================================
 
-
-#if !defined(_DEBUG)
+#if 0
+#	if !defined(_DEBUG)
 	test_integer_to_string_performances();
+#	endif
 #endif
 	test_unicode_code_point_convversions();
 	test_unicode_string_convversions();

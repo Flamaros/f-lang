@@ -611,6 +611,12 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 				current_child = &(*current_child)->sibling;	// Move the current_child to the sibling
 			}
 		}
+		else if (is_literal(current_token.type)) {
+			report_error(Compiler_Error::error, current_token, "Expecting an expression not a literal!\n");
+		}
+		else if (current_token.type == Token_Type::UNKNOWN) {
+			report_error(Compiler_Error::error, current_token, "Unknown token type! Something goes really badly here!\n");
+		}
 	}
 }
 
