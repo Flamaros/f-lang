@@ -73,6 +73,9 @@ main :: (arguments : [] string) -> i32
 	//test			f32 = -0.0;
 
 	test_array:     [4]ui32 = message;
+	
+	x: i32 = 5 * 3 + 4;
+
 
 
     WriteFile(hstdOut, message.c_string, message.length, §written_bytes, 0);

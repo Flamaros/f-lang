@@ -199,13 +199,13 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	//		"%Cv"
 	//		"\nname: %v (nb_arguments: %d)", magic_enum::enum_name(node->ast_type), function_call_node->name.text, function_call_node->nb_arguments);
 	//}
-	//else if (node->ast_type == Node_Type::OPERATOR_ADDRESS_OF) {
-	//	AST_ADDRESS_OF* address_of_node = (AST_ADDRESS_OF*)node;
+	//else if (node->ast_type == Node_Type::UNARY_OPERATOR_ADDRESS_OF) {
+	//	AST_Unary_operator* address_of_node = (AST_Unary_operator*)node;
 
 	//	print_to_builder(file_string_builder,
 	//		"%Cv", magic_enum::enum_name(node->ast_type));
 	//}
-	//else if (node->ast_type == Node_Type::OPERATOR_MEMBER_ACCESS) {
+	//else if (node->ast_type == Node_Type::BINARY_OPERATOR_MEMBER_ACCESS) {
 	//	AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;
 
 	//	print_to_builder(file_string_builder,

@@ -58,13 +58,16 @@ namespace f
 		ASSIGNMENT,
 		FUNCTION_CALL,
 
-		// ===================
-		// Operators
-		// ===================
+		// Unary operators
+		UNARY_OPERATOR_ADDRESS_OF,
 
-		// Member and pointers operators
-		OPERATOR_ADDRESS_OF,	// Unary
-		OPERATOR_MEMBER_ACCESS,	// Binary
+		// Binary operators
+		BINARY_OPERATOR_ADDITION,
+		BINARY_OPERATOR_SUBSTRACTION,
+		BINARY_OPERATOR_MULTIPLICATION,
+		BINARY_OPERATOR_DIVISION,
+		BINARY_OPERATOR_REMINDER,
+		BINARY_OPERATOR_MEMBER_ACCESS,
 	};
 
 	// @Warning
@@ -231,18 +234,10 @@ namespace f
 		Token		value;
 	};
 
-	struct AST_ADDRESS_OF
+	struct AST_Unary_operator
 	{
 		Node_Type	ast_type;
 		AST_Node*	sibling;
-		AST_Node*	right;
-	};
-
-	struct AST_MEMBER_ACCESS
-	{
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		AST_Node*	left;
 		AST_Node*	right;
 	};
 
@@ -258,6 +253,7 @@ namespace f
 
     void parse(fstd::memory::Array<Token>& tokens, AST& ast);
 	inline bool is_binary_operator(const AST_Node* node);
+	inline bool is_unary_operator(const AST_Node* node);
 	void generate_dot_file(AST& ast, const fstd::system::Path& output_file_path);
 
 	inline bool is_binary_operator(const AST_Node* node)
@@ -265,6 +261,16 @@ namespace f
 		if (node == nullptr)
 			return false;
 
-		return node->ast_type == Node_Type::OPERATOR_MEMBER_ACCESS;
+		return node->ast_type >= Node_Type::BINARY_OPERATOR_ADDITION
+			&& node->ast_type <= Node_Type::BINARY_OPERATOR_MEMBER_ACCESS;
+	}
+
+	inline bool is_unary_operator(const AST_Node* node)
+	{
+		if (node == nullptr)
+			return false;
+
+		return node->ast_type >= Node_Type::UNARY_OPERATOR_ADDRESS_OF
+			&& node->ast_type <= Node_Type::UNARY_OPERATOR_ADDRESS_OF;
 	}
 }

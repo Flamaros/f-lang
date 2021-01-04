@@ -68,6 +68,8 @@ static void parse_function(stream::Array_Stream<Token>& stream, Token& identifie
 static void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** emplace_node);
 static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
+static void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
 static void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, bool is_sub_expression, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN);
 static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
 
@@ -364,6 +366,37 @@ void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous_siblin
 	stream::peek(stream); // ;
 }
 
+void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
+{
+	core::Assert(*previous_child != nullptr);
+	AST_Binary_Operator* member_access_node = allocate_AST_node<AST_Binary_Operator>(emplace_node);
+
+	member_access_node->ast_type = node_type;
+	member_access_node->sibling = nullptr;
+	member_access_node->left = *previous_child;
+	member_access_node->right = nullptr;
+
+	*previous_child = (AST_Node*)member_access_node;
+	stream::peek(stream); // the binary operator
+
+	parse_expression(stream, &member_access_node->right, true, delimiter_1, delimiter_2);
+}
+
+void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
+{
+	core::Assert(*previous_child == nullptr);
+	AST_Unary_operator* address_of_node = allocate_AST_node<AST_Unary_operator>(emplace_node);
+
+	address_of_node->ast_type = node_type;
+	address_of_node->sibling = nullptr;
+	address_of_node->right = nullptr;
+
+	*previous_child = (AST_Node*)address_of_node;
+	stream::peek(stream); // the unary operator
+
+	parse_expression(stream, &address_of_node->right, true, delimiter_1, delimiter_2);
+}
+
 void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, bool is_sub_expression, Punctuation delimiter_1, Punctuation delimiter_2 /* = Punctuation::UNKNOWN */)
 {
 	Token			current_token;
@@ -401,46 +434,25 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 				// @TODO fix sub-tree now?
 			}
 			else if (current_token.value.punctuation == Punctuation::STAR) {
-
+				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_MULTIPLICATION, &previous_child, delimiter_1, delimiter_2);
 			}
 			else if (current_token.value.punctuation == Punctuation::SLASH) {
-
+				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_DIVISION, &previous_child, delimiter_1, delimiter_2);
 			}
 			else if (current_token.value.punctuation == Punctuation::PERCENT) {
-
+				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_REMINDER, &previous_child, delimiter_1, delimiter_2);
 			}
 			else if (current_token.value.punctuation == Punctuation::PLUS) {
-
+				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_ADDITION, &previous_child, delimiter_1, delimiter_2);
 			}
 			else if (current_token.value.punctuation == Punctuation::DASH) {
-
+				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_SUBSTRACTION, &previous_child, delimiter_1, delimiter_2);
 			}
 			else if (current_token.value.punctuation == Punctuation::SECTION) {
-				core::Assert(previous_child == nullptr);
-				AST_ADDRESS_OF* address_of_node = allocate_AST_node<AST_ADDRESS_OF>(emplace_node);
-
-				address_of_node->ast_type = Node_Type::OPERATOR_ADDRESS_OF;
-				address_of_node->sibling = nullptr;
-				address_of_node->right = nullptr;
-
-				previous_child = (AST_Node*)address_of_node;
-				stream::peek(stream); // §
-
-				parse_expression(stream, &address_of_node->right, true, delimiter_1, delimiter_2);
+				parse_unary_operator(stream, emplace_node, Node_Type::UNARY_OPERATOR_ADDRESS_OF, &previous_child, delimiter_1, delimiter_2);
 			}
 			else if (current_token.value.punctuation == Punctuation::DOT) {
-				core::Assert(previous_child != nullptr);
-				AST_MEMBER_ACCESS* member_access_node = allocate_AST_node<AST_MEMBER_ACCESS>(emplace_node);
-
-				member_access_node->ast_type = Node_Type::OPERATOR_MEMBER_ACCESS;
-				member_access_node->sibling = nullptr;
-				member_access_node->left = previous_child;
-				member_access_node->right = nullptr;
-
-				previous_child = (AST_Node*)member_access_node;
-				stream::peek(stream); // .
-
-				parse_expression(stream, &member_access_node->right, true, delimiter_1, delimiter_2);
+				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_MEMBER_ACCESS, &previous_child, delimiter_1, delimiter_2);
 			}
 			// @TODO add other arithmetic operators (bits operations,...)
 		}
@@ -770,14 +782,14 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 			"%Cv"
 			"\nname: %v (nb_arguments: %d)", magic_enum::enum_name(node->ast_type), function_call_node->name.text, function_call_node->nb_arguments);
 	}
-	else if (node->ast_type == Node_Type::OPERATOR_ADDRESS_OF) {
-		AST_ADDRESS_OF* address_of_node = (AST_ADDRESS_OF*)node;
+	else if (is_unary_operator(node)) {
+		AST_Unary_operator* address_of_node = (AST_Unary_operator*)node;
 
 		print_to_builder(file_string_builder,
 			"%Cv", magic_enum::enum_name(node->ast_type));
 	}
-	else if (node->ast_type == Node_Type::OPERATOR_MEMBER_ACCESS) {
-		AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;
+	else if (is_binary_operator(node)) {
+		AST_Binary_Operator* member_access_node = (AST_Binary_Operator*)node;
 
 		print_to_builder(file_string_builder,
 			"%Cv", magic_enum::enum_name(node->ast_type));
@@ -842,13 +854,13 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 
 		write_dot_node(file_string_builder, (AST_Node*)function_call_node->parameters, node_index);
 	}
-	else if (node->ast_type == Node_Type::OPERATOR_ADDRESS_OF) {
-		AST_ADDRESS_OF* address_of_node = (AST_ADDRESS_OF*)node;
+	else if (is_unary_operator(node)) {
+		AST_Unary_operator* address_of_node = (AST_Unary_operator*)node;
 
 		write_dot_node(file_string_builder, (AST_Node*)address_of_node->right, node_index);
 	}
-	else if (node->ast_type == Node_Type::OPERATOR_MEMBER_ACCESS) {
-		AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;
+	else if (is_binary_operator(node)) {
+		AST_Binary_Operator* member_access_node = (AST_Binary_Operator*)node;
 
 		write_dot_node(file_string_builder, (AST_Node*)member_access_node->left, node_index);
 		write_dot_node(file_string_builder, (AST_Node*)member_access_node->right, node_index);
