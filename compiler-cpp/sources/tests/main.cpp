@@ -1,4 +1,4 @@
-#include "tests.hpp"
+#include "main.hpp"
 
 #include "globals.hpp"
 
@@ -183,7 +183,7 @@ void test_AST_operator_precedence()
 {
 	fstd::memory::Array<f::Token>	tokens;
 	f::AST							parsing_result;
-	f::IR							ir;
+//	f::IR							ir;
 	int								result = 0;
 	fstd::system::Path				path;
 
@@ -205,6 +205,15 @@ void test_AST_operator_precedence()
 		https://ryanfleury.net/blog_a_custom_scripting_language_1
 	**********************************************/
 
+	int a1 = 5 / 2 * 3;
+	int a2 = 5 * 3 / 2;
+
+	fstd::core::Assert(a1 == a2);
+
+	int b1 = 5 % 2 * 3;
+	int b2 = 5 * 3 % 2;
+
+	fstd::core::Assert(b1 == b2);
 }
 
 int main(int ac, char** av)

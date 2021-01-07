@@ -22,12 +22,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\tests\tests.cpp">
+    <ClCompile Include="..\sources\tests\main.cpp">
       <Filter>Source Files\tests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\tests\tests.hpp">
+    <ClInclude Include="..\sources\tests\main.hpp">
       <Filter>Source Files\tests</Filter>
     </ClInclude>
   </ItemGroup>

@@ -244,10 +244,10 @@
     <None Include="..\..\tests\operators\precedence.f" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\tests\tests.cpp" />
+    <ClCompile Include="..\sources\tests\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\tests\tests.hpp" />
+    <ClInclude Include="..\sources\tests\main.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
