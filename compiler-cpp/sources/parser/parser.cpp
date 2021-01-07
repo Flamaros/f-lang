@@ -69,6 +69,7 @@ static void parse_function_call(stream::Array_Stream<Token>& stream, Token& iden
 static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
+static void fix_operations_order(AST_Binary_Operator* binary_operator_node);
 static void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
 static void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, bool is_sub_expression, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN);
 static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
@@ -380,6 +381,46 @@ void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** empla
 	stream::peek(stream); // the binary operator
 
 	parse_expression(stream, &member_access_node->right, true, delimiter_1, delimiter_2);
+
+	fix_operations_order(member_access_node);
+}
+
+void fix_operations_order(AST_Binary_Operator* binary_operator_node)
+{
+	// https://ryanfleury.net/blog_a_custom_scripting_language_1
+	if (is_binary_operator(binary_operator_node->right) == false)
+		return;
+
+	AST_Binary_Operator* right_node = (AST_Binary_Operator*)binary_operator_node->right;
+
+	if (does_left_operator_precedeed_right(binary_operator_node->ast_type, right_node->ast_type) == false)
+		return;
+
+	// Step 1: Swap operator types
+	{
+		Node_Type right_operator_node_type = binary_operator_node->right->ast_type;
+		// @TODO Also swap the tokens if stored in AST_Binary_Operator
+
+		binary_operator_node->right->ast_type = binary_operator_node->ast_type;
+		binary_operator_node->ast_type = right_operator_node_type;
+	}
+
+	// Step 2: Rotate the three operands in counter-clockwise way
+	{
+		AST_Node* temp_node = binary_operator_node->left;
+
+		binary_operator_node->left = right_node->right;
+		right_node->right = right_node->left;
+		right_node->left = temp_node;
+	}
+
+	// Step 3: Swap the original binary operator's left and right children
+	{
+		AST_Node* temp_node = binary_operator_node->left;
+
+		binary_operator_node->left = binary_operator_node->right;
+		binary_operator_node->right = temp_node;
+	}
 }
 
 void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
@@ -412,7 +453,6 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 		parse_expression(stream, (AST_Node**)&expression_node->first_child, true, delimiter_1, delimiter_2);
 		return;
 	}
-
 
 	starting_token = stream::get(stream);
 

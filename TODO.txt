@@ -1,4 +1,12 @@
-// Infinite loop:
+does_left_operator_precedeed_right
+  - Need to return an enum in case of ambiguity
+  
+Handle parenthesis
+
+Add tokens in AST_Binary_Operator
+  - Handle operator precedence
+  - Handle operator errors
+
 
 
 

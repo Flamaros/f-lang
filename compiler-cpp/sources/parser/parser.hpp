@@ -248,7 +248,19 @@ namespace f
 
 	struct Parser_Data
 	{
-		fstd::memory::Array<uint8_t>	ast_nodes; // This is a raw buffer as all nodes don't have the same type
+		// This is a raw buffer as all nodes don't have the same type.
+		// Actually allocate_AST_node doesn't let any padding between nodes.
+		// It is possible to iterate over all nodes, but few computations are needed
+		// to retrieve nodes correctly.
+		//
+		// It may be interesting to iterate over nodes like over an array for some algorithms
+		// like searching functions,....
+		//
+		// We also may store the size of the AST_Node, as it might help with the CPU prediction.
+		// It also remove the computation that depend of the type of the node.
+		//
+		// Flamaros - 07 january 2021
+		fstd::memory::Array<uint8_t>	ast_nodes;
 	};
 
     void parse(fstd::memory::Array<Token>& tokens, AST& ast);
@@ -272,5 +284,22 @@ namespace f
 
 		return node->ast_type >= Node_Type::UNARY_OPERATOR_ADDRESS_OF
 			&& node->ast_type <= Node_Type::UNARY_OPERATOR_ADDRESS_OF;
+	}
+
+	inline bool does_left_operator_precedeed_right(Node_Type left, Node_Type right)
+	{
+		// For the moment I use exactly same values as C++
+	    // https://en.cppreference.com/w/cpp/language/operator_precedence
+
+		int operator_priorities[] = {
+		12, // BINARY_OPERATOR_ADDITION
+		12, // BINARY_OPERATOR_SUBSTRACTION
+		13, // BINARY_OPERATOR_MULTIPLICATION
+		13, // BINARY_OPERATOR_DIVISION
+		13, // BINARY_OPERATOR_REMINDER
+		16, // BINARY_OPERATOR_MEMBER_ACCESS
+		};
+
+		return operator_priorities[(size_t)left - (size_t)Node_Type::BINARY_OPERATOR_ADDITION] > operator_priorities[(size_t)right - (size_t)Node_Type::BINARY_OPERATOR_ADDITION];
 	}
 }
