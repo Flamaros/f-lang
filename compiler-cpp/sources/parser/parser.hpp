@@ -291,6 +291,9 @@ namespace f
 		// For the moment I use exactly same values as C++
 	    // https://en.cppreference.com/w/cpp/language/operator_precedence
 
+		// @TODO return ambuiguity
+		// 5 * 3 / 2    // We want force parenthesis in this case?
+
 		int operator_priorities[] = {
 		12, // BINARY_OPERATOR_ADDITION
 		12, // BINARY_OPERATOR_SUBSTRACTION

@@ -396,6 +396,8 @@ void fix_operations_order(AST_Binary_Operator* binary_operator_node)
 	if (does_left_operator_precedeed_right(binary_operator_node->ast_type, right_node->ast_type) == false)
 		return;
 
+	// @TODO Handle parenthesis by starting a new sub-expression? but we want to simplify it, so maybe by setting a flag on the node
+
 	// Step 1: Swap operator types
 	{
 		Node_Type right_operator_node_type = binary_operator_node->right->ast_type;
