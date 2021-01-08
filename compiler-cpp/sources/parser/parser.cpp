@@ -370,19 +370,20 @@ void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous_siblin
 void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
 {
 	core::Assert(*previous_child != nullptr);
-	AST_Binary_Operator* member_access_node = allocate_AST_node<AST_Binary_Operator>(emplace_node);
+	AST_Binary_Operator* binary_operator_node = allocate_AST_node<AST_Binary_Operator>(emplace_node);
 
-	member_access_node->ast_type = node_type;
-	member_access_node->sibling = nullptr;
-	member_access_node->left = *previous_child;
-	member_access_node->right = nullptr;
+	binary_operator_node->ast_type = node_type;
+	binary_operator_node->sibling = nullptr;
+	binary_operator_node->token = stream::get(stream);
+	binary_operator_node->left = *previous_child;
+	binary_operator_node->right = nullptr;
 
-	*previous_child = (AST_Node*)member_access_node;
+	*previous_child = (AST_Node*)binary_operator_node;
 	stream::peek(stream); // the binary operator
 
-	parse_expression(stream, &member_access_node->right, true, delimiter_1, delimiter_2);
+	parse_expression(stream, &binary_operator_node->right, true, delimiter_1, delimiter_2);
 
-	fix_operations_order(member_access_node);
+	fix_operations_order(binary_operator_node);
 }
 
 void fix_operations_order(AST_Binary_Operator* binary_operator_node)
@@ -400,11 +401,14 @@ void fix_operations_order(AST_Binary_Operator* binary_operator_node)
 
 	// Step 1: Swap operator types
 	{
-		Node_Type right_operator_node_type = binary_operator_node->right->ast_type;
-		// @TODO Also swap the tokens if stored in AST_Binary_Operator
+		Node_Type right_operator_node_type = right_node->ast_type;
+		Token right_operator_token = right_node->token;
 
-		binary_operator_node->right->ast_type = binary_operator_node->ast_type;
+		right_node->ast_type = binary_operator_node->ast_type;
+		right_node->token = binary_operator_node->token;
+
 		binary_operator_node->ast_type = right_operator_node_type;
+		binary_operator_node->token = right_operator_token;
 	}
 
 	// Step 2: Rotate the three operands in counter-clockwise way
@@ -420,7 +424,7 @@ void fix_operations_order(AST_Binary_Operator* binary_operator_node)
 	{
 		AST_Node* temp_node = binary_operator_node->left;
 
-		binary_operator_node->left = binary_operator_node->right;
+		binary_operator_node->left = (AST_Node*)right_node;
 		binary_operator_node->right = temp_node;
 	}
 }
@@ -428,16 +432,16 @@ void fix_operations_order(AST_Binary_Operator* binary_operator_node)
 void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
 {
 	core::Assert(*previous_child == nullptr);
-	AST_Unary_operator* address_of_node = allocate_AST_node<AST_Unary_operator>(emplace_node);
+	AST_Unary_operator* unary_operator_node = allocate_AST_node<AST_Unary_operator>(emplace_node);
 
-	address_of_node->ast_type = node_type;
-	address_of_node->sibling = nullptr;
-	address_of_node->right = nullptr;
+	unary_operator_node->ast_type = node_type;
+	unary_operator_node->sibling = nullptr;
+	unary_operator_node->right = nullptr;
 
-	*previous_child = (AST_Node*)address_of_node;
+	*previous_child = (AST_Node*)unary_operator_node;
 	stream::peek(stream); // the unary operator
 
-	parse_expression(stream, &address_of_node->right, true, delimiter_1, delimiter_2);
+	parse_expression(stream, &unary_operator_node->right, true, delimiter_1, delimiter_2);
 }
 
 void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, bool is_sub_expression, Punctuation delimiter_1, Punctuation delimiter_2 /* = Punctuation::UNKNOWN */)

@@ -100,6 +100,8 @@ namespace f
 	{
 		Node_Type	ast_type;
 		AST_Node*	sibling;
+
+		Token		token;
 		AST_Node*	left;
 		AST_Node*	right;
 	};
@@ -303,6 +305,8 @@ namespace f
 		16, // BINARY_OPERATOR_MEMBER_ACCESS
 		};
 
+		// In case of egality check the associativity rule
+		// If the associativity left to right it should return true
 		return operator_priorities[(size_t)left - (size_t)Node_Type::BINARY_OPERATOR_ADDITION] > operator_priorities[(size_t)right - (size_t)Node_Type::BINARY_OPERATOR_ADDITION];
 	}
 }
