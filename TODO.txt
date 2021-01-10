@@ -1,10 +1,11 @@
 does_left_operator_precedeed_right
   - Need to return an enum in case of ambiguity
   
+Add token to Unary operators
+  
 Handle parenthesis
 
 Add tokens in AST_Binary_Operator
-  - Handle operator precedence
   - Handle operator errors
 
 

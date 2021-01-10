@@ -70,6 +70,12 @@ namespace f
 		BINARY_OPERATOR_MEMBER_ACCESS,
 	};
 
+	enum class Binary_Operator_Associativity
+	{
+		LEFT_TO_RIGHT,
+		RIGHT_TO_LEFT
+	};
+
 	// @Warning
 	// Don't use the constructor or default initialisation of AST_Node* types
 	// constructors (even the default) aren't called
@@ -293,9 +299,6 @@ namespace f
 		// For the moment I use exactly same values as C++
 	    // https://en.cppreference.com/w/cpp/language/operator_precedence
 
-		// @TODO return ambuiguity
-		// 5 * 3 / 2    // We want force parenthesis in this case?
-
 		int operator_priorities[] = {
 		12, // BINARY_OPERATOR_ADDITION
 		12, // BINARY_OPERATOR_SUBSTRACTION
@@ -305,8 +308,21 @@ namespace f
 		16, // BINARY_OPERATOR_MEMBER_ACCESS
 		};
 
-		// In case of egality check the associativity rule
-		// If the associativity left to right it should return true
-		return operator_priorities[(size_t)left - (size_t)Node_Type::BINARY_OPERATOR_ADDITION] > operator_priorities[(size_t)right - (size_t)Node_Type::BINARY_OPERATOR_ADDITION];
+		Binary_Operator_Associativity operator_associativities[] = {
+			Binary_Operator_Associativity::LEFT_TO_RIGHT, // BINARY_OPERATOR_ADDITION
+			Binary_Operator_Associativity::LEFT_TO_RIGHT, // BINARY_OPERATOR_SUBSTRACTION
+			Binary_Operator_Associativity::LEFT_TO_RIGHT, // BINARY_OPERATOR_MULTIPLICATION
+			Binary_Operator_Associativity::LEFT_TO_RIGHT, // BINARY_OPERATOR_DIVISION
+			Binary_Operator_Associativity::LEFT_TO_RIGHT, // BINARY_OPERATOR_REMINDER
+			Binary_Operator_Associativity::LEFT_TO_RIGHT, // BINARY_OPERATOR_MEMBER_ACCESS
+		};
+
+		int priority_distance = operator_priorities[(size_t)left - (size_t)Node_Type::BINARY_OPERATOR_ADDITION] - operator_priorities[(size_t)right - (size_t)Node_Type::BINARY_OPERATOR_ADDITION];
+
+		// If the priority of operators are the same then the associativity will resolve the ambiguity
+		if (priority_distance == 0)
+			return operator_associativities[(size_t)left - (size_t)Node_Type::BINARY_OPERATOR_ADDITION] == Binary_Operator_Associativity::LEFT_TO_RIGHT;
+
+		return priority_distance > 0;
 	}
 }
