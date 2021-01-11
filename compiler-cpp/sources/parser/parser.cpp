@@ -477,7 +477,13 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 			}
 			else if (current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS)
 			{
-				// @TODO fix sub-tree now?
+				stream::peek(stream); // (
+				parse_expression(stream, emplace_node, false, delimiter_1, delimiter_1);
+			}
+			else if (current_token.value.punctuation == Punctuation::CLOSE_PARENTHESIS)
+			{
+				stream::peek(stream); // )
+				return;
 			}
 			else if (current_token.value.punctuation == Punctuation::STAR) {
 				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_MULTIPLICATION, &previous_child, delimiter_1, delimiter_2);

@@ -299,16 +299,16 @@ namespace f
 		// For the moment I use exactly same values as C++
 	    // https://en.cppreference.com/w/cpp/language/operator_precedence
 
-		int operator_priorities[] = {
-		12, // BINARY_OPERATOR_ADDITION
-		12, // BINARY_OPERATOR_SUBSTRACTION
-		13, // BINARY_OPERATOR_MULTIPLICATION
-		13, // BINARY_OPERATOR_DIVISION
-		13, // BINARY_OPERATOR_REMINDER
-		16, // BINARY_OPERATOR_MEMBER_ACCESS
+		static int operator_priorities[] = {
+			12, // BINARY_OPERATOR_ADDITION
+			12, // BINARY_OPERATOR_SUBSTRACTION
+			13, // BINARY_OPERATOR_MULTIPLICATION
+			13, // BINARY_OPERATOR_DIVISION
+			13, // BINARY_OPERATOR_REMINDER
+			16, // BINARY_OPERATOR_MEMBER_ACCESS
 		};
 
-		Binary_Operator_Associativity operator_associativities[] = {
+		static Binary_Operator_Associativity operator_associativities[] = {
 			Binary_Operator_Associativity::LEFT_TO_RIGHT, // BINARY_OPERATOR_ADDITION
 			Binary_Operator_Associativity::LEFT_TO_RIGHT, // BINARY_OPERATOR_SUBSTRACTION
 			Binary_Operator_Associativity::LEFT_TO_RIGHT, // BINARY_OPERATOR_MULTIPLICATION

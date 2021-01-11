@@ -74,7 +74,7 @@ main :: (arguments : [] string) -> i32
 
 	test_array:     [4]ui32 = message;
 	
-	x: i32 = 5 * 3 + 4;
+	x: i32 = 5 * (3 + 4);
 	y: i32 = 4 + 3 * 5;
 	z: i32 = 5 - 3 + 4;
 
