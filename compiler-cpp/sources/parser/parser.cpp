@@ -215,7 +215,7 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 		stream::peek(stream); // =
 
 		if (is_function_parameter) {
-			parse_expression(stream, (AST_Node**)&variable->expression, false, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
+			parse_expression(stream, (AST_Node**)&variable->expression, true, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
 		}
 		else {
 			parse_expression(stream, (AST_Node**)&variable->expression, true, Punctuation::SEMICOLON);
@@ -321,7 +321,7 @@ void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier,
 		&& current_token.value.punctuation == Punctuation::CLOSE_PARENTHESIS))
 	{
 		stream::peek(stream); // ( or ,
-		parse_expression(stream, (AST_Node**)current_expression_node, false, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
+		parse_expression(stream, (AST_Node**)current_expression_node, true, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
 		current_token = stream::get(stream);
 		function_call->nb_arguments++;
 		current_expression_node = (AST_Expression**)&(*current_expression_node)->sibling;

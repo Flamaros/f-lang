@@ -1,36 +1,21 @@
-Put unary operator in priority fix
-  - Also add function calls,...
-  
-Handle errors:
-  - operators
-  - parenthesis
-
-
-
-does_left_operator_precedeed_right
-  - Need to return an enum in case of ambiguity
-  
-Add token to Unary operators
-  
-Add tokens in AST_Binary_Operator
-  - Handle operator errors
-
-
-
-
-
+Expressions:
+  - Handling (whith precedence and priority):
+    - Unary operators
+	- Function call
+	- Assignment
+  - Check errors
+  - Ambiguities?
+  - Suppression des nodes Expression intermediaire
 
 Generate expressions
 Generate array expressions
 
+
+
+
 // @TODO support print of floats
 
-**********************************************
-See ryan fleury blog post on scripting language
-Opérator precedence fix
 
-https://ryanfleury.net/blog_a_custom_scripting_language_1
-**********************************************
 
 
 
@@ -43,7 +28,6 @@ return exit(main());
 Implement everything that is necessary to be able to put win32 declarations directly in f-lang:
  - Add an interpreter that simplify the tree:
    - Generate unique function references (extract nested function to put them in the global scope, be able to store adresses,...). The interface of the interpreter should be able to help the cpp-backend to sort functions (maybe not necessary with predeclaration).
-   - Handle operator precedence
  - Allow external function declarations
  - Allow imports
 
@@ -60,8 +44,6 @@ Start generating ASM with JIT for the compile time code execution, then look on 
 
 
 
-Take a look at for precedence:
-https://en.cppreference.com/w/cpp/language/operator_precedence
  
 Rewrite alias parsing
 
