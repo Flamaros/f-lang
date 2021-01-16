@@ -181,9 +181,11 @@ void test_unicode_string_convversions()
 
 void test_AST_operator_precedence()
 {
+	using namespace f;
+
 	fstd::memory::Array<f::Token>	tokens;
-	f::AST							parsing_result;
-//	f::IR							ir;
+	AST								parsing_result;
+	//	IR								ir;
 	int								result = 0;
 	fstd::system::Path				path;
 
@@ -191,29 +193,70 @@ void test_AST_operator_precedence()
 
 	fstd::system::from_native(path, (uint8_t*)u8R"(.\tests\operators\precedence.f)");
 
-	f::initialize_lexer();
-	f::lex(path, tokens);
+	initialize_lexer();
+	lex(path, tokens);
 
-	f::parse(tokens, parsing_result);
+	parse(tokens, parsing_result);
 
+	// We can test the node type after the cast which is used to reduce the code size.
+	AST_Statement_Scope* global_scope = (AST_Statement_Scope*)parsing_result.root;
+	fstd::core::Assert(global_scope->ast_type == f::Node_Type::STATEMENT_SCOPE);
 
-	// @TODO
-	/**********************************************
-		See ryan fleury blog post on scripting language
-		Opérator precedence fix
+	// x: i32 = 5 * 3 + 4;
+	//
+	//      +
+	//    *   4
+	//  5  3
+	AST_Statement_Variable* x_var = (AST_Statement_Variable*)global_scope->first_child;
+	{
+		fstd::core::Assert(x_var->ast_type == f::Node_Type::STATEMENT_VARIABLE);
 
-		https://ryanfleury.net/blog_a_custom_scripting_language_1
-	**********************************************/
+		AST_Binary_Operator* first_op = (AST_Binary_Operator*)x_var->expression;
+		fstd::core::Assert(first_op->ast_type == f::Node_Type::BINARY_OPERATOR_ADDITION);
 
-	int a1 = 5 / 2 * 3;
-	int a2 = 5 * 3 / 2;
+		AST_Binary_Operator* second_op = (AST_Binary_Operator*)first_op->left;
+		fstd::core::Assert(second_op->ast_type == f::Node_Type::BINARY_OPERATOR_MULTIPLICATION);
 
-	fstd::core::Assert(a1 == a2);
+		AST_Literal* second_op_left = (AST_Literal*)second_op->left;
+		fstd::core::Assert(second_op_left->ast_type == f::Node_Type::STATEMENT_LITERAL);
+		fstd::core::Assert(second_op_left->value.value.integer == 5);
 
-	int b1 = 5 % 2 * 3;
-	int b2 = 5 * 3 % 2;
+		AST_Literal* second_op_right = (AST_Literal*)second_op->right;
+		fstd::core::Assert(second_op_right->ast_type == f::Node_Type::STATEMENT_LITERAL);
+		fstd::core::Assert(second_op_right->value.value.integer == 3);
 
-	fstd::core::Assert(b1 == b2);
+		AST_Literal* first_op_right = (AST_Literal*)first_op->right;
+		fstd::core::Assert(first_op_right->ast_type == f::Node_Type::STATEMENT_LITERAL);
+		fstd::core::Assert(first_op_right->value.value.integer == 4);
+	}
+
+	// y: i32 = 4 + 5 * 3;
+	//
+	//      +
+	//    4   *
+	//       5  3
+	AST_Statement_Variable* y_var = (AST_Statement_Variable*)x_var->sibling;
+	{
+		fstd::core::Assert(y_var->ast_type == f::Node_Type::STATEMENT_VARIABLE);
+
+		AST_Binary_Operator* first_op = (AST_Binary_Operator*)y_var->expression;
+		fstd::core::Assert(first_op->ast_type == f::Node_Type::BINARY_OPERATOR_ADDITION);
+
+		AST_Literal* first_op_left = (AST_Literal*)first_op->left;
+		fstd::core::Assert(first_op_left->ast_type == f::Node_Type::STATEMENT_LITERAL);
+		fstd::core::Assert(first_op_left->value.value.integer == 4);
+
+		AST_Binary_Operator* second_op = (AST_Binary_Operator*)first_op->right;
+		fstd::core::Assert(second_op->ast_type == f::Node_Type::BINARY_OPERATOR_MULTIPLICATION);
+
+		AST_Literal* second_op_left = (AST_Literal*)second_op->left;
+		fstd::core::Assert(second_op_left->ast_type == f::Node_Type::STATEMENT_LITERAL);
+		fstd::core::Assert(second_op_left->value.value.integer == 5);
+
+		AST_Literal* second_op_right = (AST_Literal*)second_op->right;
+		fstd::core::Assert(second_op_right->ast_type == f::Node_Type::STATEMENT_LITERAL);
+		fstd::core::Assert(second_op_right->value.value.integer == 3);
+	}
 }
 
 int main(int ac, char** av)
