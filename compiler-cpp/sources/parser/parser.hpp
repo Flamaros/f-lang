@@ -12,7 +12,6 @@ namespace f
 	struct AST_Node;
 	struct AST_Enum;
 	struct AST_Alias;
-	struct AST_Expression;
 	struct AST_Statement_Type;
 	struct AST_Statement_Type_Pointer;
 	struct AST_Statement_Type_Array;
@@ -41,8 +40,6 @@ namespace f
 		TYPE_ALIAS,
 		TYPE_ENUM,
 		TYPE_STRUCT,
-
-		EXPRESSION,
 
 		STATEMENT_MODULE,
 		STATEMENT_BASIC_TYPE,
@@ -120,25 +117,12 @@ namespace f
 		AST_Node*	type;
 	};
 
-	struct AST_Expression
+	struct AST_Enum_Value
 	{
 		Node_Type	ast_type;
 		AST_Node*	sibling;
-
-		AST_Node*	first_child;
-
-		// This node is juste like the AST_Node, but more members that are filled by later passes of the compiler.
-		// It will be just more convenient this way.
-		// I think that it will be pretty useful for the the type checker,...
-		// Additionnal data will be useful for the code generation pass and other checks.
-	};
-
-	struct AST_Enum_Value
-	{
-		Node_Type		ast_type;
-		AST_Node*		sibling;
-		Token			value_name;
-		AST_Expression* value;
+		Token		value_name;
+		AST_Node*	value;
 	};
 
 	struct AST_Enum
@@ -179,9 +163,9 @@ namespace f
 
 	struct AST_Statement_Type_Array
 	{
-		Node_Type		ast_type;
-		AST_Node*		sibling;
-		AST_Expression* array_size; // if null the array is dynamic
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		AST_Node*	array_size; // if null the array is dynamic
 		// @TODO if the size is a constexpr we certainly want to have the value
 		// then it is also a fixed size.
 		// if array_size not null, can be a fixed size array or a dynamic one, only the attempt of the expression evaluation can tell it.
@@ -189,13 +173,13 @@ namespace f
 
 	struct AST_Statement_Variable
 	{
-		Node_Type				ast_type;
-		AST_Node*				sibling;
-		Token					name;
-		AST_Node*				type;
-		bool					is_function_paramter;
-		bool					is_optional;
-		AST_Expression*			expression; // not null if is_optional is true
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		Token		name;
+		AST_Node*	type;
+		bool		is_function_paramter;
+		bool		is_optional;
+		AST_Node*	expression; // not null if is_optional is true
 	};
 
 	struct AST_Statement_Function
@@ -211,11 +195,11 @@ namespace f
 
 	struct AST_Function_Call
 	{
-		Node_Type		ast_type;
-		AST_Node*		sibling;
-		Token			name;
-		int				nb_arguments;
-		AST_Expression*	parameters;
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		Token		name;
+		int			nb_arguments;
+		AST_Node*	parameters;
 	};
 
 	struct AST_Statement_Scope

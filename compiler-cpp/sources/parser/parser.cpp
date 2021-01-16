@@ -71,7 +71,7 @@ static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, A
 static void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
 static void fix_operations_order(AST_Binary_Operator* binary_operator_node);
 static void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
-static void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, bool is_sub_expression, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN);
+static bool parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN); // Return true if the expression is scoped by parenthesis
 static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
 
 // =============================================================================
@@ -92,7 +92,7 @@ void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array**
 
 	stream::peek(stream); // [
 
-	parse_expression(stream, (AST_Node**)&array_node->array_size, true, Punctuation::CLOSE_BRACKET);
+	parse_expression(stream, (AST_Node**)&array_node->array_size, Punctuation::CLOSE_BRACKET);
 
 	stream::peek(stream); // ]
 }
@@ -215,10 +215,10 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 		stream::peek(stream); // =
 
 		if (is_function_parameter) {
-			parse_expression(stream, (AST_Node**)&variable->expression, true, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
+			parse_expression(stream, (AST_Node**)&variable->expression, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
 		}
 		else {
-			parse_expression(stream, (AST_Node**)&variable->expression, true, Punctuation::SEMICOLON);
+			parse_expression(stream, (AST_Node**)&variable->expression, Punctuation::SEMICOLON);
 		}
 	}
 
@@ -304,7 +304,7 @@ void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier,
 {
 	Token				current_token;
 	AST_Function_Call*	function_call;
-	AST_Expression**	current_expression_node;
+	AST_Node**			current_expression_node;
 
 	current_token = stream::get(stream);
 	fstd::core::Assert(current_token.type == Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS);
@@ -321,10 +321,10 @@ void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier,
 		&& current_token.value.punctuation == Punctuation::CLOSE_PARENTHESIS))
 	{
 		stream::peek(stream); // ( or ,
-		parse_expression(stream, (AST_Node**)current_expression_node, true, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
+		parse_expression(stream, (AST_Node**)current_expression_node, Punctuation::COMMA, Punctuation::CLOSE_PARENTHESIS);
 		current_token = stream::get(stream);
 		function_call->nb_arguments++;
-		current_expression_node = (AST_Expression**)&(*current_expression_node)->sibling;
+		current_expression_node = (AST_Node**)&(*current_expression_node)->sibling;
 	}
 	stream::peek(stream); // )
 
@@ -381,9 +381,11 @@ void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** empla
 	*previous_child = (AST_Node*)binary_operator_node;
 	stream::peek(stream); // the binary operator
 
-	parse_expression(stream, &binary_operator_node->right, true, delimiter_1, delimiter_2);
+	bool scoped_by_parenthesis = parse_expression(stream, &binary_operator_node->right, delimiter_1, delimiter_2);
 
-	fix_operations_order(binary_operator_node);
+	if (scoped_by_parenthesis == false) {
+		fix_operations_order(binary_operator_node);
+	}
 }
 
 void fix_operations_order(AST_Binary_Operator* binary_operator_node)
@@ -441,24 +443,15 @@ void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplac
 	*previous_child = (AST_Node*)unary_operator_node;
 	stream::peek(stream); // the unary operator
 
-	parse_expression(stream, &unary_operator_node->right, true, delimiter_1, delimiter_2);
+	parse_expression(stream, &unary_operator_node->right, delimiter_1, delimiter_2);
 }
 
-void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, bool is_sub_expression, Punctuation delimiter_1, Punctuation delimiter_2 /* = Punctuation::UNKNOWN */)
+bool parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Punctuation delimiter_1, Punctuation delimiter_2 /* = Punctuation::UNKNOWN */)
 {
 	Token			current_token;
 	Token			starting_token;
 	AST_Node*		previous_child = nullptr;
-
-	if (is_sub_expression == false) {
-		// We should add an intermediate expression node
-		AST_Expression* expression_node = allocate_AST_node<AST_Expression>(emplace_node);
-		expression_node->ast_type = Node_Type::EXPRESSION;
-		expression_node->sibling = nullptr;	// @Warning we have to do this initialization because the expression can be empty
-
-		parse_expression(stream, (AST_Node**)&expression_node->first_child, true, delimiter_1, delimiter_2);
-		return;
-	}
+	bool			scoped_by_parenthesis = false;
 
 	starting_token = stream::get(stream);
 
@@ -473,17 +466,18 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 		if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
 			if (current_token.value.punctuation == delimiter_1 || current_token.value.punctuation == delimiter_2) {
 				// The delimiter will be peek be the caller
-				return;
+				return scoped_by_parenthesis;
 			}
 			else if (current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS)
 			{
 				stream::peek(stream); // (
-				parse_expression(stream, emplace_node, false, delimiter_1, delimiter_1);
+				parse_expression(stream, emplace_node, delimiter_1, delimiter_1);
+				scoped_by_parenthesis = true;
 			}
 			else if (current_token.value.punctuation == Punctuation::CLOSE_PARENTHESIS)
 			{
 				stream::peek(stream); // )
-				return;
+				return scoped_by_parenthesis;
 			}
 			else if (current_token.value.punctuation == Punctuation::STAR) {
 				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_MULTIPLICATION, &previous_child, delimiter_1, delimiter_2);
@@ -564,6 +558,7 @@ void parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 	// In scope: ;
 	// In array delaclaration: ]
 	// In initialization list: }
+	return scoped_by_parenthesis;
 }
 
 void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node /* = false */)
@@ -793,12 +788,6 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 		print_to_builder(file_string_builder,
 			"%Cv", magic_enum::enum_name(node->ast_type));
 	}
-	else if (node->ast_type == Node_Type::EXPRESSION) {
-		AST_Expression* expression_node = (AST_Expression*)node;
-
-		print_to_builder(file_string_builder,
-			"%Cv", magic_enum::enum_name(node->ast_type));
-	}
 	else if (node->ast_type == Node_Type::STATEMENT_LITERAL) {
 		AST_Literal* literal_node = (AST_Literal*)node;
 
@@ -889,11 +878,6 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 		AST_Statement_Scope* scope_node = (AST_Statement_Scope*)node;
 
 		write_dot_node(file_string_builder, (AST_Node*)scope_node->first_child, node_index);
-	}
-	else if (node->ast_type == Node_Type::EXPRESSION) {
-		AST_Expression* expression_node = (AST_Expression*)node;
-
-		write_dot_node(file_string_builder, (AST_Node*)expression_node->first_child, node_index);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_LITERAL) {
 		// No children

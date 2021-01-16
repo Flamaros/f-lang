@@ -5,7 +5,6 @@ Expressions:
 	- Assignment
   - Check errors
   - Ambiguities?
-  - Suppression des nodes Expression intermediaire
 
 Generate expressions
 Generate array expressions
