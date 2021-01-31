@@ -107,6 +107,9 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 
 		uint8_t type_indentation = variable_node->is_function_paramter ? 0 : indentation;
 
+		// @TODO write the generated_code for expression
+		// Get the register that contains the result
+
 		// Write type
 		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
 			// In this case we have to jump the array modifier
@@ -158,33 +161,32 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		if (node != ir.ast->root)
 			indented_print_to_builder(file_string_builder, indentation, "}\n");
 	}
-	//else if (node->ast_type == Node_Type::EXPRESSION) {
-	//	AST_Expression* expression_node = (AST_Expression*)node;
+	else if (node->ast_type == Node_Type::STATEMENT_LITERAL) {
+		AST_Literal* literal_node = (AST_Literal*)node;
 
-	//	print_to_builder(file_string_builder,
-	//		"%Cv", magic_enum::enum_name(node->ast_type));
-	//}
-	//else if (node->ast_type == Node_Type::STATEMENT_LITERAL) {
-	//	AST_Literal* literal_node = (AST_Literal*)node;
+		if (literal_node->value.type == Token_Type::STRING_LITERAL) {
+			print_to_builder(file_string_builder, literal_node->value.text);
+			// @TODO use the *literal_node->value.value.string instead of the token's text
+		}
+		else if (literal_node->value.type == Token_Type::NUMERIC_LITERAL_I32
+			|| literal_node->value.type == Token_Type::NUMERIC_LITERAL_I64) {
+			print_to_builder(file_string_builder,
+				"%ld", literal_node->value.value.integer);
+		}
+		else {
+			core::Assert(false);
+			// @TODO implement it
+			// Actually the string builder doesn't support floats and unsigned intergers
+		}
+		recurse_sibling = false;
+	}
+	else if (is_binary_operator(node)) {
+		AST_Binary_Operator* binary_operator_node = (AST_Binary_Operator*)node;
 
-	//	if (literal_node->value.type == Token_Type::STRING_LITERAL) {
-	//		print_to_builder(file_string_builder,
-	//			"%Cv"
-	//			"\n%v", magic_enum::enum_name(node->ast_type), literal_node->value.text);
-	//		// @TODO use the *literal_node->value.value.string instead of the token's text
-	//	}
-	//	else if (literal_node->value.type == Token_Type::NUMERIC_LITERAL_I32
-	//		|| literal_node->value.type == Token_Type::NUMERIC_LITERAL_I64) {
-	//		print_to_builder(file_string_builder,
-	//			"%Cv"
-	//			"\n%ld", magic_enum::enum_name(node->ast_type), literal_node->value.value.integer);
-	//	}
-	//	else {
-	//		core::Assert(false);
-	//		// @TODO implement it
-	//		// Actually the string builder doesn't support floats and unsigned intergers
-	//	}
-	//}
+		indented_print_to_builder(file_string_builder, indentation, "tmp_register = \n");
+		print_to_builder(file_string_builder, "");
+//		indented_print_to_builder(file_string_builder, indentation, "%v", basic_type_node->token.text);
+	}
 	//else if (node->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
 	//	AST_Identifier* identifier_node = (AST_Identifier*)node;
 

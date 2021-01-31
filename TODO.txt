@@ -25,6 +25,7 @@ return exit(main());
 
 
 Implement everything that is necessary to be able to put win32 declarations directly in f-lang:
+ - https://github.com/microsoft/win32metadata
  - Add an interpreter that simplify the tree:
    - Generate unique function references (extract nested function to put them in the global scope, be able to store adresses,...). The interface of the interpreter should be able to help the cpp-backend to sort functions (maybe not necessary with predeclaration).
  - Allow external function declarations
