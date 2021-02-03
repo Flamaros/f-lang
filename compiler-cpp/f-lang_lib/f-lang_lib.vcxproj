@@ -42,6 +42,7 @@
     <ClInclude Include="..\sources\fstd\memory\bucket.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\hash_table.hpp" />
+    <ClInclude Include="..\sources\fstd\memory\stack.hpp" />
     <ClInclude Include="..\sources\fstd\os\windows\console.hpp" />
     <ClInclude Include="..\sources\fstd\platform.hpp" />
     <ClInclude Include="..\sources\fstd\stream\array_stream.hpp" />
