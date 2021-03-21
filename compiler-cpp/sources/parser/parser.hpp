@@ -113,8 +113,8 @@ namespace f
 	{
 		Node_Type	ast_type;
 		AST_Node*	sibling;
-		Token		type_name; // Should be a pointer to avoid the copy?
-		AST_Node*	type;
+		Token		name; // Should be a pointer to avoid the copy?
+		AST_Node*	type; // Is an expression that have to be evaluable at compile-time and return a Type (basic or struct or enum, Type, function,...)
 	};
 
 	struct AST_Enum_Value

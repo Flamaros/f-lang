@@ -64,6 +64,7 @@ inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 static void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array** array_node_);
 static void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node);
 static void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_Statement_Variable** variable_, bool is_function_parameter = false);
+static inline void parse_alias(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** emplace_node);
 static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
@@ -227,6 +228,19 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 	}
 }
 
+void parse_alias(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
+{
+	Token		current_token;
+	AST_Alias*	alias_node = allocate_AST_node<AST_Alias>(previous_sibling_addr);
+
+	alias_node->ast_type = Node_Type::TYPE_ALIAS;
+	alias_node->sibling = nullptr;
+	alias_node->name = identifier;
+
+	parse_expression(stream, &alias_node->type, Punctuation::SEMICOLON);
+	stream::peek(stream); // ;
+}
+
 void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
 {
 	Token					current_token;
@@ -339,32 +353,6 @@ void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_No
 void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
 {
 	core::Assert(false);
-}
-
-void parse_alias(stream::Array_Stream<Token>& stream, AST_Node** previous_sibling_addr)
-{
-	Token		current_token;
-	AST_Alias*	alias_node = allocate_AST_node<AST_Alias>(previous_sibling_addr);
-
-	alias_node->ast_type = Node_Type::TYPE_ALIAS;
-	alias_node->sibling = nullptr;
-	alias_node->type_name = stream::get(stream);
-	alias_node->type = nullptr;
-	stream::peek(stream); // alias name
-	current_token = stream::get(stream);
-	if (current_token.type != Token_Type::SYNTAXE_OPERATOR
-		&& current_token.value.punctuation != Punctuation::EQUALS) {
-		report_error(Compiler_Error::error, current_token, "Expecting '=' punctuation after the alias typename.");
-	}
-	stream::peek(stream); // =
-	parse_type(stream, &alias_node->type);
-	current_token = stream::get(stream);
-
-	if (current_token.type != Token_Type::SYNTAXE_OPERATOR
-		&& current_token.value.punctuation != Punctuation::SEMICOLON) {
-		report_error(Compiler_Error::error, current_token, "Expecting ';' punctuation after at the end of the alias statement.");
-	}
-	stream::peek(stream); // ;
 }
 
 void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
@@ -501,6 +489,8 @@ bool parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_MEMBER_ACCESS, &previous_child, delimiter_1, delimiter_2);
 			}
 			// @TODO add other arithmetic operators (bits operations,...)
+
+			// @TODO handle pointer symbol § for alias
 		}
 		else if (is_literal(current_token.type))
 		{
@@ -545,6 +535,20 @@ bool parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 			// followed by parenthesis it's a function call
 			// followed by brackets it's an array accessor (@TODO take care of multiple arrays)
 		}
+		else if (current_token.type == Token_Type::KEYWORD)
+		{
+			if (is_a_basic_type(current_token.value.keyword)) {
+				AST_Statement_Basic_Type*	basic_type_node = allocate_AST_node<AST_Statement_Basic_Type>(emplace_node);
+
+				basic_type_node->ast_type = Node_Type::STATEMENT_BASIC_TYPE;
+				basic_type_node->sibling = nullptr;
+				basic_type_node->keyword = current_token.value.keyword;
+				basic_type_node->token = current_token;
+
+				previous_child = (AST_Node*)basic_type_node;
+				stream::peek(stream);
+			}
+		}
 	}
 
 	report_error(Compiler_Error::error, starting_token, "The current expression reach the End Of File."); // @TODO add expected delimiters in the message
@@ -585,13 +589,7 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 		current_token = stream::get(stream);
 
 		if (current_token.type == Token_Type::KEYWORD) {
-			if (current_token.value.keyword == Keyword::ALIAS) {
-				stream::peek(stream); // alias
-
-				parse_alias(stream, current_child);
-				current_child = &(*current_child)->sibling;
-			}
-			else if (current_token.value.keyword == Keyword::IMPORT) {
+			if (current_token.value.keyword == Keyword::IMPORT) {
 				stream::peek<Token>(stream);
 				// @TODO implement
 				core::Assert(false);
@@ -615,25 +613,33 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 					stream::peek<Token>(stream);
 					current_token = stream::get(stream);
 
-					if (current_token.type == Token_Type::KEYWORD
-						&& current_token.value.keyword == Keyword::STRUCT) {
-						stream::peek(stream); // struct
+					if (current_token.type == Token_Type::KEYWORD) {
+						if (current_token.value.keyword == Keyword::ENUM) {
+							stream::peek(stream); // enum
 
-						parse_struct(stream, identifier, current_child);
-						current_child = &(*current_child)->sibling;
-					}
-					else if (current_token.type == Token_Type::KEYWORD
-						&& current_token.value.keyword == Keyword::ENUM) {
-						stream::peek(stream); // enum
+							parse_enum(stream, identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
+						else if (current_token.value.keyword == Keyword::STRUCT) {
+							stream::peek(stream); // struct
 
-						parse_enum(stream, identifier, current_child);
-						current_child = &(*current_child)->sibling;
+							parse_struct(stream, identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
+						else if (is_a_basic_type(current_token.value.keyword)) {
+							parse_alias(stream, identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
 					}
 					else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
 						&& current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS) {
 						stream::peek(stream); // (
 
 						parse_function(stream, identifier, current_child);
+						current_child = &(*current_child)->sibling;
+					}
+					else if (current_token.type == Token_Type::IDENTIFIER) {
+						parse_alias(stream, identifier, current_child); // Alias on custom type
 						current_child = &(*current_child)->sibling;
 					}
 					else {
@@ -740,7 +746,7 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 
 		print_to_builder(file_string_builder,
 			"%Cv"
-			"\n%v", magic_enum::enum_name(node->ast_type), alias_node->type_name.text);
+			"\n%v", magic_enum::enum_name(node->ast_type), alias_node->name.text);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
 		AST_Statement_Basic_Type*	basic_type_node = (AST_Statement_Basic_Type*)node;

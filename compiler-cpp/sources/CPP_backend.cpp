@@ -56,6 +56,60 @@ inline static void indented_print_to_builder(String_Builder& file_string_builder
 	va_end(args);
 }
 
+static void write_default_initialization(String_Builder& file_string_builder, AST_Statement_Variable* variable_node)
+{
+	if (variable_node->type->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
+		AST_Statement_Basic_Type* basic_type = (AST_Statement_Basic_Type*)variable_node->type;
+
+		switch (basic_type->keyword)
+		{
+		case Keyword::BOOL:
+			print_to_builder(file_string_builder, "= false");
+			break;
+		case Keyword::I8:
+		case Keyword::UI8:
+		case Keyword::I16:
+		case Keyword::UI16:
+		case Keyword::I32:
+		case Keyword::UI32:
+		case Keyword::I64:
+		case Keyword::UI64:
+			print_to_builder(file_string_builder, "= 0");
+			break;
+		case Keyword::F32:
+			print_to_builder(file_string_builder, "= 0.0f");
+			break;
+		case Keyword::F64:
+			print_to_builder(file_string_builder, "= 0.0");
+			break;
+		case Keyword::STRING:
+			core::Assert(false); // Not implemented, should only initialized the length (but have to print "; VARIABLE_NAME = length"
+			break;
+		case Keyword::STRING_VIEW:
+			core::Assert(false); // Not implemented
+			break;
+		case Keyword::TYPE:
+			core::Assert(false); // Not implemented
+			break;
+		default:
+			core::Assert(false);
+			break;
+		}
+	}
+	else if (variable_node->type->ast_type == Node_Type::STATEMENT_USER_TYPE) {
+		AST_Statement_User_Type* user_type = (AST_Statement_User_Type*)variable_node->type;
+
+		user_type->identifier;
+		// @TODO
+		// No User type, only struct, alias, enum,...
+		// the initialization of an alias should be forwarded to the underlying type initialization code
+		// for struct all members should be initialized
+	}
+
+	// @TODO see how to handle pointers
+	// @TODO see how to handle arrays
+}
+
 static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation = 0)
 {
 	if (!node) {
@@ -69,7 +123,7 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 
 		print_to_builder(file_string_builder, "typedef ");
 		write_generated_code(file_string_builder, ir, alias_node->type);
-		print_to_builder(file_string_builder, " %v;\n", alias_node->type_name.text);
+		print_to_builder(file_string_builder, " %v;\n", alias_node->name.text);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
 		AST_Statement_Basic_Type* basic_type_node = (AST_Statement_Basic_Type*)node;
@@ -107,9 +161,6 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 
 		uint8_t type_indentation = variable_node->is_function_paramter ? 0 : indentation;
 
-		// @TODO write the generated_code for expression
-		// Get the register that contains the result
-
 		// Write type
 		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
 			// In this case we have to jump the array modifier
@@ -128,9 +179,26 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		}
 
 		// End the declaration
-		if (!variable_node->is_function_paramter) {
+		if (variable_node->is_function_paramter == false) {
+			// @TODO
+			// Write the initialization code if necessary (don't have an expression)
+			if (variable_node->expression == nullptr) { // @TODO Later we should do something clever (the back-end optimizer should be able to detect double initializations (taking only last write before first read))
+				write_default_initialization(file_string_builder, variable_node);
+			}
+
 			print_to_builder(file_string_builder, ";\n");
 		}
+
+		// @TODO write the generated_code for expression
+		// Get the register that contains the result
+		//
+		// We certainly have to implement the type checker here that create the register of sub-expression with the good type
+		// then check types compatibilities when descending the in tree.
+		// There is also the case of string type that should be declared (as struct) before getting assignement of his members.
+		// For a string we have to allocate 2 (one for the data pointer, and an other for the size) registers and copy them.
+		//write_generated_code();
+
+
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
 		// In cpp with can't declare dynamic arrays on the stack so for simplicity we convert them as pointers.

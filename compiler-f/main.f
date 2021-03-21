@@ -13,7 +13,7 @@ myenum :: enum {
 //alias HANDLE = §void;
 
 // @TODO I think that it could be
-// DWORD :: ui32;
+DWORD :: ui32;
 // HANDLE :: §void;
 // Alias keyword doesn't seems necessary
 
@@ -67,7 +67,7 @@ main :: (arguments : [] string) -> i32
 	// }
 	
     message:        string  = "Hello World";
-    written_bytes:  DWORD   = 0;
+    written_bytes:  DWORD; // Should be default initialized
     hstdOut:        HANDLE  = GetStdHandle(STD_OUTPUT_HANDLE);
 	strlen:         ui32 = message.length.test;
 	//test			f32 = -0.0;
