@@ -1,3 +1,31 @@
+Implementer une hash-table
+ - La faire en TDD
+ - Comparer les perfs avec la STL
+ - Voir pour récupèrer des stats comme la mémoire allouée
+
+
+
+
+
+
+Faire une passe Intermediate Representation pour avoir récuperer des informations sur les types.
+Il faut faire le lien des users types vers les types basic (les alias notamment).
+Ainsi le backend à juste à générer le code d'initialisation par rapport au type de basic.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Do the Stack container (based on Array?)
 
 
@@ -16,6 +44,26 @@ Generate array expressions
 
 
 
+#########################
+Check errors:
+interdire les assignations dans les if (truc = 2)
+
+if ((truc =2)) doit être bloqué aussi je pense
+-------------------------
+#########################
+
+
+
+
+#########################
+Docs:
+Description :http://cbloomrants.blogspot.com/2020/07/robust-win32-io.html?m=1
+Bonne source d'information pour éviter les bugs avec les API win32
+-------------------------
+#########################
+
+
+
 
 // @TODO support print of floats
 
@@ -27,6 +75,8 @@ Generate array expressions
 
 Add a pre-main that get arguments and call ExitProcess or do:
 return exit(main());
+Really need to call ExitProcess as some OS features can create threads in background and ExitProcess will ensure that those threads are closed too.
+
 
 
 Implement everything that is necessary to be able to put win32 declarations directly in f-lang:
@@ -85,6 +135,9 @@ Bits operations:
  - Check over and underflow when shifting bits has behavior is platforme specific by default, ARM and X86 CPU doesn't react in the same way (this is a undefined behavior in C/C++). But adding a runtime check will not impact
    a lot performances, this is a interesting trade-off compared to having a UB (which is super error-prone). This check must be done for both passes, at compile-time and in the byte-code. This check certainly consist on a simple operation like a cast or a modulo. Having an option to disable it can also be interesting if for some people it is a performance issue (should be a local option. eg. "ui16_value #no_check << n_bits").
 
+Code generation optimizations:
+ - https://www.google.com/url?q=https://en.m.wikipedia.org/wiki/Static_single_assignment_form&sa=D&source=calendar&usd=2&usg=AOvVaw3hsefIGV-wnVmqJ_FY2nxN
+ - https://www.google.com/url?q=https://stackoverflow.com/questions/109710/how-do-the-likely-unlikely-macros-in-the-linux-kernel-work-and-what-is-their-ben&sa=D&source=calendar&usd=2&usg=AOvVaw3GrizJjwkY0SKKrcL3et-K
 
 FSTD:
  - Is it better to use the Win32 equivalent of std::contional in a thread_pool implementation than a while(true) with a mutex (to lock the task container)
@@ -129,6 +182,7 @@ Support print of floats
 Test "-0" et "-0.0" sign must stay
 
 Take a look at Ryu&Ryu s2f.c for an implementation of string to float!
+Or https://github.com/jk-jeon/dragonbox
 
 Check the number of digit my float parsing can handle with precision, the lexer may have to go to error after a certain number of digits due to the lack of precision.
 
@@ -193,8 +247,24 @@ JIT:
 https://stackoverflow.com/questions/4911993/how-to-generate-and-run-native-code-dynamically 
 Libjit
 
+https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-globalalloc
+Memory allocated with this function is guaranteed to be aligned on an 8-byte boundary. To execute dynamically generated code, use the VirtualAlloc function to allocate memory and the VirtualProtect function to grant PAGE_EXECUTE access.
+https://docs.microsoft.com/en-us/windows/win32/memory/comparing-memory-allocation-methods
+
 #####################################
 ASM:
 https://software.intel.com/content/www/us/en/develop/download/intel-64-and-ia-32-architectures-sdm-combined-volumes-2a-2b-2c-and-2d-instruction-set-reference-a-z.html
 https://revers.engineering/applied-re-accelerated-assembly-p1/
 https://revers.engineering/applied-re-basic-architecture/
+
+
+#####################################
+https://github.com/HardCoreCodin/SlimApp
+
+Intéressant pour les allocations et code event win32
+
+
+#####################################
+Dans research\BrainFuck-compiler
+
+Compilateur générant un executable x64 Windows, intéressant pour la génération du binaire au format PE sans dépendence!!!
