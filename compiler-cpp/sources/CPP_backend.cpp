@@ -99,15 +99,26 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 	else if (variable_node->type->ast_type == Node_Type::STATEMENT_USER_TYPE) {
 		AST_Statement_User_Type* user_type = (AST_Statement_User_Type*)variable_node->type;
 
+		int foo = 0; //@Nocheckin
 		user_type->identifier;
 		// @TODO
 		// No User type, only struct, alias, enum,...
 		// the initialization of an alias should be forwarded to the underlying type initialization code
 		// for struct all members should be initialized
 	}
+	else if (variable_node->type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
+		int foo = 1;
+	}
+	else if (variable_node->type->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
+		print_to_builder(file_string_builder, "= 0");
+	}
+	//else if (variable_node->type->ast_type == Node_Type::TYPE_STRUCT) {
+	//	// @TODO
+	//	// Recurse over all members
+	//}
 
-	// @TODO see how to handle pointers
-	// @TODO see how to handle arrays
+	// @TODO not implemented
+	core::Assert(false);
 }
 
 static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation = 0)
@@ -333,7 +344,7 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 		"#define APIENTRY    WINAPI\n"
 		"\n"
 		"// Types defines\n"
-		"typedef unsigned long       DWORD;\n"
+		"  //typedef unsigned long       DWORD;\n"
 		"typedef int                 BOOL;\n"
 		"typedef unsigned char       BYTE;\n"
 		"typedef unsigned short      WORD;\n"

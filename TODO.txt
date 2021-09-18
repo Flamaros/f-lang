@@ -1,3 +1,10 @@
+Mettre les alias et autre user types dans une table de hash
+
+Faire une permière passe de résolution des types sur l'AST, ou il faut pouvoir retrouver les types basics depuis les définitions des alias et structs.
+Il faut utiliser une table de hash pour ça en insérant les alias dans une table de hash "globale" (struct IR) ou la clé est l'alias et la valeur le type de base (il faudra parfois recurser pour retrouver le bon type)
+
+
+
 Implementer une hash-table
  - La faire en TDD
  - Comparer les perfs avec la STL

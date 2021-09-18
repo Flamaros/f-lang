@@ -15,6 +15,8 @@
 #include <fstd/language/string.hpp>
 #include <fstd/language/defer.hpp>
 
+#include <fstd/memory/hash_table.hpp>
+
 #include <fstd/os/windows/console.hpp>
 
 // @TODO remove it
@@ -287,6 +289,11 @@ void test_AST_operator_precedence()
 	}
 }
 
+void test_hash_table()
+{
+
+}
+
 int main(int ac, char** av)
 {
 	// Begin Initialization ================================================
@@ -319,6 +326,7 @@ int main(int ac, char** av)
 	test_unicode_code_point_convversions();
 	test_unicode_string_convversions();
 	test_AST_operator_precedence();
+	test_hash_table();
 
 	FrameMark;
 

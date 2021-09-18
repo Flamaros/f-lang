@@ -34,6 +34,18 @@ DWORD :: ui32;
 // pointer2 := string_literal.data
 //
 
+
+// From rust to get arguments:
+//use std::env;
+//
+//fn main() {
+//    let args: Vec<String> = env::args().collect();
+//    println!("{:?}", args);
+//}
+// It seems simpler to support as it is not necessary to add a pre-main. Maybe it is also better for the user as there is nothing hidden from him.
+// The user should understand how the application is launched and how the return value is used by the OS,...
+// Should check how it works on linux
+
 main :: (arguments : [] string) -> i32
 {
 /*

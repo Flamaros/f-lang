@@ -39,3 +39,12 @@ namespace fstd
 		};
 	}
 }
+
+// Hash functions
+// http://www.cse.yorku.ca/~oz/hash.html
+// djb2 seems good, but is it good enough for me?
+//
+// New hash32 and hash64
+// http://burtleburtle.net/bob/hash/evahash.html
+
+// http://burtleburtle.net/bob/c/lookup8.c
