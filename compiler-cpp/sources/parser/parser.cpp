@@ -371,6 +371,9 @@ void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** empla
 
 	bool scoped_by_parenthesis = parse_expression(stream, &binary_operator_node->right, delimiter_1, delimiter_2);
 
+	// @TODO may want to take a look at precedence climbing:
+	// https://eli.thegreenplace.net/2012/08/02/parsing-expressions-by-precedence-climbing
+	// Is it already what I do???
 	if (scoped_by_parenthesis == false) {
 		fix_operations_order(binary_operator_node);
 	}
