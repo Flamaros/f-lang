@@ -6,4 +6,5 @@ SpookyV2:
  - site: https://burtleburtle.net/bob/hash/spooky.html
  - version: Spooky v2
  - notes: Dernière version à priori des fonctions de hash de Bob Jenkins (après lookup2.c, lookup3.c,..., puis SpookyV1)
- - Voir s'il ne faut pas migrer sur CityHash de Google qui est à priori plus rapide sur les CPU Intel plus modernes?
+ - Voir s'il ne faut pas migrer sur CityHash de Google qui est à priori plus rapide sur les CPU Intel plus modernes (modernes == architecture Nehalem qui date de 2008)?
+ 

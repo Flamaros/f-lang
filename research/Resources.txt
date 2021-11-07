@@ -1,0 +1,15 @@
+Operators precedence:
+https://en.wikipedia.org/wiki/Operators_in_C_and_C%2B%2B
+https://en.cppreference.com/w/cpp/language/operator_precedence
+https://eli.thegreenplace.net/2012/08/02/parsing-expressions-by-precedence-climbing
+
+Code generation (crt removal):
+https://docs.microsoft.com/fr-fr/cpp/build/reference/compiler-options-listed-by-category?view=msvc-160&viewFallbackFrom=vs-2019
+https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows/6#23518
+https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-exitprocess
+https://docs.microsoft.com/fr-fr/cpp/build/reference/eh-exception-handling-model?view=msvc-160&viewFallbackFrom=vs-2019
+https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-wglgetprocaddress
+
+Code generation ASM instructions:
+https://en.wikipedia.org/wiki/Processor_register
+https://en.wikipedia.org/wiki/X86-64

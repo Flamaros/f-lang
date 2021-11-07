@@ -19,6 +19,8 @@
 
 #include <fstd/os/windows/console.hpp>
 
+#include <third-party/SpookyV2.h>
+
 // @TODO remove it
 #include <vector>
 #include <string>
@@ -291,7 +293,36 @@ void test_AST_operator_precedence()
 
 void test_hash_table()
 {
+	fstd::memory::Hash_Table<uint16_t, fstd::language::string, void*>	hash_table;
+	uint64_t	hash;
+	uint16_t	short_hash;
 
+	fstd::memory::hash_table_init(hash_table, &fstd::language::are_equals);
+
+	fstd::language::string		string_type;
+	fstd::language::string		user_type_with_hash_of_string; // We will use the same hash than for the string_type to create a collision
+
+	defer{
+		release(string_type);
+		release(user_type_with_hash_of_string);
+		fstd::memory::hash_table_release(hash_table);
+	};
+
+	fstd::language::assign(string_type, (uint8_t*)u8"fstd::language::string");
+	fstd::language::assign(user_type_with_hash_of_string, (uint8_t*)u8"User_Type_With_Hash_Of_String");
+
+	hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(string_type), fstd::language::get_string_size(string_type), 0);
+	short_hash = hash & 0xffff;
+	void* value;
+
+	value = (void*)0x01;
+	fstd::memory::hash_table_insert(hash_table, short_hash, string_type, value);
+	value = (void*)0x02;
+	fstd::memory::hash_table_insert(hash_table, short_hash, user_type_with_hash_of_string, value);
+
+	// Check if we can correctly get back both value even with the hash collision
+	fstd::core::Assert((void*)*fstd::memory::hash_table_get(hash_table, short_hash, string_type) == (void*)0x01);
+	fstd::core::Assert((void*)*fstd::memory::hash_table_get(hash_table, short_hash, user_type_with_hash_of_string) == (void*)0x02);
 }
 
 int main(int ac, char** av)
@@ -312,7 +343,7 @@ int main(int ac, char** av)
 	initialize_globals();
 
 #if defined(FSTD_DEBUG)
-	core::set_log_level(*globals.logger, core::Log_Level::verbose);
+	fstd::core::set_log_level(*globals.logger, fstd::core::Log_Level::verbose);
 #endif
 
 	FrameMark;

@@ -1,13 +1,14 @@
 ﻿#include "native_generator.hpp"
 
 #include "globals.hpp"
-#include "macros.hpp"
 
 #include "IR_generator.hpp"
 #include "CPP_backend.hpp"
 
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
+
+#include <fstd/macros.hpp>
 
 #include <fstd/core/string_builder.hpp>
 #include <fstd/core/logger.hpp>

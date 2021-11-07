@@ -146,6 +146,7 @@ Bits operations:
 Code generation optimizations:
  - https://www.google.com/url?q=https://en.m.wikipedia.org/wiki/Static_single_assignment_form&sa=D&source=calendar&usd=2&usg=AOvVaw3hsefIGV-wnVmqJ_FY2nxN
  - https://www.google.com/url?q=https://stackoverflow.com/questions/109710/how-do-the-likely-unlikely-macros-in-the-linux-kernel-work-and-what-is-their-ben&sa=D&source=calendar&usd=2&usg=AOvVaw3GrizJjwkY0SKKrcL3et-K
+ - https://kristerw.github.io/2021/10/19/fast-math/
 
 FSTD:
  - Is it better to use the Win32 equivalent of std::contional in a thread_pool implementation than a while(true) with a mutex (to lock the task container)

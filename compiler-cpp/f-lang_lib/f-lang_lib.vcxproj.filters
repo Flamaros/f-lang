@@ -145,6 +145,12 @@
     <ClInclude Include="..\sources\fstd\memory\stack.hpp">
       <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\third-party\SpookyV2.h">
+      <Filter>Source Files\third-party</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\macros.hpp">
+      <Filter>Source Files\fstd</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -194,6 +200,9 @@
     </ClCompile>
     <ClCompile Include="..\sources\CPP_backend.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\third-party\SpookyV2.cpp">
+      <Filter>Source Files\third-party</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
