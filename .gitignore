@@ -22,3 +22,6 @@ build-*
 
 cl.log
 cl.error
+*.dot
+AST.png
+output.cpp

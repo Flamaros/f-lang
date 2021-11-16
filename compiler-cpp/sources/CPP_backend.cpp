@@ -95,6 +95,7 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 			core::Assert(false);
 			break;
 		}
+		return;
 	}
 	else if (variable_node->type->ast_type == Node_Type::STATEMENT_USER_TYPE) {
 		AST_Statement_User_Type* user_type = (AST_Statement_User_Type*)variable_node->type;

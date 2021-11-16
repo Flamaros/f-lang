@@ -127,7 +127,7 @@ static inline bool is_white_punctuation(Punctuation punctuation)
 
 static uint32_t keyword_key(const language::string_view& str)
 {
-    // @TODO test with a crc32 implementation (that call be better to reduce number of collision instead of this weird thing)
+    // @TODO test with a crc32 implementation (that could be better to reduce number of collisions instead of this weird thing)
 
     core::Assert(language::get_string_size(str) > 0);
 
