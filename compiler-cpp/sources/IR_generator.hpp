@@ -26,9 +26,9 @@ namespace f
 
 	struct IR
 	{
-		AST*							ast;
+		Parsing_Result*					ast;
 		fstd::memory::Stack<Register>	registers; // Need to have one stack per scope (global scope, function scope,...)?
 	};
 
-	void generate_ir(AST& ast, IR& ir);
+	void generate_ir(Parsing_Result& ast, IR& ir);
 }

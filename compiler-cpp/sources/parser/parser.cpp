@@ -59,6 +59,9 @@ inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 	return new_node;
 }
 
+// @TODO do an allocator for scopes
+
+
 // =============================================================================
 
 static void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array** array_node_);
@@ -688,7 +691,7 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 	}
 }
 
-void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
+void f::parse(fstd::memory::Array<Token>& tokens, Parsing_Result& parsing_result)
 {
 	ZoneScopedNC("f::parse", 0xff6f00);
 
@@ -709,10 +712,11 @@ void f::parse(fstd::memory::Array<Token>& tokens, AST& ast)
 		return;
 	}
 
-	parse_scope(stream, (AST_Statement_Scope**)&ast.root, true);
+	parsing_result.scope_root = nullptr;
+	parse_scope(stream, (AST_Statement_Scope**)&parsing_result.ast_root, true);
 }
 
-static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, int64_t parent_index = -1, int64_t left_node_index = -1)
+static void write_dot_node(String_Builder& file_string_builder, const AST_Node* node, int64_t parent_index = -1, int64_t left_node_index = -1)
 {
 	if (!node) {
 		return;
@@ -922,9 +926,9 @@ static void write_dot_node(String_Builder& file_string_builder, AST_Node* node, 
 	dot_node = to_string(file_string_builder);
 }
 
-void f::generate_dot_file(AST& ast, const system::Path& output_file_path)
+void f::generate_dot_file(const AST_Node* node, const system::Path& output_file_path)
 {
-	ZoneScopedNC("f::generate_dot_file", 0xc43e00);
+	ZoneScopedNC("f::generate_ast_dot_file", 0xc43e00);
 
 	system::File		file;
 	String_Builder		string_builder;
@@ -947,7 +951,94 @@ void f::generate_dot_file(AST& ast, const system::Path& output_file_path)
 	print_to_builder(string_builder, "digraph {\n");
 	print_to_builder(string_builder, "\t" "rankdir = TB\n");
 
-	write_dot_node(string_builder, ast.root);
+	write_dot_node(string_builder, node);
+
+	print_to_builder(string_builder, "}\n");
+
+	file_content = to_string(string_builder);
+
+	system::write_file(file, language::to_utf8(file_content), (uint32_t)language::get_string_size(file_content));
+}
+
+static void write_dot_scope(String_Builder& file_string_builder, const Scope* scope, int64_t parent_index = -1, int64_t left_node_index = -1)
+{
+	if (!scope) {
+		return;
+	}
+
+	language::string	dot_scope;
+	static uint32_t		nb_nodes = 0;
+	uint32_t			node_index = nb_nodes++;
+
+	defer{
+		release(dot_scope);
+	};
+
+	if (parent_index != -1) {
+		if (left_node_index == -1) {
+			print_to_builder(file_string_builder, "\t" "node_%ld -> node_%ld\n", parent_index, node_index);
+		}
+		else {
+			print_to_builder(file_string_builder, "\t" "node_%ld -> node_%ld [color=\"dodgerblue\"]\n", parent_index, node_index);
+		}
+	}
+
+	// @TODO Here we could make an arrow between siblings, but we have to use subgraph to make the nodes stay at the right position.
+	// Take a look at:
+	// https://stackoverflow.com/questions/3322827/how-to-set-fixed-depth-levels-in-dot-graphs
+	//
+	// Maybe using colors is enough to ease the understanding of links
+	//
+	// Flamaros - 09 may 2020
+
+	print_to_builder(file_string_builder, "\n\t" "node_%ld [label=\"", node_index);
+	if (scope->type == Scope_Type::MODULE) {
+		print_to_builder(file_string_builder,
+			"%Cv", magic_enum::enum_name(scope->type));
+		// @TODO print content of the scope (variables,...)
+	}
+	else {
+		core::Assert(false);
+	}
+
+	if (scope->first_child) {
+		write_dot_scope(file_string_builder, scope->first_child, node_index);
+	}
+
+	// Sibling iteration
+	if (scope->sibling) {
+		write_dot_scope(file_string_builder, scope->sibling, parent_index, node_index);
+	}
+
+	dot_scope = to_string(file_string_builder);
+}
+
+void f::generate_dot_file(const Scope* scope, const system::Path& output_file_path)
+{
+	ZoneScopedNC("f::generate_scope_dot_file", 0xc43e00);
+
+	system::File		file;
+	String_Builder		string_builder;
+	language::string	file_content;
+
+	defer{
+		free_buffers(string_builder);
+		release(file_content);
+		close_file(file);
+	};
+
+	if (open_file(file, output_file_path, (system::File::Opening_Flag)
+		((uint32_t)system::File::Opening_Flag::CREATE
+			| (uint32_t)system::File::Opening_Flag::WRITE)) == false) {
+		print_to_builder(string_builder, "Failed to open file: %s", to_string(output_file_path));
+		system::print(to_string(string_builder));
+		return;
+	}
+
+	print_to_builder(string_builder, "digraph {\n");
+	print_to_builder(string_builder, "\t" "rankdir = TB\n");
+
+	write_dot_scope(string_builder, scope);
 
 	print_to_builder(string_builder, "}\n");
 

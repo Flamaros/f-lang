@@ -188,7 +188,7 @@ void test_AST_operator_precedence()
 	using namespace f;
 
 	fstd::memory::Array<f::Token>	tokens;
-	AST								parsing_result;
+	Parsing_Result					parsing_result;
 	//	IR								ir;
 	int								result = 0;
 	fstd::system::Path				path;
@@ -203,7 +203,7 @@ void test_AST_operator_precedence()
 	parse(tokens, parsing_result);
 
 	// We can test the node type after the cast which is used to reduce the code size.
-	AST_Statement_Scope* global_scope = (AST_Statement_Scope*)parsing_result.root;
+	AST_Statement_Scope* global_scope = (AST_Statement_Scope*)parsing_result.ast_root;
 	fstd::core::Assert(global_scope->ast_type == f::Node_Type::STATEMENT_SCOPE);
 
 	// x: i32 = 5 * 3 + 4;
