@@ -25,3 +25,4 @@ cl.error
 *.dot
 AST.png
 output.cpp
+scope.png

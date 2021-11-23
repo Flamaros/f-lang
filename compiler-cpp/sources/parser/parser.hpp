@@ -3,6 +3,7 @@
 #include "../lexer/lexer.hpp"
 
 #include <fstd/memory/array.hpp>
+#include <fstd/memory/hash_table.hpp>
 
 #include <fstd/system/path.hpp>
 
@@ -233,9 +234,36 @@ namespace f
 		AST_Node*	right;
 	};
 
-    struct AST
+	//=============================================================================
+
+	enum class Scope_Type
 	{
-		AST_Node*	root; // Should point on the first module
+		MODULE,
+		FUNCTION,
+		STRUCT,
+	};
+
+	struct Scope
+	{
+		fstd::memory::Hash_Table<fstd::language::string, uint16_t, AST_Node*, 32> variables;
+		fstd::memory::Hash_Table<fstd::language::string, uint16_t, AST_Node*, 32> user_types;
+		fstd::memory::Hash_Table<fstd::language::string, uint16_t, AST_Node*, 32> functions; // Not really sure that it is different than a variable
+
+		// @TODO Can we put function declarations in a struct?
+
+		Scope_Type	type;
+
+		Scope* parent;
+		Scope* sibling;
+		Scope* first_child;
+	};
+
+	//=============================================================================
+	
+	struct Parsing_Result
+	{
+		AST_Node*	ast_root; // Should point on the first module
+		Scope*		scope_root;
 	};
 
 	struct Parser_Data
@@ -253,12 +281,18 @@ namespace f
 		//
 		// Flamaros - 07 january 2021
 		fstd::memory::Array<uint8_t>	ast_nodes;
+
+		// We do the same for scopes, as we certainly will have different types of scopes.
+		fstd::memory::Array<uint8_t>	scope_nodes;
+
+		Scope* current_scope;
 	};
 
-    void parse(fstd::memory::Array<Token>& tokens, AST& ast);
+    void parse(fstd::memory::Array<Token>& tokens, Parsing_Result& ast);
 	inline bool is_binary_operator(const AST_Node* node);
 	inline bool is_unary_operator(const AST_Node* node);
-	void generate_dot_file(AST& ast, const fstd::system::Path& output_file_path);
+	void generate_dot_file(const AST_Node* node, const fstd::system::Path& output_file_path);
+	void generate_dot_file(const Scope* scope, const fstd::system::Path& output_file_path);
 
 	inline bool is_binary_operator(const AST_Node* node)
 	{

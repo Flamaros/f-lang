@@ -83,7 +83,7 @@ int main(int ac, char** av)
 	// End Initialization ================================================
 
 	memory::Array<f::Token>	tokens;
-	f::AST					parsing_result;
+	f::Parsing_Result		parsing_result;
 	f::IR					ir;
 	int						result = 0;
 
@@ -104,19 +104,27 @@ int main(int ac, char** av)
 
 		// Optionnal Dot graph output
 		{
-			system::Path	dot_file_path;
-			system::Path	png_file_path;
+			system::Path	ast_dot_file_path;
+			system::Path	ast_png_file_path;
+			system::Path	scope_dot_file_path;
+			system::Path	scope_png_file_path;
 
 			defer {
-				system::reset_path(dot_file_path);
-				system::reset_path(png_file_path);
+				system::reset_path(ast_dot_file_path);
+				system::reset_path(ast_png_file_path);
+				system::reset_path(scope_dot_file_path);
+				system::reset_path(scope_png_file_path);
 			};
 
-			system::from_native(dot_file_path, (uint8_t*)u8R"(.\AST.dot)");
-			system::from_native(png_file_path, (uint8_t*)u8R"(.\AST.png)");
+			system::from_native(ast_dot_file_path, (uint8_t*)u8R"(.\AST.dot)");
+			system::from_native(ast_png_file_path, (uint8_t*)u8R"(.\AST.png)");
+			system::from_native(scope_dot_file_path, (uint8_t*)u8R"(.\scope.dot)");
+			system::from_native(scope_png_file_path, (uint8_t*)u8R"(.\scope.png)");
 
-			f::generate_dot_file(parsing_result, dot_file_path);
-			convert_dot_file_to_png(dot_file_path, png_file_path);
+			f::generate_dot_file(parsing_result.ast_root, ast_dot_file_path);
+			convert_dot_file_to_png(ast_dot_file_path, ast_png_file_path);
+			f::generate_dot_file(parsing_result.scope_root, scope_dot_file_path);
+			convert_dot_file_to_png(scope_dot_file_path, scope_png_file_path);
 		}
 
 		// Generate the IRL

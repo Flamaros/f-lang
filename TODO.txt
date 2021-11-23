@@ -1,3 +1,11 @@
+Mettre en place le remplissage de l'arbre des scopes
+  * Allocateur
+  * Génerer les scopes et les remplir
+  * Faire que les AST_Node qui déclarent une variables, un types, une fonction pointe vers le scope dans lequel la déclaration est effectuée.
+  * Voir comment gérer le using : copier les définitions d'un scope dans un autre ou faire un lien?
+
+
+
 Mettre les alias et autre user types dans une table de hash
   - Voir comment gérer les scopes
 

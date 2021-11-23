@@ -218,9 +218,9 @@ namespace fstd
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type>
-		inline void log_stats(Hash_Table<Hash_Type, Key_Type, Value_Type>& hash_table)
+		inline void log_stats(Hash_Table<Hash_Type, Key_Type, Value_Type>& hash_table, fstd::core::Logger* logger)
 		{
-			fstd::core::log(*globals.logger, fstd::core::Log_Level::info, "[Hash_Table] Memory size: %d\n", get_array_bytes_size(hash_table.table));
+			fstd::core::log(logger, fstd::core::Log_Level::info, "[Hash_Table] Memory size: %d\n", get_array_bytes_size(hash_table.table));
 		}
 	}
 }
