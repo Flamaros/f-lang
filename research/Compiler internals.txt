@@ -1,0 +1,3 @@
+Scopes:
+ - https://ruslanspivak.com/lsbasi-part14/
+ - https://t4tutorials.com/symbol-table-in-compiler-design/
