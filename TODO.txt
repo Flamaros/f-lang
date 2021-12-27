@@ -175,6 +175,7 @@ Lexer:
 Parser:
  - Handle operator precedence
  - Handle '-' character, unary or binary operator
+ - Switch: error on case redondancy (should not have multiple case on same value)
 
 Langage:
  - Support of imaginary numbers?
