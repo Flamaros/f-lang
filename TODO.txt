@@ -29,14 +29,25 @@ Il faut faire le lien des users types vers les types basic (les alias notamment)
 Ainsi le backend à juste à générer le code d'initialisation par rapport au type de basic.
 
 
+#########################
+
+Pour le language de représentation intermédiaire (IR):
+Il faut sans doute respecter la règle de l'assignation unique (qui aide pour pas mal d'optimisations lors de la génération ASM)
+https://en.wikipedia.org/wiki/Static_single_assignment_form
 
 
+#########################
 
 
+Optimisation sur les traitements de pointeurs et problèmes d'aliasing:
+  - https://fr.wikipedia.org/wiki/Restrict
+
+#########################
+
+Voir s'il ne faut pas supprimer le type bool, ou faire que ce soit toujours 1 byte. Voir problème du std::vector<bool> qui ne fourni pas la méthode data à cause des pb qu'il pourrait y avoir avec des memcpy,...
 
 
-
-
+#########################
 
 
 
@@ -286,3 +297,8 @@ Intéressant pour les allocations et code event win32
 Dans research\BrainFuck-compiler
 
 Compilateur générant un executable x64 Windows, intéressant pour la génération du binaire au format PE sans dépendence!!!
+
+
+#####################################
+Détecter l'utilisation de références temporaires (utilisation d'un pointeur sur une variable locale à une fonction (return ou assignation à une variable qui vivra en dehors du scope de la fonction))
+https://twitter.com/SebAaltonen/status/1519035409178804231?t=vO2ENkhwQqdq-HgtLQ2aWA&s=19

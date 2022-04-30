@@ -219,6 +219,9 @@ namespace fstd
 
 		void free(void* address)
 		{
+			if (address == 0x00)
+				return;
+
 			Memory_Header* header = (Memory_Header*)((size_t)address - Memory_Header_size);
 
 			if (header->size == Chunk_Size::size_32) {

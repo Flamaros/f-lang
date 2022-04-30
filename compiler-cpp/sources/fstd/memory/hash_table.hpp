@@ -64,7 +64,7 @@ namespace fstd
 		// of the template version of the function by using the parameters types (the hash_table passed by
 		// parameters should already contains in his typeinfo the template parameters (and their types)).
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t bucket_size = 512>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size = 512>
 		struct Hash_Table
 		{
 			// @TODO Check if the Key_Type is an integer type (uint16, int32, ...)
@@ -84,7 +84,7 @@ namespace fstd
 
 			bool (*compare_function)(const Key_Type&, const Key_Type&) = nullptr;
 			Array<Bucket> buckets;
-			size_t bucket_size = bucket_size;
+			size_t bucket_size = _bucket_size;
 		};
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type>
@@ -113,7 +113,7 @@ namespace fstd
 			{
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 
-				for (size_t i = 0; i < hash_table.bucket_size; i++)
+				for (size_t i = 0; i < get_array_size(bucket->table); i++) // @Warning some buckets aren't allocated so the size can be 0
 				{
 					auto value_pod = get_array_element(bucket->table, i);
 					if (value_pod->value != nullptr)
@@ -139,6 +139,7 @@ namespace fstd
 				{
 					// We have to initialize the bucket for its first use
 					init(bucket->table);
+					resize_array(bucket->table, hash_table.bucket_size);
 					system::fill_memory(get_array_data(bucket->table), get_array_bytes_size(bucket->table), 0x00);
 				}
 
