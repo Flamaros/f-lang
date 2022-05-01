@@ -197,6 +197,7 @@ void f::initialize_lexer()
 
     INSERT_KEYWORD("enum", ENUM);
     INSERT_KEYWORD("struct", STRUCT);
+    INSERT_KEYWORD("union", UNION);
     INSERT_KEYWORD("alias", ALIAS);
     INSERT_KEYWORD("inline", INLINE);
     INSERT_KEYWORD("static", STATIC);

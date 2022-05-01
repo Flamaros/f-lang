@@ -72,6 +72,7 @@ static void parse_function(stream::Array_Stream<Token>& stream, Token& identifie
 static void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** emplace_node);
 static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static void parse_union(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
 static void fix_operations_order(AST_Binary_Operator* binary_operator_node);
 static void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
@@ -358,6 +359,11 @@ void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node
 	core::Assert(false);
 }
 
+void parse_union(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
+{
+	core::Assert(false);
+}
+
 void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
 {
 	core::Assert(*previous_child != nullptr);
@@ -615,7 +621,7 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 			current_token = stream::get(stream);
 
 			if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
-				if (current_token.value.punctuation == Punctuation::DOUBLE_COLON) { // It's a function, struct or enum declaration
+				if (current_token.value.punctuation == Punctuation::DOUBLE_COLON) { // It's a function, struct, union, enum or an alias declaration
 					stream::peek<Token>(stream);
 					current_token = stream::get(stream);
 
@@ -632,6 +638,12 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 							parse_struct(stream, identifier, current_child);
 							current_child = &(*current_child)->sibling;
 						}
+						else if (current_token.value.keyword == Keyword::UNION) {
+							stream::peek(stream); // union
+
+							parse_union(stream, identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
 						else if (is_a_basic_type(current_token.value.keyword)) {
 							parse_alias(stream, identifier, current_child);
 							current_child = &(*current_child)->sibling;
@@ -644,12 +656,13 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 						parse_function(stream, identifier, current_child);
 						current_child = &(*current_child)->sibling;
 					}
-					else if (current_token.type == Token_Type::IDENTIFIER) {
+					else if (current_token.type == Token_Type::IDENTIFIER
+						|| (current_token.type == Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == Punctuation::SECTION)) {
 						parse_alias(stream, identifier, current_child); // Alias on custom type
 						current_child = &(*current_child)->sibling;
 					}
 					else {
-						report_error(Compiler_Error::error, current_token, "Expecting struct, enum or function parameters list after the '::' token.");
+						report_error(Compiler_Error::error, current_token, "Expecting struct, enum, union, function signature or a type (alias declaration) after the '::' token.");
 					}
 				}
 				else if (current_token.value.punctuation == Punctuation::COLON) { // It's a variable declaration with type

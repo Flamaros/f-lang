@@ -131,7 +131,8 @@ namespace f
         IMPORT,
         ENUM,
         STRUCT,
-        ALIAS,
+        UNION,
+        ALIAS, // @TODO remove it
         INLINE,
         STATIC,
         TRUE,

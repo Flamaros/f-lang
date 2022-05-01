@@ -302,3 +302,8 @@ Compilateur générant un executable x64 Windows, intéressant pour la générat
 #####################################
 Détecter l'utilisation de références temporaires (utilisation d'un pointeur sur une variable locale à une fonction (return ou assignation à une variable qui vivra en dehors du scope de la fonction))
 https://twitter.com/SebAaltonen/status/1519035409178804231?t=vO2ENkhwQqdq-HgtLQ2aWA&s=19
+
+#####################################
+Erreur quand une variable a le même nom qu'un paramètre template. Voir hash table avec bucket_size
+
+Doit être vu comme une redeclaration de variable? Où il faut fournir un moyen de lever l'ambiguïté

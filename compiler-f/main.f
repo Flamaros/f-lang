@@ -1,83 +1,43 @@
 ﻿// import f_language_definitions;
 
-/*
-myenum :: enum {
-	first = 0,
-	second
-}*/
+// Win32 types
+BOOL :: i32; // int
+HANDLE :: §void;
+PVOID :: §void;
+LPCVOID :: §void;
+DWORD :: ui32; // unsigned long
+LPDWORD :: §DWORD;
+ULONG_PTR :: ui64;
 
-// foo : Type = u32; // Type is a Type that store a type, this is compile time only. So foo is a compile time variable.
+OVERLAPPED :: struct
+{
+    Internal : ULONG_PTR;
+    InternalHigh : ULONG_PTR;
+    DUMMYUNIONNAME :: union
+	{
+        DUMMYSTRUCTNAME :: struct
+		{
+            Offset : DWORD;
+            OffsetHigh : DWORD;
+        } ;
+        Pointer : PVOID;
+    };
 
-// @TODO put it back when use API declarations will be done directly in f.
-//alias DWORD = ui32;
-//alias HANDLE = §void;
+    hEvent : HANDLE;
+};
+LPOVERLAPPED :: §OVERLAPPED;
 
-// @TODO I think that it could be
-DWORD :: ui32;
-// HANDLE :: §void;
-// Alias keyword doesn't seems necessary
-
-
-// For pointers, we may want to use operators that arent used for something else to simplify the parser implementation.
-// § to get a pointer
-// @ for unreferencing a pointer
-// . accessor operator should be able to automatically unreference the pointer to get the member
-
-// foo : Type = u32; // Type is a Type that store a type, this is compile time only. So foo is a compile time variable.
-
-//
-// literals (immutable):
-//  numeric_literal :: int.[99, 88, 77, 66, 55];
-//  string_literal  :: "Hello World";
-//
-// pointer1 := numeric_literal.data
-// pointer2 := string_literal.data
-//
-
-
-// From rust to get arguments:
-//use std::env;
-//
-//fn main() {
-//    let args: Vec<String> = env::args().collect();
-//    println!("{:?}", args);
-//}
-// It seems simpler to support as it is not necessary to add a pre-main. Maybe it is also better for the user as there is nothing hidden from him.
-// The user should understand how the application is launched and how the return value is used by the OS,...
-// Should check how it works on linux
+GetStdHandle :: (nStdHandle : DWORD) -> HANDLE
+	: @dll(import), @calling_convention(stdcall);
+WriteFile :: (hFile : HANDLE,
+			  lpBuffer : LPCVOID,
+			  nNumberOfBytesToWrite : DWORD,
+			  lpNumberOfBytesWritten : LPDWORD,
+			  lpOverlapped : LPOVERLAPPED) -> BOOL
+	: @dll(import), @calling_convention(stdcall);
 
 main :: (arguments : [] string) -> i32
 {
-/*
-	x := 1 + 2 * 3 - 4;
-	y := (1 + 2) * 3 - 4;
-	z := 1 + 2 * (3 - 4);
-	w := (1 + 2) * (3 - 4);
-*/
-	
-/*
-	enum_value : myenum;
-	
-	if enum_value == {
-		case first:
-		// some code
-		// break isn't requested
-		case second:
-		// some code
-	}
-
-*/
-
-	// {
-		// {
-			// foo : §[]DWORD;
-		// }
-	// }
-
-	// neasted_function :: ()
-	// {
-	// }
-	
     message:        string  = "Hello World";
     written_bytes:  DWORD; // Should be default initialized
     hstdOut:        HANDLE  = GetStdHandle(STD_OUTPUT_HANDLE);

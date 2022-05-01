@@ -13,3 +13,10 @@ https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-wglgetprocad
 Code generation ASM instructions:
 https://en.wikipedia.org/wiki/Processor_register
 https://en.wikipedia.org/wiki/X86-64
+
+
+Il doit être possible de voir comment il génère un exe sans LLVM:
+https://github.com/glhrmfrts/carbonlang
+
+Voir tools pour compiler de l'asm:
+http://www.godevtool.com
