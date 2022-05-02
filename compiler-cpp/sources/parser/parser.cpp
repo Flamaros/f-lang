@@ -70,14 +70,16 @@ static void parse_variable(stream::Array_Stream<Token>& stream, Token& identifie
 static inline void parse_alias(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
 static void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** emplace_node);
-static void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static void parse_struct(stream::Array_Stream<Token>& stream, Token* identifier, AST_Node** previous_sibling_addr); /// @param identifier If null the union is anonymous
 static void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
-static void parse_union(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr);
+static void parse_union(stream::Array_Stream<Token>& stream, Token* identifier, AST_Node** previous_sibling_addr); /// @param identifier If null the union is anonymous
 static void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
 static void fix_operations_order(AST_Binary_Operator* binary_operator_node);
 static void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
 static bool parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN); // Return true if the expression is scoped by parenthesis
 static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
+static void parse_struct_scope(stream::Array_Stream<Token>& stream, AST_Statement_Struct_Type* scope_node_, bool is_root_node = false);
+static void parse_union_scope(stream::Array_Stream<Token>& stream, AST_Statement_Union_Type* scope_node_, bool is_root_node = false);
 
 // =============================================================================
 
@@ -163,18 +165,28 @@ void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
 				stream::peek(stream); // basic_type keyword
 				break;
 			}
+			else if (current_token.value.keyword == Keyword::STRUCT) {
+				stream::peek(stream); // struct
+				parse_struct(stream, nullptr, type_node);
+				break;
+			}
+			else if (current_token.value.keyword == Keyword::UNION) {
+				stream::peek(stream); // struct
+				parse_union(stream, nullptr, type_node);
+				break;
+			}
 			else {
 				report_error(Compiler_Error::error, current_token, "Expecting a type qualifier (a type modifier operator, a basic type keyword or a user type identifier).");
 			}
 		}
 		else if (current_token.type == Token_Type::IDENTIFIER) {
-			AST_Statement_User_Type*	user_type_node = allocate_AST_node<AST_Statement_User_Type>(previous_sibling_addr);
+			AST_Statement_Variable_Type*	user_type_node = allocate_AST_node<AST_Statement_Variable_Type>(previous_sibling_addr);
 
 			if (*type_node == nullptr) {
 				*type_node = (AST_Node*)user_type_node;
 			}
 
-			user_type_node->ast_type = Node_Type::STATEMENT_USER_TYPE;
+			user_type_node->ast_type = Node_Type::STATEMENT_VARIABLE_TYPE;
 			user_type_node->sibling = nullptr;
 			user_type_node->identifier = current_token;
 
@@ -227,14 +239,17 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 		}
 	}
 
-	if (is_function_parameter == false) {	// @Warning the parse_function method have to be able to read arguments delimiters ',' or ')' characters
+	if (is_function_parameter == false &&	// @Warning the parse_function method have to be able to read arguments delimiters ',' or ')' characters
+		// @Warning struct and union can be anonymous, in this case the type declaration is made directly in the variable declaration
+		// and the variable declaration ends with the struct or union one (so there is no ; expected here)
+		variable->type->ast_type != Node_Type::STATEMENT_TYPE_STRUCT &&
+		variable->type->ast_type != Node_Type::STATEMENT_TYPE_UNION) {
 		stream::peek(stream); // ;
 	}
 }
 
 void parse_alias(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
 {
-	Token		current_token;
 	AST_Alias*	alias_node = allocate_AST_node<AST_Alias>(previous_sibling_addr);
 
 	alias_node->ast_type = Node_Type::TYPE_ALIAS;
@@ -349,9 +364,22 @@ void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier,
 	*emplace_node = function_call;
 }
 
-void parse_struct(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
+void parse_struct(stream::Array_Stream<Token>& stream, Token* identifier, AST_Node** previous_sibling_addr)
 {
-	core::Assert(false);
+	Token						current_token;
+	AST_Statement_Struct_Type*	struct_node = allocate_AST_node<AST_Statement_Struct_Type>(previous_sibling_addr);
+
+	current_token = stream::get(stream); // {
+
+	if (!(current_token.type == Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == Punctuation::OPEN_BRACE)) {
+		report_error(Compiler_Error::error, current_token, "Expecting '{'.");
+	}
+
+	parse_struct_scope(stream, struct_node, true);
+
+	struct_node->anonymous = identifier == nullptr;
+	if (identifier)
+		struct_node->name = *identifier;
 }
 
 void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
@@ -359,9 +387,22 @@ void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node
 	core::Assert(false);
 }
 
-void parse_union(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
+void parse_union(stream::Array_Stream<Token>& stream, Token* identifier, AST_Node** previous_sibling_addr)
 {
-	core::Assert(false);
+	Token						current_token;
+	AST_Statement_Union_Type*	union_node = allocate_AST_node<AST_Statement_Union_Type>(previous_sibling_addr);
+
+	current_token = stream::get(stream); // {
+
+	if (!(current_token.type == Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == Punctuation::OPEN_BRACE)) {
+		report_error(Compiler_Error::error, current_token, "Expecting '{'.");
+	}
+
+	parse_union_scope(stream, union_node, true);
+
+	union_node->anonymous = identifier == nullptr;
+	if (identifier)
+		union_node->name = *identifier;
 }
 
 void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
@@ -635,13 +676,13 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 						else if (current_token.value.keyword == Keyword::STRUCT) {
 							stream::peek(stream); // struct
 
-							parse_struct(stream, identifier, current_child);
+							parse_struct(stream, &identifier, current_child);
 							current_child = &(*current_child)->sibling;
 						}
 						else if (current_token.value.keyword == Keyword::UNION) {
 							stream::peek(stream); // union
 
-							parse_union(stream, identifier, current_child);
+							parse_union(stream, &identifier, current_child);
 							current_child = &(*current_child)->sibling;
 						}
 						else if (is_a_basic_type(current_token.value.keyword)) {
@@ -693,6 +734,208 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 			else if (current_token.value.punctuation == Punctuation::OPEN_BRACE) {
 				parse_scope(stream, (AST_Statement_Scope**)current_child);
 				current_child = &(*current_child)->sibling;	// Move the current_child to the sibling
+			}
+		}
+		else if (is_literal(current_token.type)) {
+			report_error(Compiler_Error::error, current_token, "Expecting an expression not a literal!\n");
+		}
+		else if (current_token.type == Token_Type::UNKNOWN) {
+			report_error(Compiler_Error::error, current_token, "Unknown token type! Something goes really badly here!\n");
+		}
+	}
+}
+
+void parse_struct_scope(stream::Array_Stream<Token>& stream, AST_Statement_Struct_Type* scope_node, bool is_root_node /* = false */)
+{
+	Token						current_token;
+	AST_Node**					current_child = &scope_node->first_child;
+
+	scope_node->ast_type = Node_Type::STATEMENT_TYPE_STRUCT;
+	scope_node->sibling = nullptr;
+	scope_node->first_child = nullptr;
+
+	current_token = stream::get(stream);
+
+	core::Assert(current_token.type == Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == Punctuation::OPEN_BRACE);
+
+	stream::peek(stream); // {
+
+	while (stream::is_eof(stream) == false)
+	{
+		current_token = stream::get(stream);
+
+		if (current_token.type == Token_Type::KEYWORD) {
+			if (current_token.value.keyword == Keyword::IMPORT) {
+				stream::peek<Token>(stream);
+				// @TODO implement
+				core::Assert(false);
+			}
+			else
+			{
+				report_error(Compiler_Error::error, current_token, "Unexpected keyword in the current context (global scope).");
+			}
+		}
+		else if (current_token.type == Token_Type::IDENTIFIER) {
+			// At global scope we can only have variable or function declarations that start with an identifier
+			// @TODO We should check at which level we are
+
+			Token	identifier = current_token;
+
+			stream::peek<Token>(stream);
+			current_token = stream::get(stream);
+
+			if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+				if (current_token.value.punctuation == Punctuation::DOUBLE_COLON) { // It's a function, struct, union, enum or an alias declaration
+					stream::peek<Token>(stream);
+					current_token = stream::get(stream);
+
+					if (current_token.type == Token_Type::KEYWORD) {
+						if (current_token.value.keyword == Keyword::ENUM) {
+							stream::peek(stream); // enum
+
+							parse_enum(stream, identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
+						else if (current_token.value.keyword == Keyword::STRUCT) {
+							stream::peek(stream); // struct
+
+							parse_struct(stream, &identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
+						else if (current_token.value.keyword == Keyword::UNION) {
+							stream::peek(stream); // union
+
+							parse_union(stream, &identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
+						else if (is_a_basic_type(current_token.value.keyword)) {
+							parse_alias(stream, identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
+					}
+					else {
+						report_error(Compiler_Error::error, current_token, "Expecting struct, enum or union");
+					}
+				}
+				else if (current_token.value.punctuation == Punctuation::COLON) { // It's a variable declaration with type
+					parse_variable(stream, identifier, (AST_Statement_Variable**)current_child);
+					current_child = &(*current_child)->sibling;
+				}
+				else if (current_token.value.punctuation == Punctuation::COLON_EQUAL) { // It's a variable declaration where type is infered
+
+				}
+				else if (current_token.value.punctuation == Punctuation::EQUALS) { // It's a variable assignement
+				}
+			}
+		}
+		else if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+			if (current_token.value.punctuation == Punctuation::CLOSE_BRACE) { // Ends struct declaration
+				stream::peek(stream); // }
+				return;
+			}
+			else {
+				report_error(Compiler_Error::error, current_token, "Unnexpected syntaxe operator");
+			}
+		}
+		else if (is_literal(current_token.type)) {
+			report_error(Compiler_Error::error, current_token, "Expecting an expression not a literal!\n");
+		}
+		else if (current_token.type == Token_Type::UNKNOWN) {
+			report_error(Compiler_Error::error, current_token, "Unknown token type! Something goes really badly here!\n");
+		}
+	}
+}
+
+void parse_union_scope(stream::Array_Stream<Token>& stream, AST_Statement_Union_Type* scope_node, bool is_root_node /* = false */)
+{
+	Token						current_token;
+	AST_Node**					current_child = &scope_node->first_child;
+
+	scope_node->ast_type = Node_Type::STATEMENT_TYPE_UNION;
+	scope_node->sibling = nullptr;
+	scope_node->first_child = nullptr;
+
+	current_token = stream::get(stream);
+
+	core::Assert(current_token.type == Token_Type::SYNTAXE_OPERATOR && current_token.value.punctuation == Punctuation::OPEN_BRACE);
+
+	stream::peek(stream); // {
+
+	while (stream::is_eof(stream) == false)
+	{
+		current_token = stream::get(stream);
+
+		if (current_token.type == Token_Type::KEYWORD) {
+			if (current_token.value.keyword == Keyword::IMPORT) {
+				stream::peek<Token>(stream);
+				// @TODO implement
+				core::Assert(false);
+			}
+			else
+			{
+				report_error(Compiler_Error::error, current_token, "Unexpected keyword in the current context (global scope).");
+			}
+		}
+		else if (current_token.type == Token_Type::IDENTIFIER) {
+			// At global scope we can only have variable or function declarations that start with an identifier
+			// @TODO We should check at which level we are
+
+			Token	identifier = current_token;
+
+			stream::peek<Token>(stream);
+			current_token = stream::get(stream);
+
+			if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+				if (current_token.value.punctuation == Punctuation::DOUBLE_COLON) { // It's a function, struct, union, enum or an alias declaration
+					stream::peek<Token>(stream);
+					current_token = stream::get(stream);
+
+					if (current_token.type == Token_Type::KEYWORD) {
+						if (current_token.value.keyword == Keyword::ENUM) {
+							stream::peek(stream); // enum
+
+							parse_enum(stream, identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
+						else if (current_token.value.keyword == Keyword::STRUCT) {
+							stream::peek(stream); // struct
+
+							parse_struct(stream, &identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
+						else if (current_token.value.keyword == Keyword::UNION) {
+							stream::peek(stream); // union
+
+							parse_union(stream, &identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
+						else if (is_a_basic_type(current_token.value.keyword)) {
+							parse_alias(stream, identifier, current_child);
+							current_child = &(*current_child)->sibling;
+						}
+					}
+					else {
+						report_error(Compiler_Error::error, current_token, "Expecting struct, enum or union");
+					}
+				}
+				else if (current_token.value.punctuation == Punctuation::COLON) { // It's a variable declaration with type
+					parse_variable(stream, identifier, (AST_Statement_Variable**)current_child);
+					current_child = &(*current_child)->sibling;
+				}
+				else if (current_token.value.punctuation == Punctuation::COLON_EQUAL) { // It's a variable declaration where type is infered
+
+				}
+				else if (current_token.value.punctuation == Punctuation::EQUALS) { // It's a variable assignement
+				}
+			}
+		}
+		else if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+			if (current_token.value.punctuation == Punctuation::CLOSE_BRACE) { // Ends union declaration
+				stream::peek(stream); // }
+				return;
+			}
+			else {
+				report_error(Compiler_Error::error, current_token, "Unnexpected syntaxe operator");
 			}
 		}
 		else if (is_literal(current_token.type)) {
@@ -775,8 +1018,8 @@ static void write_dot_node(String_Builder& file_string_builder, const AST_Node* 
 			"%Cv"
 			"\n%Cv", magic_enum::enum_name(node->ast_type), magic_enum::enum_name(basic_type_node->keyword));
 	}
-	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
-		AST_Statement_User_Type*	user_type_node = (AST_Statement_User_Type*)node;
+	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE_TYPE) {
+		AST_Statement_Variable_Type*	user_type_node = (AST_Statement_Variable_Type*)node;
 
 		print_to_builder(file_string_builder,
 			"%Cv"
@@ -877,7 +1120,7 @@ static void write_dot_node(String_Builder& file_string_builder, const AST_Node* 
 	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
 		// No children
 	}
-	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
+	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE_TYPE) {
 		// No children
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {

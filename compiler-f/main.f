@@ -13,18 +13,18 @@ OVERLAPPED :: struct
 {
     Internal : ULONG_PTR;
     InternalHigh : ULONG_PTR;
-    DUMMYUNIONNAME :: union
+    DUMMYUNIONNAME : union
 	{
-        DUMMYSTRUCTNAME :: struct
+        DUMMYSTRUCTNAME : struct
 		{
             Offset : DWORD;
             OffsetHigh : DWORD;
-        } ;
+        }
         Pointer : PVOID;
-    };
+    }
 
     hEvent : HANDLE;
-};
+}
 LPOVERLAPPED :: §OVERLAPPED;
 
 GetStdHandle :: (nStdHandle : DWORD) -> HANDLE
