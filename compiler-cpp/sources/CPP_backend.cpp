@@ -100,6 +100,10 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 	else if (variable_node->type->ast_type == Node_Type::STATEMENT_USER_TYPE) {
 		AST_Statement_User_Type* user_type = (AST_Statement_User_Type*)variable_node->type;
 
+		// @TODO
+		// Je dois récupérer le scope et procéder à une résolution du type ou faire en sorte ce soit fait avant et qu'ici j'ai directement
+		// accès à la déclaration du type
+
 		int foo = 0; //@Nocheckin
 		user_type->identifier;
 		// @TODO

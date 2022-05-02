@@ -13,28 +13,28 @@ OVERLAPPED :: struct
 {
     Internal : ULONG_PTR;
     InternalHigh : ULONG_PTR;
-    DUMMYUNIONNAME :: union
+    DUMMYUNIONNAME : union
 	{
-        DUMMYSTRUCTNAME :: struct
+        DUMMYSTRUCTNAME : struct
 		{
             Offset : DWORD;
             OffsetHigh : DWORD;
-        } ;
+        }
         Pointer : PVOID;
-    };
+    }
 
     hEvent : HANDLE;
-};
+}
 LPOVERLAPPED :: §OVERLAPPED;
 
 GetStdHandle :: (nStdHandle : DWORD) -> HANDLE
-	: @dll(import), @calling_convention(stdcall);
+	: win32; // @dll(import), @calling_convention(stdcall);
 WriteFile :: (hFile : HANDLE,
 			  lpBuffer : LPCVOID,
 			  nNumberOfBytesToWrite : DWORD,
 			  lpNumberOfBytesWritten : LPDWORD,
 			  lpOverlapped : LPOVERLAPPED) -> BOOL
-	: @dll(import), @calling_convention(stdcall);
+	: win32; // @dll(import), @calling_convention(stdcall);
 
 main :: (arguments : [] string) -> i32
 {

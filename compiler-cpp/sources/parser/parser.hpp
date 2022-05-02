@@ -19,6 +19,8 @@ namespace f
 	struct AST_Statement_Variable;
 	struct AST_Statement_Function;
 	struct AST_Statement_Scope;
+	struct AST_Literal;
+	struct AST_Identifier;
 
 	//=============================================================================
 
@@ -45,6 +47,9 @@ namespace f
 		STATEMENT_MODULE,
 		STATEMENT_BASIC_TYPE,
 		STATEMENT_USER_TYPE,
+		STATEMENT_TYPE_STRUCT,
+		STATEMENT_TYPE_UNION,
+		STATEMENT_TYPE_ENUM,
 		STATEMENT_TYPE_POINTER,
 		STATEMENT_TYPE_ARRAY,
 		STATEMENT_VARIABLE,
@@ -149,6 +154,30 @@ namespace f
 		Token		token;
 	};
 
+	struct AST_Statement_Struct_Type
+	{
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		bool		anonymous;
+		Token		name; // @Warning is uninitialized if anonymous is true
+		AST_Node*	first_child;
+	};
+
+	struct AST_Statement_Union_Type
+	{
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+		bool		anonymous;
+		Token		name; // @Warning is uninitialized if anonymous is true
+		AST_Node*	first_child;
+	};
+
+	struct AST_Statement_Enum_Type
+	{
+		Node_Type	ast_type;
+		AST_Node*	sibling;
+	};
+
 	struct AST_Statement_User_Type
 	{
 		Node_Type	ast_type;
@@ -192,6 +221,7 @@ namespace f
 		AST_Statement_Variable*	arguments;
 		AST_Node*				return_type;
 		AST_Statement_Scope*	scope;	 // nullptr is it's only the declaration
+		AST_Identifier*			modifiers;
 	};
 
 	struct AST_Function_Call
