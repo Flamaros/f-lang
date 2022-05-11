@@ -180,13 +180,13 @@ void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
 			}
 		}
 		else if (current_token.type == Token_Type::IDENTIFIER) {
-			AST_Statement_Variable_Type*	user_type_node = allocate_AST_node<AST_Statement_Variable_Type>(previous_sibling_addr);
+			AST_Statement_User_Type*	user_type_node = allocate_AST_node<AST_Statement_User_Type>(previous_sibling_addr);
 
 			if (*type_node == nullptr) {
 				*type_node = (AST_Node*)user_type_node;
 			}
 
-			user_type_node->ast_type = Node_Type::STATEMENT_VARIABLE_TYPE;
+			user_type_node->ast_type = Node_Type::STATEMENT_USER_TYPE;
 			user_type_node->sibling = nullptr;
 			user_type_node->identifier = current_token;
 
@@ -317,19 +317,54 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 		current_token = stream::get(stream);
 	}
 
-	if (current_token.type == Token_Type::SYNTAXE_OPERATOR
-		&& current_token.value.punctuation == Punctuation::SEMICOLON) {
-		// @TODO implement it, this is just a function declaration in this case
-		// @Warning this can also just follow the return value
-		core::Assert(false);
-	}
-	else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
-		&& current_token.value.punctuation == Punctuation::OPEN_BRACE) {
-		parse_scope(stream, &function_node->scope);
-		current_token = stream::get(stream);
-	}
-	else {
-		report_error(Compiler_Error::error, current_token, "Expecting '->' to specify the return type of the function or the scope of the function.");
+	while (true) {
+		if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+			if (current_token.value.punctuation == Punctuation::SEMICOLON) {
+				stream::peek(stream); // ;
+				return;
+			}
+			else if (current_token.value.punctuation == Punctuation::OPEN_BRACE) {
+				parse_scope(stream, &function_node->scope);
+				return;
+			}
+			else if (current_token.value.punctuation == Punctuation::COLON) {
+				stream::peek(stream); // :
+
+				current_token = stream::get(stream);
+
+				AST_Identifier** current_modifier = &function_node->modifiers;
+				while (!(current_token.type == Token_Type::SYNTAXE_OPERATOR
+					&& (current_token.value.punctuation == Punctuation::SEMICOLON
+						|| current_token.value.punctuation == Punctuation::OPEN_BRACE)))
+				{
+					if (current_token.type == Token_Type::IDENTIFIER)
+					{
+						AST_Identifier* identifier_node = allocate_AST_node<AST_Identifier>((AST_Node**)current_modifier);
+
+						identifier_node->ast_type = Node_Type::STATEMENT_IDENTIFIER;
+						identifier_node->sibling = nullptr;
+						identifier_node->value = current_token;
+
+						stream::peek(stream); // identifier
+						current_token = stream::get(stream);
+
+						current_modifier = (AST_Identifier**)&((*current_modifier)->sibling);
+						if (current_token.type == Token_Type::SYNTAXE_OPERATOR &&
+							current_token.value.punctuation == Punctuation::COMMA)
+						{
+							stream::peek(stream); // ,
+							current_token = stream::get(stream);
+						}
+					}
+					else {
+						report_error(Compiler_Error::error, current_token, "Expecting an identifier for a modifier of function");
+					}
+				}
+			}
+		}
+		else {
+			report_error(Compiler_Error::error, current_token, "Expecting '->' to specify the return type of the function or the scope of the function.");
+		}
 	}
 }
 
@@ -1018,8 +1053,8 @@ static void write_dot_node(String_Builder& file_string_builder, const AST_Node* 
 			"%Cv"
 			"\n%Cv", magic_enum::enum_name(node->ast_type), magic_enum::enum_name(basic_type_node->keyword));
 	}
-	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE_TYPE) {
-		AST_Statement_Variable_Type*	user_type_node = (AST_Statement_Variable_Type*)node;
+	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
+		AST_Statement_User_Type*	user_type_node = (AST_Statement_User_Type*)node;
 
 		print_to_builder(file_string_builder,
 			"%Cv"
@@ -1104,6 +1139,30 @@ static void write_dot_node(String_Builder& file_string_builder, const AST_Node* 
 		print_to_builder(file_string_builder,
 			"%Cv", magic_enum::enum_name(node->ast_type));
 	}
+	else if (node->ast_type == Node_Type::STATEMENT_TYPE_STRUCT) {
+	AST_Statement_Struct_Type* struct_node = (AST_Statement_Struct_Type*)node;
+
+		if (struct_node->anonymous)
+			print_to_builder(file_string_builder,
+				"%Cv"
+				"\nname: %Cs", magic_enum::enum_name(node->ast_type), "anonymous");
+		else
+			print_to_builder(file_string_builder,
+				"%Cv"
+				"\nname: %v", magic_enum::enum_name(node->ast_type), struct_node->name.text);
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_TYPE_UNION) {
+	AST_Statement_Union_Type* union_node = (AST_Statement_Union_Type*)node;
+
+	if (union_node->anonymous)
+		print_to_builder(file_string_builder,
+			"%Cv"
+			"\nname: %Cs", magic_enum::enum_name(node->ast_type), "anonymous");
+	else
+		print_to_builder(file_string_builder,
+			"%Cv"
+			"\nname: %v", magic_enum::enum_name(node->ast_type), union_node->name.text);
+	}
 	else {
 		core::Assert(false);
 		print_to_builder(file_string_builder,
@@ -1120,7 +1179,7 @@ static void write_dot_node(String_Builder& file_string_builder, const AST_Node* 
 	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
 		// No children
 	}
-	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE_TYPE) {
+	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
 		// No children
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
@@ -1169,6 +1228,16 @@ static void write_dot_node(String_Builder& file_string_builder, const AST_Node* 
 
 		write_dot_node(file_string_builder, (AST_Node*)member_access_node->left, node_index);
 		write_dot_node(file_string_builder, (AST_Node*)member_access_node->right, node_index);
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_TYPE_STRUCT) {
+		AST_Statement_Struct_Type* struct_node = (AST_Statement_Struct_Type*)node;
+
+		write_dot_node(file_string_builder, (AST_Node*)struct_node->first_child, node_index);
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_TYPE_UNION) {
+		AST_Statement_Union_Type* union_node = (AST_Statement_Union_Type*)node;
+
+		write_dot_node(file_string_builder, (AST_Node*)union_node->first_child, node_index);
 	}
 	else {
 		core::Assert(false);

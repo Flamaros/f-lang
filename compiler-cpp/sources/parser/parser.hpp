@@ -19,6 +19,8 @@ namespace f
 	struct AST_Statement_Variable;
 	struct AST_Statement_Function;
 	struct AST_Statement_Scope;
+	struct AST_Literal;
+	struct AST_Identifier;
 
 	//=============================================================================
 
@@ -44,7 +46,7 @@ namespace f
 
 		STATEMENT_MODULE,
 		STATEMENT_BASIC_TYPE,
-		STATEMENT_VARIABLE_TYPE,
+		STATEMENT_USER_TYPE,
 		STATEMENT_TYPE_STRUCT,
 		STATEMENT_TYPE_UNION,
 		STATEMENT_TYPE_ENUM,
@@ -176,7 +178,7 @@ namespace f
 		AST_Node*	sibling;
 	};
 
-	struct AST_Statement_Variable_Type
+	struct AST_Statement_User_Type
 	{
 		Node_Type	ast_type;
 		AST_Node*	sibling;
@@ -219,6 +221,7 @@ namespace f
 		AST_Statement_Variable*	arguments;
 		AST_Node*				return_type;
 		AST_Statement_Scope*	scope;	 // nullptr is it's only the declaration
+		AST_Identifier*			modifiers;
 	};
 
 	struct AST_Function_Call

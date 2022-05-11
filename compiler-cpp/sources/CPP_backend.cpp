@@ -97,8 +97,12 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 		}
 		return;
 	}
-	else if (variable_node->type->ast_type == Node_Type::STATEMENT_VARIABLE_TYPE) {
-		AST_Statement_Variable_Type* user_type = (AST_Statement_Variable_Type*)variable_node->type;
+	else if (variable_node->type->ast_type == Node_Type::STATEMENT_USER_TYPE) {
+		AST_Statement_User_Type* user_type = (AST_Statement_User_Type*)variable_node->type;
+
+		// @TODO
+		// Je dois récupérer le scope et procéder à une résolution du type ou faire en sorte ce soit fait avant et qu'ici j'ai directement
+		// accès à la déclaration du type
 
 		int foo = 0; //@Nocheckin
 		user_type->identifier;
@@ -142,8 +146,8 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 
 		indented_print_to_builder(file_string_builder, indentation, "%v", basic_type_node->token.text);
 	}
-	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE_TYPE) {
-		AST_Statement_Variable_Type* user_type_node = (AST_Statement_Variable_Type*)node;
+	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
+		AST_Statement_User_Type* user_type_node = (AST_Statement_User_Type*)node;
 
 		indented_print_to_builder(file_string_builder, indentation, "%v", user_type_node->identifier.text);
 	}

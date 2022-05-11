@@ -186,13 +186,13 @@ namespace fstd
 							print_to_builder(builder, (uint8_t*)std_string_view.data(), std_string_view.length());
 							position++;
 						}
-						else if (language::to_utf8(*format)[position] == 's') {	// std::string_view
+						else if (language::to_utf8(*format)[position] == 's') {	// c string (char*)
 							char* c_string = va_arg(args, char*);
 
 							print_to_builder(builder, (uint8_t*)c_string, language::string_literal_size((uint8_t*)c_string));
 							position++;
 						}
-						else if (language::to_utf8(*format)[position] == 'w') {	// std::string_view
+						else if (language::to_utf8(*format)[position] == 'w') {	// c wstring (wchar*)
 							wchar_t* w_string = va_arg(args, wchar_t*);
 
 							print_to_builder(builder, (uint16_t*)w_string, language::string_literal_size((uint16_t*)w_string));

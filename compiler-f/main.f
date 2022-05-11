@@ -28,13 +28,13 @@ OVERLAPPED :: struct
 LPOVERLAPPED :: §OVERLAPPED;
 
 GetStdHandle :: (nStdHandle : DWORD) -> HANDLE
-	: @dll(import), @calling_convention(stdcall);
+	: win32; // @dll(import), @calling_convention(stdcall);
 WriteFile :: (hFile : HANDLE,
 			  lpBuffer : LPCVOID,
 			  nNumberOfBytesToWrite : DWORD,
 			  lpNumberOfBytesWritten : LPDWORD,
 			  lpOverlapped : LPOVERLAPPED) -> BOOL
-	: @dll(import), @calling_convention(stdcall);
+	: win32; // @dll(import), @calling_convention(stdcall);
 
 main :: (arguments : [] string) -> i32
 {
