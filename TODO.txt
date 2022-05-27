@@ -302,6 +302,13 @@ Compilateur générant un executable x64 Windows, intéressant pour la générat
 
 
 #####################################
+Au moins la première section (shadowing, if without instruction,...) devrait être prise en charge par le compilateur
+https://ourmachinery.com/post/a-taxonomy-of-bugs/
+
+La partie memory aussi me semble intéressante pour l'allocateur et le debogueur
+
+
+#####################################
 Détecter l'utilisation de références temporaires (utilisation d'un pointeur sur une variable locale à une fonction (return ou assignation à une variable qui vivra en dehors du scope de la fonction))
 https://twitter.com/SebAaltonen/status/1519035409178804231?t=vO2ENkhwQqdq-HgtLQ2aWA&s=19
 

@@ -293,7 +293,7 @@ namespace f
 	struct Parsing_Result
 	{
 		AST_Node*	ast_root; // Should point on the first module
-		Scope*		scope_root;
+		Scope*		scope_root; // @TODO should be renamed first_module_scopre? Are all modules at same lvl?
 	};
 
 	struct Parser_Data

@@ -59,7 +59,19 @@ inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 	return new_node;
 }
 
-// @TODO do an allocator for scopes
+inline Scope* allocate_scope_node(Scope** emplace_node)
+{
+	// Ensure that no reallocation could happen during the resize
+	core::Assert(memory::get_array_size(globals.parser_data.scope_nodes) < memory::get_array_reserved(globals.parser_data.scope_nodes) * sizeof(Scope));
+
+	memory::resize_array(globals.parser_data.scope_nodes, memory::get_array_size(globals.parser_data.scope_nodes) + sizeof(Scope));
+
+	Scope* new_node = (Scope*)(memory::get_array_last_element(globals.parser_data.scope_nodes) - sizeof(Scope));
+	if (emplace_node) {
+		*emplace_node = (Scope*)new_node;
+	}
+	return new_node;
+}
 
 
 // =============================================================================
@@ -996,6 +1008,7 @@ void f::parse(fstd::memory::Array<Token>& tokens, Parsing_Result& parsing_result
 	//
 	// Flamaros - 13 april 2020
 	memory::reserve_array(globals.parser_data.ast_nodes, memory::get_array_size(tokens) * sizeof(AST_Statement_Variable));
+	memory::reserve_array(globals.parser_data.scope_nodes, memory::get_array_size(tokens) * sizeof(Scope));
 
 	stream::initialize_memory_stream<Token>(stream, tokens);
 
@@ -1003,7 +1016,12 @@ void f::parse(fstd::memory::Array<Token>& tokens, Parsing_Result& parsing_result
 		return;
 	}
 
-	parsing_result.scope_root = nullptr;
+	parsing_result.scope_root = allocate_scope_node(nullptr);
+	parsing_result.scope_root->type = Scope_Type::MODULE;
+	parsing_result.scope_root->parent = nullptr;
+	parsing_result.scope_root->sibling = nullptr;
+	parsing_result.scope_root->first_child = nullptr;
+	globals.parser_data.current_scope = parsing_result.scope_root;
 	parse_scope(stream, (AST_Statement_Scope**)&parsing_result.ast_root, true);
 }
 
@@ -1325,6 +1343,7 @@ static void write_dot_scope(String_Builder& file_string_builder, const Scope* sc
 	else {
 		core::Assert(false);
 	}
+	print_to_builder(file_string_builder, "\" shape=box, style=filled, color=black, fillcolor=lightseagreen]\n");
 
 	if (scope->first_child) {
 		write_dot_scope(file_string_builder, scope->first_child, node_index);
