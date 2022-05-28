@@ -65,6 +65,22 @@
     <ClInclude Include="..\sources\third-party\magic_enum.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
     <ClInclude Include="..\sources\third-party\SpookyV2.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\atomic.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\dbghelp.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\dds.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\fiber.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\file.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\gdi.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\intrin.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\io.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\misc.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\process.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\sysinfo.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\threads.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\window.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\windows.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\windows_base.h" />
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\windows_modular.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\CPP_backend.cpp" />
@@ -85,6 +101,9 @@
     <ClCompile Include="..\sources\parser\parser.cpp" />
     <ClCompile Include="..\sources\parser\symbol_solver.cpp" />
     <ClCompile Include="..\sources\third-party\SpookyV2.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\third-party\WindowsHModular\include\win32\make.bat" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -185,7 +204,7 @@
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\WindowsHModular\include</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -203,7 +222,7 @@
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\WindowsHModular\include</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -223,7 +242,7 @@
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\WindowsHModular\include</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -245,7 +264,7 @@
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\WindowsHModular\include</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -267,7 +286,7 @@
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\WindowsHModular\include</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -289,7 +308,7 @@
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\WindowsHModular\include</AdditionalIncludeDirectories>
       <AdditionalOptions> /UTF-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>

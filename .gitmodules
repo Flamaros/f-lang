@@ -1,3 +1,6 @@
 [submodule "compiler-cpp/third-party/tracy"]
 	path = compiler-cpp/third-party/tracy
 	url = https://github.com/wolfpld/tracy.git
+[submodule "compiler-cpp/third-party/WindowsHModular"]
+	path = compiler-cpp/third-party/WindowsHModular
+	url = https://github.com/Flamaros/WindowsHModular.git

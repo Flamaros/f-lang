@@ -8,7 +8,7 @@
 #include <fstd/os/windows/console.hpp>
 
 #if defined(FSTD_OS_WINDOWS)
-#	include <Windows.h>
+#	include <win32/io.h>
 #endif
 
 namespace fstd

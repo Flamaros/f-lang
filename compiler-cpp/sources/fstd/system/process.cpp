@@ -8,7 +8,11 @@
 #include <fstd/language/defer.hpp>
 
 #if defined(FSTD_OS_WINDOWS)
-#	include <Windows.h>
+#	include <win32/file.h>
+#	include <win32/process.h>
+#	include <win32/misc.h> // SecureZeroMemory
+#	include <win32/threads.h> // WaitForSingleObject
+#	include <win32/io.h> // CloseHandle
 #endif
 
 namespace fstd
@@ -28,16 +32,16 @@ namespace fstd
 			//language::UTF16LE_string	utf16_executable_path;
 			language::UTF16LE_string	utf16_command_line;
 			core::String_Builder		string_builder;
-			STARTUPINFO					startup_info;
+			STARTUPINFOW				startup_info;
 			PROCESS_INFORMATION			process_info;
 
 			defer{
 				free_buffers(string_builder);
 			};
 
-			ZeroMemory(&startup_info, sizeof(startup_info));
+			SecureZeroMemory(&startup_info, sizeof(startup_info));
 			startup_info.cb = sizeof(startup_info);
-			ZeroMemory(&process_info, sizeof(process_info));
+			SecureZeroMemory(&process_info, sizeof(process_info));
 
 			//core::from_utf8_to_utf16LE(to_string(executable_path), utf16_executable_path, true);
 

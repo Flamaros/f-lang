@@ -38,6 +38,12 @@
     <Filter Include="Source Files\parser">
       <UniqueIdentifier>{541cff7c-2fcb-4d1d-a2bd-b8ec7d60d814}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\third-party\WindowsHModular">
+      <UniqueIdentifier>{e1b9163c-fa6a-40d9-9717-c982166b52b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\third-party\WindowsHModular\win32">
+      <UniqueIdentifier>{434ac355-6301-4560-a2dd-705f5a9372ac}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
@@ -154,6 +160,54 @@
     <ClInclude Include="..\sources\parser\symbol_solver.hpp">
       <Filter>Source Files\parser</Filter>
     </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\atomic.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\dbghelp.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\dds.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\fiber.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\file.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\gdi.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\intrin.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\io.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\misc.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\process.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\sysinfo.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\threads.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\window.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\windows.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\windows_base.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\third-party\WindowsHModular\include\win32\windows_modular.h">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -210,5 +264,10 @@
     <ClCompile Include="..\sources\parser\symbol_solver.cpp">
       <Filter>Source Files\parser</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\third-party\WindowsHModular\include\win32\make.bat">
+      <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
+    </None>
   </ItemGroup>
 </Project>
