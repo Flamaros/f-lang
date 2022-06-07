@@ -322,3 +322,10 @@ https://twitter.com/SebAaltonen/status/1519035409178804231?t=vO2ENkhwQqdq-HgtLQ2
 Erreur quand une variable a le même nom qu'un paramètre template. Voir hash table avec bucket_size
 
 Doit être vu comme une redeclaration de variable? Où il faut fournir un moyen de lever l'ambiguïté
+
+
+#####################################
+Inlining:
+https://twitter.com/mmalex/status/1532034169068470273?s=21&t=IYIoovQHiI6cECkpp8d1SA
+
+Ne pas inliner les fonctions récursives
