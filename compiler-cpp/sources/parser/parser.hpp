@@ -271,17 +271,20 @@ namespace f
 		MODULE,
 		FUNCTION,
 		STRUCT,
+		UNION,
+		SCOPE, // A nested scope
 	};
 
 	struct Scope
 	{
-		fstd::memory::Hash_Table<fstd::language::string, uint16_t, AST_Node*, 32> variables;
-		fstd::memory::Hash_Table<fstd::language::string, uint16_t, AST_Node*, 32> user_types;
-		fstd::memory::Hash_Table<fstd::language::string, uint16_t, AST_Node*, 32> functions; // Not really sure that it is different than a variable
+		fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> variables;
+		fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> user_types;
+		fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> functions; // Not really sure that it is different than a variable
 
 		// @TODO Can we put function declarations in a struct?
 
 		Scope_Type	type;
+		Token*		name; // Functions and struct scopes are named
 
 		Scope* parent;
 		Scope* sibling;

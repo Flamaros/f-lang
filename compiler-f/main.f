@@ -44,7 +44,7 @@ main :: (arguments : [] string) -> i32
 	strlen:         ui32 = message.length.test;
 	//test			f32 = -0.0;
 
-	test_array:     [4]ui32 = message;
+//	test_array:     [4]ui32 = message;
 	
 	x: i32 = 5 * (3 + 4);
 	y: i32 = 4 + 3 * 5;

@@ -6,6 +6,7 @@
 #include <fstd/core/string_builder.hpp>
 
 #include <fstd/memory/array.hpp>
+#include <fstd/memory/hash_table.hpp>
 
 #include <fstd/stream/array_stream.hpp>
 
@@ -15,6 +16,9 @@
 #include <fstd/language/defer.hpp>
 #include <fstd/language/flags.hpp>
 #include <fstd/language/string.hpp>
+#include <fstd/language/string_view.hpp>
+
+#include <third-party/SpookyV2.h>
 
 #undef max
 #include <tracy/Tracy.hpp>
@@ -59,7 +63,7 @@ inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 	return new_node;
 }
 
-inline Scope* allocate_scope_node(Scope** emplace_node)
+inline Scope* allocate_scope_node()
 {
 	// Ensure that no reallocation could happen during the resize
 	core::Assert(memory::get_array_size(globals.parser_data.scope_nodes) < memory::get_array_reserved(globals.parser_data.scope_nodes) * sizeof(Scope));
@@ -67,12 +71,8 @@ inline Scope* allocate_scope_node(Scope** emplace_node)
 	memory::resize_array(globals.parser_data.scope_nodes, memory::get_array_size(globals.parser_data.scope_nodes) + sizeof(Scope));
 
 	Scope* new_node = (Scope*)(memory::get_array_last_element(globals.parser_data.scope_nodes) - sizeof(Scope));
-	if (emplace_node) {
-		*emplace_node = (Scope*)new_node;
-	}
 	return new_node;
 }
-
 
 // =============================================================================
 
@@ -92,6 +92,36 @@ static bool parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emp
 static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
 static void parse_struct_scope(stream::Array_Stream<Token>& stream, AST_Statement_Struct_Type* scope_node_, bool is_root_node = false);
 static void parse_union_scope(stream::Array_Stream<Token>& stream, AST_Statement_Union_Type* scope_node_, bool is_root_node = false);
+
+static void initialize_scope(Scope* scope, Scope* parent, Scope* sibling, Scope_Type type, Token* name);
+
+// =============================================================================
+
+// Allocate a new scope of requested type, and make it current
+// Automatically put the scope as first_child or as sibling of first_child depending on the situration of current_node
+inline void push_new_scope(Scope_Type type, Token* name)
+{
+	Scope* parent = globals.parser_data.current_scope;
+
+	// Actually as symbols don't leak from there scope and the lookup will be only based on parents, we don't have to keep children in declaration order.
+	// So the new scope will be put at first child and current first_child will be put as sibling of new_scope.
+
+	Scope* new_scope = allocate_scope_node();
+	if (parent) {
+		initialize_scope(new_scope, parent, parent->first_child, type, name);
+		parent->first_child = new_scope;
+	}
+	else {
+		initialize_scope(new_scope, parent, nullptr, type, name);
+	}
+	globals.parser_data.current_scope = new_scope;
+}
+
+// Update the current_scope to the parent
+inline void pop_scope()
+{
+	globals.parser_data.current_scope = globals.parser_data.current_scope->parent;
+}
 
 // =============================================================================
 
@@ -258,6 +288,15 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 		variable->type->ast_type != Node_Type::STATEMENT_TYPE_UNION) {
 		stream::peek(stream); // ;
 	}
+
+	// symbol table
+	{
+		uint64_t hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(variable->name.text), fstd::language::get_string_size(variable->name.text), 0);
+		uint16_t short_hash = hash & 0xffff;
+		AST_Node* value = (AST_Node*)variable;
+
+		fstd::memory::hash_table_insert(globals.parser_data.current_scope->variables, short_hash, variable->name.text, value);
+	}
 }
 
 void parse_alias(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
@@ -270,6 +309,15 @@ void parse_alias(stream::Array_Stream<Token>& stream, Token& identifier, AST_Nod
 
 	parse_expression(stream, &alias_node->type, Punctuation::SEMICOLON);
 	stream::peek(stream); // ;
+
+	// symbol table
+	{
+		uint64_t hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(alias_node->name.text), fstd::language::get_string_size(alias_node->name.text), 0);
+		uint16_t short_hash = hash & 0xffff;
+		AST_Node* value = (AST_Node*)alias_node;
+
+		fstd::memory::hash_table_insert(globals.parser_data.current_scope->user_types, short_hash, alias_node->name.text, value);
+	}
 }
 
 void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
@@ -329,14 +377,29 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 		current_token = stream::get(stream);
 	}
 
+	// @TODO I am not sure that using a lambda is ideal (I a not sure that I will add a similar feature in f-lang)
+	auto insert_to_symbol_table = [&]() {
+		uint64_t hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(function_node->name.text), fstd::language::get_string_size(function_node->name.text), 0);
+		uint16_t short_hash = hash & 0xffff;
+		AST_Node* value = (AST_Node*)function_node;
+
+		fstd::memory::hash_table_insert(globals.parser_data.current_scope->functions, short_hash, function_node->name.text, value);
+	};
+
 	while (true) {
 		if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
 			if (current_token.value.punctuation == Punctuation::SEMICOLON) {
 				stream::peek(stream); // ;
+				insert_to_symbol_table();
 				return;
 			}
 			else if (current_token.value.punctuation == Punctuation::OPEN_BRACE) {
+				insert_to_symbol_table();
+				push_new_scope(Scope_Type::FUNCTION, &function_node->name);
+
 				parse_scope(stream, &function_node->scope);
+
+				pop_scope();
 				return;
 			}
 			else if (current_token.value.punctuation == Punctuation::COLON) {
@@ -422,11 +485,33 @@ void parse_struct(stream::Array_Stream<Token>& stream, Token* identifier, AST_No
 		report_error(Compiler_Error::error, current_token, "Expecting '{'.");
 	}
 
+	struct_node->anonymous = identifier == nullptr;
+	if (identifier) {
+		struct_node->name = *identifier;
+
+		push_new_scope(Scope_Type::STRUCT, &struct_node->name);
+	}
+	else {
+		push_new_scope(Scope_Type::STRUCT, nullptr);
+	}
+
 	parse_struct_scope(stream, struct_node, true);
+
+	pop_scope();
 
 	struct_node->anonymous = identifier == nullptr;
 	if (identifier)
 		struct_node->name = *identifier;
+
+	// symbol table
+	if (!struct_node->anonymous)
+	{
+		uint64_t hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(struct_node->name.text), fstd::language::get_string_size(struct_node->name.text), 0);
+		uint16_t short_hash = hash & 0xffff;
+		AST_Node* value = (AST_Node*)struct_node;
+
+		fstd::memory::hash_table_insert(globals.parser_data.current_scope->user_types, short_hash, struct_node->name.text, value);
+	}
 }
 
 void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
@@ -445,11 +530,29 @@ void parse_union(stream::Array_Stream<Token>& stream, Token* identifier, AST_Nod
 		report_error(Compiler_Error::error, current_token, "Expecting '{'.");
 	}
 
+	union_node->anonymous = identifier == nullptr;
+	if (identifier) {
+		union_node->name = *identifier;
+
+		push_new_scope(Scope_Type::UNION, &union_node->name);
+	}
+	else {
+		push_new_scope(Scope_Type::UNION, nullptr);
+	}
+
 	parse_union_scope(stream, union_node, true);
 
-	union_node->anonymous = identifier == nullptr;
-	if (identifier)
-		union_node->name = *identifier;
+	pop_scope();
+
+	// symbol table
+	if (!union_node->anonymous)
+	{
+		uint64_t hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(union_node->name.text), fstd::language::get_string_size(union_node->name.text), 0);
+		uint16_t short_hash = hash & 0xffff;
+		AST_Node* value = (AST_Node*)union_node;
+
+		fstd::memory::hash_table_insert(globals.parser_data.current_scope->user_types, short_hash, union_node->name.text, value);
+	}
 }
 
 void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
@@ -779,8 +882,12 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 				return;
 			}
 			else if (current_token.value.punctuation == Punctuation::OPEN_BRACE) {
+				push_new_scope(Scope_Type::SCOPE, nullptr);
+
 				parse_scope(stream, (AST_Statement_Scope**)current_child);
 				current_child = &(*current_child)->sibling;	// Move the current_child to the sibling
+
+				pop_scope();
 			}
 		}
 		else if (is_literal(current_token.type)) {
@@ -994,6 +1101,19 @@ void parse_union_scope(stream::Array_Stream<Token>& stream, AST_Statement_Union_
 	}
 }
 
+void initialize_scope(Scope* scope, Scope* parent, Scope* sibling, Scope_Type type, Token* name)
+{
+	fstd::memory::hash_table_init(scope->variables,		&fstd::language::are_equals);
+	fstd::memory::hash_table_init(scope->user_types,	&fstd::language::are_equals);
+	fstd::memory::hash_table_init(scope->functions,		&fstd::language::are_equals);
+
+	scope->type = type;
+	scope->name = name;
+	scope->parent = parent;
+	scope->sibling = sibling;
+	scope->first_child = nullptr;
+}
+
 void f::parse(fstd::memory::Array<Token>& tokens, Parsing_Result& parsing_result)
 {
 	ZoneScopedNC("f::parse", 0xff6f00);
@@ -1016,12 +1136,8 @@ void f::parse(fstd::memory::Array<Token>& tokens, Parsing_Result& parsing_result
 		return;
 	}
 
-	parsing_result.scope_root = allocate_scope_node(nullptr);
-	parsing_result.scope_root->type = Scope_Type::MODULE;
-	parsing_result.scope_root->parent = nullptr;
-	parsing_result.scope_root->sibling = nullptr;
-	parsing_result.scope_root->first_child = nullptr;
-	globals.parser_data.current_scope = parsing_result.scope_root;
+	push_new_scope(Scope_Type::MODULE, nullptr);
+	parsing_result.scope_root = globals.parser_data.current_scope;
 	parse_scope(stream, (AST_Statement_Scope**)&parsing_result.ast_root, true);
 }
 
@@ -1333,17 +1449,93 @@ static void write_dot_scope(String_Builder& file_string_builder, const Scope* sc
 	// Maybe using colors is enough to ease the understanding of links
 	//
 	// Flamaros - 09 may 2020
-
-	print_to_builder(file_string_builder, "\n\t" "node_%ld [label=\"", node_index);
-	if (scope->type == Scope_Type::MODULE) {
+//<TABLE border="10" cellspacing="10" cellpadding="10" style="rounded" bgcolor="/rdylgn11/1:/rdylgn11/11" gradientangle="315">
+	
+	// Symbol table header
+	{
+		print_to_builder(file_string_builder, "\n\t" "node_%ld [label=<\n", node_index);
 		print_to_builder(file_string_builder,
-			"%Cv", magic_enum::enum_name(scope->type));
-		// @TODO print content of the scope (variables,...)
+			"\t\t" "<table border=\"0\" cellborder=\"1\" cellspacing=\"0\"><tr><td colspan=\"2\">%Cv", magic_enum::enum_name(scope->type));
+		if (scope->name) {
+			print_to_builder(file_string_builder, " %v", scope->name->text);
+		}
+		print_to_builder(file_string_builder, "</td></tr>\n");
 	}
-	else {
-		core::Assert(false);
+
+	// variables
+	{
+		print_to_builder(file_string_builder,
+			"\t\t\t" "<tr><td colspan=\"2\"></td></tr>\n\n"
+			"\t\t\t" "<tr><td colspan=\"2\">Variables</td></tr>\n");
+		auto it = fstd::memory::hash_table_begin(scope->variables);
+		auto it_end = fstd::memory::hash_table_end(scope->variables);
+
+		for (; !fstd::memory::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
+		{
+			AST_Node* node = *fstd::memory::hash_table_get<uint16_t, fstd::language::string_view, AST_Node*, 32>(it);
+
+			if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
+				AST_Statement_Variable* variable = ((AST_Statement_Variable*)node);
+				if (scope->type == Scope_Type::FUNCTION && variable->is_function_paramter) { // Parameters of a function declaration aren't visible for the current scope
+					print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>parameter</td><td>%v</td></tr>\n", variable->name.text);
+				}
+				else if (!variable->is_function_paramter) {
+					print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>variable</td><td>%v</td></tr>\n", variable->name.text);
+				}
+			}
+		}
 	}
-	print_to_builder(file_string_builder, "\" shape=box, style=filled, color=black, fillcolor=lightseagreen]\n");
+
+	// user types
+	{
+		print_to_builder(file_string_builder,
+			"\t\t\t" "<tr><td colspan=\"2\"></td></tr>\n\n"
+			"\t\t\t" "<tr><td colspan=\"2\">User types</td></tr>\n");
+		auto it = fstd::memory::hash_table_begin(scope->user_types);
+		auto it_end = fstd::memory::hash_table_end(scope->user_types);
+
+		for (; !fstd::memory::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
+		{
+			AST_Node* node = *fstd::memory::hash_table_get<uint16_t, fstd::language::string_view, AST_Node*, 32>(it);
+
+			if (node->ast_type == Node_Type::TYPE_ALIAS) {
+				print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>alias</td><td>%v</td></tr>\n", ((AST_Alias*)node)->name.text);
+			}
+			else if (node->ast_type == Node_Type::STATEMENT_TYPE_STRUCT) {
+				print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>struct</td><td>%v</td></tr>\n", ((AST_Statement_Struct_Type*)node)->name.text);
+			}
+			else if (node->ast_type == Node_Type::STATEMENT_TYPE_UNION) {
+				print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>union</td><td>%v</td></tr>\n", ((AST_Statement_Union_Type*)node)->name.text);
+			}
+			//else if (node->ast_type == Node_Type::STATEMENT_TYPE_ENUM) {
+			//	print_to_builder(file_string_builder, "<tr><td>enum</td><td>%v</td></tr>\n", ((AST_Statement_Enum_Type*)node)->name.text);
+			//}
+			else
+			{
+				assert(false);
+			}
+		}
+	}
+
+	// functions
+	{
+		print_to_builder(file_string_builder,
+			"\t\t\t" "<tr><td colspan=\"2\"></td></tr>\n\n"
+			"\t\t\t" "<tr><td colspan=\"2\">Functions</td></tr>\n");
+		auto it = fstd::memory::hash_table_begin(scope->functions);
+		auto it_end = fstd::memory::hash_table_end(scope->functions);
+
+		for (; !fstd::memory::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
+		{
+			AST_Node* node = *fstd::memory::hash_table_get<uint16_t, fstd::language::string_view, AST_Node*, 32>(it);
+
+			if (node->ast_type == Node_Type::STATEMENT_FUNCTION) {
+				print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>function</td><td>%v</td></tr>\n", ((AST_Statement_Function*)node)->name.text);
+			}
+		}
+	}
+	print_to_builder(file_string_builder, "\t\t" "</table>>\n"
+		"\t\t" "shape=box, style=filled, color=black, fillcolor=lightseagreen]\n");
 
 	if (scope->first_child) {
 		write_dot_scope(file_string_builder, scope->first_child, node_index);
