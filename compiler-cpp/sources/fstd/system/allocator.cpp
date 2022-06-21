@@ -5,7 +5,6 @@
 #if defined(FSTD_OS_WINDOWS)
 #	include <win32/io.h>
 #	include <win32/misc.h>
-//#include <Windows.h>
 #endif
 
 //#include <cmath>

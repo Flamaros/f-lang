@@ -16,7 +16,6 @@
 
 // @TODO remove that
 #include <initializer_list>
-#include <utility>
 
 template<typename Hash_Type, typename Value_Type, Value_Type default_value = Value_Type()>
 class Hash_Table
@@ -24,13 +23,20 @@ class Hash_Table
     static const size_t   max_nb_values = (Hash_Type)0xffffffff'ffffffff + 1;
 
 public:
+
+    struct DummyPair
+    {
+        Hash_Type first;
+        Value_Type second;
+    };
+
     Hash_Table()
     {
         for (size_t i = 0; i < max_nb_values; i++)
             m_table[i] = default_value;
     }
 
-    Hash_Table(std::initializer_list<std::pair<Hash_Type, Value_Type>> values)
+    Hash_Table(std::initializer_list<DummyPair> values)
     {
         for (size_t i = 0; i < max_nb_values; i++)
             m_table[i] = default_value;
