@@ -245,6 +245,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\tests\main.cpp" />
+    <ClCompile Include="..\third-party\tracy\TracyClient.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\tests\main.hpp" />

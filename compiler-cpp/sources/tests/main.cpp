@@ -30,6 +30,7 @@
 
 #undef max
 #include <tracy/Tracy.hpp>
+#include <tracy/common/TracySystem.hpp>
 
 void test_integer_to_string_performances()
 {

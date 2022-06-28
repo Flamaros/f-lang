@@ -15,6 +15,12 @@
     <Filter Include="Source Files\tests">
       <UniqueIdentifier>{d246fda1-63fd-47e8-b273-282cc60d6776}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\third-party">
+      <UniqueIdentifier>{7079c120-9b1b-4ae3-aa0c-c630c39b87ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\third-party\tracy">
+      <UniqueIdentifier>{58d7c188-4458-4ecb-ab85-7dabea57a3d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\tests\operators\precedence.f">
@@ -24,6 +30,9 @@
   <ItemGroup>
     <ClCompile Include="..\sources\tests\main.cpp">
       <Filter>Source Files\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\third-party\tracy\TracyClient.cpp">
+      <Filter>Source Files\third-party\tracy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
