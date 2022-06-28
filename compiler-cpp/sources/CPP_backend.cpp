@@ -175,7 +175,7 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		AST_Statement_Variable*	variable_node = (AST_Statement_Variable*)node;
 		AST_Node*				type = variable_node->type;
 
-		uint8_t type_indentation = variable_node->is_function_paramter ? 0 : indentation;
+		uint8_t type_indentation = variable_node->is_function_parameter ? 0 : indentation;
 
 		// Write type
 		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
@@ -195,7 +195,7 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		}
 
 		// End the declaration
-		if (variable_node->is_function_paramter == false) {
+		if (variable_node->is_function_parameter == false) {
 			// @TODO
 			// Write the initialization code if necessary (don't have an expression)
 			if (variable_node->expression == nullptr) { // @TODO Later we should do something clever (the back-end optimizer should be able to detect double initializations (taking only last write before first read))

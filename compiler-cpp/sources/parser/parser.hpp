@@ -207,7 +207,7 @@ namespace f
 		AST_Node*	sibling;
 		Token		name;
 		AST_Node*	type;
-		bool		is_function_paramter;
+		bool		is_function_parameter;
 		bool		is_optional;
 		AST_Node*	expression; // not null if is_optional is true
 	};

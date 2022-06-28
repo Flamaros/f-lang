@@ -254,7 +254,7 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 	variable->sibling = nullptr;
 	variable->name = identifier;
 	variable->type = nullptr;
-	variable->is_function_paramter = is_function_parameter;
+	variable->is_function_parameter = is_function_parameter;
 	variable->is_optional = false;
 	variable->expression = nullptr;
 
@@ -290,6 +290,7 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 	}
 
 	// symbol table
+	if (!variable->is_function_parameter)
 	{
 		uint64_t hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(variable->name.text), fstd::language::get_string_size(variable->name.text), 0);
 		uint16_t short_hash = hash & 0xffff;
@@ -386,6 +387,18 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 		fstd::memory::hash_table_insert(globals.parser_data.current_scope->functions, short_hash, function_node->name.text, value);
 	};
 
+	auto insert_parameters_to_symbol_table = [&]() {
+		for (AST_Statement_Variable* argument = function_node->arguments; argument != nullptr; argument = (AST_Statement_Variable*)argument->sibling)
+		{
+			uint64_t hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(argument->name.text), fstd::language::get_string_size(argument->name.text), 0);
+			uint16_t short_hash = hash & 0xffff;
+			AST_Node* value = (AST_Node*)argument;
+
+			fstd::memory::hash_table_insert(globals.parser_data.current_scope->variables, short_hash, argument->name.text, value);
+		}
+
+	};
+
 	while (true) {
 		if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
 			if (current_token.value.punctuation == Punctuation::SEMICOLON) {
@@ -396,6 +409,8 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 			else if (current_token.value.punctuation == Punctuation::OPEN_BRACE) {
 				insert_to_symbol_table();
 				push_new_scope(Scope_Type::FUNCTION, &function_node->name);
+
+				insert_parameters_to_symbol_table();
 
 				parse_scope(stream, &function_node->scope);
 
@@ -1212,7 +1227,7 @@ static void write_dot_node(String_Builder& file_string_builder, const AST_Node* 
 
 		print_to_builder(file_string_builder,
 			"%Cv"
-			"\nname: %v (is_parameter: %d is_optional: %d)", magic_enum::enum_name(node->ast_type), variable_node->name.text, variable_node->is_function_paramter, variable_node->is_optional);
+			"\nname: %v (is_parameter: %d is_optional: %d)", magic_enum::enum_name(node->ast_type), variable_node->name.text, variable_node->is_function_parameter, variable_node->is_optional);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
 		AST_Statement_Type_Array*	array_node = (AST_Statement_Type_Array*)node;
@@ -1476,10 +1491,10 @@ static void write_dot_scope(String_Builder& file_string_builder, const Scope* sc
 
 			if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
 				AST_Statement_Variable* variable = ((AST_Statement_Variable*)node);
-				if (scope->type == Scope_Type::FUNCTION && variable->is_function_paramter) { // Parameters of a function declaration aren't visible for the current scope
+				if (scope->type == Scope_Type::FUNCTION && variable->is_function_parameter) { // Parameters of a function declaration aren't visible for the current scope
 					print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>parameter</td><td>%v</td></tr>\n", variable->name.text);
 				}
-				else if (!variable->is_function_paramter) {
+				else if (!variable->is_function_parameter) {
 					print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>variable</td><td>%v</td></tr>\n", variable->name.text);
 				}
 			}
