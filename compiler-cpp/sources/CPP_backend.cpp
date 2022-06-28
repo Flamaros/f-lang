@@ -101,7 +101,7 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 		AST_Statement_User_Type* user_type = (AST_Statement_User_Type*)variable_node->type;
 
 		// @TODO
-		// Je dois récupérer le scope et procéder à une résolution du type ou faire en sorte ce soit fait avant et qu'ici j'ai directement
+		// Je dois récupérer la symbol_table et procéder à une résolution du type ou faire en sorte ce soit fait avant et qu'ici j'ai directement
 		// accès à la déclaration du type
 
 		int foo = 0; //@Nocheckin
@@ -110,16 +110,19 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 		// No User type, only struct, alias, enum,...
 		// the initialization of an alias should be forwarded to the underlying type initialization code
 		// for struct all members should be initialized
+		return;
 	}
 	else if (variable_node->type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
 		int foo = 1;
 	}
 	else if (variable_node->type->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
 		print_to_builder(file_string_builder, "= 0");
+		return;
 	}
 	//else if (variable_node->type->ast_type == Node_Type::TYPE_STRUCT) {
 	//	// @TODO
 	//	// Recurse over all members
+	//	int i = 0;
 	//}
 
 	// @TODO not implemented

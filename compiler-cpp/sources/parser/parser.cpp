@@ -63,14 +63,14 @@ inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 	return new_node;
 }
 
-inline Scope* allocate_scope_node()
+inline Symbol_Table* allocate_symbol_table()
 {
 	// Ensure that no reallocation could happen during the resize
-	core::Assert(memory::get_array_size(globals.parser_data.scope_nodes) < memory::get_array_reserved(globals.parser_data.scope_nodes) * sizeof(Scope));
+	core::Assert(memory::get_array_size(globals.parser_data.symbol_tables) < memory::get_array_reserved(globals.parser_data.symbol_tables) * sizeof(Symbol_Table));
 
-	memory::resize_array(globals.parser_data.scope_nodes, memory::get_array_size(globals.parser_data.scope_nodes) + sizeof(Scope));
+	memory::resize_array(globals.parser_data.symbol_tables, memory::get_array_size(globals.parser_data.symbol_tables) + sizeof(Symbol_Table));
 
-	Scope* new_node = (Scope*)(memory::get_array_last_element(globals.parser_data.scope_nodes) - sizeof(Scope));
+	Symbol_Table* new_node = (Symbol_Table*)(memory::get_array_last_element(globals.parser_data.symbol_tables) - sizeof(Symbol_Table));
 	return new_node;
 }
 
@@ -93,34 +93,34 @@ static void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope
 static void parse_struct_scope(stream::Array_Stream<Token>& stream, AST_Statement_Struct_Type* scope_node_, bool is_root_node = false);
 static void parse_union_scope(stream::Array_Stream<Token>& stream, AST_Statement_Union_Type* scope_node_, bool is_root_node = false);
 
-static void initialize_scope(Scope* scope, Scope* parent, Scope* sibling, Scope_Type type, Token* name);
+static void initialize_symbol_table(Symbol_Table* symbol_table, Symbol_Table* parent, Symbol_Table* sibling, Scope_Type type, Token* name);
 
 // =============================================================================
 
-// Allocate a new scope of requested type, and make it current
+// Allocate a new symbol_table of requested type, and make it current
 // Automatically put the scope as first_child or as sibling of first_child depending on the situration of current_node
-inline void push_new_scope(Scope_Type type, Token* name)
+inline void push_new_symbol_table(Scope_Type type, Token* name)
 {
-	Scope* parent = globals.parser_data.current_scope;
+	Symbol_Table* parent = globals.parser_data.current_symbol_table;
 
 	// Actually as symbols don't leak from there scope and the lookup will be only based on parents, we don't have to keep children in declaration order.
-	// So the new scope will be put at first child and current first_child will be put as sibling of new_scope.
+	// So the new symbol table will be put at first child and current first_child will be put as sibling of new_symbol_table.
 
-	Scope* new_scope = allocate_scope_node();
+	Symbol_Table* new_symbol_table = allocate_symbol_table();
 	if (parent) {
-		initialize_scope(new_scope, parent, parent->first_child, type, name);
-		parent->first_child = new_scope;
+		initialize_symbol_table(new_symbol_table, parent, parent->first_child, type, name);
+		parent->first_child = new_symbol_table;
 	}
 	else {
-		initialize_scope(new_scope, parent, nullptr, type, name);
+		initialize_symbol_table(new_symbol_table, parent, nullptr, type, name);
 	}
-	globals.parser_data.current_scope = new_scope;
+	globals.parser_data.current_symbol_table = new_symbol_table;
 }
 
-// Update the current_scope to the parent
-inline void pop_scope()
+// Update the current_symbol_table to the parent
+inline void pop_symbol_table()
 {
-	globals.parser_data.current_scope = globals.parser_data.current_scope->parent;
+	globals.parser_data.current_symbol_table = globals.parser_data.current_symbol_table->parent;
 }
 
 // =============================================================================
@@ -296,7 +296,7 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 		uint16_t short_hash = hash & 0xffff;
 		AST_Node* value = (AST_Node*)variable;
 
-		fstd::memory::hash_table_insert(globals.parser_data.current_scope->variables, short_hash, variable->name.text, value);
+		fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->variables, short_hash, variable->name.text, value);
 	}
 }
 
@@ -317,7 +317,7 @@ void parse_alias(stream::Array_Stream<Token>& stream, Token& identifier, AST_Nod
 		uint16_t short_hash = hash & 0xffff;
 		AST_Node* value = (AST_Node*)alias_node;
 
-		fstd::memory::hash_table_insert(globals.parser_data.current_scope->user_types, short_hash, alias_node->name.text, value);
+		fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->user_types, short_hash, alias_node->name.text, value);
 	}
 }
 
@@ -384,7 +384,7 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 		uint16_t short_hash = hash & 0xffff;
 		AST_Node* value = (AST_Node*)function_node;
 
-		fstd::memory::hash_table_insert(globals.parser_data.current_scope->functions, short_hash, function_node->name.text, value);
+		fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->functions, short_hash, function_node->name.text, value);
 	};
 
 	auto insert_parameters_to_symbol_table = [&]() {
@@ -394,7 +394,7 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 			uint16_t short_hash = hash & 0xffff;
 			AST_Node* value = (AST_Node*)argument;
 
-			fstd::memory::hash_table_insert(globals.parser_data.current_scope->variables, short_hash, argument->name.text, value);
+			fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->variables, short_hash, argument->name.text, value);
 		}
 
 	};
@@ -408,13 +408,13 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 			}
 			else if (current_token.value.punctuation == Punctuation::OPEN_BRACE) {
 				insert_to_symbol_table();
-				push_new_scope(Scope_Type::FUNCTION, &function_node->name);
+				push_new_symbol_table(Scope_Type::FUNCTION, &function_node->name);
 
 				insert_parameters_to_symbol_table();
 
 				parse_scope(stream, &function_node->scope);
 
-				pop_scope();
+				pop_symbol_table();
 				return;
 			}
 			else if (current_token.value.punctuation == Punctuation::COLON) {
@@ -504,15 +504,15 @@ void parse_struct(stream::Array_Stream<Token>& stream, Token* identifier, AST_No
 	if (identifier) {
 		struct_node->name = *identifier;
 
-		push_new_scope(Scope_Type::STRUCT, &struct_node->name);
+		push_new_symbol_table(Scope_Type::STRUCT, &struct_node->name);
 	}
 	else {
-		push_new_scope(Scope_Type::STRUCT, nullptr);
+		push_new_symbol_table(Scope_Type::STRUCT, nullptr);
 	}
 
 	parse_struct_scope(stream, struct_node, true);
 
-	pop_scope();
+	pop_symbol_table();
 
 	struct_node->anonymous = identifier == nullptr;
 	if (identifier)
@@ -525,7 +525,7 @@ void parse_struct(stream::Array_Stream<Token>& stream, Token* identifier, AST_No
 		uint16_t short_hash = hash & 0xffff;
 		AST_Node* value = (AST_Node*)struct_node;
 
-		fstd::memory::hash_table_insert(globals.parser_data.current_scope->user_types, short_hash, struct_node->name.text, value);
+		fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->user_types, short_hash, struct_node->name.text, value);
 	}
 }
 
@@ -549,15 +549,15 @@ void parse_union(stream::Array_Stream<Token>& stream, Token* identifier, AST_Nod
 	if (identifier) {
 		union_node->name = *identifier;
 
-		push_new_scope(Scope_Type::UNION, &union_node->name);
+		push_new_symbol_table(Scope_Type::UNION, &union_node->name);
 	}
 	else {
-		push_new_scope(Scope_Type::UNION, nullptr);
+		push_new_symbol_table(Scope_Type::UNION, nullptr);
 	}
 
 	parse_union_scope(stream, union_node, true);
 
-	pop_scope();
+	pop_symbol_table();
 
 	// symbol table
 	if (!union_node->anonymous)
@@ -566,7 +566,7 @@ void parse_union(stream::Array_Stream<Token>& stream, Token* identifier, AST_Nod
 		uint16_t short_hash = hash & 0xffff;
 		AST_Node* value = (AST_Node*)union_node;
 
-		fstd::memory::hash_table_insert(globals.parser_data.current_scope->user_types, short_hash, union_node->name.text, value);
+		fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->user_types, short_hash, union_node->name.text, value);
 	}
 }
 
@@ -897,12 +897,12 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 				return;
 			}
 			else if (current_token.value.punctuation == Punctuation::OPEN_BRACE) {
-				push_new_scope(Scope_Type::SCOPE, nullptr);
+				push_new_symbol_table(Scope_Type::SCOPE, nullptr);
 
 				parse_scope(stream, (AST_Statement_Scope**)current_child);
 				current_child = &(*current_child)->sibling;	// Move the current_child to the sibling
 
-				pop_scope();
+				pop_symbol_table();
 			}
 		}
 		else if (is_literal(current_token.type)) {
@@ -1116,17 +1116,17 @@ void parse_union_scope(stream::Array_Stream<Token>& stream, AST_Statement_Union_
 	}
 }
 
-void initialize_scope(Scope* scope, Scope* parent, Scope* sibling, Scope_Type type, Token* name)
+void initialize_symbol_table(Symbol_Table* symbol_table, Symbol_Table* parent, Symbol_Table* sibling, Scope_Type type, Token* name)
 {
-	fstd::memory::hash_table_init(scope->variables,		&fstd::language::are_equals);
-	fstd::memory::hash_table_init(scope->user_types,	&fstd::language::are_equals);
-	fstd::memory::hash_table_init(scope->functions,		&fstd::language::are_equals);
+	fstd::memory::hash_table_init(symbol_table->variables,		&fstd::language::are_equals);
+	fstd::memory::hash_table_init(symbol_table->user_types,	&fstd::language::are_equals);
+	fstd::memory::hash_table_init(symbol_table->functions,		&fstd::language::are_equals);
 
-	scope->type = type;
-	scope->name = name;
-	scope->parent = parent;
-	scope->sibling = sibling;
-	scope->first_child = nullptr;
+	symbol_table->type = type;
+	symbol_table->name = name;
+	symbol_table->parent = parent;
+	symbol_table->sibling = sibling;
+	symbol_table->first_child = nullptr;
 }
 
 void f::parse(fstd::memory::Array<Token>& tokens, Parsing_Result& parsing_result)
@@ -1143,7 +1143,7 @@ void f::parse(fstd::memory::Array<Token>& tokens, Parsing_Result& parsing_result
 	//
 	// Flamaros - 13 april 2020
 	memory::reserve_array(globals.parser_data.ast_nodes, memory::get_array_size(tokens) * sizeof(AST_Statement_Variable));
-	memory::reserve_array(globals.parser_data.scope_nodes, memory::get_array_size(tokens) * sizeof(Scope));
+	memory::reserve_array(globals.parser_data.symbol_tables, memory::get_array_size(tokens) * sizeof(Symbol_Table));
 
 	stream::initialize_memory_stream<Token>(stream, tokens);
 
@@ -1151,8 +1151,8 @@ void f::parse(fstd::memory::Array<Token>& tokens, Parsing_Result& parsing_result
 		return;
 	}
 
-	push_new_scope(Scope_Type::MODULE, nullptr);
-	parsing_result.scope_root = globals.parser_data.current_scope;
+	push_new_symbol_table(Scope_Type::MODULE, nullptr);
+	parsing_result.symbol_table_root = globals.parser_data.current_symbol_table;
 	parse_scope(stream, (AST_Statement_Scope**)&parsing_result.ast_root, true);
 }
 
@@ -1434,7 +1434,7 @@ void f::generate_dot_file(const AST_Node* node, const system::Path& output_file_
 	system::write_file(file, language::to_utf8(file_content), (uint32_t)language::get_string_size(file_content));
 }
 
-static void write_dot_scope(String_Builder& file_string_builder, const Scope* scope, int64_t parent_index = -1, int64_t left_node_index = -1)
+static void write_dot_scope(String_Builder& file_string_builder, const Symbol_Table* scope, int64_t parent_index = -1, int64_t left_node_index = -1)
 {
 	if (!scope) {
 		return;
@@ -1564,7 +1564,7 @@ static void write_dot_scope(String_Builder& file_string_builder, const Scope* sc
 	dot_scope = to_string(file_string_builder);
 }
 
-void f::generate_dot_file(const Scope* scope, const system::Path& output_file_path)
+void f::generate_dot_file(const Symbol_Table* scope, const system::Path& output_file_path)
 {
 	ZoneScopedNC("f::generate_scope_dot_file", 0xc43e00);
 

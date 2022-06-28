@@ -275,7 +275,7 @@ namespace f
 		SCOPE, // A nested scope
 	};
 
-	struct Scope
+	struct Symbol_Table
 	{
 		fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> variables;
 		fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> user_types;
@@ -286,17 +286,17 @@ namespace f
 		Scope_Type	type;
 		Token*		name; // Functions and struct scopes are named
 
-		Scope* parent;
-		Scope* sibling;
-		Scope* first_child;
+		Symbol_Table* parent;
+		Symbol_Table* sibling;
+		Symbol_Table* first_child;
 	};
 
 	//=============================================================================
 	
 	struct Parsing_Result
 	{
-		AST_Node*	ast_root; // Should point on the first module
-		Scope*		scope_root; // @TODO should be renamed first_module_scopre? Are all modules at same lvl?
+		AST_Node*		ast_root; // Should point on the first module
+		Symbol_Table*	symbol_table_root;
 	};
 
 	struct Parser_Data
@@ -315,17 +315,17 @@ namespace f
 		// Flamaros - 07 january 2021
 		fstd::memory::Array<uint8_t>	ast_nodes;
 
-		// We do the same for scopes, as we certainly will have different types of scopes.
-		fstd::memory::Array<uint8_t>	scope_nodes;
+		// We do the same for symbol tables, as we certainly will have different types of symbols tables.
+		fstd::memory::Array<uint8_t>	symbol_tables;
 
-		Scope* current_scope;
+		Symbol_Table* current_symbol_table;
 	};
 
     void parse(fstd::memory::Array<Token>& tokens, Parsing_Result& ast);
 	inline bool is_binary_operator(const AST_Node* node);
 	inline bool is_unary_operator(const AST_Node* node);
 	void generate_dot_file(const AST_Node* node, const fstd::system::Path& output_file_path);
-	void generate_dot_file(const Scope* scope, const fstd::system::Path& output_file_path);
+	void generate_dot_file(const Symbol_Table* scope, const fstd::system::Path& output_file_path);
 
 	inline bool is_binary_operator(const AST_Node* node)
 	{

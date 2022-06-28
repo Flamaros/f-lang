@@ -123,7 +123,7 @@ int main(int ac, char** av)
 
 			f::generate_dot_file(parsing_result.ast_root, ast_dot_file_path);
 			convert_dot_file_to_png(ast_dot_file_path, ast_png_file_path);
-			f::generate_dot_file(parsing_result.scope_root, scope_dot_file_path);
+			f::generate_dot_file(parsing_result.symbol_table_root, scope_dot_file_path);
 			convert_dot_file_to_png(scope_dot_file_path, scope_png_file_path);
 		}
 
