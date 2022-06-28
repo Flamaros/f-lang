@@ -1434,9 +1434,9 @@ void f::generate_dot_file(const AST_Node* node, const system::Path& output_file_
 	system::write_file(file, language::to_utf8(file_content), (uint32_t)language::get_string_size(file_content));
 }
 
-static void write_dot_scope(String_Builder& file_string_builder, const Symbol_Table* scope, int64_t parent_index = -1, int64_t left_node_index = -1)
+static void write_dot_symbol_table(String_Builder& file_string_builder, const Symbol_Table* symbol_table, int64_t parent_index = -1, int64_t left_node_index = -1)
 {
-	if (!scope) {
+	if (!symbol_table) {
 		return;
 	}
 
@@ -1470,9 +1470,9 @@ static void write_dot_scope(String_Builder& file_string_builder, const Symbol_Ta
 	{
 		print_to_builder(file_string_builder, "\n\t" "node_%ld [label=<\n", node_index);
 		print_to_builder(file_string_builder,
-			"\t\t" "<table border=\"0\" cellborder=\"1\" cellspacing=\"0\"><tr><td colspan=\"2\">%Cv", magic_enum::enum_name(scope->type));
-		if (scope->name) {
-			print_to_builder(file_string_builder, " %v", scope->name->text);
+			"\t\t" "<table border=\"0\" cellborder=\"1\" cellspacing=\"0\"><tr><td colspan=\"2\">%Cv", magic_enum::enum_name(symbol_table->type));
+		if (symbol_table->name) {
+			print_to_builder(file_string_builder, " %v", symbol_table->name->text);
 		}
 		print_to_builder(file_string_builder, "</td></tr>\n");
 	}
@@ -1482,8 +1482,8 @@ static void write_dot_scope(String_Builder& file_string_builder, const Symbol_Ta
 		print_to_builder(file_string_builder,
 			"\t\t\t" "<tr><td colspan=\"2\"></td></tr>\n\n"
 			"\t\t\t" "<tr><td colspan=\"2\">Variables</td></tr>\n");
-		auto it = fstd::memory::hash_table_begin(scope->variables);
-		auto it_end = fstd::memory::hash_table_end(scope->variables);
+		auto it = fstd::memory::hash_table_begin(symbol_table->variables);
+		auto it_end = fstd::memory::hash_table_end(symbol_table->variables);
 
 		for (; !fstd::memory::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
 		{
@@ -1491,7 +1491,7 @@ static void write_dot_scope(String_Builder& file_string_builder, const Symbol_Ta
 
 			if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
 				AST_Statement_Variable* variable = ((AST_Statement_Variable*)node);
-				if (scope->type == Scope_Type::FUNCTION && variable->is_function_parameter) { // Parameters of a function declaration aren't visible for the current scope
+				if (symbol_table->type == Scope_Type::FUNCTION && variable->is_function_parameter) { // Parameters of a function declaration aren't visible for the current scope
 					print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>parameter</td><td>%v</td></tr>\n", variable->name.text);
 				}
 				else if (!variable->is_function_parameter) {
@@ -1506,8 +1506,8 @@ static void write_dot_scope(String_Builder& file_string_builder, const Symbol_Ta
 		print_to_builder(file_string_builder,
 			"\t\t\t" "<tr><td colspan=\"2\"></td></tr>\n\n"
 			"\t\t\t" "<tr><td colspan=\"2\">User types</td></tr>\n");
-		auto it = fstd::memory::hash_table_begin(scope->user_types);
-		auto it_end = fstd::memory::hash_table_end(scope->user_types);
+		auto it = fstd::memory::hash_table_begin(symbol_table->user_types);
+		auto it_end = fstd::memory::hash_table_end(symbol_table->user_types);
 
 		for (; !fstd::memory::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
 		{
@@ -1537,8 +1537,8 @@ static void write_dot_scope(String_Builder& file_string_builder, const Symbol_Ta
 		print_to_builder(file_string_builder,
 			"\t\t\t" "<tr><td colspan=\"2\"></td></tr>\n\n"
 			"\t\t\t" "<tr><td colspan=\"2\">Functions</td></tr>\n");
-		auto it = fstd::memory::hash_table_begin(scope->functions);
-		auto it_end = fstd::memory::hash_table_end(scope->functions);
+		auto it = fstd::memory::hash_table_begin(symbol_table->functions);
+		auto it_end = fstd::memory::hash_table_end(symbol_table->functions);
 
 		for (; !fstd::memory::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
 		{
@@ -1552,21 +1552,21 @@ static void write_dot_scope(String_Builder& file_string_builder, const Symbol_Ta
 	print_to_builder(file_string_builder, "\t\t" "</table>>\n"
 		"\t\t" "shape=box, style=filled, color=black, fillcolor=lightseagreen]\n");
 
-	if (scope->first_child) {
-		write_dot_scope(file_string_builder, scope->first_child, node_index);
+	if (symbol_table->first_child) {
+		write_dot_symbol_table(file_string_builder, symbol_table->first_child, node_index);
 	}
 
 	// Sibling iteration
-	if (scope->sibling) {
-		write_dot_scope(file_string_builder, scope->sibling, parent_index, node_index);
+	if (symbol_table->sibling) {
+		write_dot_symbol_table(file_string_builder, symbol_table->sibling, parent_index, node_index);
 	}
 
 	dot_scope = to_string(file_string_builder);
 }
 
-void f::generate_dot_file(const Symbol_Table* scope, const system::Path& output_file_path)
+void f::generate_dot_file(const Symbol_Table* symbol_table, const system::Path& output_file_path)
 {
-	ZoneScopedNC("f::generate_scope_dot_file", 0xc43e00);
+	ZoneScopedNC("f::generate_symbol_table_dot_file", 0xc43e00);
 
 	system::File		file;
 	String_Builder		string_builder;
@@ -1589,7 +1589,7 @@ void f::generate_dot_file(const Symbol_Table* scope, const system::Path& output_
 	print_to_builder(string_builder, "digraph {\n");
 	print_to_builder(string_builder, "\t" "rankdir = TB\n");
 
-	write_dot_scope(string_builder, scope);
+	write_dot_symbol_table(string_builder, symbol_table);
 
 	print_to_builder(string_builder, "}\n");
 
