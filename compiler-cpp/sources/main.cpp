@@ -88,7 +88,7 @@ int main(int ac, char** av)
 	int						result = 0;
 
 	{
-		ZoneScopedN("f-lang parsing");
+		ZoneScopedN("f-lang compilation");
 
 		system::Path	path;
 
@@ -98,11 +98,15 @@ int main(int ac, char** av)
 
 		f::initialize_lexer();
 		f::lex(path, tokens);
+
+#if !defined(TRACY_ENABLE)
 		f::print(tokens);	// Optionnal
+#endif
 
 		f::parse(tokens, parsing_result);
 
 		// Optionnal Dot graph output
+#if !defined(TRACY_ENABLE)
 		{
 			system::Path	ast_dot_file_path;
 			system::Path	ast_png_file_path;
@@ -126,6 +130,7 @@ int main(int ac, char** av)
 			f::generate_dot_file(parsing_result.symbol_table_root, scope_dot_file_path);
 			convert_dot_file_to_png(scope_dot_file_path, scope_png_file_path);
 		}
+#endif
 
 		// Generate the IRL
 		{

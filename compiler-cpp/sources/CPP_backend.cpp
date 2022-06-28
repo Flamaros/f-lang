@@ -383,38 +383,47 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 	// Compile the cpp generated file
 	// =========================================================================
 
-	Find_Result find_result = find_visual_studio_and_windows_sdk();
-	
+	free_buffers(string_builder);
+
 	system::Path	cl_path;
 	system::Path	link_path;
 
-	defer {
+	defer{
 		system::reset_path(cl_path);
 		system::reset_path(link_path);
 	};
 
-	free_buffers(string_builder);
-	print_to_builder(string_builder, "%Cw\\cl.exe", find_result.vs_exe_path);
-	system::from_native(cl_path, to_string(string_builder));
+	{
+		ZoneScopedNC("Find C++ compiler", 0xaa0000);
 
-	free_buffers(string_builder);
-	print_to_builder(string_builder, "%Cw\\link.exe", find_result.vs_exe_path);
-	system::from_native(link_path, to_string(string_builder));
+		Find_Result find_result = find_visual_studio_and_windows_sdk();
 
-	free_resources(&find_result);
+		print_to_builder(string_builder, "%Cw\\cl.exe", find_result.vs_exe_path);
+		system::from_native(cl_path, to_string(string_builder));
+
+		free_buffers(string_builder);
+		print_to_builder(string_builder, "%Cw\\link.exe", find_result.vs_exe_path);
+		system::from_native(link_path, to_string(string_builder));
+
+		free_resources(&find_result);
+	}
 
 	// Start compilation
-	free_buffers(string_builder);
-	// No C++ runtime
-	// https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows#530
-	print_to_builder(string_builder, "/nologo /Gm- /GR- /EHa- /Oi /GS- /Gs9999999 /utf-8 \"%s\" -link -nodefaultlib /ENTRY:main /SUBSYSTEM:CONSOLE /STACK:0x100000,0x100000", cpp_file_path);
-	if (!system::execute_process(cl_path, to_string(string_builder))) {
-		f::Token dummy_token;
+	{
+		ZoneScopedNC("C++ compilation", 0xff0000);
 
-		dummy_token.type = f::Token_Type::UNKNOWN;
-		dummy_token.file_path = system::to_string(cl_path);
-		dummy_token.line = 0;
-		dummy_token.column = 0;
-		report_error(Compiler_Error::warning, dummy_token, "Failed to launch cl.exe.\n");
+		free_buffers(string_builder);
+		// No C++ runtime
+		// https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows#530
+		print_to_builder(string_builder, "/nologo /Gm- /GR- /EHa- /Oi /GS- /Gs9999999 /utf-8 \"%s\" -link -nodefaultlib /ENTRY:main /SUBSYSTEM:CONSOLE /STACK:0x100000,0x100000", cpp_file_path);
+		if (!system::execute_process(cl_path, to_string(string_builder))) {
+			f::Token dummy_token;
+
+			dummy_token.type = f::Token_Type::UNKNOWN;
+			dummy_token.file_path = system::to_string(cl_path);
+			dummy_token.line = 0;
+			dummy_token.column = 0;
+			report_error(Compiler_Error::warning, dummy_token, "Failed to launch cl.exe.\n");
+		}
 	}
 }
