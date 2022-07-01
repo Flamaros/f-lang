@@ -275,6 +275,14 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	else if (node->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
 		AST_Identifier* identifier_node = (AST_Identifier*)node;
 
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// @TODO
+		// Ici on atteint la limite de la fonction write_generated_code qui est trop générique et tentante de faire une traduction
+		// 1:1 du f vers le C++.
+		// On a besoin du contexte, pour la déclaration d'un alias un type et attendu et doit être résolut avec symbol_solver,
+		// mais si on est au milieu d'instructions on cherche certainement une variable.
+		// Ceci à un impacte sur les symbol tables à tester et aussi sur les messages d'erreurs (comprendre l'analyse du code f).
+
 		print_to_builder(file_string_builder,
 			"%Cv"
 			"\n%v", magic_enum::enum_name(node->ast_type), identifier_node->value.text);
