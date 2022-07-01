@@ -214,6 +214,9 @@ namespace fstd
 				size_t value_index = hash - (bucket_index * _bucket_size);
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 
+				if (get_array_size(bucket->table) == 0)
+					return nullptr;
+
 				auto value_pod = get_array_element(bucket->table, value_index);
 
 				if (value_pod == nullptr) // Slot is empty so the key is not in the hash_table

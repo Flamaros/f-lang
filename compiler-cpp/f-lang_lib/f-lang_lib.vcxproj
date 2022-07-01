@@ -61,6 +61,7 @@
     <ClInclude Include="..\sources\macros.hpp" />
     <ClInclude Include="..\sources\native_generator.hpp" />
     <ClInclude Include="..\sources\parser\parser.hpp" />
+    <ClInclude Include="..\sources\parser\symbol_solver.hpp" />
     <ClInclude Include="..\sources\third-party\magic_enum.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
     <ClInclude Include="..\sources\third-party\SpookyV2.h" />
@@ -82,6 +83,7 @@
     <ClCompile Include="..\sources\lexer\lexer.cpp" />
     <ClCompile Include="..\sources\native_generator.cpp" />
     <ClCompile Include="..\sources\parser\parser.cpp" />
+    <ClCompile Include="..\sources\parser\symbol_solver.cpp" />
     <ClCompile Include="..\sources\third-party\SpookyV2.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

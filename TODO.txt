@@ -25,10 +25,14 @@ Implementer une hash-table
 
 
 
-
 Faire une passe Intermediate Representation pour avoir récuperer des informations sur les types.
 Il faut faire le lien des users types vers les types basic (les alias notamment).
 Ainsi le backend à juste à générer le code d'initialisation par rapport au type de basic.
+
+#########################
+Ajouter un crash handler avec print de la stack.
+Ca sera utile pour debugguer le compilateur quand il sera lancé un release. Et utilisé pour developper des véritables applications comme l'éditeur texte ou le debuggueur.
+
 
 
 #########################

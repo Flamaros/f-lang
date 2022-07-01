@@ -1,6 +1,7 @@
 #include "CPP_backend.hpp"
 
 #include "globals.hpp"
+#include "parser/symbol_solver.hpp"
 
 #include <fstd/core/string_builder.hpp>
 
@@ -56,15 +57,15 @@ inline static void indented_print_to_builder(String_Builder& file_string_builder
 	va_end(args);
 }
 
-static void write_default_initialization(String_Builder& file_string_builder, AST_Statement_Variable* variable_node)
+static void write_default_initialization(String_Builder& file_string_builder, AST_Statement_Variable* variable_node, AST_Node* type)
 {
-	if (variable_node->type->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
-		AST_Statement_Basic_Type* basic_type = (AST_Statement_Basic_Type*)variable_node->type;
+	if (type->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
+		AST_Statement_Basic_Type* basic_type = (AST_Statement_Basic_Type*)type;
 
 		switch (basic_type->keyword)
 		{
 		case Keyword::BOOL:
-			print_to_builder(file_string_builder, "= false");
+			print_to_builder(file_string_builder, " = false");
 			break;
 		case Keyword::I8:
 		case Keyword::UI8:
@@ -74,13 +75,13 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 		case Keyword::UI32:
 		case Keyword::I64:
 		case Keyword::UI64:
-			print_to_builder(file_string_builder, "= 0");
+			print_to_builder(file_string_builder, " = 0");
 			break;
 		case Keyword::F32:
-			print_to_builder(file_string_builder, "= 0.0f");
+			print_to_builder(file_string_builder, " = 0.0f");
 			break;
 		case Keyword::F64:
-			print_to_builder(file_string_builder, "= 0.0");
+			print_to_builder(file_string_builder, " = 0.0");
 			break;
 		case Keyword::STRING:
 			core::Assert(false); // Not implemented, should only initialized the length (but have to print "; VARIABLE_NAME = length"
@@ -97,26 +98,23 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 		}
 		return;
 	}
-	else if (variable_node->type->ast_type == Node_Type::STATEMENT_USER_TYPE) {
-		AST_Statement_User_Type* user_type = (AST_Statement_User_Type*)variable_node->type;
+	else if (type->ast_type == Node_Type::TYPE_ALIAS) {
+		AST_Alias* alias = (AST_Alias*)type;
 
-		// @TODO
-		// Je dois récupérer la symbol_table et procéder à une résolution du type ou faire en sorte ce soit fait avant et qu'ici j'ai directement
-		// accès à la déclaration du type
+		write_default_initialization(file_string_builder, variable_node, alias->type);
+	}
+	else if (type->ast_type == Node_Type::USER_TYPE_IDENTIFIER) {
+		AST_User_Type_Identifier* user_type = (AST_User_Type_Identifier*)type;
 
-		int foo = 0; //@Nocheckin
-		user_type->identifier;
-		// @TODO
-		// No User type, only struct, alias, enum,...
-		// the initialization of an alias should be forwarded to the underlying type initialization code
-		// for struct all members should be initialized
+		AST_Node* type_declartion = get_user_type(user_type);
+		write_default_initialization(file_string_builder, variable_node, type_declartion);
 		return;
 	}
-	else if (variable_node->type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
+	else if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
 		int foo = 1;
 	}
-	else if (variable_node->type->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
-		print_to_builder(file_string_builder, "= 0");
+	else if (type->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
+		print_to_builder(file_string_builder, " = 0");
 		return;
 	}
 	//else if (variable_node->type->ast_type == Node_Type::TYPE_STRUCT) {
@@ -149,8 +147,8 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 
 		indented_print_to_builder(file_string_builder, indentation, "%v", basic_type_node->token.text);
 	}
-	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
-		AST_Statement_User_Type* user_type_node = (AST_Statement_User_Type*)node;
+	else if (node->ast_type == Node_Type::USER_TYPE_IDENTIFIER) {
+		AST_User_Type_Identifier* user_type_node = (AST_User_Type_Identifier*)node;
 
 		indented_print_to_builder(file_string_builder, indentation, "%v", user_type_node->identifier.text);
 	}
@@ -202,7 +200,7 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 			// @TODO
 			// Write the initialization code if necessary (don't have an expression)
 			if (variable_node->expression == nullptr) { // @TODO Later we should do something clever (the back-end optimizer should be able to detect double initializations (taking only last write before first read))
-				write_default_initialization(file_string_builder, variable_node);
+				write_default_initialization(file_string_builder, variable_node, variable_node->type);
 			}
 
 			print_to_builder(file_string_builder, ";\n");
@@ -274,13 +272,13 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		print_to_builder(file_string_builder, "");
 //		indented_print_to_builder(file_string_builder, indentation, "%v", basic_type_node->token.text);
 	}
-	//else if (node->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
-	//	AST_Identifier* identifier_node = (AST_Identifier*)node;
+	else if (node->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
+		AST_Identifier* identifier_node = (AST_Identifier*)node;
 
-	//	print_to_builder(file_string_builder,
-	//		"%Cv"
-	//		"\n%v", magic_enum::enum_name(node->ast_type), identifier_node->value.text);
-	//}
+		print_to_builder(file_string_builder,
+			"%Cv"
+			"\n%v", magic_enum::enum_name(node->ast_type), identifier_node->value.text);
+	}
 	//else if (node->ast_type == Node_Type::FUNCTION_CALL) {
 	//	AST_Function_Call* function_call_node = (AST_Function_Call*)node;
 
@@ -288,22 +286,22 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	//		"%Cv"
 	//		"\nname: %v (nb_arguments: %d)", magic_enum::enum_name(node->ast_type), function_call_node->name.text, function_call_node->nb_arguments);
 	//}
-	//else if (node->ast_type == Node_Type::UNARY_OPERATOR_ADDRESS_OF) {
-	//	AST_Unary_operator* address_of_node = (AST_Unary_operator*)node;
+	else if (node->ast_type == Node_Type::UNARY_OPERATOR_ADDRESS_OF) {
+		AST_Unary_operator* address_of_node = (AST_Unary_operator*)node;
 
-	//	print_to_builder(file_string_builder,
-	//		"%Cv", magic_enum::enum_name(node->ast_type));
-	//}
+		write_generated_code(file_string_builder, ir, address_of_node->right);
+		print_to_builder(file_string_builder, "*");
+	}
 	//else if (node->ast_type == Node_Type::BINARY_OPERATOR_MEMBER_ACCESS) {
 	//	AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;
 
 	//	print_to_builder(file_string_builder,
 	//		"%Cv", magic_enum::enum_name(node->ast_type));
 	//}
-	//else {
-	//	core::Assert(false);
+	else {
+		core::Assert(false);
 	// @TODO report error here?
-	//}
+	}
 
 	// Sibling iteration
 	if (recurse_sibling && node->sibling) {

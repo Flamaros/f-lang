@@ -222,15 +222,16 @@ void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
 			}
 		}
 		else if (current_token.type == Token_Type::IDENTIFIER) {
-			AST_Statement_User_Type*	user_type_node = allocate_AST_node<AST_Statement_User_Type>(previous_sibling_addr);
+			AST_User_Type_Identifier*	user_type_node = allocate_AST_node<AST_User_Type_Identifier>(previous_sibling_addr);
 
 			if (*type_node == nullptr) {
 				*type_node = (AST_Node*)user_type_node;
 			}
 
-			user_type_node->ast_type = Node_Type::STATEMENT_USER_TYPE;
+			user_type_node->ast_type = Node_Type::USER_TYPE_IDENTIFIER;
 			user_type_node->sibling = nullptr;
 			user_type_node->identifier = current_token;
+			user_type_node->symbol_table = globals.parser_data.current_symbol_table;
 
 			stream::peek(stream); // identifier
 			break;
@@ -434,6 +435,7 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 						identifier_node->ast_type = Node_Type::STATEMENT_IDENTIFIER;
 						identifier_node->sibling = nullptr;
 						identifier_node->value = current_token;
+						identifier_node->symbol_table = globals.parser_data.current_symbol_table;
 
 						stream::peek(stream); // identifier
 						current_token = stream::get(stream);
@@ -745,6 +747,7 @@ bool parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 				identifier_node->ast_type = Node_Type::STATEMENT_IDENTIFIER;
 				identifier_node->sibling = nullptr;
 				identifier_node->value = identifier;
+				identifier_node->symbol_table = globals.parser_data.current_symbol_table;
 
 				previous_child = (AST_Node*)identifier_node;
 				// Identifier was already peeked
@@ -1202,8 +1205,8 @@ static void write_dot_node(String_Builder& file_string_builder, const AST_Node* 
 			"%Cv"
 			"\n%Cv", magic_enum::enum_name(node->ast_type), magic_enum::enum_name(basic_type_node->keyword));
 	}
-	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
-		AST_Statement_User_Type*	user_type_node = (AST_Statement_User_Type*)node;
+	else if (node->ast_type == Node_Type::USER_TYPE_IDENTIFIER) {
+		AST_User_Type_Identifier*	user_type_node = (AST_User_Type_Identifier*)node;
 
 		print_to_builder(file_string_builder,
 			"%Cv"
@@ -1328,7 +1331,7 @@ static void write_dot_node(String_Builder& file_string_builder, const AST_Node* 
 	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
 		// No children
 	}
-	else if (node->ast_type == Node_Type::STATEMENT_USER_TYPE) {
+	else if (node->ast_type == Node_Type::USER_TYPE_IDENTIFIER) {
 		// No children
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {

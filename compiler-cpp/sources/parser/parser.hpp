@@ -22,6 +22,8 @@ namespace f
 	struct AST_Literal;
 	struct AST_Identifier;
 
+	struct Symbol_Table;
+
 	//=============================================================================
 
 	enum class Expression_Type
@@ -46,7 +48,7 @@ namespace f
 
 		STATEMENT_MODULE,
 		STATEMENT_BASIC_TYPE,
-		STATEMENT_USER_TYPE,
+		USER_TYPE_IDENTIFIER,
 		STATEMENT_TYPE_STRUCT,
 		STATEMENT_TYPE_UNION,
 		STATEMENT_TYPE_ENUM,
@@ -178,11 +180,13 @@ namespace f
 		AST_Node*	sibling;
 	};
 
-	struct AST_Statement_User_Type
+	struct AST_User_Type_Identifier
 	{
 		Node_Type	ast_type;
 		AST_Node*	sibling;
 		Token		identifier;
+
+		Symbol_Table* symbol_table;
 	};
 
 	struct AST_Statement_Type_Pointer
@@ -255,6 +259,14 @@ namespace f
 		Node_Type	ast_type;
 		AST_Node*	sibling;
 		Token		value;
+
+		// @Warning I put the Symbol_Table link here as all nodes are allocated in the same buffer
+		// based on the size of the biggest AST_Node Type. So we can really optimize memory usage by
+		// putting Symbol_Table only in AST_Node Type that hold a logical scope (function, module, scope,...)
+		// At least having the Symbol_Table here avoid to get the parent of his node.
+		// I am realizing when writing this comment that the parent node isn't accessible, so a pointer
+		// or an other just take same amount of memory.
+		Symbol_Table* symbol_table;
 	};
 
 	struct AST_Unary_operator
