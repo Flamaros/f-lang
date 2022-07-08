@@ -34,6 +34,8 @@ Ajouter un crash handler avec print de la stack.
 Ca sera utile pour debugguer le compilateur quand il sera lancé un release. Et utilisé pour developper des véritables applications comme l'éditeur texte ou le debuggueur.
 
 
+#########################
+Tester les definitions circulaires de types, avec un alias, une struct (un membre dépend de la struct elle même,...)
 
 #########################
 

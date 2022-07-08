@@ -26,3 +26,5 @@ cl.error
 AST.png
 output.cpp
 scope.png
+
+compiler-cpp/compileData.scor*

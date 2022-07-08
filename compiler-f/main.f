@@ -9,6 +9,11 @@ DWORD :: ui32; // unsigned long
 LPDWORD :: §DWORD;
 ULONG_PTR :: ui64;
 
+// @TODO test circular definition of alias at least
+// I should do that with other type definitions
+// CIRCULAR_DEF :: CIRCULAR_DEF_ROOT
+// CIRCULAR_DEF_ROOT :: CIRCULAR_DEF
+
 OVERLAPPED :: struct
 {
     Internal : ULONG_PTR;
