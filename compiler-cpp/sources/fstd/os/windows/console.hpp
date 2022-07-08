@@ -4,7 +4,7 @@
 
 #if defined(FSTD_OS_WINDOWS)
 
-#	include <Windows.h>
+#	include <win32/windows_base.h>
 
 namespace fstd
 {

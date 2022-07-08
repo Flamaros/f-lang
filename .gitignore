@@ -7,6 +7,7 @@ compiler-cpp/.vs
 compiler-cpp/Debug
 compiler-cpp/Release
 compiler-cpp/x64
+compiler-cpp/compileData*
 compiler-cpp/f-lang/Debug
 compiler-cpp/f-lang/Release
 compiler-cpp/f-lang/x64

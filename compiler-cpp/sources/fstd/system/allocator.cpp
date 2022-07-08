@@ -3,7 +3,8 @@
 #include <fstd/platform.hpp>
 
 #if defined(FSTD_OS_WINDOWS)
-#	include <Windows.h>
+#	include <win32/io.h>
+#	include <win32/misc.h>
 #endif
 
 //#include <cmath>

@@ -1,17 +1,16 @@
 #include "native_generator.hpp"
 
 #include <fstd/system/file.hpp>
-
-#include <iostream>
+#include <fstd/core/assert.hpp>
+#include <fstd/core/string_builder.hpp>
 
 #include <Windows.h>
 
 #include <time.h>
 #include <assert.h>
 
-#include <fstd/core/assert.hpp>
-
 using namespace fstd;
+using namespace fstd::core;
 
 constexpr DWORD	image_base = 0x00400000;
 constexpr DWORD	section_alignment = 4096;	// 4;	// @Warning should be greater or equal to file_alignment
@@ -52,7 +51,7 @@ DWORD	rdata_section_address;
 DWORD	reloc_image_section_header_address;
 DWORD	reloc_section_address;
 
-std::uint8_t	hello_world_instructions[] = {
+uint8_t	hello_world_instructions[] = {
     0x89, 0xE5,										   // mov    ebp, esp
     0x83, 0xEC, 0x04,								   // sub    esp, 0x4
     0x6A, 0xF5,										   // push   0xfffffff5         @TODO correct F5 value
@@ -103,7 +102,10 @@ bool generate_hello_world()
 
     BINARY = CreateFileA(binary_path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (BINARY == INVALID_HANDLE_VALUE) {
-        std::cout << "Failed to open " << binary_path << std::endl;
+        String_Builder		string_builder;
+
+        print_to_builder(string_builder, "Failed to open file: %Cs", binary_path);
+        system::print(to_string(string_builder));
         return false;
     }
 

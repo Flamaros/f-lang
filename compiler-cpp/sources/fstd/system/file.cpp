@@ -5,7 +5,8 @@
 #include <fstd/language/string.hpp>
 
 #if defined(FSTD_OS_WINDOWS)
-#	include <Windows.h>
+#	include <win32/file.h>
+#	include <win32/io.h> // INVALID_HANDLE_VALUE
 #endif
 
 #undef max

@@ -7,7 +7,7 @@
 #include <fstd/core/unicode.hpp>
 
 #include <cstdarg>	// @TODO remove it
-#include <string_view>	// @TODO remove it
+#include <string_view>	// @TODO remove it (used for %Cv format option (for magic_enum print))
 
 using namespace fstd::system;
 

@@ -4,9 +4,6 @@
 #include <fstd/language/string_view.hpp>
 #include <fstd/language/types.hpp>
 
-// @TODO replace by my instinsics
-#include <intrin.h>
-
 // Module that contains methods to manage conversion between unicode strings.
 // There is some that directly give code points and some other optimized for direct conversions.
 //
