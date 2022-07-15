@@ -26,6 +26,8 @@ cl.error
 *.dot
 AST.png
 output.cpp
+output.obj
+output.exe
 scope.png
 
 compiler-cpp/compileData.scor*

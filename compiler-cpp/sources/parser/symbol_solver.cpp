@@ -11,11 +11,8 @@
 
 using namespace f;
 
-AST_Node* f::get_user_type(AST_User_Type_Identifier* user_type)
+static AST_Node* get_user_type(Token* identifier, Symbol_Table* symbol_table)
 {
-	Token* identifier = &user_type->identifier;
-	Symbol_Table* symbol_table = user_type->symbol_table;
-
 	uint64_t hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(identifier->text), fstd::language::get_string_size(identifier->text), 0);
 	uint16_t short_hash = hash & 0xffff;
 
@@ -37,4 +34,31 @@ AST_Node* f::get_user_type(AST_User_Type_Identifier* user_type)
 
 	// Just because the compiler request it, but we already exited the program with the error report.
 	return nullptr;
+}
+
+AST_Node* f::get_user_type(AST_User_Type_Identifier* user_type)
+{
+	return ::get_user_type(&user_type->identifier, user_type->symbol_table);
+}
+
+AST_Node* f::get_user_type(AST_Identifier* user_type)
+{
+	return ::get_user_type(&user_type->value, user_type->symbol_table);
+}
+
+AST_Node* f::resolve_type(AST_Node* user_type)
+{
+	if (user_type->ast_type == Node_Type::TYPE_ALIAS) {
+		AST_Alias* alias = (AST_Alias*)user_type;
+
+		return resolve_type(alias->type);
+	}
+	else if (user_type->ast_type == Node_Type::USER_TYPE_IDENTIFIER) {
+		return resolve_type(get_user_type((AST_User_Type_Identifier*)user_type));
+	}
+	else if (user_type->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
+		return resolve_type(get_user_type((AST_Identifier*)user_type));
+	}
+
+	return user_type;
 }

@@ -26,6 +26,9 @@ using namespace fstd::core;
 
 using namespace f;
 
+static void write_argument_list(String_Builder& file_string_builder, IR& ir, AST_Node* node);
+static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation = 0);
+
 inline static void write_indentation(String_Builder& file_string_builder, uint8_t indentation)
 {
 	if (indentation == 0) return;
@@ -99,9 +102,8 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 		return;
 	}
 	else if (type->ast_type == Node_Type::TYPE_ALIAS) {
-		AST_Alias* alias = (AST_Alias*)type;
-
-		write_default_initialization(file_string_builder, variable_node, alias->type);
+		write_default_initialization(file_string_builder, variable_node, resolve_type(type));
+		return;
 	}
 	else if (type->ast_type == Node_Type::USER_TYPE_IDENTIFIER) {
 		AST_User_Type_Identifier* user_type = (AST_User_Type_Identifier*)type;
@@ -127,7 +129,63 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 	core::Assert(false);
 }
 
-static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation = 0)
+static void write_argument_list(String_Builder& file_string_builder, IR& ir, AST_Node* node)
+{
+	if (!node) {
+		return;
+	}
+
+	if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
+		// For array take a look at STATEMENT_TYPE_ARRAY
+		// Flamaros - 30 october 2020
+
+		AST_Statement_Variable* variable_node = (AST_Statement_Variable*)node;
+		AST_Node* type = variable_node->type;
+
+		// Write type
+		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
+			// In this case we have to jump the array modifier
+			write_generated_code(file_string_builder, ir, variable_node->type->sibling, 0);
+		}
+		else {
+			write_generated_code(file_string_builder, ir, variable_node->type, 0);
+		}
+
+		// Write variable name
+		print_to_builder(file_string_builder, " %v", variable_node->name.text);
+
+		// Write array
+		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
+			write_generated_code(file_string_builder, ir, variable_node->type);
+		}
+
+		if (variable_node->sibling) {
+			print_to_builder(file_string_builder, ",");
+		}
+
+
+		// @TODO write the generated_code for expression
+		// Get the register that contains the result
+		//
+		// We certainly have to implement the type checker here that create the register of sub-expression with the good type
+		// then check types compatibilities when descending the in tree.
+		// There is also the case of string type that should be declared (as struct) before getting assignement of his members.
+		// For a string we have to allocate 2 (one for the data pointer, and an other for the size) registers and copy them.
+		//write_generated_code();
+	}
+	else {
+		core::Assert(false);
+		// @TODO report error here?
+	}
+
+	// Sibling iteration
+	if (node->sibling) {
+		write_argument_list(file_string_builder, ir, node->sibling);
+	}
+}
+
+
+static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation /* = 0 */)
 {
 	if (!node) {
 		return;
@@ -136,11 +194,17 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	bool	recurse_sibling = true;
 
 	if (node->ast_type == Node_Type::TYPE_ALIAS) {
-		AST_Alias* alias_node = (AST_Alias*)node;
+		// @Warning we do nothing here because the types were already stored in the symbol table
+		// We may eventually want to replace the type base is underlying one if our aliases are links,
+		// but if they acts like new types (like typedef in C++) then we should store all information to be able to
+		// check type conversions (aka cast)
 
-		print_to_builder(file_string_builder, "typedef ");
-		write_generated_code(file_string_builder, ir, alias_node->type);
-		print_to_builder(file_string_builder, " %v;\n", alias_node->name.text);
+
+		//AST_Alias* alias_node = (AST_Alias*)node;
+
+		//print_to_builder(file_string_builder, "typedef ");
+		//write_generated_code(file_string_builder, ir, alias_node->type);
+		//print_to_builder(file_string_builder, " %v;\n", alias_node->name.text);
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
 		AST_Statement_Basic_Type* basic_type_node = (AST_Statement_Basic_Type*)node;
@@ -150,7 +214,11 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	else if (node->ast_type == Node_Type::USER_TYPE_IDENTIFIER) {
 		AST_User_Type_Identifier* user_type_node = (AST_User_Type_Identifier*)node;
 
-		indented_print_to_builder(file_string_builder, indentation, "%v", user_type_node->identifier.text);
+		AST_Node* underlying_type = get_user_type(user_type_node);
+
+		indented_print_to_builder(file_string_builder, indentation, "/*%v*/", user_type_node->identifier.text);
+		if (underlying_type)
+			write_generated_code(file_string_builder, ir, resolve_type(underlying_type));
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_POINTER) {
 		AST_Statement_Type_Pointer* basic_type_node = (AST_Statement_Type_Pointer*)node;
@@ -162,12 +230,17 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	else if (node->ast_type == Node_Type::STATEMENT_FUNCTION) {
 		AST_Statement_Function* function_node = (AST_Statement_Function*)node;
 
-		print_to_builder(file_string_builder, "\n");
-		write_generated_code(file_string_builder, ir, function_node->return_type);
-		print_to_builder(file_string_builder, " %v(", function_node->name.text);
-		write_generated_code(file_string_builder, ir, (AST_Node*)function_node->arguments);
-		print_to_builder(file_string_builder, ")\n");
-		write_generated_code(file_string_builder, ir, (AST_Node*)function_node->scope);
+		// @TODO generate C function declaration that should be done in the correct order (after declaration types)
+		// Be careful of function pointers
+
+		if (function_node->scope) {
+			print_to_builder(file_string_builder, "\n");
+			write_generated_code(file_string_builder, ir, function_node->return_type);
+			print_to_builder(file_string_builder, " %v(", function_node->name.text);
+			write_argument_list(file_string_builder, ir, (AST_Node*)function_node->arguments);
+			print_to_builder(file_string_builder, ")%Cs\n", function_node->scope ? "" : ";");
+			write_generated_code(file_string_builder, ir, (AST_Node*)function_node->scope);
+		}
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
 		// For array take a look at STATEMENT_TYPE_ARRAY
@@ -274,6 +347,9 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
 		AST_Identifier* identifier_node = (AST_Identifier*)node;
+		AST_Node* resolved_node = resolve_type(node);
+
+		write_generated_code(file_string_builder, ir, resolved_node);
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// @TODO
@@ -283,9 +359,9 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		// mais si on est au milieu d'instructions on cherche certainement une variable.
 		// Ceci à un impacte sur les symbol tables à tester et aussi sur les messages d'erreurs (comprendre l'analyse du code f).
 
-		print_to_builder(file_string_builder,
-			"%Cv"
-			"\n%v", magic_enum::enum_name(node->ast_type), identifier_node->value.text);
+		//print_to_builder(file_string_builder,
+		//	"%Cv"
+		//	"\n%v", magic_enum::enum_name(node->ast_type), identifier_node->value.text);
 	}
 	//else if (node->ast_type == Node_Type::FUNCTION_CALL) {
 	//	AST_Function_Call* function_call_node = (AST_Function_Call*)node;
@@ -306,6 +382,13 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	//	print_to_builder(file_string_builder,
 	//		"%Cv", magic_enum::enum_name(node->ast_type));
 	//}
+	else if (node->ast_type == Node_Type::STATEMENT_TYPE_STRUCT) {
+		// @TODO
+		// We do nothing here, because declaration of structs must be ordered in C unlike in f.
+		// Putting the declaration here may not generate a valid C code if one of his dependencies isn't declared before.
+		//
+		// I need to find a better way to do the C code generation to be able to reorder declarations (types and functions).
+	}
 	else {
 		core::Assert(false);
 	// @TODO report error here?
