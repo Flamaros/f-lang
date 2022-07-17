@@ -46,8 +46,8 @@ main :: (arguments : [] string) -> i32
     message:        string  = "Hello World";
     written_bytes:  DWORD; // Should be default initialized
     hstdOut:        HANDLE  = GetStdHandle(STD_OUTPUT_HANDLE);
-	strlen:         ui32 = message.length.test;
-	//test			f32 = -0.0;
+	strlen:         ui32    = message.size;
+	//test			f32     = -0.0;
 
 //	test_array:     [4]ui32 = message;
 	
@@ -57,7 +57,7 @@ main :: (arguments : [] string) -> i32
 
 
 
-    WriteFile(hstdOut, message.c_string, message.length, §written_bytes, 0);
+    WriteFile(hstdOut, message.data, message.size, §written_bytes, 0);
 
     // ExitProcess(0);
     /*return 0;*/

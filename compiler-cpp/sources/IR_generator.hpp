@@ -4,6 +4,9 @@
 
 #include <fstd/memory/stack.hpp>
 
+// @TODO the IR should be a valid code representation (symbols checked, types too,...)
+
+
 namespace f
 {
 	struct Register

@@ -27,6 +27,8 @@ using namespace fstd::core;
 using namespace f;
 
 static void write_argument_list(String_Builder& file_string_builder, IR& ir, AST_Node* node);
+static void write_expression(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation = 0);
+static void write_function_call(String_Builder& file_string_builder, IR& ir, AST_Function_Call* function_call_node, uint8_t indentation = 0);
 static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation = 0);
 
 inline static void write_indentation(String_Builder& file_string_builder, uint8_t indentation)
@@ -184,6 +186,137 @@ static void write_argument_list(String_Builder& file_string_builder, IR& ir, AST
 	}
 }
 
+static void write_function_call(String_Builder& file_string_builder, IR& ir, AST_Function_Call* function_call_node, uint8_t indentation /* = 0 */)
+{
+	// @TODO I normally should check if the function exist in the symbol table before generating the code to call it
+
+	indented_print_to_builder(file_string_builder, indentation, "%v(\n", function_call_node->name.text);
+	// @TODO generate expressions code of arguments
+
+	AST_Node* parameter = function_call_node->parameters;
+	while (parameter != nullptr) {
+		write_expression(file_string_builder, ir, parameter, indentation + 1);
+		parameter = parameter->sibling;
+		if (parameter) {
+			print_to_builder(file_string_builder, ",\n");
+		}
+	}
+	print_to_builder(file_string_builder, ")");
+}
+
+static void write_expression(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation /* = 0 */)
+{
+	if (node->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
+		// @TODO I should check with symbol table if I can find the symbol and his a variable that have a matching type with the argument position
+		// For the moment I let C compiler to do this check for me and I will fix it when I'll go one error.
+		// This kind of checks should not happens here in the backend but in the frontend.
+
+		AST_Identifier* identifier_node = (AST_Identifier*)node;
+
+		indented_print_to_builder(file_string_builder, indentation, "%v", identifier_node->value.text);
+	}
+	else if (node->ast_type == Node_Type::BINARY_OPERATOR_ADDITION) {
+		AST_Binary_Operator* binary_operator_node = (AST_Binary_Operator*)node;
+
+		indented_print_to_builder(file_string_builder, indentation, "(");
+		write_expression(file_string_builder, ir, binary_operator_node->left, 0);
+		print_to_builder(file_string_builder, " + ");
+		write_expression(file_string_builder, ir, binary_operator_node->right, 0);
+		print_to_builder(file_string_builder, ")");
+	}
+	// @TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	// Factorize binary operators
+	else if (node->ast_type == Node_Type::BINARY_OPERATOR_SUBSTRACTION) {
+		AST_Binary_Operator* binary_operator_node = (AST_Binary_Operator*)node;
+
+		indented_print_to_builder(file_string_builder, indentation, "(");
+		write_expression(file_string_builder, ir, binary_operator_node->left, 0);
+		print_to_builder(file_string_builder, " - ");
+		write_expression(file_string_builder, ir, binary_operator_node->right, 0);
+		print_to_builder(file_string_builder, ")");
+	}
+	else if (node->ast_type == Node_Type::BINARY_OPERATOR_MULTIPLICATION) {
+		AST_Binary_Operator* binary_operator_node = (AST_Binary_Operator*)node;
+
+		indented_print_to_builder(file_string_builder, indentation, "(");
+		write_expression(file_string_builder, ir, binary_operator_node->left, 0);
+		print_to_builder(file_string_builder, " * ");
+		write_expression(file_string_builder, ir, binary_operator_node->right, 0);
+		print_to_builder(file_string_builder, ")");
+	}
+	else if (node->ast_type == Node_Type::BINARY_OPERATOR_DIVISION) {
+		AST_Binary_Operator* binary_operator_node = (AST_Binary_Operator*)node;
+
+		indented_print_to_builder(file_string_builder, indentation, "(");
+		write_expression(file_string_builder, ir, binary_operator_node->left, 0);
+		print_to_builder(file_string_builder, " / ");
+		write_expression(file_string_builder, ir, binary_operator_node->right, 0);
+		print_to_builder(file_string_builder, ")");
+	}
+	else if (node->ast_type == Node_Type::BINARY_OPERATOR_REMINDER) {
+		AST_Binary_Operator* binary_operator_node = (AST_Binary_Operator*)node;
+
+		indented_print_to_builder(file_string_builder, indentation, "(");
+		write_expression(file_string_builder, ir, binary_operator_node->left, 0);
+		print_to_builder(file_string_builder, " % ");
+		write_expression(file_string_builder, ir, binary_operator_node->right, 0);
+		print_to_builder(file_string_builder, ")");
+	}
+	else if (node->ast_type == Node_Type::BINARY_OPERATOR_MEMBER_ACCESS) {
+		AST_Binary_Operator* binary_operator_node = (AST_Binary_Operator*)node;
+
+		indented_print_to_builder(file_string_builder, indentation, "(");
+		write_expression(file_string_builder, ir, binary_operator_node->left, 0);
+		print_to_builder(file_string_builder, ".");
+		write_expression(file_string_builder, ir, binary_operator_node->right, 0);
+		print_to_builder(file_string_builder, ")");
+	}
+	else if (node->ast_type == Node_Type::UNARY_OPERATOR_ADDRESS_OF) {
+		AST_Unary_operator* unary_operator_node = (AST_Unary_operator*)node;
+
+		indented_print_to_builder(file_string_builder, indentation, "&");
+		write_expression(file_string_builder, ir, unary_operator_node->right, 0);
+	}
+	else if (node->ast_type == Node_Type::FUNCTION_CALL) {
+		write_function_call(file_string_builder, ir, (AST_Function_Call*)node, indentation);
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_LITERAL) {
+		AST_Literal* literal_node = (AST_Literal*)node;
+
+		if (literal_node->value.type == f::Token_Type::NUMERIC_LITERAL_F32) {
+			indented_print_to_builder(file_string_builder, indentation, "%f", literal_node->value.value.real_32);
+		}
+		else if (literal_node->value.type == f::Token_Type::NUMERIC_LITERAL_F64) {
+			indented_print_to_builder(file_string_builder, indentation, "%lf", literal_node->value.value.real_64);
+		}
+		else if (literal_node->value.type == f::Token_Type::NUMERIC_LITERAL_I32) {
+			indented_print_to_builder(file_string_builder, indentation, "%d", literal_node->value.value.integer);
+		}
+		else if (literal_node->value.type == f::Token_Type::NUMERIC_LITERAL_I64) {
+			indented_print_to_builder(file_string_builder, indentation, "%ld", literal_node->value.value.integer);
+		}
+		else if (literal_node->value.type == f::Token_Type::NUMERIC_LITERAL_REAL) {
+			core::Assert(false); // Not supported by print_to_builder
+//			indented_print_to_builder(file_string_builder, indentation, "%lF", literal_node->value.value.real_max);
+		}
+		else if (literal_node->value.type == f::Token_Type::NUMERIC_LITERAL_UI32) {
+			indented_print_to_builder(file_string_builder, indentation, "%u", literal_node->value.value.unsigned_integer);
+		}
+		else if (literal_node->value.type == f::Token_Type::NUMERIC_LITERAL_UI64) {
+			indented_print_to_builder(file_string_builder, indentation, "%lu", literal_node->value.value.unsigned_integer);
+		}
+		else if (literal_node->value.type == f::Token_Type::STRING_LITERAL) {
+			indented_print_to_builder(file_string_builder, indentation, "{.data = (ui8*)\"%s\", .size = %lu}", *literal_node->value.value.string, fstd::language::get_string_size(*literal_node->value.value.string));
+		}
+		else {
+			core::Assert(false);
+		}
+	}
+	else {
+		core::Assert(false);
+		// @TODO report error here?
+	}
+}
 
 static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation /* = 0 */)
 {
@@ -274,6 +407,10 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 			// Write the initialization code if necessary (don't have an expression)
 			if (variable_node->expression == nullptr) { // @TODO Later we should do something clever (the back-end optimizer should be able to detect double initializations (taking only last write before first read))
 				write_default_initialization(file_string_builder, variable_node, variable_node->type);
+			}
+			else {
+				print_to_builder(file_string_builder, " = ");
+				write_expression(file_string_builder, ir, variable_node->expression);
 			}
 
 			print_to_builder(file_string_builder, ";\n");
@@ -389,6 +526,11 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		//
 		// I need to find a better way to do the C code generation to be able to reorder declarations (types and functions).
 	}
+	else if (node->ast_type == Node_Type::FUNCTION_CALL) {
+		write_function_call(file_string_builder, ir, (AST_Function_Call*)node, indentation);
+
+		print_to_builder(file_string_builder, ";\n");
+	}
 	else {
 		core::Assert(false);
 	// @TODO report error here?
@@ -438,10 +580,10 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 		"extern \"C\" int _fltused;\n"
 		"\n"
 		"// f-lang basic types\n"
-		"typedef int                   i8;\n"
-		"typedef unsigned int          ui8;\n"
-		"typedef int                   i16;\n"
-		"typedef unsigned int          ui16;\n"
+		"typedef char                  i8;\n"
+		"typedef unsigned char         ui8;\n"
+		"typedef short                 i16;\n"
+		"typedef unsigned short        ui16;\n"
 		"typedef int                   i32;\n"
 		"typedef unsigned int          ui32;\n"
 		"typedef long long             i64;\n"
@@ -504,7 +646,7 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 		free_buffers(string_builder);
 		// No C++ runtime
 		// https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows#530
-		print_to_builder(string_builder, "/nologo /Gm- /GR- /EHa- /Oi /GS- /Gs9999999 /utf-8 \"%s\" -link -nodefaultlib /ENTRY:main /SUBSYSTEM:CONSOLE /STACK:0x100000,0x100000", cpp_file_path);
+		print_to_builder(string_builder, "/nologo /Gm- /GR- /EHa- /Oi /GS- /Gs9999999 /utf-8 /std:c++20 \"%s\" -link -nodefaultlib /ENTRY:main /SUBSYSTEM:CONSOLE /STACK:0x100000,0x100000", cpp_file_path);
 		if (!system::execute_process(cl_path, to_string(string_builder))) {
 			f::Token dummy_token;
 

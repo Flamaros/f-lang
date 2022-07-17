@@ -59,6 +59,16 @@ namespace fstd
 			*string_buffer = language::to_string(value);
 		}
 
+		void print_to_builder(String_Builder& builder, uint32_t value)
+		{
+			language::string* string_buffer;
+
+			memory::array_push_back(builder.strings, language::string());
+			string_buffer = memory::get_array_last_element(builder.strings);
+
+			*string_buffer = language::to_string(value);
+		}
+
 		void print_to_builder(String_Builder& builder, int64_t value)
 		{
 			language::string* string_buffer;
@@ -67,6 +77,26 @@ namespace fstd
 			string_buffer = memory::get_array_last_element(builder.strings);
 
 			*string_buffer = language::to_string(value);
+		}
+
+		void print_to_builder(String_Builder& builder, uint64_t value)
+		{
+			language::string* string_buffer;
+
+			memory::array_push_back(builder.strings, language::string());
+			string_buffer = memory::get_array_last_element(builder.strings);
+
+			*string_buffer = language::to_string(value);
+		}
+
+		void print_to_builder(String_Builder& builder, float value)
+		{
+			core::Assert(false); // Not implemented
+		}
+
+		void print_to_builder(String_Builder& builder, double value)
+		{
+			core::Assert(false); // Not implemented
 		}
 
 		void print_to_builder(String_Builder& builder, language::string value)
@@ -154,6 +184,18 @@ namespace fstd
 						print_to_builder(builder, value);
 						position++;
 					}
+					else if (language::to_utf8(*format)[position] == 'u') {	// uint32
+						uint32_t value = va_arg(args, uint32_t);
+
+						print_to_builder(builder, value);
+						position++;
+					}
+					else if (language::to_utf8(*format)[position] == 'f') {	// f32
+						float value = va_arg(args, float);
+
+						print_to_builder(builder, value);
+						position++;
+					}
 					else if (language::to_utf8(*format)[position] == 's') { // string
 						language::string value = va_arg(args, language::string);
 
@@ -171,6 +213,18 @@ namespace fstd
 
 						if (language::to_utf8(*format)[position] == 'd') {	// int64
 							int64_t value = va_arg(args, int64_t);
+
+							print_to_builder(builder, value);
+							position++;
+						}
+						else if (language::to_utf8(*format)[position] == 'u') {	// uint64
+							uint64_t value = va_arg(args, uint64_t);
+
+							print_to_builder(builder, value);
+							position++;
+						}
+						else if (language::to_utf8(*format)[position] == 'f') {	// f64
+							double value = va_arg(args, double);
 
 							print_to_builder(builder, value);
 							position++;

@@ -1,15 +1,26 @@
+Il va falloir réfléchir à faire une passe d'analyse qui vérifie les expressions et remplisse l'IR afin que les différents backend n'aient pas à refaire ce job de checker les erreurs de grammaire,...
+
+Vérifications à faire:
+  - Vérification de la déclaration des types (types des membres des structs bien définie)
+  - Vérification de la validité d'une expression
+     - scope des variables
+	 - correspondance des types pour les opérations ('+', '-', '.',...)
+  - type des variables passées aux fonctions soit le bon (après évaluation du type final d'une expression)
+  - Références cycliques sur les définitions des types
+
+
+
+#########################
+
+
+
 Print function modifiers
 
 Mettre en place le remplissage de l'arbre des scopes
-  * Allocateur
-  * Génerer les scopes et les remplir
   * Faire que les AST_Node qui déclarent une variables, un types, une fonction pointe vers le scope dans lequel la déclaration est effectuée.
   * Voir comment gérer le using : copier les définitions d'un scope dans un autre ou faire un lien? Comment gérer les ambiguïtés dans ce cas?
 
 
-
-Mettre les alias et autre user types dans une table de hash
-  - Voir comment gérer les scopes
 
 Faire une permière passe de résolution des types sur l'AST, ou il faut pouvoir retrouver les types basics depuis les définitions des alias et structs.
 Il faut utiliser une table de hash pour ça en insérant les alias dans une table de hash "globale" (struct IR) ou la clé est l'alias et la valeur le type de base (il faudra parfois recurser pour retrouver le bon type)

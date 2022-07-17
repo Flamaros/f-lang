@@ -274,15 +274,17 @@ static inline void polish_string_literal(f::Token& token)
 {
     fstd::core::Assert(token.type == Token_Type::STRING_LITERAL);
 
-    language::string* string = (language::string*)system::allocate(sizeof(language::string));
-    init(*string);
+    size_t              token_length = language::get_string_size(token.text);
+    language::string*   string = (language::string*)system::allocate(sizeof(language::string));
 
-    memory::reserve_array(string->buffer, language::get_string_size(token.text));
+    init(*string);
+    memory::reserve_array(string->buffer, token_length);
 
     size_t      position = 0;
     size_t      literal_length = 0;
-    uint8_t*    output = (uint8_t*)&string[0];
-    size_t      token_length = language::get_string_size(token.text);
+    uint8_t*    output = memory::get_array_data(string->buffer);//  (uint8_t*)&string->buffer[0];
+
+    memory::reserve_array(string->buffer, token_length);
 
     while (position < token_length)
     {
