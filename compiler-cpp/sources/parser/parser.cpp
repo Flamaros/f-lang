@@ -700,7 +700,10 @@ bool parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_ADDITION, &previous_child, delimiter_1, delimiter_2);
 			}
 			else if (current_token.value.punctuation == Punctuation::DASH) {
-				parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_SUBSTRACTION, &previous_child, delimiter_1, delimiter_2);
+				if (previous_child)
+					parse_binary_operator(stream, emplace_node, Node_Type::BINARY_OPERATOR_SUBSTRACTION, &previous_child, delimiter_1, delimiter_2);
+				else 
+					parse_unary_operator(stream, emplace_node, Node_Type::UNARY_OPERATOR_NEGATIVE, &previous_child, delimiter_1, delimiter_2);
 			}
 			else if (current_token.value.punctuation == Punctuation::SECTION) {
 				parse_unary_operator(stream, emplace_node, Node_Type::UNARY_OPERATOR_ADDRESS_OF, &previous_child, delimiter_1, delimiter_2);

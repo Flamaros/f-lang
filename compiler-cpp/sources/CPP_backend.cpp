@@ -26,8 +26,10 @@ using namespace fstd::core;
 
 using namespace f;
 
+static void write_type(String_Builder& file_string_builder, IR& ir, AST_Node* node);
 static void write_argument_list(String_Builder& file_string_builder, IR& ir, AST_Node* node);
 static void write_expression(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation = 0);
+static void write_function_declaration(String_Builder& file_string_builder, IR& ir, AST_Statement_Function* function_node, uint8_t indentation = 0);
 static void write_function_call(String_Builder& file_string_builder, IR& ir, AST_Function_Call* function_call_node, uint8_t indentation = 0);
 static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation = 0);
 
@@ -54,6 +56,7 @@ inline static void indented_print_to_builder(String_Builder& file_string_builder
 
 	language::string	format_string;
 
+	language::init(format_string);
 	language::assign(format_string, (uint8_t*)format);
 	defer{ language::release(format_string); };
 
@@ -131,6 +134,17 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 	core::Assert(false);
 }
 
+static void write_type(String_Builder& file_string_builder, IR& ir, AST_Node* node)
+{
+	if (node->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)node)->array_size != nullptr) {
+		// In this case we have to jump the array modifier
+		write_generated_code(file_string_builder, ir, node->sibling, 0);
+	}
+	else {
+		write_generated_code(file_string_builder, ir, node, 0);
+	}
+}
+
 static void write_argument_list(String_Builder& file_string_builder, IR& ir, AST_Node* node)
 {
 	if (!node) {
@@ -145,13 +159,7 @@ static void write_argument_list(String_Builder& file_string_builder, IR& ir, AST
 		AST_Node* type = variable_node->type;
 
 		// Write type
-		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
-			// In this case we have to jump the array modifier
-			write_generated_code(file_string_builder, ir, variable_node->type->sibling, 0);
-		}
-		else {
-			write_generated_code(file_string_builder, ir, variable_node->type, 0);
-		}
+		write_type(file_string_builder, ir, type);
 
 		// Write variable name
 		print_to_builder(file_string_builder, " %v", variable_node->name.text);
@@ -271,6 +279,12 @@ static void write_expression(String_Builder& file_string_builder, IR& ir, AST_No
 		write_expression(file_string_builder, ir, binary_operator_node->right, 0);
 		print_to_builder(file_string_builder, ")");
 	}
+	else if (node->ast_type == Node_Type::UNARY_OPERATOR_NEGATIVE) {
+		AST_Unary_operator* unary_operator_node = (AST_Unary_operator*)node;
+
+		indented_print_to_builder(file_string_builder, indentation, "-");
+		write_expression(file_string_builder, ir, unary_operator_node->right, 0);
+	}
 	else if (node->ast_type == Node_Type::UNARY_OPERATOR_ADDRESS_OF) {
 		AST_Unary_operator* unary_operator_node = (AST_Unary_operator*)node;
 
@@ -316,6 +330,15 @@ static void write_expression(String_Builder& file_string_builder, IR& ir, AST_No
 		core::Assert(false);
 		// @TODO report error here?
 	}
+}
+
+static void write_function_declaration(String_Builder& file_string_builder, IR& ir, AST_Statement_Function* function_node, uint8_t indentation /* = 0 */)
+{
+	indented_print_to_builder(file_string_builder, indentation, "");
+	write_type(file_string_builder, ir, function_node->return_type);
+	print_to_builder(file_string_builder, " %v(", function_node->name.text);
+	write_argument_list(file_string_builder, ir, (AST_Node*)function_node->arguments);
+	print_to_builder(file_string_builder, ");\n");
 }
 
 static void write_generated_code(String_Builder& file_string_builder, IR& ir, AST_Node* node, uint8_t indentation /* = 0 */)
@@ -365,6 +388,8 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 
 		// @TODO generate C function declaration that should be done in the correct order (after declaration types)
 		// Be careful of function pointers
+
+		write_function_declaration(file_string_builder, ir, function_node, indentation);
 
 		if (function_node->scope) {
 			print_to_builder(file_string_builder, "\n");
@@ -452,7 +477,7 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 
 		if (node != ir.ast->ast_root)
 			indented_print_to_builder(file_string_builder, indentation, "{\n");
-		write_generated_code(file_string_builder, ir, (AST_Node*)scope_node->first_child, indentation + 1);
+		write_generated_code(file_string_builder, ir, (AST_Node*)scope_node->first_child, node == ir.ast->ast_root ? 0 : indentation + 1);
 		if (node != ir.ast->ast_root)
 			indented_print_to_builder(file_string_builder, indentation, "}\n");
 	}

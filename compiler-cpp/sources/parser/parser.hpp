@@ -64,6 +64,7 @@ namespace f
 		FUNCTION_CALL,
 
 		// Unary operators
+		UNARY_OPERATOR_NEGATIVE,
 		UNARY_OPERATOR_ADDRESS_OF,
 
 		// Binary operators
@@ -353,7 +354,7 @@ namespace f
 		if (node == nullptr)
 			return false;
 
-		return node->ast_type >= Node_Type::UNARY_OPERATOR_ADDRESS_OF
+		return node->ast_type >= Node_Type::UNARY_OPERATOR_NEGATIVE
 			&& node->ast_type <= Node_Type::UNARY_OPERATOR_ADDRESS_OF;
 	}
 

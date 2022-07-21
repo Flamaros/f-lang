@@ -14,6 +14,19 @@ ULONG_PTR :: ui64;
 // CIRCULAR_DEF :: CIRCULAR_DEF_ROOT
 // CIRCULAR_DEF_ROOT :: CIRCULAR_DEF
 
+/* GetStdHandle: */
+STD_INPUT_HANDLE        : DWORD	 = -10;
+STD_OUTPUT_HANDLE       : DWORD  = -11;
+STD_ERROR_HANDLE        : DWORD  = -12;
+// INVALID_HANDLE_VALUE    := cast(HANDLE)-1; // @TODO need to support cast (with the type checker)
+ATTACH_PARENT_PROCESS   : DWORD  = -1;
+
+//HANDLE_FLAG_INHERIT             := 0x00000001;
+//HANDLE_FLAG_PROTECT_FROM_CLOSE  := 0x00000002;
+
+// -------------------
+
+
 OVERLAPPED :: struct
 {
     Internal : ULONG_PTR;
