@@ -140,6 +140,11 @@ static void write_type(String_Builder& file_string_builder, IR& ir, AST_Node* no
 		// In this case we have to jump the array modifier
 		write_generated_code(file_string_builder, ir, node->sibling, 0);
 	}
+	else if (node->ast_type == Node_Type::STATEMENT_TYPE_STRUCT) {
+		AST_Statement_Struct_Type* struct_node = (AST_Statement_Struct_Type*)node;
+
+		print_to_builder(file_string_builder, "%v", struct_node->name.text);
+	}
 	else {
 		write_generated_code(file_string_builder, ir, node, 0);
 	}
@@ -511,7 +516,10 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		AST_Identifier* identifier_node = (AST_Identifier*)node;
 		AST_Node* resolved_node = resolve_type(node);
 
-		write_generated_code(file_string_builder, ir, resolved_node);
+		// write_generated_code is suceptible to generate type declaration of resolved type.
+		// Instead we want to generate a type reference, this is really different for struct, enum and unions
+		// for which write_type will use there identifiers.
+		write_type(file_string_builder, ir, resolved_node);
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// @TODO
@@ -535,7 +543,7 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	else if (node->ast_type == Node_Type::UNARY_OPERATOR_ADDRESS_OF) {
 		AST_Unary_operator* address_of_node = (AST_Unary_operator*)node;
 
-		write_generated_code(file_string_builder, ir, address_of_node->right);
+		write_generated_code(file_string_builder, ir, address_of_node->right); // @TODO should be write_type?
 		print_to_builder(file_string_builder, "*");
 	}
 	//else if (node->ast_type == Node_Type::BINARY_OPERATOR_MEMBER_ACCESS) {

@@ -59,6 +59,16 @@ AST_Node* f::resolve_type(AST_Node* user_type)
 	else if (user_type->ast_type == Node_Type::STATEMENT_IDENTIFIER) {
 		return resolve_type(get_user_type((AST_Identifier*)user_type));
 	}
+	else if (user_type->ast_type == Node_Type::STATEMENT_BASIC_TYPE) {
+		return user_type;
+	}
+	else if (user_type->ast_type == Node_Type::UNARY_OPERATOR_ADDRESS_OF) {
+		return user_type; // The pointer is a part of the type, it is usefull to generate code correctly
+	}
+	else if (user_type->ast_type == Node_Type::STATEMENT_TYPE_STRUCT) { // An identifier can refere to a struct declaration
+		return user_type;
+	}
 
-	return user_type;
+	fstd::core::Assert(false);
+	return nullptr; // @Warning will certainly provoke a crash that should be catch by the crash handler!!!
 }

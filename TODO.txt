@@ -1,3 +1,21 @@
+Generer le code de declaration des struct enum,...
+
+Dans f::resolve_type ajouter les if pour les enum et union
+#########################
+
+
+
+
+Ajouter des marker Tracy pour la consommation de RAM
+
+Et celle de la stack avec les appels récursif
+
+
+#########################
+
+
+
+
 Il va falloir réfléchir à faire une passe d'analyse qui vérifie les expressions et remplisse l'IR afin que les différents backend n'aient pas à refaire ce job de checker les erreurs de grammaire,...
 
 Vérifications à faire:
