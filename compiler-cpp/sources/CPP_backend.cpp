@@ -124,6 +124,20 @@ static void write_default_initialization(String_Builder& file_string_builder, AS
 		print_to_builder(file_string_builder, " = 0");
 		return;
 	}
+	else if (type->ast_type == Node_Type::STATEMENT_TYPE_STRUCT) {
+		return;
+	}
+	else if (type->ast_type == Node_Type::STATEMENT_TYPE_UNION) {
+		return;
+	}
+	else if (type->ast_type == Node_Type::STATEMENT_TYPE_ENUM) {
+		print_to_builder(file_string_builder, " = 0");
+		return;
+	}
+	else if (type->ast_type == Node_Type::UNARY_OPERATOR_ADDRESS_OF) {
+		print_to_builder(file_string_builder, " = nullptr");
+		return;
+	}
 	//else if (variable_node->type->ast_type == Node_Type::TYPE_STRUCT) {
 	//	// @TODO
 	//	// Recurse over all members
@@ -436,7 +450,8 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 			// @TODO
 			// Write the initialization code if necessary (don't have an expression)
 			if (variable_node->expression == nullptr) { // @TODO Later we should do something clever (the back-end optimizer should be able to detect double initializations (taking only last write before first read))
-				write_default_initialization(file_string_builder, variable_node, variable_node->type);
+				if (globals.cpp_backend_data.union_declaration_depth == 0)
+					write_default_initialization(file_string_builder, variable_node, variable_node->type);
 			}
 			else {
 				print_to_builder(file_string_builder, " = ");
@@ -558,6 +573,51 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		// Putting the declaration here may not generate a valid C code if one of his dependencies isn't declared before.
 		//
 		// I need to find a better way to do the C code generation to be able to reorder declarations (types and functions).
+
+		AST_Statement_Struct_Type* struct_node = (AST_Statement_Struct_Type*)node;
+
+		if (struct_node->anonymous)
+			indented_print_to_builder(file_string_builder, indentation, "struct\n");
+		else
+			indented_print_to_builder(file_string_builder, indentation, "struct %v\n", struct_node->name.text);
+		indented_print_to_builder(file_string_builder, indentation, "{\n");
+		write_generated_code(file_string_builder, ir, struct_node->first_child, indentation + 1);
+		indented_print_to_builder(file_string_builder, indentation, "};\n");
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_TYPE_UNION) {
+		// @TODO
+		// We do nothing here, because declaration of structs must be ordered in C unlike in f.
+		// Putting the declaration here may not generate a valid C code if one of his dependencies isn't declared before.
+		//
+		// I need to find a better way to do the C code generation to be able to reorder declarations (types and functions).
+
+		AST_Statement_Union_Type* union_node = (AST_Statement_Union_Type*)node;
+
+		if (union_node->anonymous)
+			indented_print_to_builder(file_string_builder, indentation, "union\n", union_node->name.text);
+		else
+			indented_print_to_builder(file_string_builder, indentation, "union %v\n", union_node->name.text);
+		indented_print_to_builder(file_string_builder, indentation, "{\n");
+		globals.cpp_backend_data.union_declaration_depth++;
+		write_generated_code(file_string_builder, ir, union_node->first_child, indentation + 1);
+		globals.cpp_backend_data.union_declaration_depth--;
+		indented_print_to_builder(file_string_builder, indentation, "};\n");
+	}
+	else if (node->ast_type == Node_Type::STATEMENT_TYPE_ENUM) {
+		// @TODO
+		// We do nothing here, because declaration of structs must be ordered in C unlike in f.
+		// Putting the declaration here may not generate a valid C code if one of his dependencies isn't declared before.
+		//
+		// I need to find a better way to do the C code generation to be able to reorder declarations (types and functions).
+
+		core::Assert(false); // Fix enum parsing before, actually they don't have a name!!!
+
+		//AST_Statement_Enum_Type* enum_node = (AST_Statement_Enum_Type*)node;
+
+		//indented_print_to_builder(file_string_builder, indentation, "enum %v\n", enum_node->name.text);
+		//indented_print_to_builder(file_string_builder, indentation, "{\n");
+		//write_generated_code(file_string_builder, ir, enum_node->first_child, indentation + 1);
+		//indented_print_to_builder(file_string_builder, indentation, "};\n");
 	}
 	else if (node->ast_type == Node_Type::FUNCTION_CALL) {
 		write_function_call(file_string_builder, ir, (AST_Function_Call*)node, indentation);
