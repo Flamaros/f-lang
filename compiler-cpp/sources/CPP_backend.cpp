@@ -353,8 +353,22 @@ static void write_expression(String_Builder& file_string_builder, IR& ir, AST_No
 
 static void write_function_declaration(String_Builder& file_string_builder, IR& ir, AST_Statement_Function* function_node, uint8_t indentation /* = 0 */)
 {
+	fstd::language::string_view	win32_string;
+	fstd::language::assign(win32_string, (uint8_t*)"win32");
+	bool win32_system_call = function_node->modifiers && fstd::language::are_equals(function_node->modifiers->value.text, win32_string);
+
 	indented_print_to_builder(file_string_builder, indentation, "");
+
+	if (win32_system_call) {
+		print_to_builder(file_string_builder, "extern \"C\" ", function_node->name.text);
+	}
+
 	write_type(file_string_builder, ir, function_node->return_type);
+
+	if (win32_system_call) {
+		print_to_builder(file_string_builder, " __stdcall", function_node->name.text);
+	}
+
 	print_to_builder(file_string_builder, " %v(", function_node->name.text);
 	write_argument_list(file_string_builder, ir, (AST_Node*)function_node->arguments);
 	print_to_builder(file_string_builder, ");\n");
@@ -679,6 +693,11 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 		"// We want to be able to use float without C runtime!!!\n"
 		"extern \"C\" int _fltused;\n"
 		"\n"
+		"#pragma comment(lib, \"kernel32.lib\")\n"
+		"#pragma comment (linker, \"/NODEFAULTLIB:libcmt.lib\")\n"
+		"#pragma comment (linker, \"/NODEFAULTLIB:libcmtd.lib\")\n"
+		"#pragma comment (linker, \"/NODEFAULTLIB:oldnames.lib\")\n"
+		"\n"
 		"// f-lang basic types\n"
 		"typedef char                  i8;\n"
 		"typedef unsigned char         ui8;\n"
@@ -724,10 +743,11 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 		system::reset_path(link_path);
 	};
 
+	Find_Result find_result;
 	{
 		ZoneScopedNC("Find C++ compiler", 0xaa0000);
 
-		Find_Result find_result = find_visual_studio_and_windows_sdk();
+		find_result = find_visual_studio_and_windows_sdk();
 
 		print_to_builder(string_builder, "%Cw\\cl.exe", find_result.vs_exe_path);
 		system::from_native(cl_path, to_string(string_builder));
@@ -735,8 +755,6 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 		free_buffers(string_builder);
 		print_to_builder(string_builder, "%Cw\\link.exe", find_result.vs_exe_path);
 		system::from_native(link_path, to_string(string_builder));
-
-		free_resources(&find_result);
 	}
 
 	// Start compilation
@@ -746,8 +764,18 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 		free_buffers(string_builder);
 		// No C++ runtime
 		// https://hero.handmade.network/forums/code-discussion/t/94-guide_-_how_to_avoid_c_c++_runtime_on_windows#530
-		print_to_builder(string_builder, "/nologo /Gm- /GR- /EHa- /Oi /GS- /Gs9999999 /utf-8 /std:c++20 \"%s\" -link -nodefaultlib /ENTRY:main /SUBSYSTEM:CONSOLE /STACK:0x100000,0x100000", cpp_file_path);
-		if (!system::execute_process(cl_path, to_string(string_builder))) {
+		print_to_builder(string_builder, "/nologo /Gm- /GR- /EHa- /Oi /GS- /Gs9999999 /utf-8 /std:c++20 \"%s\" -link /ENTRY:main /SUBSYSTEM:CONSOLE /STACK:0x100000,0x100000 /LIBPATH:\"%Cw\" ", cpp_file_path, find_result.windows_sdk_um_library_path);
+
+		// Log to console the command
+		language::string	arguments_string;
+
+		defer{
+			language::release(arguments_string);
+		};
+
+		arguments_string = core::to_string(string_builder);
+
+		if (!system::execute_process(cl_path, arguments_string)) {
 			f::Token dummy_token;
 
 			dummy_token.type = f::Token_Type::UNKNOWN;
@@ -755,6 +783,9 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 			dummy_token.line = 0;
 			dummy_token.column = 0;
 			report_error(Compiler_Error::warning, dummy_token, "Failed to launch cl.exe.\n");
+			system::print(arguments_string);
 		}
 	}
+
+	free_resources(&find_result);
 }
