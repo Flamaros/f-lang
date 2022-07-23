@@ -582,7 +582,11 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 			indented_print_to_builder(file_string_builder, indentation, "struct %v\n", struct_node->name.text);
 		indented_print_to_builder(file_string_builder, indentation, "{\n");
 		write_generated_code(file_string_builder, ir, struct_node->first_child, indentation + 1);
-		indented_print_to_builder(file_string_builder, indentation, "};\n");
+
+		if (struct_node->anonymous)
+			indented_print_to_builder(file_string_builder, indentation, "} "); // @Warning if struct is anonymous then the declaration is made at the same type as a variable declaration.
+		else
+			indented_print_to_builder(file_string_builder, indentation, "};\n");
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_UNION) {
 		// @TODO
@@ -601,7 +605,10 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 		globals.cpp_backend_data.union_declaration_depth++;
 		write_generated_code(file_string_builder, ir, union_node->first_child, indentation + 1);
 		globals.cpp_backend_data.union_declaration_depth--;
-		indented_print_to_builder(file_string_builder, indentation, "};\n");
+		if (union_node->anonymous)
+			indented_print_to_builder(file_string_builder, indentation, "} "); // @Warning if union is anonymous then the declaration is made at the same type as a variable declaration.
+		else
+			indented_print_to_builder(file_string_builder, indentation, "};\n");
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_ENUM) {
 		// @TODO
