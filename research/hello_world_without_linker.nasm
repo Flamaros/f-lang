@@ -45,7 +45,7 @@ image_start:
     dw 0,0,0,0,0,0,0,0,0,0		; e_res2[10];                  // Reserved words
     dd 0x40						; e_lfanew;                    // File address of new exe header (sizeof(IMAGE_DOS_HEADER) because we put it just after)
 
-; IMAGE_NT_HEADERS32 - lowest possible start is at 0x4
+; IMAGE_NT_HEADERS32 - lowest possible start is at 0x40
 signature:
 	dw 'PE',0														; Signature
 

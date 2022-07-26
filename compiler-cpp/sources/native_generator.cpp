@@ -12,6 +12,8 @@
 using namespace fstd;
 using namespace fstd::core;
 
+using namespace f;
+
 constexpr DWORD	image_base = 0x00400000;
 constexpr DWORD	section_alignment = 4096;	// 4;	// @Warning should be greater or equal to file_alignment
 constexpr DWORD	file_alignment = 512;		// 4;		// @TODO check that because the default value according to the official documentation is 512
@@ -22,6 +24,9 @@ constexpr DWORD size_of_stack_commit = 0x1000;
 constexpr DWORD size_of_heap_reserve = 0x100000;
 constexpr DWORD size_of_heap_commit = 0x1000;
 
+// My values (not serialized)
+constexpr size_t PE_header_start_address = 0xD0; // @Warning This value is actually hard coded because I don't have any DOS stub, otherwise I should be able to compute it from the DOS stub size.
+
 // @TODO variables that have to be computed at run time
 DWORD	size_of_code = 0;			// The size of the code (text) section, or the sum of all code sections if there are multiple sections.
 DWORD	size_of_initialized_data = 0;	// The size of the initialized data section, or the sum of all such sections if there are multiple data sections.
@@ -29,7 +34,7 @@ DWORD	size_of_uninitialized_data = 0;	// The size of the uninitialized data sect
 DWORD	address_of_entry_point = 0;	// Relative to image_base
 DWORD	base_of_code = 0;			// Relative to image_base
 DWORD	base_of_data = 0;			// Relative to image_base
-DWORD	size_of_image = 0;			// @Warning must be a multiple of section_alignment
+DWORD	size_of_image = 0;			// @Warning must be a multiple of section_alignment, it's the sum of header and section with each size aligned on section_alignement (size that the process will take in memory once loaded)
 DWORD	size_of_headers = 0;		// IMAGE_DOS_HEADER.e_lfanew + 4 byte signature + size of IMAGE_FILE_HEADER + size of optional header + size of all section headers : and rounded at a multiple of file_alignment
 DWORD	image_check_sum = 0;		// Only for drivers, DLL loaded at boot time, DLL loaded in critical system process
 WORD	subsystem = IMAGE_SUBSYSTEM_WINDOWS_CUI;	// @Warning IMAGE_SUBSYSTEM_WINDOWS_CUI == console application (with a main) - IMAGE_SUBSYSTEM_WINDOWS_GUI == GUI application (with a WinMain)
@@ -63,18 +68,24 @@ uint8_t	hello_world_instructions[] = {
     0x6A, 0x0B,										   // push   0xb				@Warning nNumberOfBytesToWrite
     0xFF, 0x35, 0x00, 0x00, 0x00, 0x00,				   // push   DWORD PTR ds:0x0	@Warning address of lpNumberOfBytesWritten
     0x53,											   // push   ebx
-    0xE8, 0xFC, 0xFF, 0xFF, 0xFF,					   // call   1e <_main+0x1e>	WriteFile @TODO fixe the adress
+    0xE8, 0xFC, 0xFF, 0xFF, 0xFF,					   // call   1e <_main+0x1e>	WriteFile @TODO fixe the address
     0x6A, 0x00,										   // push   0x0
-    0xE8, 0xFC, 0xFF, 0xFF, 0xFF,					   // call   25 <_main+0x25>	ExitProcess @TODO fixe the adress
+    0xE8, 0xFC, 0xFF, 0xFF, 0xFF,					   // call   25 <_main+0x25>	ExitProcess @TODO fixe the address
     0xF4											   // hlt
 };
 
-DWORD	compute_aligned_size(DWORD raw_size, DWORD alignement)
+// @TODO check if align_address isn't enough to compute aligned values
+static DWORD	compute_aligned_size(DWORD raw_size, DWORD alignement)
 {
     return raw_size + (alignement - (raw_size % alignement));
 }
 
-void	write_zeros(HANDLE file, uint32_t count)
+static DWORD	align_address(DWORD address, DWORD alignement)
+{
+    return address + (address % alignement);
+}
+
+static void	write_zeros(HANDLE file, uint32_t count)
 {
     constexpr uint32_t	buffer_size = 512;
     static bool			initialized = false;
@@ -94,7 +105,7 @@ void	write_zeros(HANDLE file, uint32_t count)
     WriteFile(file, (const void*)zeros_buffer, modulo, &bytes_written, NULL);
 }
 
-bool generate_hello_world()
+bool f::PE_x64_backend::generate_hello_world()
 {
     const char*	binary_path = "hello_world.exe";
     HANDLE		BINARY;
@@ -137,14 +148,15 @@ bool generate_hello_world()
 
     RtlSecureZeroMemory(&image_dos_header, sizeof(image_dos_header));
 
-    image_dos_header.e_magic = (WORD)'M' | ((WORD)'Z' << 8);	// 'MZ' @Warning take care of the endianness / 0x5A4D
-    image_dos_header.e_lfanew = sizeof(image_dos_header);		// Offset to the image_nt_header
+    // @TODO I think that I should copy a complete dos header with dosstub (it can be completely hard-coded)
+
+    image_dos_header.e_magic = (WORD)'M' | ((WORD)'Z' << 8);	    // 'MZ' @Warning take care of the endianness / 0x5A4D
+    image_dos_header.e_lfanew = PE_header_start_address;	// Offset to the image_nt_header
     // @TODO complete the MS-DOS stub program, we should print an ERROR message ("This program cannot be run in DOS mode") and exit with code: 1
 
     image_dos_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
     WriteFile(BINARY, (const void*)&image_dos_header, sizeof(image_dos_header), &bytes_written, NULL);
-
-
+    write_zeros(BINARY, PE_header_start_address - sizeof(image_dos_header)); // Move to current position (jumping implementation of the DOS_STUB) to PE_header_start_address
 
     image_nt_header.Signature = (WORD)'P' | ((WORD)'E' << 8);	// 'PE\0\0' @Warning take care of the endianness / 0x50450000
     image_nt_header.FileHeader.Machine = IMAGE_FILE_MACHINE_I386;
@@ -181,7 +193,7 @@ bool generate_hello_world()
     image_nt_header.OptionalHeader.SizeOfHeaders = size_of_headers;
     image_nt_header.OptionalHeader.CheckSum = image_check_sum;
     image_nt_header.OptionalHeader.Subsystem = subsystem;
-    image_nt_header.OptionalHeader.DllCharacteristics = IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE | IMAGE_DLLCHARACTERISTICS_NX_COMPAT | IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE;	// @Warning same flags as Visual Studio 2019
+    image_nt_header.OptionalHeader.DllCharacteristics = IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE | IMAGE_DLLCHARACTERISTICS_NX_COMPAT | IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE | IMAGE_DLLCHARACTERISTICS_NO_SEH;	// @Warning same flags as Visual Studio 2019
     image_nt_header.OptionalHeader.SizeOfStackReserve = size_of_stack_reserve;
     image_nt_header.OptionalHeader.SizeOfStackCommit = size_of_stack_commit;
     image_nt_header.OptionalHeader.SizeOfHeapReserve = size_of_heap_reserve;
@@ -231,7 +243,7 @@ bool generate_hello_world()
         rdata_image_section_header.PointerToLinenumbers = 0x00;
         rdata_image_section_header.NumberOfRelocations = 0;
         rdata_image_section_header.NumberOfLinenumbers = 0;
-        rdata_image_section_header.Characteristics = IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ;
+        rdata_image_section_header.Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ;
 
         rdata_image_section_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
         WriteFile(BINARY, (const void*)& rdata_image_section_header, sizeof(rdata_image_section_header), &bytes_written, NULL);
@@ -250,33 +262,46 @@ bool generate_hello_world()
         reloc_image_section_header.PointerToLinenumbers = 0x00;
         reloc_image_section_header.NumberOfRelocations = 0;
         reloc_image_section_header.NumberOfLinenumbers = 0;
-        reloc_image_section_header.Characteristics = IMAGE_SCN_CNT_CODE | IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ;
+        reloc_image_section_header.Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_DISCARDABLE | IMAGE_SCN_MEM_READ;
 
         reloc_image_section_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
         WriteFile(BINARY, (const void*)&reloc_image_section_header, sizeof(reloc_image_section_header), &bytes_written, NULL);
     }
 
-    text_section_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
-    WriteFile(BINARY, (const void*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written, NULL);
-    write_zeros(BINARY, text_image_section_header.SizeOfRawData - sizeof(hello_world_instructions));
+    // Move to next aligned position before writing code (text_section)
+    size_of_headers = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
+    text_section_address = compute_aligned_size(size_of_headers, section_alignment);
+    text_image_section_pointer_to_raw_data = compute_aligned_size(size_of_headers, file_alignment);
+    SetFilePointer(BINARY, text_image_section_pointer_to_raw_data, NULL, FILE_BEGIN);
+
+    size_of_image = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
+    size_of_image = compute_aligned_size(size_of_image, section_alignment);
+
+    // Write code (.text section data)
+    {
+        WriteFile(BINARY, (const void*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written, NULL);
+        write_zeros(BINARY, text_image_section_header.SizeOfRawData - sizeof(hello_world_instructions));
+        size_of_image += compute_aligned_size(text_image_section_header.SizeOfRawData, section_alignment);
+    }
+
+    // Write read only data (.rdata section data)
+    {
+//        WriteFile(BINARY, (const void*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written, NULL);
+        write_zeros(BINARY, rdata_image_section_header.SizeOfRawData);
+        size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
+    }
+
+    // Write relocation data (.reloc section data)
+    {
+        //        WriteFile(BINARY, (const void*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written, NULL);
+        write_zeros(BINARY, reloc_image_section_header.SizeOfRawData);
+        size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
+    }
+
+    // Size_Of_Image as it is the size of the image + headers, it means that it is the full size of the file
+    // and here we are at the end of file
 
     // Patching address and sizes
-//	- Done - DWORD	size_of_code = 0;			// The size of the code (text) section, or the sum of all code sections if there are multiple sections.
-//	DWORD	size_of_initialized_data = 0;	// The size of the initialized data section, or the sum of all such sections if there are multiple data sections.
-//	DWORD	size_of_uninitialized_data = 0;	// The size of the uninitialized data section (BSS), or the sum of all such sections if there are multiple BSS sections.
-//	DWORD	address_of_entry_point = 0;	// Relative to image_base
-//	DWORD	base_of_code = 0;			// Relative to image_base
-//	DWORD	base_of_data = 0;			// Relative to image_base
-//	DWORD	size_of_image = 0;			// @Warning must be a multiple of file_alignment instead of section_alignement, it seems a bit weird to me
-//	- Done - DWORD	size_of_headers = 0;		// IMAGE_DOS_HEADER.e_lfanew + 4 byte signature + size of IMAGE_FILE_HEADER + size of optional header + size of all section headers : and rounded at a multiple of file_alignment
-//	DWORD	image_check_sum = 0;		// Only for drivers, DLL loaded at boot time, DLL loaded in critical system process
-//	WORD	subsystem = IMAGE_SUBSYSTEM_WINDOWS_CUI;	// @Warning IMAGE_SUBSYSTEM_WINDOWS_CUI == console application (with a main) - IMAGE_SUBSYSTEM_WINDOWS_GUI == GUI application (with a WinMain)
-//	- Done - DWORD	text_image_section_virtual_address = 0;
-//	- Done - DWORD	text_image_section_pointer_to_raw_data = 0;
-//	- Done - DWORD	rdata_image_section_virtual_address = 0;
-//	- Done - DWORD	rdata_image_section_pointer_to_raw_data = 0;
-//	- Done - DWORD	reloc_image_section_virtual_address = 0;
-//	- Done - DWORD	reloc_image_section_pointer_to_raw_data = 0;
 
     // size_of_code
     {
@@ -289,18 +314,69 @@ bool generate_hello_world()
 
     // size_of_initialized_data
     {
-        DWORD size_of_initialized_data_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfCode);
+        DWORD size_of_initialized_data_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfInitializedData);
         size_of_initialized_data = text_image_section_header.SizeOfRawData;	 // @Warning size of the sum of all .text sections
-
+        // 1024
         SetFilePointer(BINARY, size_of_initialized_data_address, NULL, FILE_BEGIN);
         WriteFile(BINARY, (const void*)&size_of_initialized_data, sizeof(size_of_initialized_data), &bytes_written, NULL);
     }
 
-    // size_of_headers
+    // size_of_uninitialized_data
+    {
+        DWORD size_of_uninitialized_data_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfUninitializedData);
+        size_of_uninitialized_data = 0;	 // @Warning size unitialized data in all .text sections
+
+        SetFilePointer(BINARY, size_of_uninitialized_data_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&size_of_uninitialized_data, sizeof(size_of_uninitialized_data), &bytes_written, NULL);
+    }
+
+    // address_of_entry_point
+    {
+        DWORD address_of_entry_point_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.AddressOfEntryPoint);
+        address_of_entry_point = text_section_address;
+        // 4096
+        SetFilePointer(BINARY, address_of_entry_point_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&address_of_entry_point, sizeof(address_of_entry_point), &bytes_written, NULL);
+    }
+
+    // base_of_code
+    {
+        DWORD base_of_code_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.BaseOfCode);
+        base_of_code = text_section_address;
+        // 4096
+        SetFilePointer(BINARY, base_of_code_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&base_of_code, sizeof(base_of_code), &bytes_written, NULL);
+    }
+
+    // base_of_data
+    {
+        DWORD base_of_data_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.BaseOfData);
+        rdata_section_address = compute_aligned_size(text_section_address + text_image_section_header.SizeOfRawData, section_alignment);
+        rdata_image_section_pointer_to_raw_data = align_address(text_image_section_pointer_to_raw_data + text_image_section_header.SizeOfRawData, file_alignment);
+        reloc_section_address = compute_aligned_size(rdata_section_address + rdata_image_section_header.SizeOfRawData, section_alignment);
+        reloc_image_section_pointer_to_raw_data = align_address(rdata_image_section_pointer_to_raw_data + rdata_image_section_header.SizeOfRawData, file_alignment);
+        base_of_data = rdata_section_address;
+        // 8192
+        SetFilePointer(BINARY, base_of_data_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&base_of_data, sizeof(base_of_data), &bytes_written, NULL);
+    }
+
+    // size_of_image
+    // Gets the size (in bytes) of the image, including all headers, as the image is loaded in memory.
+    // The size (in bytes) of the image, which is a multiple of SectionAlignment.
+    {
+        DWORD size_of_image_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfImage);
+//        size_of_image = compute_aligned_size(size_of_image, section_alignment);
+        // 
+        SetFilePointer(BINARY, size_of_image_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&size_of_image, sizeof(size_of_image), &bytes_written, NULL);
+    }
+
+    // size_of_headers (The combined size of an MS DOS stub, PE header, and section headers rounded up to a multiple of FileAlignment.)
     {
         DWORD size_of_header_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfHeaders);
-        size_of_headers = text_section_address;
-
+        size_of_headers = compute_aligned_size(size_of_headers, file_alignment);
+        // 
         SetFilePointer(BINARY, size_of_header_address, NULL, FILE_BEGIN);
         WriteFile(BINARY, (const void*)&size_of_headers, sizeof(size_of_headers), &bytes_written, NULL);
     }
@@ -317,7 +393,7 @@ bool generate_hello_world()
     // text_image_section_pointer_to_raw_data
     {
         DWORD text_image_section_pointer_to_raw_data_address = text_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
-        text_image_section_pointer_to_raw_data = text_section_address;
+        // text_image_section_pointer_to_raw_data is already computed
 
         SetFilePointer(BINARY, text_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
         WriteFile(BINARY, (const void*)&text_image_section_pointer_to_raw_data, sizeof(text_image_section_pointer_to_raw_data), &bytes_written, NULL);
@@ -335,7 +411,7 @@ bool generate_hello_world()
     // rdata_image_section_pointer_to_raw_data
     {
         DWORD rdata_image_section_pointer_to_raw_data_address = rdata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
-        rdata_image_section_pointer_to_raw_data = rdata_section_address;
+        // rdata_image_section_pointer_to_raw_data is already computed
 
         SetFilePointer(BINARY, rdata_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
         WriteFile(BINARY, (const void*)&rdata_image_section_pointer_to_raw_data, sizeof(rdata_image_section_pointer_to_raw_data), &bytes_written, NULL);
@@ -350,13 +426,13 @@ bool generate_hello_world()
         WriteFile(BINARY, (const void*)&reloc_image_section_virtual_address, sizeof(reloc_image_section_virtual_address), &bytes_written, NULL);
     }
 
-    // rdata_image_section_pointer_to_raw_data
+    // reloc_image_section_pointer_to_raw_data
     {
         DWORD reloc_image_section_pointer_to_raw_data_address = reloc_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
-        reloc_image_section_pointer_to_raw_data = reloc_section_address;
+        // reloc_image_section_pointer_to_raw_data is already computed
 
         SetFilePointer(BINARY, reloc_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
-        WriteFile(BINARY, (const void*)& reloc_image_section_pointer_to_raw_data, sizeof(reloc_image_section_pointer_to_raw_data), &bytes_written, NULL);
+        WriteFile(BINARY, (const void*)&reloc_image_section_pointer_to_raw_data, sizeof(reloc_image_section_pointer_to_raw_data), &bytes_written, NULL);
     }
 
     CloseHandle(BINARY);

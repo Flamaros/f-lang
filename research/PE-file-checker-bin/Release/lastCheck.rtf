@@ -1,0 +1,165 @@
+{\rtf1 \ansicpg1252
+{\colortbl;\red0\green0\blue0;\red255\green255\blue255;\red160\green0\blue0;\red128\green80\blue0;\red0\green128\blue0;\red80\green80\blue80;\red0\green0\blue128;}
+{\cf6
+PE-validator by Vinogradov Sergey Vasilievich\par
+see PE file specification in http://msdn.microsoft.com/en-us/windows/hardware/gg463119.aspx and http://msdn.microsoft.com/en-us/library/ms809762.aspx
+\par addresses prefix in program output: fp - file pointer, rva - relative image address when load in memory, va - virtual address with image base address
+\par + - correct file fact, - - incorrect file fact, | - warning, is partially correct or is not standard, i - information
+}
+\par \par checking file C:\\Users\\Xavier\\Documents\\development\\f-lang\\hello_world.exe
+\par \par {\b \cf3 Incorrect file, 4 errors found}\par
+\par \par
+ +  File length >= 1024 bytes. 0xA00\par
+ +  MZ signature found (do not check wether correct MZ-file)\par
+{\cf4  |  fp 0x40 do have not in fp 0x18 in MZ stub (have not in PE file specification)}\par
+ +  fp 0x40 do have in fp 0x18 in MZ stub (have not in PE file specification)\par
+ +  fp 0x3c contains address for PE signature: fp 0xD0\par
+ +  PE signature found\par
+     i  machine 0x14C (0x8664 - AMD64, 0x14c - Intel x86 and compatible, 0x200 - Intel Itanium)\par
+     i  section count 0x3\par
+     i  file creation time 2022.07.30 20:56:40 \par
+     i  optional header size 0xE0\par
+ +  File marked as executable\par
+ +  Reserved file flag characteristics 0x0040 is reset\par
+     i  0x0002 The image file is valid and can be run\par
+     i  0x0100 Machine is based on a 32-bit-word architecture\par
+ +  PE Magic number of file in Optional Header is correct. {\b \cf7 PE32 (32 bit) format file. Is exe}\par
+ +  Optional header size is not very small (minimum 0x60 for PE32 or 0x70 for PE32+)\par
+     i  Major and minor linker version 0.1\par
+     i  size of code 512	(0 kb)\par
+     i  size of initialized data 512	(0 kb)\par
+     i  size of uninitialized data 0	(0 kb)\par
+     i  Address of entry point rva 0x1000\par
+ +  Address of entry point is not null and/or file is DLL. 0x1000\par
+     i  Base of code rva 0x1000\par
+     i  Base of data rva 0x2000\par
+ +  Program have standard image base for exe Windows NT/98 and later 0x400000\par
+ +  Section alignment >= FileAlignment: 0x1000 >= 0x200\par
+ +  Section alignment % 512 == 0\par
+ +  File alignment % 512 == 0\par
+ +  FileAlignment >= 512\par
+ +  FileAlignment <= 64 kb\par
+ +  SectionAlignment >= page size or FileAlignment == SectionAlignment\par
+     i  Version of required operating system 6.1 (6.0 - Windows Vista, 6.1 - Windows 7)\par
+     i  Version of program 1.0\par
+     i  Version of subsystem 6.1 (NT version)\par
+ +  Win32 version reserved and must be null\par
+ +  Size of image field does multiple of section alignment (0x4000)\par
+ +  Size of headers field does multiple of file alignment (0x400)\par
+{\cf4  |  Check sum of file has not been calculated}\par
+ +  Windows Subsystem number correct: 3 (console)\par
+ +  DLL characteristics reserved flags in reset state\par
+ +  DLL characteristics unknown flags in reset state\par
+     i  0x0040 DLL can be relocated at load time\par
+     i  0x0100 Image is NX compatible\par
+     i  0x0400 Does not use structured exception (SE) handling. No SE handler may be called in this image\par
+     i  0x8000 Terminal Server aware\par
+{\cf4  |  DLL characteristics flags setted, but file is not DLL}\par
+ +  Size of stack commit is <= size of stack reserve: 0x1000 <= 0x100000\par
+ +  Size of heap commit is <= size of heap reserve: 0x1000 <= 0x100000\par
+ +  Loader flags is be null\par
+ +  NumberOfRvaAndSizes (directory entries) is 16 or less: 0x10\par
+\par
+\par
+ +  Export Table directory entry skipped\par
+\par
+ +  Import Table directory entry skipped\par
+\par
+ +  Resource Table directory entry skipped\par
+\par
+ +  Exception Table directory entry skipped\par
+\par
+ +  Certificate Table directory entry skipped\par
+\par
+ +  Base Relocation Table directory entry skipped\par
+\par
+ +  Debug directory entry skipped\par
+\par
+ +  Architecture directory entry skipped\par
+ +  Reserved Directory entry has be null\par
+\par
+ +  Global Ptr directory entry skipped\par
+ +  Global Ptr directory entry has be null size\par
+\par
+ +  TLS Table directory entry skipped\par
+\par
+ +  Load Config Table directory entry skipped\par
+\par
+ +  Bound Import directory entry skipped\par
+\par
+ +  IAT directory entry skipped\par
+\par
+ +  Delay Import Descriptor directory entry skipped\par
+\par
+ +  CLR Runtime Header directory entry skipped\par
+\par
+ +  Reserved, must be zero directory entry skipped\par
+ +  Reserved Directory entry has be null\par
+\par
+\par
+ +  Size of headers is correct with file alignmet: 0x400, file alignment 0x200, unalignment size 0x240\par
+ +  Size of optional header in PE header is correct. End of headers in fp 0x1C8, size of opt. headers 0xE0\par
+ i  section name .text\par
+     i  section virtual size 0x2A\par
+     i  section virtual address 0x1000\par
+     +  Section address with alignment to Section Alignment\par
+     i  size of raw data 0x200\par
+     +  Size of raw data has be multiple of File Alignment: 0x200, FA 0x200\par
+     +  File pointer to raw data has be multiple of File Alignment: 0x400\par
+     +  File pointer to raw data out of optional header\par
+     +  Raw data in file boundaries 0x600 <= 0xA00\par
+     +  Relocations not declared\par
+     i  Pointer to line numbers deprecated and must be null - well done\par
+     i  Number of relocations must be 0 - well done\par
+     i  Number of relocations must be 0 - well done\par
+             i  0x00000020 The section contains executable code\par
+             i  0x20000000 The section can be executed as code\par
+             i  0x40000000 The section can be read\par
+         +  Section can be read\par
+ i  section name .rdata\par
+     i  section virtual size 0x0\par
+     i  section virtual address 0x2000\par
+     +  Section address with alignment to Section Alignment\par
+     i  size of raw data 0x200\par
+     +  Size of raw data has be multiple of File Alignment: 0x200, FA 0x200\par
+     +  File pointer to raw data has be multiple of File Alignment: 0x600\par
+     +  File pointer to raw data out of optional header\par
+     +  Raw data in file boundaries 0x800 <= 0xA00\par
+     +  Relocations not declared\par
+     i  Pointer to line numbers deprecated and must be null - well done\par
+     i  Number of relocations must be 0 - well done\par
+     i  Number of relocations must be 0 - well done\par
+             i  0x00000040 The section contains initialized data\par
+             i  0x40000000 The section can be read\par
+         +  Section can be read\par
+ i  section name .reloc\par
+     i  section virtual size 0x0\par
+     i  section virtual address 0x3000\par
+     +  Section address with alignment to Section Alignment\par
+     i  size of raw data 0x200\par
+     +  Size of raw data has be multiple of File Alignment: 0x200, FA 0x200\par
+     +  File pointer to raw data has be multiple of File Alignment: 0x800\par
+     +  File pointer to raw data out of optional header\par
+     +  Raw data in file boundaries 0xA00 <= 0xA00\par
+     +  Relocations not declared\par
+     i  Pointer to line numbers deprecated and must be null - well done\par
+     i  Number of relocations must be 0 - well done\par
+     i  Number of relocations must be 0 - well done\par
+             i  0x00000040 The section contains initialized data\par
+             i  0x02000000 The section can be discarded as needed\par
+             i  0x40000000 The section can be read\par
+         +  Section can be read\par
+ +  Section do not intersect\par
+{\cf4  |  Unused pages found at addresses 0x2000 0x3000}\par
+ +  Unused sectors (in file) not found\par
+{\cf4  |  File or dll characteristics declare to relocation information contains, but base relocation table is not found}\par
+ +  Section 0 .text	is well zero padded (check for only VirtualSize < sizeOfRawData sections)\par
+ +  Section 1 .rdata	is well zero padded (check for only VirtualSize < sizeOfRawData sections)\par
+ +  Section 2 .reloc	is well zero padded (check for only VirtualSize < sizeOfRawData sections)\par
+ +  Import tables skipped (set 'print import flag for print')\par
+ +  Import tables\par
+	{\b \cf3  -  dllName == 0}\par
+		{\b \cf3  -  lookupTable out from file}\par
+		{\b \cf3  -  lookupTableCopy is null}\par
+{\b \cf3  -  In checking process raise error L'index se trouve en dehors des limites du tableau.}\par
+\par}

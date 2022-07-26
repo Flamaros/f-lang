@@ -193,7 +193,7 @@ int main(int ac, char** av)
 		//return 0;
   //  }
 
-//    generate_hello_world();
+    f::PE_x64_backend::generate_hello_world();
 
 
 	FrameMark;

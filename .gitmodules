@@ -4,3 +4,7 @@
 [submodule "compiler-cpp/third-party/WindowsHModular"]
 	path = compiler-cpp/third-party/WindowsHModular
 	url = https://github.com/Flamaros/WindowsHModular.git
+[submodule "research/PE-file-checker"]
+	path = research/PE-file-checker
+	url = https://github.com/VinnySmallUtilities/PE-file-checker.git
+	branch = master

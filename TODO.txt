@@ -1,3 +1,49 @@
+#########################
+Il faut écrire la section .rdata (à la fin du fichier actuel)
+
+Il faut mettre les taille et position de la section .reloc et l'écrire.
+
+
+------
+Il faut éclaircir le besoin d'avoir 2 fonctions pour l'alignement (compute_aligned_size et align_address)
+
+
+
+
+#########################
+Checkers PE file format:
+
+Semble être ce qu'il me faut:
+https://github.com/VinnySmallUtilities/PE-file-checker
+
+A tester:
+https://petoolse.github.io/petools/
+https://blog.malwarebytes.com/threat-analysis/2014/05/five-pe-analysis-tools-worth-looking-at/
+https://securityonline.info/pe-cli-tool-to-analyze-pe-files/
+https://pkg.go.dev/debug/pe
+http://www.pe-explorer.com/peexplorer-tour-more-tools.htm
+https://www.softwareverify.com/cpp-pe-file-browser.php
+https://www.youtube.com/watch?v=tF_vu8P45wY
+
+
+Comprendre le stub ms-dos:
+https://osandamalith.com/2020/07/19/exploring-the-ms-dos-stub/
+https://stackoverflow.com/questions/9655272/remove-dos-stub-from-a-pe-file
+
+
+Chargement des dll:
+  table des répertoire:
+    https://docs.microsoft.com/fr-fr/windows/win32/debug/pe-format
+
+
+
+Assembleur:
+https://www.intel.com/content/dam/develop/external/us/en/documents/introduction-to-x64-assembly-181178.pdf
+
+
+
+
+#########################
 
 Ajouter des marker Tracy pour la consommation de RAM
 
@@ -75,6 +121,21 @@ Optimisation sur les traitements de pointeurs et problèmes d'aliasing:
 #########################
 
 Voir s'il ne faut pas supprimer le type bool, ou faire que ce soit toujours 1 byte. Voir problème du std::vector<bool> qui ne fourni pas la méthode data à cause des pb qu'il pourrait y avoir avec des memcpy,...
+
+
+#########################
+
+Ajouter la possibilité d'avoir des types primitif fort (cast requit):
+  typedef int ID;
+
+  ID id = 2;
+  int toto = (int)id;
+
+Mais du coup il faut pouvoir faire un truc du genre:
+#if Typeof(id).is_primitive
+   ....
+Afin de pouvoir avoir les fonctions print qui déduisent le type primitif afin de pouvoir afficher la valeur.
+
 
 
 #########################
