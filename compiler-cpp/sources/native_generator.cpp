@@ -44,6 +44,8 @@ DWORD	rdata_image_section_virtual_address = 0;
 DWORD	rdata_image_section_pointer_to_raw_data = 0;
 DWORD	reloc_image_section_virtual_address = 0;
 DWORD	reloc_image_section_pointer_to_raw_data = 0;
+DWORD	idata_image_section_virtual_address = 0;
+DWORD	idata_image_section_pointer_to_raw_data = 0;
 
 // Addresses where there is a value to patch, or necessary to compute other ones
 DWORD	image_base_address = 0;
@@ -55,7 +57,10 @@ DWORD	rdata_image_section_header_address;
 DWORD	rdata_section_address;
 DWORD	reloc_image_section_header_address;
 DWORD	reloc_section_address;
+DWORD	idata_image_section_header_address;
+DWORD	idata_section_address;
 
+// @TODO should be generated not hard-coded
 uint8_t	hello_world_instructions[] = {
     0x89, 0xE5,										   // mov    ebp, esp
     0x83, 0xEC, 0x04,								   // sub    esp, 0x4
@@ -72,6 +77,11 @@ uint8_t	hello_world_instructions[] = {
     0x6A, 0x00,										   // push   0x0
     0xE8, 0xFC, 0xFF, 0xFF, 0xFF,					   // call   25 <_main+0x25>	ExitProcess @TODO fixe the address
     0xF4											   // hlt
+};
+
+// @TODO should be generated not hard-coded
+uint8_t	rdata[] = {
+    'k','e','r','n','e','l','3','2','.','d','l','l','\0', // "kernel32.dll\0"
 };
 
 // @TODO check if align_address isn't enough to compute aligned values
@@ -145,6 +155,7 @@ bool f::PE_x64_backend::generate_hello_world()
     IMAGE_SECTION_HEADER	text_image_section_header;
     IMAGE_SECTION_HEADER	rdata_image_section_header;
     IMAGE_SECTION_HEADER	reloc_image_section_header;
+    IMAGE_SECTION_HEADER	idata_image_section_header;
 
     RtlSecureZeroMemory(&image_dos_header, sizeof(image_dos_header));
 
@@ -160,7 +171,7 @@ bool f::PE_x64_backend::generate_hello_world()
 
     image_nt_header.Signature = (WORD)'P' | ((WORD)'E' << 8);	// 'PE\0\0' @Warning take care of the endianness / 0x50450000
     image_nt_header.FileHeader.Machine = IMAGE_FILE_MACHINE_I386;
-    image_nt_header.FileHeader.NumberOfSections = 3;
+    image_nt_header.FileHeader.NumberOfSections = 4;
     image_nt_header.FileHeader.TimeDateStamp = (DWORD)(current_time_in_seconds_since_1970);	// @Warning UTC time
     image_nt_header.FileHeader.PointerToSymbolTable = 0;	// This value should be zero for an image because COFF debugging information is deprecated.
     image_nt_header.FileHeader.NumberOfSymbols = 0;			// This value should be zero for an image because COFF debugging information is deprecated.
@@ -235,9 +246,9 @@ bool f::PE_x64_backend::generate_hello_world()
         RtlSecureZeroMemory(&rdata_image_section_header, sizeof(rdata_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(rdata_image_section_header.Name, ".rdata", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
-        rdata_image_section_header.Misc.VirtualSize = 0;
+        rdata_image_section_header.Misc.VirtualSize = sizeof(rdata);
         rdata_image_section_header.VirtualAddress = rdata_image_section_virtual_address;
-        rdata_image_section_header.SizeOfRawData = compute_aligned_size(rdata_image_section_header.Misc.VirtualSize, file_alignment);
+        rdata_image_section_header.SizeOfRawData = compute_aligned_size(rdata_image_section_header.Misc.VirtualSize, file_alignment); // @TODO should be computed
         rdata_image_section_header.PointerToRawData = rdata_image_section_pointer_to_raw_data;
         rdata_image_section_header.PointerToRelocations = 0x00;
         rdata_image_section_header.PointerToLinenumbers = 0x00;
@@ -268,6 +279,25 @@ bool f::PE_x64_backend::generate_hello_world()
         WriteFile(BINARY, (const void*)&reloc_image_section_header, sizeof(reloc_image_section_header), &bytes_written, NULL);
     }
 
+    // .idata section
+    {
+        RtlSecureZeroMemory(&idata_image_section_header, sizeof(idata_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
+
+        RtlCopyMemory(idata_image_section_header.Name, ".idata", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
+        idata_image_section_header.Misc.VirtualSize = 0;
+        idata_image_section_header.VirtualAddress = idata_image_section_virtual_address;
+        idata_image_section_header.SizeOfRawData = compute_aligned_size(idata_image_section_header.Misc.VirtualSize, file_alignment); // @TODO should be computed
+        idata_image_section_header.PointerToRawData = idata_image_section_pointer_to_raw_data;
+        idata_image_section_header.PointerToRelocations = 0x00;
+        idata_image_section_header.PointerToLinenumbers = 0x00;
+        idata_image_section_header.NumberOfRelocations = 0;
+        idata_image_section_header.NumberOfLinenumbers = 0;
+        idata_image_section_header.Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_DISCARDABLE | IMAGE_SCN_MEM_READ;
+
+        idata_image_section_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
+        WriteFile(BINARY, (const void*)&idata_image_section_header, sizeof(idata_image_section_header), &bytes_written, NULL);
+    }
+
     // Move to next aligned position before writing code (text_section)
     size_of_headers = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
     text_section_address = compute_aligned_size(size_of_headers, section_alignment);
@@ -286,8 +316,14 @@ bool f::PE_x64_backend::generate_hello_world()
 
     // Write read only data (.rdata section data)
     {
-//        WriteFile(BINARY, (const void*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written, NULL);
-        write_zeros(BINARY, rdata_image_section_header.SizeOfRawData);
+        DWORD rdata_section_size = 0;
+
+        {
+            WriteFile(BINARY, (const void*)rdata, sizeof(rdata), &bytes_written, NULL); // +1 to write the ending '\0'
+            rdata_section_size += bytes_written;
+        }
+
+        write_zeros(BINARY, rdata_image_section_header.SizeOfRawData - rdata_section_size);
         size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
     }
 
@@ -296,6 +332,29 @@ bool f::PE_x64_backend::generate_hello_world()
         //        WriteFile(BINARY, (const void*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written, NULL);
         write_zeros(BINARY, reloc_image_section_header.SizeOfRawData);
         size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
+    }
+
+    // Write import data (.idata section data)
+    {
+        // @TODO Make it generic (actually hard coded)
+        // @TODO check the section size in the header (idata_image_section_header.SizeOfRawData)
+        DWORD idata_section_size = 0;
+        {
+            IMAGE_IMPORT_DESCRIPTOR import_descriptor;
+
+            import_descriptor.OriginalFirstThunk = 0; // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+            import_descriptor.TimeDateStamp = 0;
+            import_descriptor.ForwarderChain = 0; // -1 if no forwarders
+            import_descriptor.Name = rdata_image_section_header.VirtualAddress; // VA to the DLL Name   // @TODO compute VA, names are stored in .rdata section
+            import_descriptor.FirstThunk = 0; // RVA to IAT (if bound this IAT has actual addresses)
+
+            WriteFile(BINARY, (const void*)&import_descriptor, sizeof(import_descriptor), &bytes_written, NULL);
+            idata_section_size += bytes_written;
+        }
+        // @TODO write zeros??? to terminate the import_descriptors table
+
+        write_zeros(BINARY, idata_image_section_header.SizeOfRawData - idata_section_size);
+        size_of_image += compute_aligned_size(idata_image_section_header.SizeOfRawData, section_alignment);
     }
 
     // Size_Of_Image as it is the size of the image + headers, it means that it is the full size of the file
@@ -355,6 +414,8 @@ bool f::PE_x64_backend::generate_hello_world()
         rdata_image_section_pointer_to_raw_data = align_address(text_image_section_pointer_to_raw_data + text_image_section_header.SizeOfRawData, file_alignment);
         reloc_section_address = compute_aligned_size(rdata_section_address + rdata_image_section_header.SizeOfRawData, section_alignment);
         reloc_image_section_pointer_to_raw_data = align_address(rdata_image_section_pointer_to_raw_data + rdata_image_section_header.SizeOfRawData, file_alignment);
+        idata_section_address = compute_aligned_size(reloc_section_address + reloc_image_section_header.SizeOfRawData, section_alignment);
+        idata_image_section_pointer_to_raw_data = align_address(reloc_image_section_pointer_to_raw_data + reloc_image_section_header.SizeOfRawData, file_alignment);
         base_of_data = rdata_section_address;
         // 8192
         SetFilePointer(BINARY, base_of_data_address, NULL, FILE_BEGIN);
@@ -433,6 +494,24 @@ bool f::PE_x64_backend::generate_hello_world()
 
         SetFilePointer(BINARY, reloc_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
         WriteFile(BINARY, (const void*)&reloc_image_section_pointer_to_raw_data, sizeof(reloc_image_section_pointer_to_raw_data), &bytes_written, NULL);
+    }
+
+    // idata_image_section_virtual_address
+    {
+        DWORD idata_image_section_virtual_address_address = idata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
+        idata_image_section_virtual_address = idata_section_address;
+
+        SetFilePointer(BINARY, idata_image_section_virtual_address_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&idata_image_section_virtual_address, sizeof(idata_image_section_virtual_address), &bytes_written, NULL);
+    }
+
+    // idata_image_section_pointer_to_raw_data
+    {
+        DWORD idata_image_section_pointer_to_raw_data_address = idata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
+        // idata_image_section_pointer_to_raw_data is already computed
+
+        SetFilePointer(BINARY, idata_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
+        WriteFile(BINARY, (const void*)&idata_image_section_pointer_to_raw_data, sizeof(idata_image_section_pointer_to_raw_data), &bytes_written, NULL);
     }
 
     CloseHandle(BINARY);
