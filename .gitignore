@@ -1,4 +1,11 @@
+# Visual Studio (global)
 *.user
+
+# Compile Score
+*.scor*
+
+# PE file checker
+research/PE-file-checker-bin/Release/lastCheck.rtf
 
 build/
 
@@ -30,4 +37,9 @@ output.obj
 output.exe
 scope.png
 
-compiler-cpp/compileData.scor*
+# research/vs_x86_hello_world (Visual Studio)
+research/vs_x86_hello_world/Release
+research/vs_x86_hello_world/Debug
+research/vs_x86_hello_world/x64
+research/vs_x86_hello_world/.vs
+
