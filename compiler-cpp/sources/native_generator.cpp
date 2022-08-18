@@ -210,10 +210,17 @@ bool f::PE_x64_backend::generate_hello_world()
     image_nt_header.OptionalHeader.SizeOfHeapReserve = size_of_heap_reserve;
     image_nt_header.OptionalHeader.SizeOfHeapCommit = size_of_heap_commit;
     image_nt_header.OptionalHeader.LoaderFlags = 0;	// @Deprecated
-    image_nt_header.OptionalHeader.NumberOfRvaAndSizes = 16;
+    image_nt_header.OptionalHeader.NumberOfRvaAndSizes = IMAGE_NUMBEROF_DIRECTORY_ENTRIES;
 
     // Data Directories
-    RtlSecureZeroMemory(image_nt_header.OptionalHeader.DataDirectory, sizeof(image_nt_header.OptionalHeader.DataDirectory));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
+    {
+        RtlSecureZeroMemory(image_nt_header.OptionalHeader.DataDirectory, sizeof(image_nt_header.OptionalHeader.DataDirectory));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = 0x4000; // @TODO need to be computed and patched
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = 1 * sizeof(IMAGE_IMPORT_DESCRIPTOR); // kernel32.dll
+
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = 0; // @TODO need to be computed and patched
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = 3 * sizeof(uint32_t); // @TODO take care of 64bit binaries
+    }
 
     image_nt_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
     WriteFile(BINARY, (const void*)&image_nt_header, sizeof(image_nt_header), &bytes_written, NULL);
