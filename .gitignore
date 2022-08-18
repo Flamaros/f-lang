@@ -32,6 +32,7 @@ cl.log
 cl.error
 *.dot
 AST.png
+hello_world.exe
 output.cpp
 output.obj
 output.exe
