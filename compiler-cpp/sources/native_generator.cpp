@@ -64,24 +64,28 @@ DWORD	idata_section_address;
 uint8_t	hello_world_instructions[] = {
     0x89, 0xE5,										   // mov    ebp, esp
     0x83, 0xEC, 0x04,								   // sub    esp, 0x4
-    0x6A, 0xF5,										   // push   0xfffffff5         @TODO correct F5 value
-    0xE8, 0xFC, 0x00, 0x00, 0x00,					   // call   8 <_main+0x8>		GetStdHandle @TODO fixe the adress
+    0x6A, -11,										   // push   0xfffffff5         // STD_OUTPUT_HANDLE == (DWORD)-11 => 0xfffffff5 en hexa
+    0xFF, 0x15, 0x38, 0x40, 0x40, 0x00,				   // call   GetStdHandle       // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x38 (offset in IAT)
     0x89, 0xC3,										   // mov    ebx, eax
     0x6A, 0x00,										   // push   0x0
     0x8D, 0x45, 0xFC,								   // lea    eax, [ebp-0x4]
     0x50,											   // push   eax
     0x6A, 0x0B,										   // push   0xb				@Warning nNumberOfBytesToWrite
-    0xFF, 0x35, 0x00, 0x00, 0x00, 0x00,				   // push   DWORD PTR ds:0x0	@Warning address of lpNumberOfBytesWritten
+    0x68, 0x00, 0x20, 0x40, 0x00,				       // push   DWORD PTR ds:0x0	@Warning address of message string (first value in .rdata section)
     0x53,											   // push   ebx
-    0xE8, 0xFC, 0xFF, 0xFF, 0xFF,					   // call   1e <_main+0x1e>	WriteFile @TODO fixe the address
+    0xFF, 0x15, 0x3C, 0x40, 0x40, 0x00,				   // call   WriteFile          // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x3C (offset in IAT)
     0x6A, 0x00,										   // push   0x0
-    0xE8, 0xFC, 0xFF, 0xFF, 0xFF,					   // call   25 <_main+0x25>	ExitProcess @TODO fixe the address
+    0xFF, 0x15, 0x40, 0x40, 0x40, 0x00,				   // call   ExitProcess        // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x40 (offset in IAT)
     0xF4											   // hlt
 };
 
 // @TODO should be generated not hard-coded
 uint8_t* dll_names[] = {
     (uint8_t*)"kernel32.dll",
+};
+
+uint8_t* message[] = {
+    (uint8_t*)"Hello World",
 };
 
 uint8_t* kernel32_function_names[] = {
@@ -222,10 +226,12 @@ bool f::PE_x64_backend::generate_hello_world()
     {
         RtlSecureZeroMemory(image_nt_header.OptionalHeader.DataDirectory, sizeof(image_nt_header.OptionalHeader.DataDirectory));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = 0x4000; // @TODO need to be computed and patched
-        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = 1 * sizeof(IMAGE_IMPORT_DESCRIPTOR); // kernel32.dll
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = 2 * sizeof(IMAGE_IMPORT_DESCRIPTOR); // kernel32.dll + null entry
 
-        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress + 56; // @TODO need to be computed and patched
-        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = 3 * sizeof(uint32_t); // @TODO take care of 64bit binaries
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
+                                                                                               + 2 * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
+                                                                                               + sizeof(DWORD) * (3 + 1); // ILT (3 entries + 1 null)
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = (3 + 1) * sizeof(DWORD); // @TODO take care of 64bit binaries // null entry count
     }
 
     image_nt_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
@@ -259,7 +265,7 @@ bool f::PE_x64_backend::generate_hello_world()
         RtlSecureZeroMemory(&rdata_image_section_header, sizeof(rdata_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(rdata_image_section_header.Name, ".rdata", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
-        rdata_image_section_header.Misc.VirtualSize = 0;
+        rdata_image_section_header.Misc.VirtualSize = fstd::language::string_literal_size(message[0]) + 1;
         rdata_image_section_header.VirtualAddress = rdata_image_section_virtual_address;
         rdata_image_section_header.SizeOfRawData = compute_aligned_size(rdata_image_section_header.Misc.VirtualSize, file_alignment); // @TODO should be computed
         rdata_image_section_header.PointerToRawData = rdata_image_section_pointer_to_raw_data;
@@ -331,6 +337,9 @@ bool f::PE_x64_backend::generate_hello_world()
     {
         DWORD rdata_section_size = 0;
 
+        WriteFile(BINARY, (const void*)message[0], fstd::language::string_literal_size(message[0]) + 1, &bytes_written, NULL); // +1 to write the ending '\0'
+        rdata_section_size += bytes_written;
+
         write_zeros(BINARY, rdata_image_section_header.SizeOfRawData - rdata_section_size);
         size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
     }
@@ -394,24 +403,24 @@ bool f::PE_x64_backend::generate_hello_world()
                 // GetStdHandle
                 RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                     + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                    + sizeof(DWORD) * (3 + 1) * 2 // IAT + ILT;
-                    + i * HNT_size + 0;
+                    + sizeof(DWORD) * (3 + 1) * 2 // ILT + IAT
+                    + 0;
                 WriteFile(BINARY, (const void*)&RVA, sizeof(RVA), &bytes_written, NULL);
                 idata_section_size += bytes_written;
 
                 // WriteFile
                 RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                     + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                    + sizeof(DWORD) * (3 + 1) * 2 // IAT + ILT;
-                    + i * HNT_size + fstd::language::string_literal_size(kernel32_function_names[0]) + 1 + sizeof(WORD);
+                    + sizeof(DWORD) * (3 + 1) * 2 // ILT + IAT;
+                    + fstd::language::string_literal_size(kernel32_function_names[0]) + 1 + sizeof(WORD);
                 WriteFile(BINARY, (const void*)&RVA, sizeof(RVA), &bytes_written, NULL);
                 idata_section_size += bytes_written;
 
                 // ExitProcess
                 RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                     + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                    + sizeof(DWORD) * (3 + 1) * 2 // IAT + ILT;
-                    + i * HNT_size + fstd::language::string_literal_size(kernel32_function_names[0]) + 1 + fstd::language::string_literal_size(kernel32_function_names[1]) + 1 + sizeof(WORD) * 2;
+                    + sizeof(DWORD) * (3 + 1) * 2 // ILT + IAT;
+                    + fstd::language::string_literal_size(kernel32_function_names[0]) + 1 + fstd::language::string_literal_size(kernel32_function_names[1]) + 1 + sizeof(WORD) * 2;
                 WriteFile(BINARY, (const void*)&RVA, sizeof(RVA), &bytes_written, NULL);
                 idata_section_size += bytes_written;
             }
