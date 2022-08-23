@@ -214,7 +214,7 @@ bool f::PE_x64_backend::generate_hello_world()
     image_nt_header.OptionalHeader.SizeOfHeaders = size_of_headers;
     image_nt_header.OptionalHeader.CheckSum = image_check_sum;
     image_nt_header.OptionalHeader.Subsystem = subsystem;
-    image_nt_header.OptionalHeader.DllCharacteristics = IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE | IMAGE_DLLCHARACTERISTICS_NX_COMPAT | IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE | IMAGE_DLLCHARACTERISTICS_NO_SEH;	// @Warning same flags as Visual Studio 2019
+    image_nt_header.OptionalHeader.DllCharacteristics = /*IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE | */IMAGE_DLLCHARACTERISTICS_NX_COMPAT | IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE | IMAGE_DLLCHARACTERISTICS_NO_SEH;	// @Warning same flags as Visual Studio 2019
     image_nt_header.OptionalHeader.SizeOfStackReserve = size_of_stack_reserve;
     image_nt_header.OptionalHeader.SizeOfStackCommit = size_of_stack_commit;
     image_nt_header.OptionalHeader.SizeOfHeapReserve = size_of_heap_reserve;
