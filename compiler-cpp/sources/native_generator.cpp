@@ -94,6 +94,14 @@ uint8_t* kernel32_function_names[] = {
     (uint8_t*)"ExitProcess",
 };
 
+DWORD relocation_offsets[] = {
+    0x400 + 7, // call GetStdHandle - text_image_section_header.PointerToRawData + instruction offset
+    0x400 + 29, // call WriteFile - text_image_section_header.PointerToRawData + instruction offset
+    0x400 + 37, // call ExitProcess - text_image_section_header.PointerToRawData + instruction offset
+
+    0x600 + 0, // variable message ("Hello World") - rdata_image_section_header.PointerToRawData + variable offset
+};
+
 // @TODO check if align_address isn't enough to compute aligned values
 static DWORD	compute_aligned_size(DWORD raw_size, DWORD alignement)
 {
@@ -214,7 +222,7 @@ bool f::PE_x64_backend::generate_hello_world()
     image_nt_header.OptionalHeader.SizeOfHeaders = size_of_headers;
     image_nt_header.OptionalHeader.CheckSum = image_check_sum;
     image_nt_header.OptionalHeader.Subsystem = subsystem;
-    image_nt_header.OptionalHeader.DllCharacteristics = /*IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE | */IMAGE_DLLCHARACTERISTICS_NX_COMPAT | IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE | IMAGE_DLLCHARACTERISTICS_NO_SEH;	// @Warning same flags as Visual Studio 2019
+    image_nt_header.OptionalHeader.DllCharacteristics = IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE | IMAGE_DLLCHARACTERISTICS_NX_COMPAT | IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE | IMAGE_DLLCHARACTERISTICS_NO_SEH;	// @Warning same flags as Visual Studio 2019
     image_nt_header.OptionalHeader.SizeOfStackReserve = size_of_stack_reserve;
     image_nt_header.OptionalHeader.SizeOfStackCommit = size_of_stack_commit;
     image_nt_header.OptionalHeader.SizeOfHeapReserve = size_of_heap_reserve;
@@ -228,6 +236,9 @@ bool f::PE_x64_backend::generate_hello_world()
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = 0x4000; // @TODO need to be computed and patched
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = 2 * sizeof(IMAGE_IMPORT_DESCRIPTOR); // kernel32.dll + null entry
 
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress = 0x3000; // @TODO need to be computed and patched
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size = sizeof(IMAGE_BASE_RELOCATION) + sizeof(relocation_offsets); // relocation of first memory page of .text section
+
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                                                                                                + 2 * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
                                                                                                + sizeof(DWORD) * (3 + 1); // ILT (3 entries + 1 null)
@@ -236,7 +247,6 @@ bool f::PE_x64_backend::generate_hello_world()
 
     image_nt_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
     WriteFile(BINARY, (const void*)&image_nt_header, sizeof(image_nt_header), &bytes_written, NULL);
-
 
 
     core::Assert(image_nt_header.FileHeader.NumberOfSections <= 96);
@@ -284,7 +294,7 @@ bool f::PE_x64_backend::generate_hello_world()
         RtlSecureZeroMemory(&reloc_image_section_header, sizeof(reloc_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(reloc_image_section_header.Name, ".reloc", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
-        reloc_image_section_header.Misc.VirtualSize = 0;
+        reloc_image_section_header.Misc.VirtualSize = 0; // @TODO fix it // @TODO compute it
         reloc_image_section_header.VirtualAddress = reloc_image_section_virtual_address;
         reloc_image_section_header.SizeOfRawData = compute_aligned_size(reloc_image_section_header.Misc.VirtualSize, file_alignment);
         reloc_image_section_header.PointerToRawData = reloc_image_section_pointer_to_raw_data;
@@ -346,8 +356,20 @@ bool f::PE_x64_backend::generate_hello_world()
 
     // Write relocation data (.reloc section data)
     {
-        //        WriteFile(BINARY, (const void*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written, NULL);
-        write_zeros(BINARY, reloc_image_section_header.SizeOfRawData);
+        IMAGE_BASE_RELOCATION image_base_relocation;
+
+        DWORD reloc_section_size = 0;
+
+        image_base_relocation.VirtualAddress = 0x2000; // @TODO compute it, RVA of first memory page of .text section
+        image_base_relocation.SizeOfBlock = 4 * sizeof(WORD); // @TODO compute it: (1 static variable + 3 external function call)
+
+        WriteFile(BINARY, (const void*)&image_base_relocation, sizeof(image_base_relocation), &bytes_written, NULL);
+        reloc_section_size += bytes_written;
+
+        WriteFile(BINARY, (const void*)&relocation_offsets, sizeof(relocation_offsets), &bytes_written, NULL);
+        reloc_section_size += bytes_written;
+
+        write_zeros(BINARY, reloc_image_section_header.SizeOfRawData - reloc_section_size);
         size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
     }
 
