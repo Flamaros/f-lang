@@ -268,7 +268,7 @@ Lexer:
  - Optimize the Token structure size (removing aliasing,...)
  - Test lexer performances
  - Numeric literals:
-   - Add hexadecimal floating point support (voir stb__clex_parse_float: https://github.com/nothings/stb/blob/master/stb_c_lexer.h)
+   - Add hexadecimal floating point support (voir stb__clex_parse_float: https://github.com/nothings/stb/blob/master/stb_c_lexer.h) ou https://arxiv.org/abs/2101.11408
    - Need support suffix for binary and hexadecimal numbers?
    - Binary and hexadecimal numbers should be unsigned by default?
  - Analyse if with tokens_length_heuristic at 6 there is some allocations, find a strategy for the allocation if needed
@@ -303,6 +303,7 @@ Test "-0" et "-0.0" sign must stay
 
 Take a look at Ryu&Ryu s2f.c for an implementation of string to float!
 Or https://github.com/jk-jeon/dragonbox
+or https://arxiv.org/abs/2101.11408
 
 Check the number of digit my float parsing can handle with precision, the lexer may have to go to error after a certain number of digits due to the lack of precision.
 

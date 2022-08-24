@@ -14,8 +14,9 @@ using namespace fstd::core;
 
 using namespace f;
 
+constexpr DWORD	page_size = 4096;	// 4096 on x86
 constexpr DWORD	image_base = 0x00400000;
-constexpr DWORD	section_alignment = 4096;	// 4;	// @Warning should be greater or equal to file_alignment
+constexpr DWORD	section_alignment = page_size;	// 4;	// @Warning should be greater or equal to file_alignment
 constexpr DWORD	file_alignment = 512;		// 4;		// @TODO check that because the default value according to the official documentation is 512
 constexpr WORD	major_image_version = 1;
 constexpr WORD	minor_image_version = 0;
@@ -94,12 +95,16 @@ uint8_t* kernel32_function_names[] = {
     (uint8_t*)"ExitProcess",
 };
 
-DWORD relocation_offsets[] = {
-    0x400 + 7, // call GetStdHandle - text_image_section_header.PointerToRawData + instruction offset
-    0x400 + 29, // call WriteFile - text_image_section_header.PointerToRawData + instruction offset
-    0x400 + 37, // call ExitProcess - text_image_section_header.PointerToRawData + instruction offset
+// @Warning 4 first bits are a flag (https://docs.microsoft.com/fr-fr/windows/win32/debug/pe-format#base-relocation-types):
+// IMAGE_REL_BASED_DIR64 for x64 code?
+WORD text_relocation_offsets[] = {
+    /* 0x400 + */ 7, // call GetStdHandle - text_image_section_header.PointerToRawData + instruction offset
+    /* 0x400 + */ 29, // call WriteFile - text_image_section_header.PointerToRawData + instruction offset
+    /* 0x400 + */ 37, // call ExitProcess - text_image_section_header.PointerToRawData + instruction offset
+};
 
-    0x600 + 0, // variable message ("Hello World") - rdata_image_section_header.PointerToRawData + variable offset
+WORD rdata_relocation_offsets[] = {
+    /* 0x600 + */ 0, // variable message ("Hello World") - rdata_image_section_header.PointerToRawData + variable offset
 };
 
 // @TODO check if align_address isn't enough to compute aligned values
@@ -237,7 +242,9 @@ bool f::PE_x64_backend::generate_hello_world()
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = 2 * sizeof(IMAGE_IMPORT_DESCRIPTOR); // kernel32.dll + null entry
 
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress = 0x3000; // @TODO need to be computed and patched
-        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size = sizeof(IMAGE_BASE_RELOCATION) + sizeof(relocation_offsets); // relocation of first memory page of .text section
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size = sizeof(IMAGE_BASE_RELOCATION) + sizeof(text_relocation_offsets)
+                                                                                           + (sizeof(IMAGE_BASE_RELOCATION) + sizeof(text_relocation_offsets)) % 4 // padding of previous block
+                                                                                           + sizeof(IMAGE_BASE_RELOCATION) + sizeof(rdata_relocation_offsets); // relocation of first memory page of .text section
 
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                                                                                                + 2 * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
@@ -360,14 +367,38 @@ bool f::PE_x64_backend::generate_hello_world()
 
         DWORD reloc_section_size = 0;
 
-        image_base_relocation.VirtualAddress = 0x2000; // @TODO compute it, RVA of first memory page of .text section
-        image_base_relocation.SizeOfBlock = 4 * sizeof(WORD); // @TODO compute it: (1 static variable + 3 external function call)
+        // @Warning IMAGE_BASE_RELOCATION headers have to be aligned on 32bits, but because I start to the begining of the .reloc section the first is aligned correctly.
 
-        WriteFile(BINARY, (const void*)&image_base_relocation, sizeof(image_base_relocation), &bytes_written, NULL);
-        reloc_section_size += bytes_written;
+        // for .text section
+        {
+            image_base_relocation.VirtualAddress = 0x1000; // @TODO compute it, RVA of first memory page of .text section
+            image_base_relocation.SizeOfBlock = sizeof(IMAGE_BASE_RELOCATION) + 3 * sizeof(WORD); // @TODO compute it: (3 external function call)
 
-        WriteFile(BINARY, (const void*)&relocation_offsets, sizeof(relocation_offsets), &bytes_written, NULL);
-        reloc_section_size += bytes_written;
+            WriteFile(BINARY, (const void*)&image_base_relocation, sizeof(image_base_relocation), &bytes_written, NULL);
+            reloc_section_size += bytes_written;
+
+            WriteFile(BINARY, (const void*)&text_relocation_offsets, sizeof(text_relocation_offsets), &bytes_written, NULL);
+            reloc_section_size += bytes_written;
+        }
+
+        // @Warning @WTF PE-bear don't see correct size of blocks after the padding
+        size_t padding = reloc_section_size % 4;
+        if (padding) {
+            write_zeros(BINARY, padding);
+            reloc_section_size += padding;
+        }
+
+        // for .rdata section
+        {
+            image_base_relocation.VirtualAddress = 0x2000; // @TODO compute it, RVA of first memory page of .rdata section
+            image_base_relocation.SizeOfBlock = sizeof(IMAGE_BASE_RELOCATION) + 1 * sizeof(WORD); // @TODO compute it: (3 external function call)
+
+            WriteFile(BINARY, (const void*)&image_base_relocation, sizeof(image_base_relocation), &bytes_written, NULL);
+            reloc_section_size += bytes_written;
+
+            WriteFile(BINARY, (const void*)&rdata_relocation_offsets, sizeof(rdata_relocation_offsets), &bytes_written, NULL);
+            reloc_section_size += bytes_written;
+        }
 
         write_zeros(BINARY, reloc_image_section_header.SizeOfRawData - reloc_section_size);
         size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
