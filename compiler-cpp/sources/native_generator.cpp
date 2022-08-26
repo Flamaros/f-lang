@@ -14,6 +14,8 @@ using namespace fstd::core;
 
 using namespace f;
 
+#define DLL_MODE 0
+
 constexpr DWORD	page_size = 4096;	// 4096 on x86
 constexpr DWORD	image_base = 0x00400000;
 constexpr DWORD	section_alignment = page_size;	// 4;	// @Warning should be greater or equal to file_alignment
@@ -56,8 +58,10 @@ DWORD	text_image_section_header_address;
 DWORD	text_section_address;
 DWORD	rdata_image_section_header_address;
 DWORD	rdata_section_address;
+#if DLL_MODE == 1
 DWORD	reloc_image_section_header_address;
 DWORD	reloc_section_address;
+#endif
 DWORD	idata_image_section_header_address;
 DWORD	idata_section_address;
 
@@ -66,7 +70,11 @@ uint8_t	hello_world_instructions[] = {
     0x89, 0xE5,										   // mov    ebp, esp
     0x83, 0xEC, 0x04,								   // sub    esp, 0x4
     0x6A, -11,										   // push   0xfffffff5         // STD_OUTPUT_HANDLE == (DWORD)-11 => 0xfffffff5 en hexa
+#if DLL_MODE == 1
     0xFF, 0x15, 0x38, 0x40, 0x40, 0x00,				   // call   GetStdHandle       // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x38 (offset in IAT)
+#else
+    0xFF, 0x15, 0x38, 0x30, 0x40, 0x00,				   // call   GetStdHandle       // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x38 (offset in IAT)
+#endif
     0x89, 0xC3,										   // mov    ebx, eax
     0x6A, 0x00,										   // push   0x0
     0x8D, 0x45, 0xFC,								   // lea    eax, [ebp-0x4]
@@ -74,9 +82,17 @@ uint8_t	hello_world_instructions[] = {
     0x6A, 0x0B,										   // push   0xb				@Warning nNumberOfBytesToWrite
     0x68, 0x00, 0x20, 0x40, 0x00,				       // push   DWORD PTR ds:0x0	@Warning address of message string (first value in .rdata section)
     0x53,											   // push   ebx
+#if DLL_MODE == 1
     0xFF, 0x15, 0x3C, 0x40, 0x40, 0x00,				   // call   WriteFile          // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x3C (offset in IAT)
+#else
+    0xFF, 0x15, 0x3C, 0x30, 0x40, 0x00,				   // call   WriteFile          // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x3C (offset in IAT)
+#endif
     0x6A, 0x00,										   // push   0x0
+#if DLL_MODE == 1
     0xFF, 0x15, 0x40, 0x40, 0x40, 0x00,				   // call   ExitProcess        // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x40 (offset in IAT)
+#else
+    0xFF, 0x15, 0x40, 0x30, 0x40, 0x00,				   // call   ExitProcess        // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x40 (offset in IAT)
+#endif
     0xF4											   // hlt
 };
 
@@ -98,13 +114,13 @@ uint8_t* kernel32_function_names[] = {
 // @Warning 4 first bits are a flag (https://docs.microsoft.com/fr-fr/windows/win32/debug/pe-format#base-relocation-types):
 // IMAGE_REL_BASED_DIR64 for x64 code?
 WORD text_relocation_offsets[] = {
-    /* 0x400 + */ 7, // call GetStdHandle - text_image_section_header.PointerToRawData + instruction offset
-    /* 0x400 + */ 29, // call WriteFile - text_image_section_header.PointerToRawData + instruction offset
-    /* 0x400 + */ 37, // call ExitProcess - text_image_section_header.PointerToRawData + instruction offset
+    7, // call GetStdHandle - text_image_section_header.PointerToRawData + instruction offset
+    29, // call WriteFile - text_image_section_header.PointerToRawData + instruction offset
+    37, // call ExitProcess - text_image_section_header.PointerToRawData + instruction offset
 };
 
 WORD rdata_relocation_offsets[] = {
-    /* 0x600 + */ 0, // variable message ("Hello World") - rdata_image_section_header.PointerToRawData + variable offset
+    0, // variable message ("Hello World") - rdata_image_section_header.PointerToRawData + variable offset
 };
 
 // @TODO check if align_address isn't enough to compute aligned values
@@ -194,7 +210,11 @@ bool f::PE_x64_backend::generate_hello_world()
 
     image_nt_header.Signature = (WORD)'P' | ((WORD)'E' << 8);	// 'PE\0\0' @Warning take care of the endianness / 0x50450000
     image_nt_header.FileHeader.Machine = IMAGE_FILE_MACHINE_I386;
+#if DLL_MODE == 1
     image_nt_header.FileHeader.NumberOfSections = 4;
+#else
+    image_nt_header.FileHeader.NumberOfSections = 3;
+#endif
     image_nt_header.FileHeader.TimeDateStamp = (DWORD)(current_time_in_seconds_since_1970);	// @Warning UTC time
     image_nt_header.FileHeader.PointerToSymbolTable = 0;	// This value should be zero for an image because COFF debugging information is deprecated.
     image_nt_header.FileHeader.NumberOfSymbols = 0;			// This value should be zero for an image because COFF debugging information is deprecated.
@@ -227,7 +247,11 @@ bool f::PE_x64_backend::generate_hello_world()
     image_nt_header.OptionalHeader.SizeOfHeaders = size_of_headers;
     image_nt_header.OptionalHeader.CheckSum = image_check_sum;
     image_nt_header.OptionalHeader.Subsystem = subsystem;
+#if DLL_MODE == 1
     image_nt_header.OptionalHeader.DllCharacteristics = IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE | IMAGE_DLLCHARACTERISTICS_NX_COMPAT | IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE | IMAGE_DLLCHARACTERISTICS_NO_SEH;	// @Warning same flags as Visual Studio 2019
+#else
+    image_nt_header.OptionalHeader.DllCharacteristics = IMAGE_DLLCHARACTERISTICS_NX_COMPAT | IMAGE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE | IMAGE_DLLCHARACTERISTICS_NO_SEH;	// @Warning same flags as Visual Studio 2019
+#endif
     image_nt_header.OptionalHeader.SizeOfStackReserve = size_of_stack_reserve;
     image_nt_header.OptionalHeader.SizeOfStackCommit = size_of_stack_commit;
     image_nt_header.OptionalHeader.SizeOfHeapReserve = size_of_heap_reserve;
@@ -238,13 +262,20 @@ bool f::PE_x64_backend::generate_hello_world()
     // Data Directories
     {
         RtlSecureZeroMemory(image_nt_header.OptionalHeader.DataDirectory, sizeof(image_nt_header.OptionalHeader.DataDirectory));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
+
+#if DLL_MODE == 1
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = 0x4000; // @TODO need to be computed and patched
+#else
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = 0x3000; // @TODO need to be computed and patched
+#endif
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = 2 * sizeof(IMAGE_IMPORT_DESCRIPTOR); // kernel32.dll + null entry
 
+#if DLL_MODE == 1
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress = 0x3000; // @TODO need to be computed and patched
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size = sizeof(IMAGE_BASE_RELOCATION) + sizeof(text_relocation_offsets)
                                                                                            + (sizeof(IMAGE_BASE_RELOCATION) + sizeof(text_relocation_offsets)) % 4 // padding of previous block
                                                                                            + sizeof(IMAGE_BASE_RELOCATION) + sizeof(rdata_relocation_offsets); // relocation of first memory page of .text section
+#endif
 
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                                                                                                + 2 * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
@@ -296,6 +327,7 @@ bool f::PE_x64_backend::generate_hello_world()
         WriteFile(BINARY, (const void*)& rdata_image_section_header, sizeof(rdata_image_section_header), &bytes_written, NULL);
     }
 
+#if DLL_MODE == 1
     // .reloc section
     {
         RtlSecureZeroMemory(&reloc_image_section_header, sizeof(reloc_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
@@ -314,6 +346,7 @@ bool f::PE_x64_backend::generate_hello_world()
         reloc_image_section_header_address = SetFilePointer(BINARY, 0, NULL, FILE_CURRENT);
         WriteFile(BINARY, (const void*)&reloc_image_section_header, sizeof(reloc_image_section_header), &bytes_written, NULL);
     }
+#endif
 
     // .idata section
     {
@@ -361,6 +394,7 @@ bool f::PE_x64_backend::generate_hello_world()
         size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
     }
 
+#if DLL_MODE == 1
     // Write relocation data (.reloc section data)
     {
         IMAGE_BASE_RELOCATION image_base_relocation;
@@ -403,6 +437,7 @@ bool f::PE_x64_backend::generate_hello_world()
         write_zeros(BINARY, reloc_image_section_header.SizeOfRawData - reloc_section_size);
         size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
     }
+#endif
 
     // Write import data (.idata section data)
     {
@@ -565,10 +600,19 @@ bool f::PE_x64_backend::generate_hello_world()
         DWORD base_of_data_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.BaseOfData);
         rdata_section_address = compute_aligned_size(text_section_address + text_image_section_header.SizeOfRawData, section_alignment);
         rdata_image_section_pointer_to_raw_data = align_address(text_image_section_pointer_to_raw_data + text_image_section_header.SizeOfRawData, file_alignment);
+#if DLL_MODE == 1
         reloc_section_address = compute_aligned_size(rdata_section_address + rdata_image_section_header.SizeOfRawData, section_alignment);
         reloc_image_section_pointer_to_raw_data = align_address(rdata_image_section_pointer_to_raw_data + rdata_image_section_header.SizeOfRawData, file_alignment);
+#endif
+
+#if DLL_MODE == 1
         idata_section_address = compute_aligned_size(reloc_section_address + reloc_image_section_header.SizeOfRawData, section_alignment);
         idata_image_section_pointer_to_raw_data = align_address(reloc_image_section_pointer_to_raw_data + reloc_image_section_header.SizeOfRawData, file_alignment);
+#else
+        idata_section_address = compute_aligned_size(rdata_section_address + rdata_image_section_header.SizeOfRawData, section_alignment);
+        idata_image_section_pointer_to_raw_data = align_address(rdata_image_section_pointer_to_raw_data + rdata_image_section_header.SizeOfRawData, file_alignment);
+#endif
+
         base_of_data = rdata_section_address;
         // 8192
         SetFilePointer(BINARY, base_of_data_address, NULL, FILE_BEGIN);
@@ -631,6 +675,7 @@ bool f::PE_x64_backend::generate_hello_world()
         WriteFile(BINARY, (const void*)&rdata_image_section_pointer_to_raw_data, sizeof(rdata_image_section_pointer_to_raw_data), &bytes_written, NULL);
     }
 
+#if DLL_MODE == 1
     // reloc_image_section_virtual_address
     {
         DWORD reloc_image_section_virtual_address_address = reloc_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
@@ -648,6 +693,7 @@ bool f::PE_x64_backend::generate_hello_world()
         SetFilePointer(BINARY, reloc_image_section_pointer_to_raw_data_address, NULL, FILE_BEGIN);
         WriteFile(BINARY, (const void*)&reloc_image_section_pointer_to_raw_data, sizeof(reloc_image_section_pointer_to_raw_data), &bytes_written, NULL);
     }
+#endif
 
     // idata_image_section_virtual_address
     {

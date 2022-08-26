@@ -1,12 +1,3 @@
-!!!!! Remove IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE and .reloc section when generating an exe
-
-
-
-#########################
-Il faut écrire la section .rdata (à la fin du fichier actuel)
-
-Il faut mettre les taille et position de la section .reloc et l'écrire.
-
 
 ------
 Il faut éclaircir le besoin d'avoir 2 fonctions pour l'alignement (compute_aligned_size et align_address)
