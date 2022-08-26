@@ -1,3 +1,7 @@
+!!!!! Remove IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE and .reloc section when generating an exe
+
+
+
 #########################
 Il faut écrire la section .rdata (à la fin du fichier actuel)
 
