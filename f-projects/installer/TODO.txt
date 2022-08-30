@@ -1,0 +1,3 @@
+Doit se baser sur les fonctionnalités du compilateur pour être capable de générer un executable d'auto installeur au lieu de juste un binaire.
+L'idée c'est de mettre un package dans la section .rdata, le compilateur doit fournir des fonctionnalités permettant d'avoir un peu de controle la dessus
+comme l'ajout de ressources (icones,...)
