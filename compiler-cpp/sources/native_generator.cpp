@@ -17,7 +17,11 @@ using namespace f;
 #define DLL_MODE 0
 
 constexpr DWORD	page_size = 4096;	// 4096 on x86
+#if DLL_MODE == 1
+constexpr DWORD	image_base = 0x10000000;
+#else
 constexpr DWORD	image_base = 0x00400000;
+#endif
 constexpr DWORD	section_alignment = page_size;	// 4;	// @Warning should be greater or equal to file_alignment
 constexpr DWORD	file_alignment = 512;		// 4;		// @TODO check that because the default value according to the official documentation is 512
 constexpr WORD	major_image_version = 1;
