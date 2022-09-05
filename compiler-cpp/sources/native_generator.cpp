@@ -100,6 +100,13 @@ uint8_t	hello_world_instructions[] = {
     0xF4											   // hlt
 };
 
+
+// @TODO get memory page size dynamically:
+// https://stackoverflow.com/questions/3351940/detecting-the-memory-page-size
+// Page size under Windows (depending on CPU arch)
+// https://devblogs.microsoft.com/oldnewthing/20210510-00/?p=105200
+
+
 // @TODO should be generated not hard-coded
 uint8_t* dll_names[] = {
     (uint8_t*)"kernel32.dll",
