@@ -36,9 +36,11 @@ extern thread_local Globals    globals;
 // Functions that change the global execution
 enum class Compiler_Error
 {
+	info,
 	warning,
 	error
 };
 
+void report_error(Compiler_Error error, const char* error_message);
 void report_error(Compiler_Error error, const f::Token& token, const char* error_message);
 void abort_compilation();

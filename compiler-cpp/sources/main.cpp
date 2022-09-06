@@ -26,6 +26,10 @@
 #include <tracy/Tracy.hpp>
 #include <tracy/common/TracySystem.hpp>
 
+#define ENABLE_TOKENS_PRINT 0
+#define ENABLE_DOT_OUTPUT 0
+#define ENABLE_CPP_BACKEND 0
+
 using namespace fstd;
 using namespace fstd::core;
 
@@ -48,13 +52,7 @@ void convert_dot_file_to_png(const system::Path& dot_file_path, const system::Pa
 
 	print_to_builder(string_builder, "%s -Tpng -o %s", dot_file_path, png_file_path);
 	if (!system::execute_process(dot_executable_file_path, to_string(string_builder))) {
-		f::Token dummy_token;
-
-		dummy_token.type = f::Token_Type::UNKNOWN;
-		dummy_token.file_path = system::to_string(dot_executable_file_path);
-		dummy_token.line = 0;
-		dummy_token.column = 0;
-		report_error(Compiler_Error::warning, dummy_token, "Failed to generate the dot image. Please check that dot.exe is in your PATH.\n");
+		report_error(Compiler_Error::warning, "Failed to generate the dot image. Please check that dot.exe is in your PATH.\n");
 	}
 }
 
@@ -87,6 +85,23 @@ int main(int ac, char** av)
 	f::IR					ir;
 	int						result = 0;
 
+	if (ac != 2) {
+		report_error(Compiler_Error::error, "Wrong argument number, you should specify the file to compile.");
+	}
+
+	// Log compiled file
+	{
+		String_Builder  string_builder;
+
+		defer{ free_buffers(string_builder); };
+
+		print_to_builder(string_builder, "Compiling: \"%Cs\"\n", av[1]);
+
+		language::string message = to_string(string_builder);
+		report_error(Compiler_Error::info, (char*)to_utf8(message));
+		release(message);
+	}
+
 	{
 		ZoneScopedN("f-lang compilation");
 
@@ -94,19 +109,19 @@ int main(int ac, char** av)
 
 		defer { system::reset_path(path); };
 
-		system::from_native(path, (uint8_t*)u8R"(.\compiler-f\main.f)");
+		system::from_native(path, (const uint8_t*)av[1]);
 
 		f::initialize_lexer();
 		f::lex(path, tokens);
 
-#if !defined(TRACY_ENABLE)
+#if !defined(TRACY_ENABLE) && ENABLE_TOKENS_PRINT == 1
 		f::print(tokens);	// Optionnal
 #endif
 
 		f::parse(tokens, parsing_result);
 
 		// Optionnal Dot graph output
-#if !defined(TRACY_ENABLE)
+#if !defined(TRACY_ENABLE) && ENABLE_DOT_OUTPUT == 1
 		{
 			system::Path	ast_dot_file_path;
 			system::Path	ast_png_file_path;
@@ -138,6 +153,7 @@ int main(int ac, char** av)
 		}
 
 		// Optionnal C++ backend
+#if ENABLE_CPP_BACKEND == 1
 		{
 			system::Path	cpp_file_path;
 
@@ -147,6 +163,7 @@ int main(int ac, char** av)
 
 			f::CPP_backend::compile(ir, cpp_file_path);
 		}
+#endif
 
 		// @TODO Evaluate all constant expressions.
 		//

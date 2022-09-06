@@ -295,13 +295,14 @@ namespace fstd
 				total_length += language::get_string_size(*memory::get_array_element(builder.strings, i));
 			}
 
-			language::reserve(result, total_length);
+			language::reserve(result, total_length + 1); // + 1 for ending '\0'
 			for (size_t i = 0; i < memory::get_array_size(builder.strings); i++) {
 				size_t size = language::get_string_size(*memory::get_array_element(builder.strings, i));
 
 				language::copy(result, position, *memory::get_array_element(builder.strings, i));
 				position += size;
 			}
+			result.buffer[total_length] = '\0';
 
 			return result;
 		}
