@@ -44,3 +44,4 @@ research/vs_x86_hello_world/Debug
 research/vs_x86_hello_world/x64
 research/vs_x86_hello_world/.vs
 
+tools/x64dbg/release/x32/x32dbg.ini
