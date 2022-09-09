@@ -45,14 +45,12 @@ OVERLAPPED :: struct
 }
 LPOVERLAPPED :: §OVERLAPPED;
 
-GetStdHandle :: (nStdHandle : DWORD) -> HANDLE
-	: win32; // @dll(import), @calling_convention(stdcall);
+GetStdHandle :: (nStdHandle : DWORD) -> HANDLE : win32 dll_import("kernel32.dll");
 WriteFile :: (hFile : HANDLE,
 			  lpBuffer : LPCVOID,
 			  nNumberOfBytesToWrite : DWORD,
 			  lpNumberOfBytesWritten : LPDWORD,
-			  lpOverlapped : LPOVERLAPPED) -> BOOL
-	: win32; // @dll(import), @calling_convention(stdcall);
+			  lpOverlapped : LPOVERLAPPED) -> BOOL : win32, dll_import("kernel32.dll");
 
 main :: (arguments : [] string) -> i32
 {

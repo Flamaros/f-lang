@@ -423,34 +423,65 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 
 				current_token = stream::get(stream);
 
-				AST_Identifier** current_modifier = &function_node->modifiers;
+				AST_Function_Modifier** current_modifier = &function_node->modifiers;
 				while (!(current_token.type == Token_Type::SYNTAXE_OPERATOR
 					&& (current_token.value.punctuation == Punctuation::SEMICOLON
 						|| current_token.value.punctuation == Punctuation::OPEN_BRACE)))
 				{
 					if (current_token.type == Token_Type::IDENTIFIER)
 					{
-						AST_Identifier* identifier_node = allocate_AST_node<AST_Identifier>((AST_Node**)current_modifier);
+						AST_Function_Modifier* modifier_node = allocate_AST_node<AST_Function_Modifier>((AST_Node**)current_modifier);
 
-						identifier_node->ast_type = Node_Type::STATEMENT_IDENTIFIER;
-						identifier_node->sibling = nullptr;
-						identifier_node->value = current_token;
-						identifier_node->symbol_table = globals.parser_data.current_symbol_table;
+						modifier_node->ast_type = Node_Type::STATEMENT_IDENTIFIER;
+						modifier_node->sibling = nullptr;
+						modifier_node->value = current_token;
+						modifier_node->arguments = nullptr;
 
 						stream::peek(stream); // identifier
 						current_token = stream::get(stream);
 
-						current_modifier = (AST_Identifier**)&((*current_modifier)->sibling);
 						if (current_token.type == Token_Type::SYNTAXE_OPERATOR &&
-							current_token.value.punctuation == Punctuation::COMMA)
-						{
+							current_token.value.punctuation == Punctuation::COMMA) {
 							stream::peek(stream); // ,
+							current_token = stream::get(stream);
+						}
+						else if (current_token.type == Token_Type::SYNTAXE_OPERATOR &&
+							current_token.value.punctuation == Punctuation::OPEN_PARENTHESIS) {
+
+							stream::peek(stream); // (
+							current_token = stream::get(stream);
+
+							AST_Literal** current_modifier_argument = &modifier_node->arguments;
+							while (!(current_token.type == Token_Type::SYNTAXE_OPERATOR
+								&& current_token.value.punctuation == Punctuation::CLOSE_PARENTHESIS)) {
+
+								if (is_literal(current_token.type)) {
+									AST_Literal* modifier_argument_node = allocate_AST_node<AST_Literal>((AST_Node**)current_modifier_argument);
+
+									modifier_argument_node->ast_type = Node_Type::STATEMENT_LITERAL;
+									modifier_argument_node->sibling = nullptr;
+									modifier_argument_node->value = current_token;
+
+									stream::peek(stream); // Literal
+									current_token = stream::get(stream);
+								}
+								else {
+									// @TODO should we support compile-time expression? that generate a litteral?
+									report_error(Compiler_Error::error, current_token, "Function modifiers only support literals types as arguments.");
+								}
+
+								current_modifier_argument = (AST_Literal**)&((*current_modifier_argument)->sibling);
+							}
+
+							stream::peek(stream); // )
 							current_token = stream::get(stream);
 						}
 					}
 					else {
-						report_error(Compiler_Error::error, current_token, "Expecting an identifier for a modifier of function");
+						report_error(Compiler_Error::error, current_token, "Expecting an identifier for a modifier of function. It can take parameters as a list of litterals in enclosing parenthesis.");
 					}
+
+					current_modifier = (AST_Function_Modifier**)&((*current_modifier)->sibling);
 				}
 			}
 		}

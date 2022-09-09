@@ -18,6 +18,7 @@ namespace f
 	struct AST_Statement_Type_Array;
 	struct AST_Statement_Variable;
 	struct AST_Statement_Function;
+	struct AST_Function_Modifier;
 	struct AST_Statement_Scope;
 	struct AST_Literal;
 	struct AST_Identifier;
@@ -226,7 +227,15 @@ namespace f
 		AST_Statement_Variable*	arguments;
 		AST_Node*				return_type;
 		AST_Statement_Scope*	scope;	 // nullptr is it's only the declaration
-		AST_Identifier*			modifiers;
+		AST_Function_Modifier*	modifiers;
+	};
+
+	struct AST_Function_Modifier
+	{
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token			value;
+		AST_Literal*	arguments;
 	};
 
 	struct AST_Function_Call
