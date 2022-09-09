@@ -229,8 +229,14 @@
     <ClCompile Include="..\third-party\tracy\TracyClient.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\compiler-f\f_language_definitions.f" />
-    <None Include="..\..\compiler-f\main.f" />
+    <None Include="..\..\f-projects\compiler-f\f_language_definitions.f" />
+    <None Include="..\..\f-projects\compiler-f\main.f" />
+    <None Include="..\..\f-projects\editor\main.f" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\f-projects\dbg\TODO.txt" />
+    <Text Include="..\..\f-projects\editor\TODO.txt" />
+    <Text Include="..\..\f-projects\installer\TODO.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

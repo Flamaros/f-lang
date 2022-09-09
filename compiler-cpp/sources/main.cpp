@@ -91,15 +91,18 @@ int main(int ac, char** av)
 
 	// Log compiled file
 	{
-		String_Builder  string_builder;
+		String_Builder		string_builder;
+		language::string	message;
 
-		defer{ free_buffers(string_builder); };
+		defer {
+			free_buffers(string_builder);
+			release(message);
+		};
 
 		print_to_builder(string_builder, "Compiling: \"%Cs\"\n", av[1]);
 
-		language::string message = to_string(string_builder);
+		message = to_string(string_builder);
 		report_error(Compiler_Error::info, (char*)to_utf8(message));
-		release(message);
 	}
 
 	{

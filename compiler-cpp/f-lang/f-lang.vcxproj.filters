@@ -14,6 +14,18 @@
     <Filter Include="Source Files\third-party\tracy">
       <UniqueIdentifier>{d165c925-9211-45ef-85e3-e34ceeac84bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="data\compiler-f">
+      <UniqueIdentifier>{7702a78a-f8c6-470c-b4a0-afd823626ebf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data\dbg">
+      <UniqueIdentifier>{4155668e-9103-49eb-9144-437c64d71e18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data\editor">
+      <UniqueIdentifier>{5500c4c3-c449-43ff-8d58-ea2a864e5541}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data\installer">
+      <UniqueIdentifier>{52308086-3373-4e89-9312-877724827a2d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\main.cpp">
@@ -24,11 +36,25 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\compiler-f\f_language_definitions.f">
-      <Filter>data</Filter>
+    <None Include="..\..\f-projects\compiler-f\f_language_definitions.f">
+      <Filter>data\compiler-f</Filter>
     </None>
-    <None Include="..\..\compiler-f\main.f">
-      <Filter>data</Filter>
+    <None Include="..\..\f-projects\compiler-f\main.f">
+      <Filter>data\compiler-f</Filter>
     </None>
+    <None Include="..\..\f-projects\editor\main.f">
+      <Filter>data\editor</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\f-projects\dbg\TODO.txt">
+      <Filter>data\dbg</Filter>
+    </Text>
+    <Text Include="..\..\f-projects\editor\TODO.txt">
+      <Filter>data\editor</Filter>
+    </Text>
+    <Text Include="..\..\f-projects\installer\TODO.txt">
+      <Filter>data\installer</Filter>
+    </Text>
   </ItemGroup>
 </Project>
