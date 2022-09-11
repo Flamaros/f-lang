@@ -509,10 +509,10 @@ static void write_generated_code(String_Builder& file_string_builder, IR& ir, AS
 	else if (node->ast_type == Node_Type::STATEMENT_SCOPE) {
 		AST_Statement_Scope* scope_node = (AST_Statement_Scope*)node;
 
-		if (node != ir.ast->ast_root)
+		if (node != ir.parsing_result->ast_root)
 			indented_print_to_builder(file_string_builder, indentation, "{\n");
-		write_generated_code(file_string_builder, ir, (AST_Node*)scope_node->first_child, node == ir.ast->ast_root ? 0 : indentation + 1);
-		if (node != ir.ast->ast_root)
+		write_generated_code(file_string_builder, ir, (AST_Node*)scope_node->first_child, node == ir.parsing_result->ast_root ? 0 : indentation + 1);
+		if (node != ir.parsing_result->ast_root)
 			indented_print_to_builder(file_string_builder, indentation, "}\n");
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_LITERAL) {
@@ -722,7 +722,7 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 	print_to_builder(string_builder, f_lang_basic_types);
 
 	print_to_builder(string_builder, "// Beginning of user code\n");
-	write_generated_code(string_builder, ir, ir.ast->ast_root);
+	write_generated_code(string_builder, ir, ir.parsing_result->ast_root);
 
 	file_content = to_string(string_builder);
 

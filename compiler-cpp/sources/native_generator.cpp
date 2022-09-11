@@ -9,6 +9,9 @@
 #include <time.h>
 #include <assert.h>
 
+#include <tracy/Tracy.hpp>
+#include <tracy/common/TracySystem.hpp>
+
 using namespace fstd;
 using namespace fstd::core;
 
@@ -165,7 +168,7 @@ static void	write_zeros(HANDLE file, uint32_t count)
     WriteFile(file, (const void*)zeros_buffer, modulo, &bytes_written, NULL);
 }
 
-bool f::PE_x64_backend::generate_hello_world()
+bool f::PE_x86_backend::generate_hello_world()
 {
     const char*	binary_path = "hello_world.exe";
     HANDLE		BINARY;
@@ -727,4 +730,10 @@ bool f::PE_x64_backend::generate_hello_world()
     CloseHandle(BINARY);
 
     return true;
+}
+
+void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
+{
+    ZoneScopedN("f::PE_x86_backend::compile");
+
 }

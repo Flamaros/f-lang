@@ -1,14 +1,19 @@
 #pragma once
 
+#include "IR_generator.hpp"
+
+#include <fstd/system/path.hpp>
+
 namespace f
 {
-	struct PE_X64_Backend_Data
+	struct PE_X86_Backend_Data
 	{
 
 	};
 
-	namespace PE_x64_backend
+	namespace PE_x86_backend
 	{
-		bool generate_hello_world();
+		bool generate_hello_world(); // @TODO remove it
+		void compile(IR& ir, const fstd::system::Path& output_file_path);
 	}
 }

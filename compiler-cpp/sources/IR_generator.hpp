@@ -4,9 +4,6 @@
 
 #include <fstd/memory/stack.hpp>
 
-// @TODO the IR should be a valid code representation (symbols checked, types too,...)
-
-
 namespace f
 {
 	struct Register
@@ -27,11 +24,23 @@ namespace f
 		uint32_t	id;
 	};
 
-	struct IR
+	struct Imported_Library
 	{
-		Parsing_Result*					ast;
-		fstd::memory::Stack<Register>	registers; // Need to have one stack per scope (global scope, function scope,...)?
+		typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> Function_Hash_Table;
+
+		fstd::language::string_view	name; // string_view of the first token parsed of this library
+		Function_Hash_Table			functions;
 	};
 
-	void generate_ir(Parsing_Result& ast, IR& ir);
+	struct IR
+	{
+		typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32> Imported_Library_Hash_Table;
+
+		Parsing_Result*				parsing_result;
+		Imported_Library_Hash_Table	imported_libraries;
+
+//		fstd::memory::Stack<Register>	registers; // Need to have one stack per scope (global scope, function scope,...)?
+	};
+
+	void generate_ir(Parsing_Result& parsing_result, IR& ir);
 }

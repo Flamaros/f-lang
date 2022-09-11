@@ -85,8 +85,8 @@ int main(int ac, char** av)
 	f::IR					ir;
 	int						result = 0;
 
-	if (ac != 2) {
-		report_error(Compiler_Error::error, "Wrong argument number, you should specify the file to compile.");
+	if (ac != 3) {
+		report_error(Compiler_Error::error, "Wrong argument number, you should specify file paths of input and output files.");
 	}
 
 	// Log compiled file
@@ -193,6 +193,17 @@ int main(int ac, char** av)
 		// Infer variable types.
 		//
 		// Flamaros - 07 may 2020
+
+		// Native backend
+		{
+			system::Path	output_file_path;
+
+			defer{ system::reset_path(output_file_path); };
+
+			system::from_native(output_file_path, (uint8_t*)av[2]);
+
+			f::CPP_backend::compile(ir, output_file_path);
+		}
 	}
 
 
@@ -213,8 +224,7 @@ int main(int ac, char** av)
 		//return 0;
   //  }
 
-    f::PE_x64_backend::generate_hello_world();
-
+    f::PE_x86_backend::generate_hello_world();
 
 	FrameMark;
 
