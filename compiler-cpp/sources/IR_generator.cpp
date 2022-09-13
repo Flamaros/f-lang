@@ -5,6 +5,8 @@
 #include "parser/parser.hpp"
 #include "parser/symbol_solver.hpp"
 
+#include <third-party/SpookyV2.h>
+
 #include <tracy/Tracy.hpp>
 
 using namespace fstd;
@@ -12,10 +14,21 @@ using namespace fstd::core;
 
 using namespace f;
 
+static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node);
+static void parse_function_declaration(IR& ir, AST_Statement_Function* function_node);
+static size_t get_list_size(AST_Node* node);
+
 // @TODO actually Parsing_Result isn't really used by parse_ast because the AST_Node can already contains a
 // pointer to the right symbol table node.
 // But it might be useful to check shadowing and some other errors.
 
+static size_t get_list_size(AST_Node* node)
+{
+	size_t result = 0;
+	for (AST_Node* current_node = node; current_node; current_node = current_node->sibling)
+		result++;
+	return result;
+}
 
 static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 {
@@ -65,6 +78,7 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 		// @TODO generate C function declaration that should be done in the correct order (after declaration types)
 		// Be careful of function pointers
 
+		parse_function_declaration(ir, function_node);
 		//write_function_declaration(file_string_builder, ir, function_node);
 
 		if (function_node->scope) {
@@ -151,8 +165,9 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 	else if (node->ast_type == Node_Type::STATEMENT_SCOPE) {
 		AST_Statement_Scope* scope_node = (AST_Statement_Scope*)node;
 
-		if (node != ir.parsing_result->ast_root)
+		if (node != ir.parsing_result->ast_root) {
 			//indented_print_to_builder(file_string_builder, "{\n");
+		}
 		parse_ast(parsing_result, ir, (AST_Node*)scope_node->first_child);
 		if (node != ir.parsing_result->ast_root) {
 			//indented_print_to_builder(file_string_builder, "}\n");
@@ -239,7 +254,7 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 			//indented_print_to_builder(file_string_builder, "struct %v\n", struct_node->name.text);
 		}
 		//indented_print_to_builder(file_string_builder, "{\n");
-		parse_ast(parsing_result, ir, struct_node->first_child + 1);
+		parse_ast(parsing_result, ir, struct_node->first_child);
 
 		if (struct_node->anonymous) {
 			//indented_print_to_builder(file_string_builder, "} "); // @Warning if struct is anonymous then the declaration is made at the same type as a variable declaration.
@@ -265,7 +280,7 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 		}
 		//indented_print_to_builder(file_string_builder, "{\n");
 		globals.cpp_backend_data.union_declaration_depth++;
-		parse_ast(parsing_result, ir, union_node->first_child + 1);
+		parse_ast(parsing_result, ir, union_node->first_child);
 		globals.cpp_backend_data.union_declaration_depth--;
 		if (union_node->anonymous) {
 			//indented_print_to_builder(file_string_builder, "} "); // @Warning if union is anonymous then the declaration is made at the same type as a variable declaration.
@@ -287,7 +302,7 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 
 		////indented_print_to_builder(file_string_builder, "enum %v\n", enum_node->name.text);
 		////indented_print_to_builder(file_string_builder, "{\n");
-		//parse_ast(parsing_result, ir, enum_node->first_child + 1);
+		//parse_ast(parsing_result, ir, enum_node->first_child);
 		////indented_print_to_builder(file_string_builder, "};\n");
 	}
 	else if (node->ast_type == Node_Type::FUNCTION_CALL) {
@@ -306,9 +321,98 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 	}
 }
 
+static void parse_function_declaration(IR& ir, AST_Statement_Function* function_node)
+{
+	fstd::language::string_view	win32_string;
+	fstd::language::assign(win32_string, (uint8_t*)"win32");
+	fstd::language::string_view	dll_import_string;
+	fstd::language::assign(dll_import_string, (uint8_t*)"dll_import");
+	bool win32_system_call = false;
+	bool is_a_dll_import = false;
+	Token* dll_token = nullptr;
+
+	// win32 means:
+	//   * __stdcall calling convention
+	//   * it's a C function (should not have overloads)
+	//
+	// dll_import means:
+	//   * function can't have implementation: the implementation is in the dll!!!
+
+	for (AST_Function_Modifier* current_modifier = function_node->modifiers;
+		current_modifier != nullptr; current_modifier = (AST_Function_Modifier*)current_modifier->sibling)
+	{
+		if (fstd::language::are_equals(current_modifier->value.text, win32_string)) {
+			if (win32_system_call)
+				report_error(Compiler_Error::error, current_modifier->value, "win32 modifier was already specified for the current function declaration.");
+			win32_system_call = true;
+		}
+		else if (fstd::language::are_equals(current_modifier->value.text, dll_import_string)) {
+			if (is_a_dll_import)
+				report_error(Compiler_Error::error, current_modifier->value, "dll_import modifier can be used only once per function declaration.");
+			is_a_dll_import = true;
+
+			if (function_node->scope) {
+				report_error(Compiler_Error::error, function_node->name, "Functions with dll_import modifier can't have implementation.");
+			}
+
+			if (get_list_size((AST_Node*)current_modifier->arguments) != 1) {
+				report_error(Compiler_Error::error, current_modifier->value, "dll_import is taking a dll name as unique parameter.");
+			}
+
+			dll_token = &current_modifier->arguments->value;
+		}
+		else {
+			report_error(Compiler_Error::error, current_modifier->value, "Unknown function modifier.");
+		}
+	}
+
+	if (is_a_dll_import)
+	{
+		Imported_Library* found_imported_lib;
+
+		uint64_t lib_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(dll_token->text), fstd::language::get_string_size(dll_token->text), 0);
+		uint16_t lib_short_hash = lib_hash & 0xffff;
+
+		found_imported_lib = fstd::memory::hash_table_get(ir.imported_libraries, lib_short_hash, dll_token->text);
+		if (found_imported_lib == nullptr) {
+			Imported_Library new_imported_lib;
+			found_imported_lib = fstd::memory::hash_table_insert(ir.imported_libraries, lib_short_hash, dll_token->text, new_imported_lib);
+
+			found_imported_lib->name = dll_token->text;
+			fstd::memory::hash_table_init(found_imported_lib->functions, &fstd::language::are_equals);
+		}
+
+		AST_Statement_Function** found_function_node;
+
+		uint64_t func_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(function_node->name.text), fstd::language::get_string_size(function_node->name.text), 0);
+		uint16_t func_short_hash = func_hash & 0xffff;
+
+		found_function_node = fstd::memory::hash_table_get(found_imported_lib->functions, func_short_hash, dll_token->text);
+
+		if (found_function_node) {
+			if (win32_system_call) {
+				report_error(Compiler_Error::error, function_node->name, "win32 means that function is implemented in C, so overloading isn't supported. Please check you haven't already declared.");
+			}
+			else {
+				report_error(Compiler_Error::error, function_node->name, "For the moment it is not allowed to import non win32 functions.");
+			}
+		}
+
+		fstd::memory::hash_table_insert(found_imported_lib->functions, func_short_hash, dll_token->text, function_node);
+	}
+	else
+	{
+		// @TODO
+		//
+		// f-lang code
+	}
+}
+
 void f::generate_ir(Parsing_Result& parsing_result, IR& ir)
 {
 	ZoneScopedN("f::generate_ir");
+
+	fstd::memory::hash_table_init(ir.imported_libraries, &fstd::language::are_equals);
 
 	ir.parsing_result = &parsing_result;
 

@@ -132,7 +132,7 @@ namespace fstd
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
-		inline void hash_table_insert(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, Hash_Type hash, Key_Type& key, Value_Type& value)
+		inline Value_Type* hash_table_insert(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, Hash_Type hash, Key_Type& key, Value_Type& value)
 		{
 			fstd::core::Assert(hash_table.compare_function);
 
@@ -158,12 +158,12 @@ namespace fstd
 					system::memory_copy(value_pod->value, &value, sizeof(Value_Type));
 
 					bucket->nb_values++;
-					return;
+					return value_pod->value;
 				}
 				else if (hash_table.compare_function(key, value_pod->key) == true)
 				{
 					// This value already exist
-					return;
+					return value_pod->value;
 				}
 
 				// Handle hash collision

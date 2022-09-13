@@ -26,7 +26,7 @@ namespace f
 
 	struct Imported_Library
 	{
-		typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> Function_Hash_Table;
+		typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Statement_Function*, 32> Function_Hash_Table;
 
 		fstd::language::string_view	name; // string_view of the first token parsed of this library
 		Function_Hash_Table			functions;
@@ -34,7 +34,7 @@ namespace f
 
 	struct IR
 	{
-		typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32> Imported_Library_Hash_Table;
+		typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library, 32> Imported_Library_Hash_Table;
 
 		Parsing_Result*				parsing_result;
 		Imported_Library_Hash_Table	imported_libraries;
