@@ -338,6 +338,7 @@ static void parse_function_declaration(IR& ir, AST_Statement_Function* function_
 	// dll_import means:
 	//   * function can't have implementation: the implementation is in the dll!!!
 
+	// modifiers analysis
 	for (AST_Function_Modifier* current_modifier = function_node->modifiers;
 		current_modifier != nullptr; current_modifier = (AST_Function_Modifier*)current_modifier->sibling)
 	{
@@ -406,6 +407,15 @@ static void parse_function_declaration(IR& ir, AST_Statement_Function* function_
 		//
 		// f-lang code
 	}
+
+	// @TODO do we need to count arguments,... to ease function call code generation?
+	// We certainly should use a new struct to store IR specific members
+	// struct IR_Function_Decl
+	// {
+	//     AST_Statement_Function* ast_node;
+	//     uint32_t                IAT_addr;
+	//     ...
+	// }
 }
 
 void f::generate_ir(Parsing_Result& parsing_result, IR& ir)
