@@ -50,6 +50,9 @@ namespace fstd
 		uint64_t						get_file_size(const File& file);
 		memory::Array<uint8_t>			get_file_content(File& file);
 
-		bool							write_file(File& file, uint8_t* buffer, uint32_t length);
+		uint64_t						get_file_position(const File& file);
+		bool							set_file_position(File& file, uint64_t position);
+
+		bool							write_file(File& file, uint8_t* buffer, uint32_t length, uint32_t* nb_written_bytes = nullptr);
 	}
 }

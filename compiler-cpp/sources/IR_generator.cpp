@@ -14,6 +14,34 @@ using namespace fstd::core;
 
 using namespace f;
 
+#define NB_PREALLOCATED_IMPORTED_LIBRARIES				128
+#define NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY	4096
+
+inline Imported_Library* allocate_imported_library()
+{
+	// Ensure that no reallocation could happen during the resize
+	core::Assert(memory::get_array_size(globals.ir_data.imported_libraries) < memory::get_array_reserved(globals.ir_data.imported_libraries));
+
+	memory::resize_array(globals.ir_data.imported_libraries, memory::get_array_size(globals.ir_data.imported_libraries) + 1);
+
+	Imported_Library* new_imported_library = memory::get_array_last_element(globals.ir_data.imported_libraries);
+	return new_imported_library;
+}
+
+inline Imported_Function* allocate_imported_function()
+{
+	// Ensure that no reallocation could happen during the resize
+	core::Assert(memory::get_array_size(globals.ir_data.imported_functions) < memory::get_array_reserved(globals.ir_data.imported_functions));
+
+	memory::resize_array(globals.ir_data.imported_functions, memory::get_array_size(globals.ir_data.imported_functions) + 1);
+
+	Imported_Function* new_imported_function = memory::get_array_last_element(globals.ir_data.imported_functions);
+	return new_imported_function;
+}
+
+// =============================================================================
+
+
 static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node);
 static void parse_function_declaration(IR& ir, AST_Statement_Function* function_node);
 static size_t get_list_size(AST_Node* node);
@@ -369,28 +397,29 @@ static void parse_function_declaration(IR& ir, AST_Statement_Function* function_
 
 	if (is_a_dll_import)
 	{
-		Imported_Library* found_imported_lib;
+		Imported_Library** found_imported_lib;
 
 		uint64_t lib_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(dll_token->text), fstd::language::get_string_size(dll_token->text), 0);
 		uint16_t lib_short_hash = lib_hash & 0xffff;
 
 		found_imported_lib = fstd::memory::hash_table_get(ir.imported_libraries, lib_short_hash, dll_token->text);
 		if (found_imported_lib == nullptr) {
-			Imported_Library new_imported_lib;
-			found_imported_lib = fstd::memory::hash_table_insert(ir.imported_libraries, lib_short_hash, dll_token->text, new_imported_lib);
+			Imported_Library* new_imported_lib = allocate_imported_library();
 
-			found_imported_lib->name = dll_token->text;
-			fstd::memory::hash_table_init(found_imported_lib->functions, &fstd::language::are_equals);
+			new_imported_lib->name = dll_token->text;
+			fstd::memory::hash_table_init(new_imported_lib->functions, &fstd::language::are_equals);
+
+			found_imported_lib = fstd::memory::hash_table_insert(ir.imported_libraries, lib_short_hash, dll_token->text, new_imported_lib);
 		}
 
-		AST_Statement_Function** found_function_node;
+		Imported_Function** found_imported_func;
 
 		uint64_t func_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(function_node->name.text), fstd::language::get_string_size(function_node->name.text), 0);
 		uint16_t func_short_hash = func_hash & 0xffff;
 
-		found_function_node = fstd::memory::hash_table_get(found_imported_lib->functions, func_short_hash, dll_token->text);
+		found_imported_func = fstd::memory::hash_table_get((*found_imported_lib)->functions, func_short_hash, dll_token->text);
 
-		if (found_function_node) {
+		if (found_imported_func) {
 			if (win32_system_call) {
 				report_error(Compiler_Error::error, function_node->name, "win32 means that function is implemented in C, so overloading isn't supported. Please check you haven't already declared.");
 			}
@@ -399,7 +428,12 @@ static void parse_function_declaration(IR& ir, AST_Statement_Function* function_
 			}
 		}
 
-		fstd::memory::hash_table_insert(found_imported_lib->functions, func_short_hash, dll_token->text, function_node);
+		Imported_Function* new_imported_func = allocate_imported_function();
+
+		new_imported_func->function = function_node;
+		new_imported_func->name_RVA = 0;
+
+		fstd::memory::hash_table_insert((*found_imported_lib)->functions, func_short_hash, dll_token->text, new_imported_func);
 	}
 	else
 	{
@@ -422,7 +456,16 @@ void f::generate_ir(Parsing_Result& parsing_result, IR& ir)
 {
 	ZoneScopedN("f::generate_ir");
 
-	fstd::memory::hash_table_init(ir.imported_libraries, &fstd::language::are_equals);
+	// Initialize data
+	{
+		memory::hash_table_init(ir.imported_libraries, &language::are_equals);
+
+		memory::init(globals.ir_data.imported_libraries);
+		memory::reserve_array(globals.ir_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
+
+		memory::init(globals.ir_data.imported_functions);
+		memory::reserve_array(globals.ir_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
+	}
 
 	ir.parsing_result = &parsing_result;
 

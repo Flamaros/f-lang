@@ -38,6 +38,8 @@ output.obj
 output.exe
 scope.png
 
+editor.exe
+
 # research/vs_x86_hello_world (Visual Studio)
 research/vs_x86_hello_world/Release
 research/vs_x86_hello_world/Debug

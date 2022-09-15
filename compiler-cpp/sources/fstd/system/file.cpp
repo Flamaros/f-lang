@@ -136,19 +136,48 @@ namespace fstd
 #endif
 		}
 
-		bool write_file(File& file, uint8_t* buffer, uint32_t length)
+		uint64_t get_file_position(const File& file)
+		{
+			fstd::core::Assert(file.handle != Invalid_File_Handle);
+
+#if defined(FSTD_OS_WINDOWS)
+			LARGE_INTEGER	position;
+			LARGE_INTEGER	zero_position;
+
+			zero_position.QuadPart = 0;
+			SetFilePointerEx(file.handle, zero_position, &position, FILE_CURRENT);
+
+			return (uint64_t)(position.QuadPart);
+#else
+#	error
+#endif
+		}
+
+		bool set_file_position(File& file, uint64_t position)
+		{
+			fstd::core::Assert(file.handle != Invalid_File_Handle);
+
+#if defined(FSTD_OS_WINDOWS)
+			LARGE_INTEGER win32_position;
+
+			win32_position.QuadPart = position;
+			return SetFilePointerEx(file.handle, win32_position, NULL, FILE_BEGIN) != 0;
+#else
+#	error
+#endif
+		}
+
+		bool write_file(File& file, uint8_t* buffer, uint32_t length, uint32_t* nb_written_bytes)
 		{
 			ZoneScopedN("fstd::system::write_file");
 
 			fstd::core::Assert(file.handle != Invalid_File_Handle);
 #if defined(FSTD_OS_WINDOWS)
-			DWORD	nb_bytes_written;
-
 			return WriteFile(
 				file.handle,		// hFile,
 				buffer,				// lpBuffer,
 				length,				// nNumberOfBytesToWrite,
-				&nb_bytes_written,	// lpNumberOfBytesWritten,
+				(LPDWORD)nb_written_bytes,	// lpNumberOfBytesWritten,
 				nullptr				// lpOverlapped
 			) == TRUE;
 #else

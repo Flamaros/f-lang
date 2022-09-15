@@ -1155,9 +1155,9 @@ void parse_union_scope(stream::Array_Stream<Token>& stream, AST_Statement_Union_
 
 void initialize_symbol_table(Symbol_Table* symbol_table, Symbol_Table* parent, Symbol_Table* sibling, Scope_Type type, Token* name)
 {
-	fstd::memory::hash_table_init(symbol_table->variables,		&fstd::language::are_equals);
+	fstd::memory::hash_table_init(symbol_table->variables,	&fstd::language::are_equals);
 	fstd::memory::hash_table_init(symbol_table->user_types,	&fstd::language::are_equals);
-	fstd::memory::hash_table_init(symbol_table->functions,		&fstd::language::are_equals);
+	fstd::memory::hash_table_init(symbol_table->functions,	&fstd::language::are_equals);
 
 	symbol_table->type = type;
 	symbol_table->name = name;

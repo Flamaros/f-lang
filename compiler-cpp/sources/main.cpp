@@ -202,7 +202,7 @@ int main(int ac, char** av)
 
 			system::from_native(output_file_path, (uint8_t*)av[2]);
 
-			f::CPP_backend::compile(ir, output_file_path);
+			f::PE_x86_backend::compile(ir, output_file_path);
 		}
 	}
 
