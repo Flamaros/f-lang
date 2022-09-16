@@ -13,6 +13,7 @@
 
 #undef max
 #include <limits> // @TODO remove it
+#include <type_traits>
 
 //
 // Voir sur les buckets de la hashtable s'il ne faut pas avoir un buffer avec les flag d'usage plutôt que
@@ -67,8 +68,10 @@ namespace fstd
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size = 512>
 		struct Hash_Table
 		{
-			// @TODO Check if the Key_Type is an integer type (uint16, int32, ...)
-			// With templates "contracts"
+			static_assert(sizeof(Value_Type) <= sizeof(size_t));
+
+			// @WTF uint16_t isn't an integral
+//			static_assert(std::is_integral<Key_Type>::value, "Key_Type should be an integral type.");
 
 			struct Iterator
 			{
@@ -80,7 +83,7 @@ namespace fstd
 			struct Value_POD
 			{
 				Key_Type	key;
-				Value_Type* value;
+				Value_Type	value;
 			};
 
 			struct Bucket
@@ -154,16 +157,15 @@ namespace fstd
 				if (value_pod->value == nullptr)
 				{
 					value_pod->key = key;
-					value_pod->value = (Value_Type*)system::allocate(sizeof(Value_Type));
-					system::memory_copy(value_pod->value, &value, sizeof(Value_Type));
+					value_pod->value = value;
 
 					bucket->nb_values++;
-					return value_pod->value;
+					return &value_pod->value;
 				}
 				else if (hash_table.compare_function(key, value_pod->key) == true)
 				{
 					// This value already exist
-					return value_pod->value;
+					return &value_pod->value;
 				}
 
 				// Handle hash collision
@@ -223,7 +225,7 @@ namespace fstd
 					return nullptr;
 
 				if (hash_table.compare_function(key, value_pod->key) == true)
-					return value_pod->value;
+					return &value_pod->value;
 					
 				// Increment the hash due to the collision, but we also take care of keeping it in the range.
 				hash = (hash + 1) % std::numeric_limits<Hash_Type>::max();
@@ -309,7 +311,7 @@ namespace fstd
 			if (value_pod == nullptr) // Slot is empty so the key is not in the hash_table
 				return nullptr;
 
-			return value_pod->value;
+			return &value_pod->value;
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>

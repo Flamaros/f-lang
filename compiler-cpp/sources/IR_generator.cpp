@@ -14,6 +14,8 @@ using namespace fstd::core;
 
 using namespace f;
 
+// @TODO Should we count imported libraries and function during the parsing to optimize the allocated size for
+// structs Imported_Library and Imported_Function?
 #define NB_PREALLOCATED_IMPORTED_LIBRARIES				128
 #define NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY	4096
 

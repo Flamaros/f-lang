@@ -1,9 +1,3 @@
-Ajouter au TODO:
-Attention au allocations dans la hash_table pour les tables de symboles
-
-Il faut peut être compter les fonctions,... Lors du parsing afin de pouvoir preallouer les structures pour l'IR
-
-
 ------
 Il faut éclaircir le besoin d'avoir 2 fonctions pour l'alignement (compute_aligned_size et align_address)
 
