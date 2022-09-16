@@ -22,7 +22,6 @@
 
 #include <fstd/os/windows/console.hpp>
 
-#undef max
 #include <tracy/Tracy.hpp>
 #include <tracy/common/TracySystem.hpp>
 

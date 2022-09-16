@@ -11,7 +11,6 @@
 
 #include <fstd/macros.hpp>
 
-#undef max
 #include <limits> // @TODO remove it
 #include <type_traits>
 

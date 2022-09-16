@@ -13,16 +13,20 @@ build/
 compiler-cpp/.vs
 compiler-cpp/Debug
 compiler-cpp/Release
+compiler-cpp/Release-Tracy
 compiler-cpp/x64
 compiler-cpp/compileData*
 compiler-cpp/f-lang/Debug
 compiler-cpp/f-lang/Release
+compiler-cpp/f-lang/Release-Tracy
 compiler-cpp/f-lang/x64
 compiler-cpp/f-lang_lib/Debug
 compiler-cpp/f-lang_lib/Release
+compiler-cpp/f-lang_lib/Release-Tracy
 compiler-cpp/f-lang_lib/x64
 compiler-cpp/tests/Debug
 compiler-cpp/tests/Release
+compiler-cpp/tests/Release-Tracy
 compiler-cpp/tests/x64
 
 # QtCreator
@@ -38,7 +42,7 @@ output.obj
 output.exe
 scope.png
 
-editor.exe
+f-editor.exe
 
 # research/vs_x86_hello_world (Visual Studio)
 research/vs_x86_hello_world/Release
@@ -46,4 +50,6 @@ research/vs_x86_hello_world/Debug
 research/vs_x86_hello_world/x64
 research/vs_x86_hello_world/.vs
 
+# x64dbg
+tools/x64dbg/release/x32/db
 tools/x64dbg/release/x32/x32dbg.ini

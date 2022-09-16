@@ -28,7 +28,6 @@
 #include <cstdlib>
 #include <time.h>       /* time */
 
-#undef max
 #include <tracy/Tracy.hpp>
 #include <tracy/common/TracySystem.hpp>
 

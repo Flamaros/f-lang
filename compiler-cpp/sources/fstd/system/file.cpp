@@ -9,7 +9,6 @@
 #	include <win32/io.h> // INVALID_HANDLE_VALUE
 #endif
 
-#undef max
 #include <tracy/Tracy.hpp>
 #include <tracy/common/TracySystem.hpp>
 

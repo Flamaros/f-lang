@@ -17,7 +17,6 @@
 #include <fstd/language/flags.hpp>
 #include <fstd/language/string.hpp>
 
-#undef max
 #include <tracy/Tracy.hpp>
 
 #include <magic_enum/magic_enum.hpp> // @TODO remove it

@@ -20,7 +20,6 @@
 
 #include <third-party/SpookyV2.h>
 
-#undef max
 #include <tracy/Tracy.hpp>
 
 #include <magic_enum/magic_enum.hpp> // @TODO remove it

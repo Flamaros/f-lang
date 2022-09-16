@@ -10,6 +10,8 @@
 //#include <cmath>
 #include <fstd/core/assert.hpp>
 
+#include <tracy/Tracy.hpp>
+
 // Need we use VirtualAlloc instead of HeapAlloc, to support allocation of bigger buffers?
 // A size of 16MB seems good.
 
@@ -29,20 +31,31 @@ namespace fstd
 	{
 		void* os_allocate(size_t size)
 		{
+			void* ptr;
+
 #if defined(FSTD_OS_WINDOWS)
-			return HeapAlloc(GetProcessHeap(), 0, size);
+			ptr = HeapAlloc(GetProcessHeap(), 0, size);
 #else
 #	error
 #endif
+			TracyAlloc(ptr, size);
+
+			return ptr;
 		}
 
 		void* os_reallocate(void* address, size_t size)
 		{
+			TracyFree(address);
+
+			void* ptr;
 #if defined(FSTD_OS_WINDOWS)
-			return HeapReAlloc(GetProcessHeap(), 0, address, size);
+			ptr = HeapReAlloc(GetProcessHeap(), 0, address, size);
 #else
 #	error
 #endif
+			TracyAlloc(ptr, size);
+
+			return ptr;
 		}
 
 		void os_free(void* address)
@@ -50,6 +63,9 @@ namespace fstd
 			if (address == nullptr) {
 				return;
 			}
+
+			TracyFree(address);
+
 #if defined(FSTD_OS_WINDOWS)
 			HeapFree(GetProcessHeap(), 0, address);
 #else
