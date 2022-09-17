@@ -887,6 +887,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // Data Directories
     {
+        ZoneScopedN("Data Directories");
+
         RtlSecureZeroMemory(image_nt_header.OptionalHeader.DataDirectory, sizeof(image_nt_header.OptionalHeader.DataDirectory));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
 #if DLL_MODE == 1
@@ -917,6 +919,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // .text section
     {
+        ZoneScopedN(".text section");
+
         RtlSecureZeroMemory(&text_image_section_header, sizeof(text_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(text_image_section_header.Name, ".text", 6);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
@@ -936,6 +940,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // .rdata section
     {
+        ZoneScopedN(".rdata section");
+
         RtlSecureZeroMemory(&rdata_image_section_header, sizeof(rdata_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(rdata_image_section_header.Name, ".rdata", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
@@ -956,6 +962,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 #if DLL_MODE == 1
     // .reloc section
     {
+        ZoneScopedN(".reloc section");
+
         RtlSecureZeroMemory(&reloc_image_section_header, sizeof(reloc_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(reloc_image_section_header.Name, ".reloc", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
@@ -976,6 +984,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // .idata section
     {
+        ZoneScopedN(".idata section");
+
         RtlSecureZeroMemory(&idata_image_section_header, sizeof(idata_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(idata_image_section_header.Name, ".idata", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
@@ -1004,6 +1014,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // Write code (.text section data)
     {
+        ZoneScopedN("Write code (.text section data)");
+
         write_file(output_file, (uint8_t*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written);
         write_zeros(output_file, text_image_section_header.SizeOfRawData - sizeof(hello_world_instructions));
         size_of_image += compute_aligned_size(text_image_section_header.SizeOfRawData, section_alignment);
@@ -1011,6 +1023,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // Write read only data (.rdata section data)
     {
+        ZoneScopedN("Write read only data (.rdata section data)");
+
         DWORD rdata_section_size = 0;
 
         write_file(output_file, (uint8_t*)message[0], (DWORD)fstd::language::string_literal_size(message[0]) + 1, &bytes_written); // +1 to write the ending '\0'
@@ -1023,6 +1037,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 #if DLL_MODE == 1
     // Write relocation data (.reloc section data)
     {
+        ZoneScopedN("Write relocation data (.reloc section data)");
+
         IMAGE_BASE_RELOCATION image_base_relocation;
 
         DWORD reloc_section_size = 0;
@@ -1067,6 +1083,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // Write import data (.idata section data)
     {
+        ZoneScopedN("Write import data (.idata section data)");
+
         // @TODO Make it generic (actually hard coded)
         // @TODO check the section size in the header (idata_image_section_header.SizeOfRawData)
 
@@ -1178,6 +1196,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // size_of_code
     {
+        ZoneScopedN("size_of_code");
+
         DWORD size_of_code_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfCode);
         size_of_code = text_image_section_header.SizeOfRawData;	 // @Warning size of the sum of all .text sections
 
@@ -1187,6 +1207,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // size_of_initialized_data
     {
+        ZoneScopedN("size_of_initialized_data");
+
         DWORD size_of_initialized_data_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfInitializedData);
         size_of_initialized_data = text_image_section_header.SizeOfRawData;	 // @Warning size of the sum of all .text sections
         // 1024
@@ -1196,6 +1218,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // size_of_uninitialized_data
     {
+        ZoneScopedN("size_of_uninitialized_data");
+
         DWORD size_of_uninitialized_data_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfUninitializedData);
         size_of_uninitialized_data = 0;	 // @Warning size unitialized data in all .text sections
 
@@ -1205,6 +1229,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // address_of_entry_point
     {
+        ZoneScopedN("address_of_entry_point");
+
         DWORD address_of_entry_point_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.AddressOfEntryPoint);
         address_of_entry_point = text_section_address;
         // 4096
@@ -1214,6 +1240,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // base_of_code
     {
+        ZoneScopedN("base_of_code");
+
         DWORD base_of_code_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.BaseOfCode);
         base_of_code = text_section_address;
         // 4096
@@ -1223,6 +1251,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // base_of_data
     {
+        ZoneScopedN("base_of_data");
+
         DWORD base_of_data_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.BaseOfData);
         rdata_section_address = compute_aligned_size(text_section_address + text_image_section_header.SizeOfRawData, section_alignment);
         rdata_image_section_pointer_to_raw_data = align_address(text_image_section_pointer_to_raw_data + text_image_section_header.SizeOfRawData, file_alignment);
@@ -1249,6 +1279,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
     // Gets the size (in bytes) of the image, including all headers, as the image is loaded in memory.
     // The size (in bytes) of the image, which is a multiple of SectionAlignment.
     {
+        ZoneScopedN("size_of_image");
+
         DWORD size_of_image_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfImage);
         //        size_of_image = compute_aligned_size(size_of_image, section_alignment);
                 // 
@@ -1258,6 +1290,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // size_of_headers (The combined size of an MS DOS stub, PE header, and section headers rounded up to a multiple of FileAlignment.)
     {
+        ZoneScopedN("size_of_headers");
+
         DWORD size_of_header_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.SizeOfHeaders);
         size_of_headers = compute_aligned_size(size_of_headers, file_alignment);
         // 
@@ -1267,6 +1301,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // text_image_section_virtual_address
     {
+        ZoneScopedN("text_image_section_virtual_address");
+
         DWORD text_image_section_virtual_address_address = text_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         text_image_section_virtual_address = text_section_address;
 
@@ -1276,6 +1312,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // text_image_section_pointer_to_raw_data
     {
+        ZoneScopedN("text_image_section_pointer_to_raw_data");
+
         DWORD text_image_section_pointer_to_raw_data_address = text_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
         // text_image_section_pointer_to_raw_data is already computed
 
@@ -1285,6 +1323,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // rdata_image_section_virtual_address
     {
+        ZoneScopedN("rdata_image_section_virtual_address");
+
         DWORD rdata_image_section_virtual_address_address = rdata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         rdata_image_section_virtual_address = rdata_section_address;
 
@@ -1294,6 +1334,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // rdata_image_section_pointer_to_raw_data
     {
+        ZoneScopedN("rdata_image_section_pointer_to_raw_data");
+
         DWORD rdata_image_section_pointer_to_raw_data_address = rdata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
         // rdata_image_section_pointer_to_raw_data is already computed
 
@@ -1304,6 +1346,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 #if DLL_MODE == 1
     // reloc_image_section_virtual_address
     {
+        ZoneScopedN("reloc_image_section_virtual_address");
+
         DWORD reloc_image_section_virtual_address_address = reloc_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         reloc_image_section_virtual_address = reloc_section_address;
 
@@ -1313,6 +1357,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // reloc_image_section_pointer_to_raw_data
     {
+        ZoneScopedN("reloc_image_section_pointer_to_raw_data");
+
         DWORD reloc_image_section_pointer_to_raw_data_address = reloc_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
         // reloc_image_section_pointer_to_raw_data is already computed
 
@@ -1323,6 +1369,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // idata_image_section_virtual_address
     {
+        ZoneScopedN("idata_image_section_virtual_address");
+
         DWORD idata_image_section_virtual_address_address = idata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         idata_image_section_virtual_address = idata_section_address;
 
@@ -1332,6 +1380,8 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
     // idata_image_section_pointer_to_raw_data
     {
+        ZoneScopedN("idata_image_section_pointer_to_raw_data");
+
         DWORD idata_image_section_pointer_to_raw_data_address = idata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
         // idata_image_section_pointer_to_raw_data is already computed
 

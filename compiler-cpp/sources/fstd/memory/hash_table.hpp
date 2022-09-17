@@ -52,7 +52,7 @@
 // @TODO KeywordHashTable
 // Peut être continuer d'utiliser keyword hashtable mais avec un autre générateur de hash
 
-
+#include <tracy/Tracy.hpp>
 
 namespace fstd
 {
@@ -98,6 +98,8 @@ namespace fstd
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
 		inline void hash_table_init(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, bool (*compare_function)(const Key_Type&, const Key_Type&))
 		{
+			ZoneScopedN("hash_table_init");
+
 			hash_table.compare_function = compare_function;
 
 			fstd::core::Assert((std::numeric_limits<Hash_Type>::max() + 1) % _bucket_size == 0); // maximum possible value of type Hash_Type should be a multiple of bucket_size
@@ -118,6 +120,8 @@ namespace fstd
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
 		inline void hash_table_release(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
 		{
+			ZoneScopedN("hash_table_release");
+
 			for (size_t bucket_index = 0; bucket_index < get_array_size(hash_table.buckets); bucket_index++)
 			{
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
@@ -136,6 +140,8 @@ namespace fstd
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
 		inline Value_Type* hash_table_insert(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, Hash_Type hash, Key_Type& key, Value_Type& value)
 		{
+			ZoneScopedN("hash_table_insert");
+
 			fstd::core::Assert(hash_table.compare_function);
 
 			while (true)
@@ -207,6 +213,8 @@ namespace fstd
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
 		inline Value_Type* hash_table_get(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, Hash_Type hash, Key_Type& key)
 		{
+			ZoneScopedN("hash_table_get");
+
 			fstd::core::Assert(hash_table.compare_function);
 
 			while (true)
@@ -234,6 +242,8 @@ namespace fstd
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
 		inline Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator hash_table_begin(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
 		{
+			ZoneScopedN("hash_table_begin");
+
 			// We search the first valid value
 
 			typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator it;
@@ -258,6 +268,8 @@ namespace fstd
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
 		inline Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& hash_table_next(typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& it)
 		{
+			ZoneScopedN("hash_table_next");
+
 			// We increment the slot index to start to test the next value and we keep incrementing until a value is found
 
 			it.slot_index++;
@@ -281,6 +293,8 @@ namespace fstd
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
 		inline Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator hash_table_end(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
 		{
+			ZoneScopedN("hash_table_end");
+
 			typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator it;
 
 			it.hash_table = &hash_table;
@@ -294,12 +308,16 @@ namespace fstd
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
 		inline bool equals(typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& a, typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& b)
 		{
+			ZoneScopedN("equals");
+
 			return a.hash_table == b.hash_table && a.bucket_index == b.bucket_index && a.slot_index == b.slot_index;
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
 		inline Value_Type* hash_table_get(typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& it)
 		{
+			ZoneScopedN("hash_table_get (iterator)");
+
 			auto* bucket = get_array_element(it.hash_table->buckets, it.bucket_index);
 
 			if (bucket == nullptr)
@@ -316,6 +334,8 @@ namespace fstd
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
 		inline void log_stats(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, fstd::core::Logger* logger)
 		{
+			ZoneScopedN("log_stats");
+
 			fstd::core::log(logger, fstd::core::Log_Level::info, "[Hash_Table] Memory size: %d\n", get_array_bytes_size(hash_table.table));
 		}
 	}

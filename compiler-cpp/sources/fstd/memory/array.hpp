@@ -4,6 +4,8 @@
 
 #include <fstd/core/assert.hpp>
 
+#include <tracy/Tracy.hpp>
+
 namespace fstd
 {
 	namespace memory
@@ -32,6 +34,8 @@ namespace fstd
 		template<typename Type>
 		void init(Array<Type>& array)
 		{
+			ZoneScopedN("init");
+
 			array.ptr = nullptr;
 			array.reserved = 0;
 			array.size = 0;
@@ -40,6 +44,8 @@ namespace fstd
 		template<typename Type>
 		void resize_array(Array<Type>& array, size_t size)
 		{
+			ZoneScopedN("resize_array");
+
 			if (array.reserved >= size) {
 				array.size = size;
 			}
@@ -53,6 +59,8 @@ namespace fstd
 		template<typename Type>
 		void reserve_array(Array<Type>& array, size_t size)
 		{
+			ZoneScopedN("reserve_array");
+
 			if (array.reserved < size) {
 				array.ptr = (Type*)system::reallocate(array.ptr, size * sizeof(Type));
 				array.reserved = size;
@@ -62,6 +70,8 @@ namespace fstd
 		template<typename Type>
 		void release(Array<Type>& array)
 		{
+			ZoneScopedN("release");
+
 			system::free(array.ptr);
 			init(array);
 		}
@@ -69,6 +79,8 @@ namespace fstd
 		template<typename Type>
 		void shrink_array(Array<Type>& array, size_t size)
 		{
+			ZoneScopedN("shrink_array");
+
 			if (size == 0) {
 				release(array);
 
@@ -87,6 +99,8 @@ namespace fstd
 		template<typename Type>
 		void array_push_back(Array<Type>& array, Type value)
 		{
+			ZoneScopedN("array_push_back");
+
 			reserve_array(array, array.size + 1);
 			array.ptr[array.size] = value;
 			array.size++;
@@ -95,6 +109,8 @@ namespace fstd
 		template<typename Type>
 		void array_copy(Array<Type>& array, size_t index, const Type* raw_array, size_t size)
 		{
+			ZoneScopedN("array_copy");
+
 			resize_array(array, index + size);
 			system::memory_copy(&array.ptr[index], raw_array, size * sizeof(Type));
 		}
@@ -102,6 +118,8 @@ namespace fstd
 		template<typename Type>
 		void array_copy(Array<Type>& array, size_t index, const Array<Type>& source)
 		{
+			ZoneScopedN("array_copy");
+
 			resize_array(array, index + source.size);
 			system::memory_copy(&array.ptr[index], source.ptr, source.size * sizeof(Type));
 		}

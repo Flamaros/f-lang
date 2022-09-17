@@ -271,6 +271,8 @@ static inline void skip(stream::Array_Stream<uint8_t>& stream, size_t size, int&
 
 static inline void polish_string_literal(f::Token& token)
 {
+    ZoneScopedN("polish_string_literal");
+
     fstd::core::Assert(token.type == Token_Type::STRING_LITERAL);
 
     size_t              token_length = language::get_string_size(token.text);
@@ -344,6 +346,8 @@ void f::lex(const system::Path& path, memory::Array<Token>& tokens)
 
 void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer, fstd::memory::Array<Token>& tokens, fstd::memory::Array<f::Lexer_Data>& lexer_data, Token& file_token)
 {
+    ZoneScopedN("lex");
+
     stream::Array_Stream<uint8_t>   stream;
     size_t	                        nb_tokens_prediction = 0;
     language::string_view           current_view;

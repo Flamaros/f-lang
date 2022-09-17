@@ -45,6 +45,8 @@ enum class State
 template<typename Node_Type>
 inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 {
+	ZoneScopedN("allocate_AST_node");
+
 	// @TODO f-lang
 	// Check if Node_Type is an AST_Node at compile time
 	//
@@ -64,6 +66,8 @@ inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 
 inline Symbol_Table* allocate_symbol_table()
 {
+	ZoneScopedN("allocate_symbol_table");
+
 	// Ensure that no reallocation could happen during the resize
 	core::Assert(memory::get_array_size(globals.parser_data.symbol_tables) < memory::get_array_reserved(globals.parser_data.symbol_tables) * sizeof(Symbol_Table));
 
@@ -100,6 +104,8 @@ static void initialize_symbol_table(Symbol_Table* symbol_table, Symbol_Table* pa
 // Automatically put the scope as first_child or as sibling of first_child depending on the situration of current_node
 inline void push_new_symbol_table(Scope_Type type, Token* name)
 {
+	ZoneScopedN("push_new_symbol_table");
+
 	Symbol_Table* parent = globals.parser_data.current_symbol_table;
 
 	// Actually as symbols don't leak from there scope and the lookup will be only based on parents, we don't have to keep children in declaration order.
@@ -126,6 +132,8 @@ inline void pop_symbol_table()
 
 void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array** array_node_)
 {
+	ZoneScopedN("parse_array");
+
 	Token	current_token;
 
 	current_token = stream::get(stream);
@@ -147,6 +155,8 @@ void parse_array(stream::Array_Stream<Token>& stream, AST_Statement_Type_Array**
 
 void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
 {
+	ZoneScopedN("parse_type");
+
 	Token		current_token;
 	AST_Node**	previous_sibling_addr = nullptr;
 
@@ -243,6 +253,8 @@ void parse_type(stream::Array_Stream<Token>& stream, AST_Node** type_node)
 
 void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_Statement_Variable** variable_, bool is_function_parameter /* = false */)
 {
+	ZoneScopedN("parse_variable");
+
 	Token					current_token;
 	AST_Statement_Variable* variable;
 
@@ -302,6 +314,8 @@ void parse_variable(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 
 void parse_alias(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
 {
+	ZoneScopedN("parse_alias");
+
 	AST_Alias*	alias_node = allocate_AST_node<AST_Alias>(previous_sibling_addr);
 
 	alias_node->ast_type = Node_Type::TYPE_ALIAS;
@@ -323,6 +337,8 @@ void parse_alias(stream::Array_Stream<Token>& stream, Token& identifier, AST_Nod
 
 void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node** previous_sibling_addr)
 {
+	ZoneScopedN("parse_function");
+
 	Token					current_token;
 	AST_Statement_Function*	function_node = allocate_AST_node<AST_Statement_Function>(previous_sibling_addr);
 
@@ -492,6 +508,8 @@ void parse_function(stream::Array_Stream<Token>& stream, Token& identifier, AST_
 
 void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier, AST_Function_Call** emplace_node)
 {
+	ZoneScopedN("parse_function_call");
+
 	Token				current_token;
 	AST_Function_Call*	function_call;
 	AST_Node**			current_expression_node;
@@ -523,6 +541,8 @@ void parse_function_call(stream::Array_Stream<Token>& stream, Token& identifier,
 
 void parse_struct(stream::Array_Stream<Token>& stream, Token* identifier, AST_Node** previous_sibling_addr)
 {
+	ZoneScopedN("parse_struct");
+
 	Token						current_token;
 	AST_Statement_Struct_Type*	struct_node = allocate_AST_node<AST_Statement_Struct_Type>(previous_sibling_addr);
 
@@ -568,6 +588,8 @@ void parse_enum(stream::Array_Stream<Token>& stream, Token& identifier, AST_Node
 
 void parse_union(stream::Array_Stream<Token>& stream, Token* identifier, AST_Node** previous_sibling_addr)
 {
+	ZoneScopedN("parse_union");
+
 	Token						current_token;
 	AST_Statement_Union_Type*	union_node = allocate_AST_node<AST_Statement_Union_Type>(previous_sibling_addr);
 
@@ -604,6 +626,8 @@ void parse_union(stream::Array_Stream<Token>& stream, Token* identifier, AST_Nod
 
 void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
 {
+	ZoneScopedN("parse_binary_operator");
+
 	core::Assert(*previous_child != nullptr);
 	AST_Binary_Operator* binary_operator_node = allocate_AST_node<AST_Binary_Operator>(emplace_node);
 
@@ -628,6 +652,8 @@ void parse_binary_operator(stream::Array_Stream<Token>& stream, AST_Node** empla
 
 void fix_operations_order(AST_Binary_Operator* binary_operator_node)
 {
+	ZoneScopedN("fix_operations_order");
+
 	// https://ryanfleury.net/blog_a_custom_scripting_language_1
 	if (is_binary_operator(binary_operator_node->right) == false)
 		return;
@@ -671,6 +697,8 @@ void fix_operations_order(AST_Binary_Operator* binary_operator_node)
 
 void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
 {
+	ZoneScopedN("parse_unary_operator");
+
 	core::Assert(*previous_child == nullptr);
 	AST_Unary_operator* unary_operator_node = allocate_AST_node<AST_Unary_operator>(emplace_node);
 
@@ -686,6 +714,8 @@ void parse_unary_operator(stream::Array_Stream<Token>& stream, AST_Node** emplac
 
 bool parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_node, Punctuation delimiter_1, Punctuation delimiter_2 /* = Punctuation::UNKNOWN */)
 {
+	ZoneScopedN("parse_expression");
+
 	Token			current_token;
 	Token			starting_token;
 	AST_Node*		previous_child = nullptr;
@@ -821,6 +851,8 @@ bool parse_expression(stream::Array_Stream<Token>& stream, AST_Node** emplace_no
 
 void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scope_node_, bool is_root_node /* = false */)
 {
+	ZoneScopedN("parse_scope");
+
 	Token					current_token;
 	AST_Statement_Scope*	scope_node = allocate_AST_node<AST_Statement_Scope>(nullptr);
 	AST_Node**				current_child = &scope_node->first_child;
@@ -952,6 +984,8 @@ void parse_scope(stream::Array_Stream<Token>& stream, AST_Statement_Scope** scop
 
 void parse_struct_scope(stream::Array_Stream<Token>& stream, AST_Statement_Struct_Type* scope_node, bool is_root_node /* = false */)
 {
+	ZoneScopedN("parse_struct_scope");
+
 	Token						current_token;
 	AST_Node**					current_child = &scope_node->first_child;
 
@@ -1053,6 +1087,8 @@ void parse_struct_scope(stream::Array_Stream<Token>& stream, AST_Statement_Struc
 
 void parse_union_scope(stream::Array_Stream<Token>& stream, AST_Statement_Union_Type* scope_node, bool is_root_node /* = false */)
 {
+	ZoneScopedN("parse_union_scope");
+
 	Token						current_token;
 	AST_Node**					current_child = &scope_node->first_child;
 
@@ -1154,6 +1190,8 @@ void parse_union_scope(stream::Array_Stream<Token>& stream, AST_Statement_Union_
 
 void initialize_symbol_table(Symbol_Table* symbol_table, Symbol_Table* parent, Symbol_Table* sibling, Scope_Type type, Token* name)
 {
+	ZoneScopedN("initialize_symbol_table");
+
 	fstd::memory::hash_table_init(symbol_table->variables,	&fstd::language::are_equals);
 	fstd::memory::hash_table_init(symbol_table->user_types,	&fstd::language::are_equals);
 	fstd::memory::hash_table_init(symbol_table->functions,	&fstd::language::are_equals);
@@ -1194,6 +1232,8 @@ void f::parse(fstd::memory::Array<Token>& tokens, Parsing_Result& parsing_result
 
 static void write_dot_node(String_Builder& file_string_builder, const AST_Node* node, int64_t parent_index = -1, int64_t left_node_index = -1)
 {
+	ZoneScopedN("write_dot_node");
+
 	if (!node) {
 		return;
 	}
@@ -1472,6 +1512,8 @@ void f::generate_dot_file(const AST_Node* node, const system::Path& output_file_
 
 static void write_dot_symbol_table(String_Builder& file_string_builder, const Symbol_Table* symbol_table, int64_t parent_index = -1, int64_t left_node_index = -1)
 {
+	ZoneScopedN("write_dot_symbol_table");
+
 	if (!symbol_table) {
 		return;
 	}
