@@ -201,6 +201,7 @@ int main(int ac, char** av)
 
 			system::from_native(output_file_path, (uint8_t*)av[2]);
 
+			f::PE_x86_backend::initialize_backend(); // @TODO see to do it asynchronously (are event better at compile-time to generate C++ code with tables)
 			f::PE_x86_backend::compile(ir, output_file_path);
 		}
 	}

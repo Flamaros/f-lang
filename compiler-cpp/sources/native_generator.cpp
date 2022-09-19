@@ -1,11 +1,14 @@
 #include "native_generator.hpp"
 
 #include "globals.hpp"
+#include "lexer/hash_table.hpp"
 
 #include <fstd/system/file.hpp>
 
 #include <fstd/core/assert.hpp>
 #include <fstd/core/string_builder.hpp>
+
+#include <fstd/stream/array_stream.hpp>
 
 #include <fstd/language/defer.hpp>
 
@@ -20,6 +23,7 @@
 using namespace fstd;
 using namespace fstd::core;
 using namespace fstd::system;
+using namespace fstd::stream;
 
 using namespace f;
 
@@ -77,6 +81,64 @@ DWORD	reloc_section_address;
 #endif
 DWORD	idata_image_section_header_address;
 DWORD	idata_section_address;
+
+static Hash_Table<uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1 = {
+    // White characters (aren't handle for an implicit skip/separation between tokens)
+    {' ', Punctuation::WHITE_CHARACTER},       // space
+    {'\t', Punctuation::WHITE_CHARACTER},      // horizontal tab
+    {'\v', Punctuation::WHITE_CHARACTER},      // vertical tab
+    {'\f', Punctuation::WHITE_CHARACTER},      // feed
+    {'\r', Punctuation::WHITE_CHARACTER},      // carriage return
+    {'\n', Punctuation::NEW_LINE_CHARACTER},   // newline
+    {'~', Punctuation::TILDE},
+    {'`', Punctuation::BACKQUOTE},
+    {'!', Punctuation::BANG},
+    {'@', Punctuation::AT},
+    {'#', Punctuation::HASH},
+    {'$', Punctuation::DOLLAR},
+    {'%', Punctuation::PERCENT},
+    {'^', Punctuation::CARET},
+    {'&', Punctuation::AMPERSAND},
+    {'*', Punctuation::STAR},
+    {'(', Punctuation::OPEN_PARENTHESIS},
+    {')', Punctuation::CLOSE_PARENTHESIS},
+    {'-', Punctuation::DASH},
+    {'+', Punctuation::PLUS},
+    {'=', Punctuation::EQUALS},
+    {'{', Punctuation::OPEN_BRACE},
+    {'}', Punctuation::CLOSE_BRACE},
+    {'[', Punctuation::OPEN_BRACKET},
+    {']', Punctuation::CLOSE_BRACKET},
+    {':', Punctuation::COLON},
+    {';', Punctuation::SEMICOLON},
+    {'\'', Punctuation::SINGLE_QUOTE},
+    {'"', Punctuation::DOUBLE_QUOTE},
+    {'|', Punctuation::PIPE},
+    {'/', Punctuation::SLASH},
+    {'\\', Punctuation::BACKSLASH},
+    {'<', Punctuation::LESS},
+    {'>', Punctuation::GREATER},
+    {',', Punctuation::COMMA},
+    {'.', Punctuation::DOT},
+    {'?', Punctuation::QUESTION_MARK}
+};
+
+static inline bool is_white_punctuation(Punctuation punctuation)
+{
+    return punctuation >= Punctuation::WHITE_CHARACTER;
+}
+
+static inline void peek(stream::Array_Stream<uint8_t>& stream, int& current_column)
+{
+    stream::peek<uint8_t>(stream);
+    current_column++;
+}
+
+static inline void skip(stream::Array_Stream<uint8_t>& stream, size_t size, int& current_column)
+{
+    stream::skip<uint8_t>(stream, size);
+    current_column += (int)size;
+}
 
 // @TODO should be generated not hard-coded
 uint8_t	hello_world_instructions[] = {
@@ -762,6 +824,143 @@ bool f::PE_x86_backend::generate_hello_world()
     CloseHandle(BINARY);
 
     return true;
+}
+
+void f::PE_x86_backend::initialize_backend()
+{
+    ZoneScopedN("f::PE_x86_backend::initialize_backend");
+
+    system::Path    instructions_file_path;
+    File            instructions_file;
+    bool            open;
+
+    defer{ system::reset_path(instructions_file_path); };
+
+    system::from_native(instructions_file_path, (uint8_t*)"./compiler-cpp/data/insns.dat");
+
+    open = open_file(instructions_file, instructions_file_path, File::Opening_Flag::READ);
+
+    if (open == false) {
+        String_Builder		string_builder;
+        language::string	message;
+
+        defer{
+            free_buffers(string_builder);
+            release(message);
+        };
+
+        print_to_builder(string_builder, "Failed to open file: \"%v\"\n", to_string(instructions_file_path));
+
+        message = to_string(string_builder);
+        report_error(Compiler_Error::error, (char*)to_utf8(message));
+    }
+
+    defer{ close_file(instructions_file);};
+
+    fstd::memory::Array<uint8_t> instructions_buffer = system::get_file_content(instructions_file);
+
+    Array_Stream<uint8_t>   ins_stream;
+    size_t	                nb_tokens_prediction = 0;
+    language::string_view   current_view;
+    int					    current_line = 1;
+    int					    current_column = 1;
+
+    stream::initialize_memory_stream<uint8_t>(ins_stream, instructions_buffer);
+
+    if (stream::is_eof(ins_stream) == true) {
+        return;
+    }
+
+    language::assign(current_view, get_pointer(ins_stream), 0);
+
+    while (is_eof(ins_stream) == false)
+    {
+        Punctuation punctuation;
+        uint8_t     current_character;
+        Token       token;
+
+        current_character = get(ins_stream);
+        punctuation = punctuation_table_1[current_character];
+
+        if (punctuation != Punctuation::UNKNOWN) { // Punctuation to analyse
+            if (is_white_punctuation(punctuation)) {    // Punctuation to ignore
+                if (punctuation == Punctuation::NEW_LINE_CHARACTER) {
+                    current_line++;
+                    current_column = 0; // @Warning 0 because the will be incremented just after
+                }
+
+                peek(ins_stream, current_column);
+                continue; // Jump to next iteration loop to skip Token analysis because it has not changed
+            }
+            else {
+                token.file_path = system::to_string(instructions_file_path);
+                token.line = current_line;
+                token.column = current_column;
+
+                language::assign(current_view, get_pointer(ins_stream), 0);
+
+                if (punctuation == Punctuation::COMMA) {
+                    token.type = Token_Type::SYNTAXE_OPERATOR;
+
+                    language::assign(current_view, get_pointer(ins_stream), 1);
+                    token.text = current_view;
+                    token.value.punctuation = punctuation;
+                    skip(ins_stream, 1, current_column);
+                }
+                else if (punctuation == Punctuation::OPEN_BRACKET) {
+                    token.type = Token_Type::SYNTAXE_OPERATOR;
+
+                    language::assign(current_view, get_pointer(ins_stream), 1);
+                    token.text = current_view;
+                    token.value.punctuation = punctuation;
+                    skip(ins_stream, 1, current_column);
+                }
+                else if (punctuation == Punctuation::CLOSE_BRACKET) {
+                    token.type = Token_Type::SYNTAXE_OPERATOR;
+
+                    language::assign(current_view, get_pointer(ins_stream), 1);
+                    token.text = current_view;
+                    token.value.punctuation = punctuation;
+                    skip(ins_stream, 1, current_column);
+                }
+                else {
+                    token.type = Token_Type::SYNTAXE_OPERATOR;
+
+                    language::assign(current_view, get_pointer(ins_stream), 1);
+                    token.text = current_view;
+                    token.value.punctuation = punctuation;
+                    skip(ins_stream, 1, current_column);
+                }
+            }
+        }
+        else {  // Will be an identifier
+            token.file_path = system::to_string(instructions_file_path);
+            token.line = current_line;
+            token.column = current_column;
+
+            language::assign(current_view, get_pointer(ins_stream), 0);
+            while (is_eof(ins_stream) == false)
+            {
+                current_character = get(ins_stream);
+
+                punctuation = punctuation_table_1[current_character];
+                if (punctuation == Punctuation::UNKNOWN) {  // @Warning any kind of punctuation stop the definition of an identifier
+                    peek(ins_stream, current_column);
+                    language::resize(current_view, language::get_string_size(current_view) + 1);
+
+                    token.type = Token_Type::IDENTIFIER;
+
+                    token.text = current_view;
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+        // @TODO manage Token
+        core::log(*globals.logger, Log_Level::verbose, "[backend] %v\n", token.text);
+    }
 }
 
 void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
