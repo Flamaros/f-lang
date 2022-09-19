@@ -68,9 +68,7 @@ namespace fstd
 		struct Hash_Table
 		{
 			static_assert(sizeof(Value_Type) <= sizeof(size_t));
-
-			// @WTF uint16_t isn't an integral
-//			static_assert(std::is_integral<Key_Type>::value, "Key_Type should be an integral type.");
+			static_assert(std::is_integral<Hash_Type>::value, "Hash_Type should be an integral type.");
 
 			struct Iterator
 			{
