@@ -825,7 +825,10 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
 	if (nb_tokens_prediction < memory::get_array_size(tokens)) {
         // @TODO support print of floats
 //		log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f\n",  nb_tokens_prediction, memory::get_array_size(tokens), (float)memory::get_array_size(tokens) / (float)get_array_size(file_buffer));
+
+        // @TODO We should do a faster allocator of tokens than using array_push_back which check the size of the array.
         log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d\n", nb_tokens_prediction, memory::get_array_size(tokens));
+        report_error(Compiler_Error::internal_error, "Overflow the maximum number of tokens that the compiler will be able to handle in future! Actually the buffer have a dynamic size but it will not stay like that for performances!");
     }
 
     log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: nb_find_calls: %d - nb_collisions_in_find: %d\n", keywords.nb_find_calls(), keywords.nb_collisions_in_find());

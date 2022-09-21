@@ -37,11 +37,14 @@ void report_error(Compiler_Error error, const char* error_message)
 	if (error == Compiler_Error::info) {
 		language::assign(header, (uint8_t*)"\033[38;5;184mInfo:\033[0m");
 	}
+	else if (error == Compiler_Error::warning) {
+		language::assign(header, (uint8_t*)"\033[38;5;208mWarning:\033[0m");
+	}
 	else if (error == Compiler_Error::error) {
 		language::assign(header, (uint8_t*)"\033[38;5;196;4mError:\033[0m");
 	}
-	else {
-		language::assign(header, (uint8_t*)"\033[38;5;208mWarning:\033[0m");
+	else if (error == Compiler_Error::internal_error) {
+		language::assign(header, (uint8_t*)"\033[38;5;196;4mInternal Error:\033[0m");
 	}
 
 	language::assign(error_message_string, (uint8_t*)error_message);
@@ -51,7 +54,8 @@ void report_error(Compiler_Error error, const char* error_message)
 	formatted_string = core::to_string(string_builder);
 	system::print(formatted_string);
 
-	if (error == Compiler_Error::error) {
+	if (error == Compiler_Error::error
+		|| error == Compiler_Error::internal_error) {
 		abort_compilation();
 	}
 }

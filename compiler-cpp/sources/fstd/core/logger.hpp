@@ -10,8 +10,7 @@ namespace fstd
 			verbose,
 			info,
 			warning,
-			error,
-			invalid
+			error
 		};
 
 		struct Logger {

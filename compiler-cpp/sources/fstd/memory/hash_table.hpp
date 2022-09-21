@@ -334,7 +334,26 @@ namespace fstd
 		{
 			ZoneScopedN("log_stats");
 
-			fstd::core::log(logger, fstd::core::Log_Level::info, "[Hash_Table] Memory size: %d\n", get_array_bytes_size(hash_table.table));
+			size_t nb_used_buckets = 0;
+			size_t bucket_size = _bucket_size * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD);
+			size_t memory_size = sizeof(Array<Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Bucket>) + get_array_size(hash_table.buckets) * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Bucket);
+
+			for (size_t bucket_index = 0; bucket_index < get_array_size(hash_table.buckets); bucket_index++)
+			{
+				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
+
+				if (get_array_size(bucket->table) > 0) {
+					nb_used_buckets++;
+					memory_size += bucket_size;
+				}
+			}
+
+			fstd::core::log(logger, fstd::core::Log_Level::info,
+				"\n[Hash_Table]\n"
+				"    Nb used buckets: %d\n"
+				"    Nb total buckets: %d\n"
+				"    Occupied memory per allocated bucket: %d bytes\n"
+				"    Occupied memory by entire Hash_Table: %d bytes\n", nb_used_buckets, get_array_size(hash_table.buckets), bucket_size, memory_size);
 		}
 	}
 }

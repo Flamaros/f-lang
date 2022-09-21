@@ -40,7 +40,8 @@ enum class Compiler_Error
 {
 	info,
 	warning,
-	error
+	error,
+	internal_error // Use it when the use trigger a limitation of the implementation of the compiler
 };
 
 void report_error(Compiler_Error error, const char* error_message);

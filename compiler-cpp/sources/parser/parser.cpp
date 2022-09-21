@@ -47,14 +47,15 @@ inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 {
 	ZoneScopedN("allocate_AST_node");
 
-	// @TODO f-lang
-	// Check if Node_Type is an AST_Node at compile time
-	//
-	// Flamaros - 13 april 2020
-
 	// Ensure that no reallocation could happen during the resize
-	core::Assert(memory::get_array_size(globals.parser_data.ast_nodes) < memory::get_array_reserved(globals.parser_data.ast_nodes) * sizeof(AST_Statement_Variable));
+	bool overflow_preallocated_buffer = memory::get_array_size(globals.parser_data.ast_nodes) >= memory::get_array_reserved(globals.parser_data.ast_nodes) * sizeof(AST_Statement_Variable);
 
+	core::Assert(overflow_preallocated_buffer == false);
+	if (overflow_preallocated_buffer) {
+		report_error(Compiler_Error::internal_error, "The compiler did not allocate enough memory to store AST_Node!");
+	}
+
+	// @TODO use a version that didn't check the array size, because we just did it and we don't want to trigger unplanned allocations
 	memory::resize_array(globals.parser_data.ast_nodes, memory::get_array_size(globals.parser_data.ast_nodes) + sizeof(Node_Type));
 
 	Node_Type* new_node = (Node_Type*)(memory::get_array_last_element(globals.parser_data.ast_nodes) - sizeof(Node_Type));
@@ -69,8 +70,14 @@ inline Symbol_Table* allocate_symbol_table()
 	ZoneScopedN("allocate_symbol_table");
 
 	// Ensure that no reallocation could happen during the resize
-	core::Assert(memory::get_array_size(globals.parser_data.symbol_tables) < memory::get_array_reserved(globals.parser_data.symbol_tables) * sizeof(Symbol_Table));
+	bool overflow_preallocated_buffer = memory::get_array_size(globals.parser_data.symbol_tables) >= memory::get_array_reserved(globals.parser_data.symbol_tables) * sizeof(Symbol_Table);
 
+	core::Assert(overflow_preallocated_buffer == false);
+	if (overflow_preallocated_buffer) {
+		report_error(Compiler_Error::internal_error, "The compiler did not allocate enough memory to store Symbol_Table!");
+	}
+
+	// @TODO use a version that didn't check the array size, because we just did it and we don't want to trigger unplanned allocations
 	memory::resize_array(globals.parser_data.symbol_tables, memory::get_array_size(globals.parser_data.symbol_tables) + sizeof(Symbol_Table));
 
 	Symbol_Table* new_node = (Symbol_Table*)(memory::get_array_last_element(globals.parser_data.symbol_tables) - sizeof(Symbol_Table));

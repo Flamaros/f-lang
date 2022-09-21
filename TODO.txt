@@ -2,6 +2,17 @@
 Il faut éclaircir le besoin d'avoir 2 fonctions pour l'alignement (compute_aligned_size et align_address)
 
 
+#########################
+
+
+Les literals qui vont dans la section .data ne doivent pas être des registres au niveau de l'IR.
+
+Allocateur de registres:
+Juste un compteur qu'on incrémente/decremente pour faire office de stack?
+Quand on rentre dans un scope on incrémente pour chaque variable déclaré et on decremente du nombre de variables dans le scope quand on en sort?
+Compteur uint32_t
+
+
 
 
 #########################
@@ -39,13 +50,10 @@ https://www.intel.com/content/dam/develop/external/us/en/documents/introduction-
 
 #########################
 
-Ajouter des marker Tracy pour la consommation de RAM
-
-Et celle de la stack avec les appels récursif
+Ajouter des marker Tracy pour la stack avec les appels récursif
 
 
 #########################
-
 
 
 
@@ -75,15 +83,6 @@ Mettre en place le remplissage de l'arbre des scopes
 
 Faire une permière passe de résolution des types sur l'AST, ou il faut pouvoir retrouver les types basics depuis les définitions des alias et structs.
 Il faut utiliser une table de hash pour ça en insérant les alias dans une table de hash "globale" (struct IR) ou la clé est l'alias et la valeur le type de base (il faudra parfois recurser pour retrouver le bon type)
-
-
-
-Implementer une hash-table
- - La faire en TDD
- - Comparer les perfs avec la STL
- - Voir pour récupèrer des stats comme la mémoire allouée
-
-
 
 
 
