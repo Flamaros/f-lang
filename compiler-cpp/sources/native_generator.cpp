@@ -140,6 +140,73 @@ static inline void skip(stream::Array_Stream<uint8_t>& stream, size_t size, int&
     current_column += (int)size;
 }
 
+// Struct for database entries (used for machine generation)
+struct Instruction
+{
+    struct Operand
+    {
+        enum class Type : uint8_t
+        {
+            Register        = 0x01,
+            MemoryAddress   = 0x02,
+            ImmediateValue  = 0x04,
+        };
+        Type type;
+    };
+
+    struct TranslationInstructions
+    {
+        // [mi:    hle o32 83 /0 ib,s] 
+
+
+        // @TODO TODO TODO TODO TODO
+        // continue to add flags, also check the nb bits per value,...
+        // https://softwareengineering.stackexchange.com/questions/227983/how-do-we-go-from-assembly-to-machine-codecode-generation/320297#320297?newreg=a4771182c1c240d1afbbc58d28b90574
+        //
+        uint32_t mod        : 2; // mod/r part
+        uint32_t reg        : 3; // mod/r part
+        uint32_t rm         : 3; // mod/r part
+        uint32_t hle        : 1; // @TODO
+        uint32_t o32        : 1;
+        uint32_t opcode     : 8;
+    };
+
+    language::string_view   name;
+    Operand                 operands[3];    // x86 instructions can have 0 to 3 operands
+    TranslationInstructions translation_instructions;
+};
+
+// Struct for input ASM (used to convert IR to ASM)
+struct ASM
+{
+    enum class Register : uint8_t
+    {
+        EAX, ECX, EDX, EBX,
+        ESP, EBP, ESI, EDI
+    };
+
+    struct Operand
+    {
+        enum class Type : uint8_t
+        {
+            Register        = 0x01,
+            MemoryAddress   = 0x02,
+            ImmediateValue  = 0x04,
+        };
+
+        Type        type;
+        union
+        {
+            Register    _register;
+            uint32_t    address;
+            uint32_t    immediate_value;
+        } value;
+    };
+
+    language::string    name;
+    Operand             operands[3];
+};
+
 // @TODO should be generated not hard-coded
 uint8_t	hello_world_instructions[] = {
     0x89, 0xE5,										   // mov    ebp, esp
@@ -958,8 +1025,10 @@ void f::PE_x86_backend::initialize_backend()
             }
         }
 
-        // @TODO manage Token
         core::log(*globals.logger, Log_Level::verbose, "[backend] %v\n", token.text);
+
+        // @TODO manage Token
+
     }
 }
 

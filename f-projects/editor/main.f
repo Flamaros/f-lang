@@ -52,24 +52,13 @@ WriteFile :: (hFile : HANDLE,
 			  lpNumberOfBytesWritten : LPDWORD,
 			  lpOverlapped : LPOVERLAPPED) -> BOOL : win32, dll_import("kernel32.dll");
 
-main :: (arguments : [] string) -> i32
+main :: ()
 {
     message:        string  = "Hello World";
     written_bytes:  DWORD; // Should be default initialized
     hstdOut:        HANDLE  = GetStdHandle(STD_OUTPUT_HANDLE);
-	strlen:         ui32    = message.size;
-	//test			f32     = -0.0;
-
-//	test_array:     [4]ui32 = message;
-	
-	x: i32 = 5 * (3 + 4);
-	y: i32 = 4 + 3 * 5;
-	z: i32 = 5 - 3 + 4;
-
-
 
     WriteFile(hstdOut, message.data, message.size, §written_bytes, 0);
 
-    // ExitProcess(0);
-    /*return 0;*/
+    ExitProcess(0);
 }
