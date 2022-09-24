@@ -147,33 +147,59 @@ struct Instruction
     {
         enum class Type : uint8_t
         {
+            Unused          = 0x00,
             Register        = 0x01,
             MemoryAddress   = 0x02,
             ImmediateValue  = 0x04,
         };
-        Type type;
+        Type    type;
+        uint8_t size; // size of Register or ImmediateValue, 0 for MemoryAddress and Unused types
     };
 
-    struct TranslationInstructions
+    struct Translation_Instructions
     {
         // [mi:    hle o32 83 /0 ib,s] 
 
-
-        // @TODO TODO TODO TODO TODO
         // continue to add flags, also check the nb bits per value,...
         // https://softwareengineering.stackexchange.com/questions/227983/how-do-we-go-from-assembly-to-machine-codecode-generation/320297#320297?newreg=a4771182c1c240d1afbbc58d28b90574
         //
-        uint32_t mod        : 2; // mod/r part
-        uint32_t reg        : 3; // mod/r part
-        uint32_t rm         : 3; // mod/r part
-        uint32_t hle        : 1; // @TODO
-        uint32_t o32        : 1;
-        uint32_t opcode     : 8;
+
+        bool lock_prefix;
+        // bool output32_prefix; // we don't care about o32 because it's for 16bit output format, we'll only support 32 and 64 bit formats 
+
+        uint32_t opcode : 8;
+
+        // modr/m byte
+        //uint8_t mod        : 2; // 00 => indirect, e.g. [eax]
+        //                        // 01 = > indirect plus byte offset
+        //                        // 10 = > indirect plus word offset
+        //                        // 11 = > register
+        //uint8_t reg        : 3; // identifies register
+        //uint8_t rm         : 3; // identifies second register or additional data
+
+        uint8_t extra_data; // decimal value to put in rm when it is not used. The value is in a range of 0-7.
+
+        union
+        {
+            uint8_t _unsigned;
+            int8_t  _signed;
+        }   immediate_byte;
     };
 
-    language::string_view   name;
-    Operand                 operands[3];    // x86 instructions can have 0 to 3 operands
-    TranslationInstructions translation_instructions;
+    language::string_view       name;
+    Operand                     operands[3];    // x86 instructions can have 0 to 3 operands
+    Translation_Instructions    translation_instructions;
+};
+
+struct Encoded_Instruction
+{
+    // Maximum instruction size:
+    // https://stackoverflow.com/questions/14698350/x86-64-asm-maximum-bytes-for-an-instruction#:~:text=The%20x86%20instruction%20set%20(16,0x67%20prefixes%2C%20for%20example).
+    // Intel say 15, but Quantitative Approach has said 17 and now in the 6th edition says 18 bytes
+    uint8_t data[18];
+    uint8_t size;
+
+    // @TODO I should certainly have an enum to tell if I have relocation to do
 };
 
 // Struct for input ASM (used to convert IR to ASM)
