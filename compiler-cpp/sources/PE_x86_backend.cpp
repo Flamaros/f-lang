@@ -1,4 +1,4 @@
-#include "native_generator.hpp"
+#include "PE_x86_backend.hpp"
 
 #include "globals.hpp"
 #include "lexer/hash_table.hpp"
@@ -257,6 +257,8 @@ inline Instruction* allocate_instruction()
 
 static void lex_instructions_DB()
 {
+    ZoneScopedN("lex_instructions_DB");
+
     system::Path    instructions_file_path;
     File            instructions_file;
     bool            open;
@@ -395,6 +397,8 @@ static void lex_instructions_DB()
 
 static void parse_instructions_DB()
 {
+    ZoneScopedN("parse_instructions_DB");
+
     enum class ParsingState
     {
         NAME,

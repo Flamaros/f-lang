@@ -4,7 +4,7 @@
 #include "parser/parser.hpp"
 #include "CPP_backend.hpp"
 #include "IR_generator.hpp"
-#include "native_generator.hpp"
+#include "PE_x86_backend.hpp"
 
 #include <fstd/memory/array.hpp>
 

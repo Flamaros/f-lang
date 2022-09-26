@@ -55,7 +55,7 @@
     <ClInclude Include="..\sources\macros.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\native_generator.hpp">
+    <ClInclude Include="..\sources\PE_x86_backend.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\third-party\magic_enum.hpp">
@@ -213,7 +213,7 @@
     <ClCompile Include="..\sources\globals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\native_generator.cpp">
+    <ClCompile Include="..\sources\PE_x86_backend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\fstd\system\file.cpp">
