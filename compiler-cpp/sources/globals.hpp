@@ -4,6 +4,7 @@
 #include "parser/parser.hpp"
 #include "CPP_backend.hpp"
 #include "IR_generator.hpp"
+#include "native_generator.hpp"
 
 #include <fstd/memory/array.hpp>
 
@@ -29,6 +30,7 @@ struct Globals
 	f::Parser_Data						parser_data;
 	f::CPP_Backend_Data					cpp_backend_data;
 	f::IR_Data							ir_data;
+	f::PE_X86_Backend_Data				x86_backend_data;
 };
 
 void initialize_globals();

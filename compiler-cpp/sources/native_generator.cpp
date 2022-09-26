@@ -29,6 +29,9 @@ using namespace f;
 
 #define DLL_MODE 0
 
+#define NB_INSTRUCTIONS 8192
+#define NB_TOKENS_PER_LINE 64
+
 constexpr DWORD	page_size = 4096;	// 4096 on x86
 #if DLL_MODE == 1
 constexpr DWORD	image_base = 0x10000000;
@@ -147,10 +150,10 @@ struct Instruction
     {
         enum class Type : uint8_t
         {
-            Unused          = 0x00,
-            Register        = 0x01,
-            MemoryAddress   = 0x02,
-            ImmediateValue  = 0x04,
+            Unused = 0x00,
+            Register = 0x01,
+            MemoryAddress = 0x02,
+            ImmediateValue = 0x04,
         };
         Type    type;
         uint8_t size; // size of Register or ImmediateValue, 0 for MemoryAddress and Unused types
@@ -215,9 +218,9 @@ struct ASM
     {
         enum class Type : uint8_t
         {
-            Register        = 0x01,
-            MemoryAddress   = 0x02,
-            ImmediateValue  = 0x04,
+            Register = 0x01,
+            MemoryAddress = 0x02,
+            ImmediateValue = 0x04,
         };
 
         Type        type;
@@ -232,6 +235,217 @@ struct ASM
     language::string    name;
     Operand             operands[3];
 };
+
+inline Instruction* allocate_instruction()
+{
+    ZoneScopedN("allocate_instruction");
+
+    // Ensure that no reallocation could happen during the resize
+    bool overflow_preallocated_buffer = memory::get_array_size(globals.x86_backend_data.instructions) >= memory::get_array_reserved(globals.x86_backend_data.instructions) * sizeof(Instruction);
+
+    core::Assert(overflow_preallocated_buffer == false);
+    if (overflow_preallocated_buffer) {
+        report_error(Compiler_Error::internal_error, "The compiler did not allocate enough memory to store Instruction!");
+    }
+
+    // @TODO use a version that didn't check the array size, because we just did it and we don't want to trigger unplanned allocations
+    memory::resize_array(globals.x86_backend_data.instructions, memory::get_array_size(globals.x86_backend_data.instructions) + sizeof(Instruction));
+
+    Instruction* new_instruction = (Instruction*)(memory::get_array_last_element(globals.x86_backend_data.instructions) - sizeof(Instruction));
+    return new_instruction;
+}
+
+static void lex_instructions_DB()
+{
+    system::Path    instructions_file_path;
+    File            instructions_file;
+    bool            open;
+
+    defer{ system::reset_path(instructions_file_path); };
+
+    system::from_native(instructions_file_path, (uint8_t*)"./compiler-cpp/data/insns.dat");
+
+    open = open_file(instructions_file, instructions_file_path, File::Opening_Flag::READ);
+
+    if (open == false) {
+        String_Builder		string_builder;
+        language::string	message;
+
+        defer{
+            free_buffers(string_builder);
+            release(message);
+        };
+
+        print_to_builder(string_builder, "Failed to open file: \"%v\"\n", to_string(instructions_file_path));
+
+        message = to_string(string_builder);
+        report_error(Compiler_Error::error, (char*)to_utf8(message));
+    }
+
+    defer{ close_file(instructions_file); };
+
+    fstd::memory::Array<uint8_t> instructions_buffer = system::get_file_content(instructions_file);
+
+    Array_Stream<uint8_t>   ins_stream;
+    size_t	                nb_tokens_prediction = 0;
+    language::string_view   current_view;
+    int					    current_line = 1;
+    int					    current_column = 1;
+
+    stream::initialize_memory_stream<uint8_t>(ins_stream, instructions_buffer);
+
+    if (stream::is_eof(ins_stream) == true) {
+        return;
+    }
+
+    memory::reserve_array(globals.x86_backend_data.tokens, NB_INSTRUCTIONS * NB_TOKENS_PER_LINE);
+
+    language::assign(current_view, get_pointer(ins_stream), 0);
+
+    while (is_eof(ins_stream) == false)
+    {
+        Punctuation punctuation;
+        uint8_t     current_character;
+        Token       token;
+
+        current_character = get(ins_stream);
+        punctuation = punctuation_table_1[current_character];
+
+        if (punctuation != Punctuation::UNKNOWN) { // Punctuation to analyse
+            if (is_white_punctuation(punctuation)) {    // Punctuation to ignore
+                if (punctuation == Punctuation::NEW_LINE_CHARACTER) {
+                    current_line++;
+                    current_column = 0; // @Warning 0 because the will be incremented just after
+                }
+
+                peek(ins_stream, current_column);
+                continue; // Jump to next iteration loop to skip Token analysis because it has not changed
+            }
+            else {
+                token.file_path = system::to_string(instructions_file_path);
+                token.line = current_line;
+                token.column = current_column;
+
+                language::assign(current_view, get_pointer(ins_stream), 0);
+
+                if (punctuation == Punctuation::COMMA) {
+                    token.type = Token_Type::SYNTAXE_OPERATOR;
+
+                    language::assign(current_view, get_pointer(ins_stream), 1);
+                    token.text = current_view;
+                    token.value.punctuation = punctuation;
+                    skip(ins_stream, 1, current_column);
+                }
+                else if (punctuation == Punctuation::OPEN_BRACKET) {
+                    token.type = Token_Type::SYNTAXE_OPERATOR;
+
+                    language::assign(current_view, get_pointer(ins_stream), 1);
+                    token.text = current_view;
+                    token.value.punctuation = punctuation;
+                    skip(ins_stream, 1, current_column);
+                }
+                else if (punctuation == Punctuation::CLOSE_BRACKET) {
+                    token.type = Token_Type::SYNTAXE_OPERATOR;
+
+                    language::assign(current_view, get_pointer(ins_stream), 1);
+                    token.text = current_view;
+                    token.value.punctuation = punctuation;
+                    skip(ins_stream, 1, current_column);
+                }
+                else {
+                    token.type = Token_Type::SYNTAXE_OPERATOR;
+
+                    language::assign(current_view, get_pointer(ins_stream), 1);
+                    token.text = current_view;
+                    token.value.punctuation = punctuation;
+                    skip(ins_stream, 1, current_column);
+                }
+            }
+        }
+        else {  // Will be an identifier
+            token.file_path = system::to_string(instructions_file_path);
+            token.line = current_line;
+            token.column = current_column;
+
+            language::assign(current_view, get_pointer(ins_stream), 0);
+            while (is_eof(ins_stream) == false)
+            {
+                current_character = get(ins_stream);
+
+                punctuation = punctuation_table_1[current_character];
+                if (punctuation == Punctuation::UNKNOWN) {  // @Warning any kind of punctuation stop the definition of an identifier
+                    peek(ins_stream, current_column);
+                    language::resize(current_view, language::get_string_size(current_view) + 1);
+
+                    token.type = Token_Type::IDENTIFIER;
+
+                    token.text = current_view;
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+        memory::array_push_back(globals.x86_backend_data.tokens, token);
+
+        core::log(*globals.logger, Log_Level::verbose, "[backend] %v\n", token.text);
+    }
+}
+
+static void parse_instructions_DB()
+{
+    enum class ParsingState
+    {
+        NAME,
+        OPERANDS,
+        TRANSLATION_INSTRUCTIONS,
+        ARCHITECTURES
+    };
+
+    Token			current_token;
+    int             current_line;
+    int             previous_line = 0;
+    Instruction*    current_instruction;
+    ParsingState    parsing_state = ParsingState::NAME;
+    size_t          current_operand_index = 0;
+
+    stream::Array_Stream<Token>	stream;
+
+    stream::initialize_memory_stream<Token>(stream, globals.x86_backend_data.tokens);
+
+    memory::reserve_array(globals.x86_backend_data.instructions, NB_INSTRUCTIONS * sizeof(Instruction));
+
+    while (stream::is_eof(stream) == false)
+    {
+        current_token = stream::get(stream);
+
+        current_line = current_token.line;
+
+        if (previous_line != current_line) { // We have to start a new instruction
+            if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+                // Skip until we reach the next line, because it's a comment
+                while (stream::get(stream).line == current_line) {
+                    stream::skip<Token>(stream, 1);
+                }
+            }
+            else {
+                current_instruction = allocate_instruction();
+
+                current_instruction->name = current_token.text;
+
+                current_operand_index = 0;
+                parsing_state = ParsingState::OPERANDS;
+
+                stream::peek<Token>(stream);
+            }
+        }
+        else {
+        }
+
+        previous_line = current_line;
+    }
+}
 
 // @TODO should be generated not hard-coded
 uint8_t	hello_world_instructions[] = {
@@ -923,139 +1137,8 @@ void f::PE_x86_backend::initialize_backend()
 {
     ZoneScopedN("f::PE_x86_backend::initialize_backend");
 
-    system::Path    instructions_file_path;
-    File            instructions_file;
-    bool            open;
-
-    defer{ system::reset_path(instructions_file_path); };
-
-    system::from_native(instructions_file_path, (uint8_t*)"./compiler-cpp/data/insns.dat");
-
-    open = open_file(instructions_file, instructions_file_path, File::Opening_Flag::READ);
-
-    if (open == false) {
-        String_Builder		string_builder;
-        language::string	message;
-
-        defer{
-            free_buffers(string_builder);
-            release(message);
-        };
-
-        print_to_builder(string_builder, "Failed to open file: \"%v\"\n", to_string(instructions_file_path));
-
-        message = to_string(string_builder);
-        report_error(Compiler_Error::error, (char*)to_utf8(message));
-    }
-
-    defer{ close_file(instructions_file);};
-
-    fstd::memory::Array<uint8_t> instructions_buffer = system::get_file_content(instructions_file);
-
-    Array_Stream<uint8_t>   ins_stream;
-    size_t	                nb_tokens_prediction = 0;
-    language::string_view   current_view;
-    int					    current_line = 1;
-    int					    current_column = 1;
-
-    stream::initialize_memory_stream<uint8_t>(ins_stream, instructions_buffer);
-
-    if (stream::is_eof(ins_stream) == true) {
-        return;
-    }
-
-    language::assign(current_view, get_pointer(ins_stream), 0);
-
-    while (is_eof(ins_stream) == false)
-    {
-        Punctuation punctuation;
-        uint8_t     current_character;
-        Token       token;
-
-        current_character = get(ins_stream);
-        punctuation = punctuation_table_1[current_character];
-
-        if (punctuation != Punctuation::UNKNOWN) { // Punctuation to analyse
-            if (is_white_punctuation(punctuation)) {    // Punctuation to ignore
-                if (punctuation == Punctuation::NEW_LINE_CHARACTER) {
-                    current_line++;
-                    current_column = 0; // @Warning 0 because the will be incremented just after
-                }
-
-                peek(ins_stream, current_column);
-                continue; // Jump to next iteration loop to skip Token analysis because it has not changed
-            }
-            else {
-                token.file_path = system::to_string(instructions_file_path);
-                token.line = current_line;
-                token.column = current_column;
-
-                language::assign(current_view, get_pointer(ins_stream), 0);
-
-                if (punctuation == Punctuation::COMMA) {
-                    token.type = Token_Type::SYNTAXE_OPERATOR;
-
-                    language::assign(current_view, get_pointer(ins_stream), 1);
-                    token.text = current_view;
-                    token.value.punctuation = punctuation;
-                    skip(ins_stream, 1, current_column);
-                }
-                else if (punctuation == Punctuation::OPEN_BRACKET) {
-                    token.type = Token_Type::SYNTAXE_OPERATOR;
-
-                    language::assign(current_view, get_pointer(ins_stream), 1);
-                    token.text = current_view;
-                    token.value.punctuation = punctuation;
-                    skip(ins_stream, 1, current_column);
-                }
-                else if (punctuation == Punctuation::CLOSE_BRACKET) {
-                    token.type = Token_Type::SYNTAXE_OPERATOR;
-
-                    language::assign(current_view, get_pointer(ins_stream), 1);
-                    token.text = current_view;
-                    token.value.punctuation = punctuation;
-                    skip(ins_stream, 1, current_column);
-                }
-                else {
-                    token.type = Token_Type::SYNTAXE_OPERATOR;
-
-                    language::assign(current_view, get_pointer(ins_stream), 1);
-                    token.text = current_view;
-                    token.value.punctuation = punctuation;
-                    skip(ins_stream, 1, current_column);
-                }
-            }
-        }
-        else {  // Will be an identifier
-            token.file_path = system::to_string(instructions_file_path);
-            token.line = current_line;
-            token.column = current_column;
-
-            language::assign(current_view, get_pointer(ins_stream), 0);
-            while (is_eof(ins_stream) == false)
-            {
-                current_character = get(ins_stream);
-
-                punctuation = punctuation_table_1[current_character];
-                if (punctuation == Punctuation::UNKNOWN) {  // @Warning any kind of punctuation stop the definition of an identifier
-                    peek(ins_stream, current_column);
-                    language::resize(current_view, language::get_string_size(current_view) + 1);
-
-                    token.type = Token_Type::IDENTIFIER;
-
-                    token.text = current_view;
-                }
-                else {
-                    break;
-                }
-            }
-        }
-
-        core::log(*globals.logger, Log_Level::verbose, "[backend] %v\n", token.text);
-
-        // @TODO manage Token
-
-    }
+    lex_instructions_DB();
+    parse_instructions_DB();
 }
 
 void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
