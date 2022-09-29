@@ -359,7 +359,7 @@ static void parse_function_declaration(IR& ir, AST_Statement_Function* function_
 	fstd::language::assign(dll_import_string, (uint8_t*)"dll_import");
 	bool win32_system_call = false;
 	bool is_a_dll_import = false;
-	Token* dll_token = nullptr;
+	Token<Keyword>* dll_token = nullptr;
 
 	// win32 means:
 	//   * __stdcall calling convention

@@ -1,6 +1,15 @@
+!!!!!!!!!! 
+Mettre lexer_base dans fstd
+
+
+
 ------
 Il faut éclaircir le besoin d'avoir 2 fonctions pour l'alignement (compute_aligned_size et align_address)
 
+#########################
+Allocateur for registers
+
+https://www.mattkeeter.com/blog/2022-10-04-ssra/
 
 #########################
 

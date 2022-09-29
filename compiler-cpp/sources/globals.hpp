@@ -4,7 +4,10 @@
 #include "parser/parser.hpp"
 #include "CPP_backend.hpp"
 #include "IR_generator.hpp"
+#include "instruction_db_loader.h"
 #include "PE_x86_backend.hpp"
+
+#include "lexer/lexer_base.hpp"
 
 #include <fstd/memory/array.hpp>
 
@@ -18,11 +21,6 @@ namespace fstd
 	}
 }
 
-namespace f
-{
-	struct Token;
-}
-
 struct Globals
 {
 	fstd::core::Logger*					logger = nullptr;
@@ -30,6 +28,7 @@ struct Globals
 	f::Parser_Data						parser_data;
 	f::CPP_Backend_Data					cpp_backend_data;
 	f::IR_Data							ir_data;
+	f::x86_DB::x86_DB_Data				x86_db_data;
 	f::PE_X86_Backend_Data				x86_backend_data;
 };
 
@@ -47,5 +46,6 @@ enum class Compiler_Error
 };
 
 void report_error(Compiler_Error error, const char* error_message);
-void report_error(Compiler_Error error, const f::Token& token, const char* error_message);
+template<typename Token>
+void report_error(Compiler_Error error, const Token& token, const char* error_message);
 void abort_compilation();

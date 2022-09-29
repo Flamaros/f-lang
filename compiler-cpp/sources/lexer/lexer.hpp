@@ -1,9 +1,6 @@
 #pragma once
 
-#include <fstd/language/string.hpp>
-#include <fstd/language/string_view.hpp>
-
-#include <fstd/system/path.hpp>
+#include "lexer_base.hpp"
 
 #include <fstd/memory/array.hpp>
 
@@ -25,104 +22,6 @@ Notice:
 
 namespace f
 {
-	enum class Token_Type : uint8_t
-	{
-        // @Warning don't change the order of types
-        // Or take care to update functions like is_literal
-
-        UNKNOWN,
-		IDENTIFIER,	/// Every word that isn't a part of the language
-		KEYWORD,
-		SYNTAXE_OPERATOR,
-
-        STRING_LITERAL_RAW,	// @Warning In this case the text is the value of the token instead of a member of the Value union
-		STRING_LITERAL,
-		NUMERIC_LITERAL_I32,
-		NUMERIC_LITERAL_UI32,
-		NUMERIC_LITERAL_I64,
-		NUMERIC_LITERAL_UI64,
-		NUMERIC_LITERAL_F32,
-		NUMERIC_LITERAL_F64,
-		NUMERIC_LITERAL_REAL,	// means longue double (80bits computations)
-	};
-
-    enum class Punctuation : uint8_t
-    {
-        UNKNOWN,
-		
-        // Multiple characters punctuation
-        // !!!!! Have to be sort by the number of characters
-        // !!!!! to avoid bad forward detection (/** issue when last * can override the /* detection during the forward test)
-
-    // TODO the escape of line return can be handle by the parser by checking if there is no more token after the \ on the line
-    //    InhibitedLineReturn,    //    \\n or \\r\n          A backslash that preceed a line return (should be completely skipped)
-        LINE_COMMENT,           //    //
-        OPEN_BLOCK_COMMENT,     //    /*
-        CLOSE_BLOCK_COMMENT,    //    */
-        ARROW,                  //    ->
-        LOGICAL_AND,            //    &&
-        LOGICAL_OR,             //    ||
-        DOUBLE_COLON,           //    ::                 Used for function or struct declarations
-        DOUBLE_DOT,             //    ..                 Used for ranges
-        COLON_EQUAL,            //    :=                 Used for variable declarations with type inference
-        EQUALITY_TEST,          //    ==
-        DIFFERENCE_TEST,        //    !=
-		ESCAPED_DOUBLE_QUOTE,	//	  \"				To ease the detection of the end of the string litteral by avoiding the necessary to check it in an other way
-        // Not sure that must be detected as one token instead of multiples (especially <<, >>, <<= and >>=) because of templates
-    //    LeftShift,              //    <<
-    //    RightShift,             //    >>
-    //    AdditionAssignment,     //    +=
-    //    SubstractionAssignment, //    -=
-    //    MultiplicationAssignment, //    *=
-    //    DivisionAssignment,     //    /=
-    //    DivisionAssignment,     //    %=
-    //    DivisionAssignment,     //    |=
-    //    DivisionAssignment,     //    &=
-    //    DivisionAssignment,     //    ^=
-    //    DivisionAssignment,     //    <<=
-    //    DivisionAssignment,     //    >>=
-
-        // Mostly in the order on a QWERTY keyboard (symbols making a pair are grouped)
-        TILDE,                  //    ~                  Should stay the first of single character symbols
-        BACKQUOTE,              //    `
-        BANG,                   //    !
-        AT,                     //    @                 pointer unreferencing operator
-        HASH,                   //    #
-        DOLLAR,                 //    $
-        POUND,                  //    £
-        PERCENT,                //    %
-        CARET,                  //    ^
-        AMPERSAND,              //    &					 bitwise and
-        STAR,                   //    *
-        SECTION,                //    §                  pointer symbol
-        CURRENCY,               //    ¤
-        OPEN_PARENTHESIS,       //    (
-        CLOSE_PARENTHESIS,      //    )
-        DASH,                   //    -
-        PLUS,                   //    +
-        EQUALS,                 //    =
-        OPEN_BRACE,             //    {
-        CLOSE_BRACE,            //    }
-        OPEN_BRACKET,           //    [
-        CLOSE_BRACKET,          //    ]
-        COLON,                  //    :                  Used in ternaire expression
-        SEMICOLON,              //    ;
-        SINGLE_QUOTE,           //    '
-        DOUBLE_QUOTE,           //    "
-        PIPE,                   //    |					 bitwise or
-        SLASH,                  //    /
-        BACKSLASH,              //    '\'
-        LESS,                   //    <
-        GREATER,                //    >
-        COMMA,                  //    ,
-        DOT,                    //    .
-        QUESTION_MARK,          //    ?
-
-        // White character at end to be able to handle correctly lines that terminate with a separator like semicolon just before a line return
-        WHITE_CHARACTER,
-        NEW_LINE_CHARACTER
-    };
-
     enum class Keyword : uint8_t
     {
         UNKNOWN,
@@ -192,39 +91,6 @@ namespace f
 		SPECIAL_COMPILER_VERSION,	// replaced by a string litteral that contains the version of running compiler
     };
 
-	struct Token
-	{
-	private:
-		friend bool operator ==(const Token& lhs, const Token& rhs);
-
-	public:
-		union Value
-		{
-			Punctuation		        punctuation;
-			Keyword			        keyword;
-			int64_t			        integer;
-			uint64_t		        unsigned_integer;
-			float			        real_32;
-			double			        real_64;
-			long double		        real_max;
-			fstd::language::string* string;
-		};
-
-		Token_Type			        type;
-        fstd::language::string_view file_path;
-        fstd::language::string_view text;
-		size_t				        line;       // Starting from 1
-		size_t				        column;     // Starting from 1
-		Value				        value;
-	};
-	
-	inline bool operator ==(const Token& lhs, const Token& rhs)
-	{
-        fstd::core::Assert(false);
-        return false;
-//		return lhs.text == rhs.text;
-	}
-
     struct Lexer_Data
     {
         fstd::system::Path		        file_path;
@@ -232,16 +98,16 @@ namespace f
     };
 
     void    initialize_lexer();
-	void    lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens);
-    void    lex(const fstd::system::Path& path, fstd::memory::Array<uint8_t>& file_buffer, fstd::memory::Array<Token>& tokens, fstd::memory::Array<f::Lexer_Data>& lexer_data, Token& file_token);
-    void    print(fstd::memory::Array<Token>& tokens);
+	void    lex(const fstd::system::Path& path, fstd::memory::Array<Token<Keyword>>& tokens);
+    void    lex(const fstd::system::Path& path, fstd::memory::Array<uint8_t>& file_buffer, fstd::memory::Array<Token<Keyword>>& tokens, fstd::memory::Array<f::Lexer_Data>& lexer_data, Token<Keyword>& file_token);
+    void    print(fstd::memory::Array<Token<Keyword>>& tokens);
 
-
-    inline bool    is_a_basic_type(Keyword keyword) {
+    inline bool is_a_basic_type(Keyword keyword) {
         return keyword >= Keyword::VOID && keyword <= Keyword::TYPE;
     }
 
-    inline bool    is_literal(Token_Type token_type) {
-        return token_type >= Token_Type::STRING_LITERAL_RAW && token_type <= Token_Type::NUMERIC_LITERAL_REAL;
+    inline bool is_white_punctuation(Punctuation punctuation)
+    {
+        return punctuation >= Punctuation::WHITE_CHARACTER;
     }
 }

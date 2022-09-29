@@ -1,1 +1,4 @@
 Idee de representation ASM -> source side by side: https://github.com/loov/lensm
+
+Catcher les exceptions:
+https://github.com/x13pixels/remedybg-issues/issues/81

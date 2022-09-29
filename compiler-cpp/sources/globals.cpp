@@ -15,6 +15,10 @@ thread_local Globals    globals;
 
 using namespace fstd;
 
+// Template instancing
+template void report_error(Compiler_Error error, const f::Token<f::Keyword>& token, const char* error_message);
+template void report_error(Compiler_Error error, const f::Token<f::x86_DB::x86_Keyword>& token, const char* error_message);
+
 void initialize_globals()
 {
 	globals.logger = new fstd::core::Logger();
@@ -60,7 +64,8 @@ void report_error(Compiler_Error error, const char* error_message)
 	}
 }
 
-void report_error(Compiler_Error error, const f::Token& token, const char* error_message)
+template<typename Token>
+void report_error(Compiler_Error error, const Token& token, const char* error_message)
 {
 	core::String_Builder	string_builder;
 	language::string		error_message_string;
@@ -77,11 +82,14 @@ void report_error(Compiler_Error error, const f::Token& token, const char* error
 	if (error == Compiler_Error::info) {
 		language::assign(header, (uint8_t*)"\033[38;5;184mInfo:\033[0m");
 	}
+	else if (error == Compiler_Error::warning) {
+		language::assign(header, (uint8_t*)"\033[38;5;208mWarning:\033[0m");
+	}
 	else if (error == Compiler_Error::error) {
 		language::assign(header, (uint8_t*)"\033[38;5;196;4mError:\033[0m");
 	}
-	else {
-		language::assign(header, (uint8_t*)"\033[38;5;208mWarning:\033[0m");
+	else if (error == Compiler_Error::internal_error) {
+		language::assign(header, (uint8_t*)"\033[38;5;196;4mInternal Error:\033[0m");
 	}
 
 	language::assign(error_message_string, (uint8_t*)error_message);
@@ -93,7 +101,8 @@ void report_error(Compiler_Error error, const f::Token& token, const char* error
 	formatted_string = core::to_string(string_builder);
 	system::print(formatted_string);
 
-	if (error == Compiler_Error::error) {
+	if (error == Compiler_Error::error
+		|| error == Compiler_Error::internal_error) {
 		abort_compilation();
 	}
 }

@@ -775,13 +775,7 @@ void f::CPP_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
 		arguments_string = core::to_string(string_builder);
 
 		if (!system::execute_process(cl_path, arguments_string)) {
-			f::Token dummy_token;
-
-			dummy_token.type = f::Token_Type::UNKNOWN;
-			dummy_token.file_path = system::to_string(cl_path);
-			dummy_token.line = 0;
-			dummy_token.column = 0;
-			report_error(Compiler_Error::warning, dummy_token, "Failed to launch cl.exe.\n");
+			report_error(Compiler_Error::warning, "Failed to launch cl.exe.\n");
 			system::print(arguments_string);
 		}
 	}

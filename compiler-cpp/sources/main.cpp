@@ -79,10 +79,10 @@ int main(int ac, char** av)
 	FrameMark;
 	// End Initialization ================================================
 
-	memory::Array<f::Token>	tokens;
-	f::Parsing_Result		parsing_result;
-	f::IR					ir;
-	int						result = 0;
+	memory::Array<f::Token<f::Keyword>>	tokens;
+	f::Parsing_Result					parsing_result;
+	f::IR								ir;
+	int									result = 0;
 
 	if (ac != 3) {
 		report_error(Compiler_Error::error, "Wrong argument number, you should specify file paths of input and output files.");
