@@ -58,6 +58,7 @@
     <ClInclude Include="..\sources\lexer\hash_table.hpp" />
     <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp" />
     <ClInclude Include="..\sources\lexer\lexer.hpp" />
+    <ClInclude Include="..\sources\lexer\lexer_base.hpp" />
     <ClInclude Include="..\sources\macros.hpp" />
     <ClInclude Include="..\sources\PE_x86_backend.hpp" />
     <ClInclude Include="..\sources\parser\parser.hpp" />
@@ -97,6 +98,7 @@
     <ClCompile Include="..\sources\globals.cpp" />
     <ClCompile Include="..\sources\IR_generator.cpp" />
     <ClCompile Include="..\sources\lexer\lexer.cpp" />
+    <ClCompile Include="..\sources\lexer\lexer_base.cpp" />
     <ClCompile Include="..\sources\PE_x86_backend.cpp" />
     <ClCompile Include="..\sources\parser\parser.cpp" />
     <ClCompile Include="..\sources\parser\symbol_solver.cpp" />

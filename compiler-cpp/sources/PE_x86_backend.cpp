@@ -1,7 +1,7 @@
 #include "PE_x86_backend.hpp"
 
 #include "globals.hpp"
-#include "lexer/hash_table.hpp"
+#include "lexer/lexer_base.hpp"
 
 #include <fstd/system/file.hpp>
 
@@ -85,70 +85,12 @@ DWORD	reloc_section_address;
 DWORD	idata_image_section_header_address;
 DWORD	idata_section_address;
 
-static Hash_Table<uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1 = {
-    // White characters (aren't handle for an implicit skip/separation between tokens)
-    {' ', Punctuation::WHITE_CHARACTER},       // space
-    {'\t', Punctuation::WHITE_CHARACTER},      // horizontal tab
-    {'\v', Punctuation::WHITE_CHARACTER},      // vertical tab
-    {'\f', Punctuation::WHITE_CHARACTER},      // feed
-    {'\r', Punctuation::WHITE_CHARACTER},      // carriage return
-    {'\n', Punctuation::NEW_LINE_CHARACTER},   // newline
-    {'~', Punctuation::TILDE},
-    {'`', Punctuation::BACKQUOTE},
-    {'!', Punctuation::BANG},
-    {'@', Punctuation::AT},
-    {'#', Punctuation::HASH},
-    {'$', Punctuation::DOLLAR},
-    {'%', Punctuation::PERCENT},
-    {'^', Punctuation::CARET},
-    {'&', Punctuation::AMPERSAND},
-    {'*', Punctuation::STAR},
-    {'(', Punctuation::OPEN_PARENTHESIS},
-    {')', Punctuation::CLOSE_PARENTHESIS},
-    {'-', Punctuation::DASH},
-    {'+', Punctuation::PLUS},
-    {'=', Punctuation::EQUALS},
-    {'{', Punctuation::OPEN_BRACE},
-    {'}', Punctuation::CLOSE_BRACE},
-    {'[', Punctuation::OPEN_BRACKET},
-    {']', Punctuation::CLOSE_BRACKET},
-    {':', Punctuation::COLON},
-    {';', Punctuation::SEMICOLON},
-    {'\'', Punctuation::SINGLE_QUOTE},
-    {'"', Punctuation::DOUBLE_QUOTE},
-    {'|', Punctuation::PIPE},
-    {'/', Punctuation::SLASH},
-    {'\\', Punctuation::BACKSLASH},
-    {'<', Punctuation::LESS},
-    {'>', Punctuation::GREATER},
-    {',', Punctuation::COMMA},
-    {'.', Punctuation::DOT},
-    {'?', Punctuation::QUESTION_MARK}
-};
-
-static inline bool is_white_punctuation(Punctuation punctuation)
-{
-    return punctuation >= Punctuation::WHITE_CHARACTER;
-}
-
-static inline void peek(stream::Array_Stream<uint8_t>& stream, int& current_column)
-{
-    stream::peek<uint8_t>(stream);
-    current_column++;
-}
-
-static inline void skip(stream::Array_Stream<uint8_t>& stream, size_t size, int& current_column)
-{
-    stream::skip<uint8_t>(stream, size);
-    current_column += (int)size;
-}
-
 // Struct for database entries (used for machine generation)
 struct Instruction
 {
     struct Operand
     {
-        enum class Type : uint8_t
+        enum class Type : uint8_t // @TODO UPPER_CASE
         {
             Unused = 0x00,
             Register = 0x01,
@@ -216,7 +158,7 @@ struct ASM
 
     struct Operand
     {
-        enum class Type : uint8_t
+        enum class Type : uint8_t // @TODO UPPER_CASE
         {
             Register = 0x01,
             MemoryAddress = 0x02,
@@ -234,6 +176,61 @@ struct ASM
 
     language::string    name;
     Operand             operands[3];
+};
+
+namespace __PE_x86_backend
+{
+    static uint32_t keyword_key(const language::string_view& str)
+    {
+        // @TODO test with a crc32 implementation (that could be better to reduce number of collisions instead of this weird thing)
+
+        core::Assert(language::get_string_size(str) > 0);
+
+        if (language::get_string_size(str) == 1) {
+            return (uint32_t)1 << 8 | (uint32_t)str.ptr[0];
+        }
+        else if (language::get_string_size(str) == 2) {
+            return (uint32_t)2 << 24 | (uint32_t)str.ptr[0] << 8 | (uint32_t)str.ptr[1];
+        }
+        else if (language::get_string_size(str) < 5) {
+            return (uint32_t)str.size << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[1]) << 8) | (uint32_t)str.ptr[2];
+        }
+        else {
+            return (uint32_t)str.size << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[2]) << 8) | (uint32_t)str.ptr[4];
+        }
+    }
+
+    static language::string_view keyword_invalid_key;
+
+    // @TODO Can't we reduce the size key?
+    // To avoid collisions, we may have to find a better way to generate a hash than simply encode the keyword size with the first
+    // two characters.
+    // @SpeedUp
+    //
+    // Flamaros - 19 february 2020
+    static Keyword_Hash_Table<uint32_t, language::string_view, x86_Keyword, &keyword_invalid_key, x86_Keyword::UNKNOWN>  keywords;
+
+    static inline x86_Keyword is_keyword(const language::string_view& text)
+    {
+        return keywords.find(keyword_key(text), text);
+    }
+
+    // @TODO remplace it by a nested inlined function in f-lang
+#define INSERT_KEYWORD(KEY, VALUE) \
+        { \
+            language::string_view   str_view; \
+            language::assign(str_view, (uint8_t*)(KEY)); \
+            keywords.insert(keyword_key(str_view), str_view, (x86_Keyword::VALUE)); \
+        }
+
+    static void initialize_lexer()
+    {
+        keywords.set_key_matching_function(&language::are_equals);
+
+        INSERT_KEYWORD("ignore", _IGNORE);
+
+        core::log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: size: %d bytes - nb_used_buckets: %d - nb_collisions: %d\n", keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
+    }
 };
 
 inline Instruction* allocate_instruction()
@@ -259,9 +256,11 @@ static void lex_instructions_DB()
 {
     ZoneScopedN("lex_instructions_DB");
 
-    system::Path    instructions_file_path;
-    File            instructions_file;
-    bool            open;
+    __PE_x86_backend::initialize_lexer();
+
+    static system::Path instructions_file_path; // @warning static to be able to have a string_view on it
+    File                instructions_file;
+    bool                open;
 
     defer{ system::reset_path(instructions_file_path); };
 
@@ -306,9 +305,9 @@ static void lex_instructions_DB()
 
     while (is_eof(ins_stream) == false)
     {
-        Punctuation punctuation;
-        uint8_t     current_character;
-        Token       token;
+        Punctuation         punctuation;
+        uint8_t             current_character;
+        Token<x86_Keyword>  token;
 
         current_character = get(ins_stream);
         punctuation = punctuation_table_1[current_character];
@@ -321,7 +320,7 @@ static void lex_instructions_DB()
                 }
 
                 peek(ins_stream, current_column);
-                continue; // Jump to next iteration loop to skip Token analysis because it has not changed
+                continue; // Jump to next iteration loop to skip Token<x86_Keyword> analysis because it has not changed
             }
             else {
                 token.file_path = system::to_string(instructions_file_path);
@@ -387,6 +386,11 @@ static void lex_instructions_DB()
                     break;
                 }
             }
+
+            token.value.keyword = __PE_x86_backend::is_keyword(token.text);
+            if (token.value.keyword != x86_Keyword::UNKNOWN) {
+                token.type = Token_Type::KEYWORD;
+            }
         }
 
         memory::array_push_back(globals.x86_backend_data.tokens, token);
@@ -407,16 +411,15 @@ static void parse_instructions_DB()
         ARCHITECTURES
     };
 
-    Token			current_token;
+    Token<x86_Keyword>			current_token;
     int             current_line;
     int             previous_line = 0;
-    Instruction*    current_instruction;
+    Instruction*    current_instruction = nullptr;
     ParsingState    parsing_state = ParsingState::NAME;
-    size_t          current_operand_index = 0;
 
-    stream::Array_Stream<Token>	stream;
+    stream::Array_Stream<Token<x86_Keyword>>	stream;
 
-    stream::initialize_memory_stream<Token>(stream, globals.x86_backend_data.tokens);
+    stream::initialize_memory_stream<Token<x86_Keyword>>(stream, globals.x86_backend_data.tokens);
 
     memory::reserve_array(globals.x86_backend_data.instructions, NB_INSTRUCTIONS * sizeof(Instruction));
 
@@ -430,7 +433,7 @@ static void parse_instructions_DB()
             if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
                 // Skip until we reach the next line, because it's a comment
                 while (stream::get(stream).line == current_line) {
-                    stream::skip<Token>(stream, 1);
+                    stream::skip<Token<x86_Keyword>>(stream, 1);
                 }
             }
             else {
@@ -438,13 +441,53 @@ static void parse_instructions_DB()
 
                 current_instruction->name = current_token.text;
 
-                current_operand_index = 0;
                 parsing_state = ParsingState::OPERANDS;
-
-                stream::peek<Token>(stream);
+                stream::peek<Token<x86_Keyword>>(stream);
             }
         }
         else {
+            if (parsing_state == ParsingState::OPERANDS) {
+                size_t  operand_index = 0;
+
+                if (current_token.type == Token_Type::KEYWORD) {
+                    if (current_token.value.keyword == x86_Keyword::_IGNORE) {
+                        // We can simply completely ignore this instruction, so we skip tokens directly to the next line
+                        parsing_state = ParsingState::NAME;
+                        while (stream::get(stream).line == current_line) {
+                            stream::skip<Token<x86_Keyword>>(stream, 1);
+                        }
+                    }
+                    else if (current_token.value.keyword == x86_Keyword::IMM) {
+                        current_instruction->operands[operand_index].type = Instruction::Operand::Type::ImmediateValue;
+                        current_instruction->operands[operand_index].size = 0; // @TODO
+                    }
+                    else if (current_token.value.keyword == x86_Keyword::_VOID) {
+                        current_instruction->operands[operand_index].type = Instruction::Operand::Type::Unused;
+                        current_instruction->operands[operand_index].size = 0;
+                    }
+                    else {
+                        report_error(Compiler_Error::internal_error, current_token, "x86 backend: [DB instructions parsing] Unknown operand type!");
+                    }
+                }
+                else if (current_token.type == Token_Type::SYNTAXE_OPERATOR)
+                {
+                    if (current_token.value.punctuation == Punctuation::COMMA) {
+                        operand_index++;
+                        stream::peek<Token<x86_Keyword>>(stream); // ,
+                    }
+                    else if (current_token.value.punctuation == Punctuation::OPEN_BRACKET) {
+                        stream::peek<Token<x86_Keyword>>(stream); // [
+                        parsing_state = ParsingState::TRANSLATION_INSTRUCTIONS;
+                    }
+                }
+                else {
+                    report_error(Compiler_Error::internal_error, current_token, "x86 backend: [DB instructions parsing] Syntax error, expecting an operand name or a comma");
+                }
+            }
+            else if (parsing_state == ParsingState::TRANSLATION_INSTRUCTIONS) {
+            }
+            else if (parsing_state == ParsingState::ARCHITECTURES) {
+            }
         }
 
         previous_line = current_line;

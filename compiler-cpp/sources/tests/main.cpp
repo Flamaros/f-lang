@@ -187,11 +187,11 @@ void test_AST_operator_precedence()
 {
 	using namespace f;
 
-	fstd::memory::Array<f::Token>	tokens;
-	Parsing_Result					parsing_result;
-	//	IR								ir;
-	int								result = 0;
-	fstd::system::Path				path;
+	fstd::memory::Array<f::Token<f::Keyword>>	tokens;
+	Parsing_Result								parsing_result;
+	//	IR											ir;
+	int											result = 0;
+	fstd::system::Path							path;
 
 	defer{ fstd::system::reset_path(path); };
 

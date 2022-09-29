@@ -114,32 +114,32 @@ namespace f
 		Node_Type	ast_type;
 		AST_Node*	sibling;
 
-		Token		token;
-		AST_Node*	left;
-		AST_Node*	right;
+		Token<Keyword>	token;
+		AST_Node*		left;
+		AST_Node*		right;
 	};
 
 	struct AST_Alias
 	{
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		Token		name; // Should be a pointer to avoid the copy?
-		AST_Node*	type; // Is an expression that have to be evaluable at compile-time and return a Type (basic or struct or enum, Type, function,...)
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token<Keyword>	name; // Should be a pointer to avoid the copy?
+		AST_Node*		type; // Is an expression that have to be evaluable at compile-time and return a Type (basic or struct or enum, Type, function,...)
 	};
 
 	struct AST_Enum_Value
 	{
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		Token		value_name;
-		AST_Node*	value;
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token<Keyword>	value_name;
+		AST_Node*		value;
 	};
 
 	struct AST_Enum
 	{
 		Node_Type		ast_type;
 		AST_Node*		sibling;
-		Token			type_name; // Should be a pointer to avoid the copy?
+		Token<Keyword>	type_name; // Should be a pointer to avoid the copy?
 		AST_Enum_Value* values;
 	};
 
@@ -152,28 +152,28 @@ namespace f
 
 	struct AST_Statement_Basic_Type
 	{
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		Keyword		keyword;
-		Token		token;
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Keyword			keyword;
+		Token<Keyword>	token;
 	};
 
 	struct AST_Statement_Struct_Type
 	{
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		bool		anonymous;
-		Token		name; // @Warning is uninitialized if anonymous is true
-		AST_Node*	first_child;
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		bool			anonymous;
+		Token<Keyword>	name; // @Warning is uninitialized if anonymous is true
+		AST_Node*		first_child;
 	};
 
 	struct AST_Statement_Union_Type
 	{
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		bool		anonymous;
-		Token		name; // @Warning is uninitialized if anonymous is true
-		AST_Node*	first_child;
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		bool			anonymous;
+		Token<Keyword>	name; // @Warning is uninitialized if anonymous is true
+		AST_Node*		first_child;
 	};
 
 	struct AST_Statement_Enum_Type
@@ -184,11 +184,11 @@ namespace f
 
 	struct AST_User_Type_Identifier
 	{
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		Token		identifier;
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token<Keyword>	identifier;
 
-		Symbol_Table* symbol_table;
+		Symbol_Table*	symbol_table;
 	};
 
 	struct AST_Statement_Type_Pointer
@@ -209,20 +209,20 @@ namespace f
 
 	struct AST_Statement_Variable
 	{
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		Token		name;
-		AST_Node*	type;
-		bool		is_function_parameter;
-		bool		is_optional;
-		AST_Node*	expression; // not null if is_optional is true
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token<Keyword>	name;
+		AST_Node*		type;
+		bool			is_function_parameter;
+		bool			is_optional;
+		AST_Node*		expression; // not null if is_optional is true
 	};
 
 	struct AST_Statement_Function
 	{
 		Node_Type				ast_type;
 		AST_Node*				sibling;
-		Token					name;
+		Token<Keyword>			name;
 		int						nb_arguments;
 		AST_Statement_Variable*	arguments;
 		AST_Node*				return_type;
@@ -234,17 +234,17 @@ namespace f
 	{
 		Node_Type		ast_type;
 		AST_Node*		sibling;
-		Token			value;
+		Token<Keyword>	value;
 		AST_Literal*	arguments;
 	};
 
 	struct AST_Function_Call
 	{
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		Token		name;
-		int			nb_arguments;
-		AST_Node*	parameters;
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token<Keyword>	name;
+		int				nb_arguments;
+		AST_Node*		parameters;
 	};
 
 	struct AST_Statement_Scope
@@ -258,17 +258,17 @@ namespace f
 	{
 		// There is no type inference to do on it
 		// The token is a string or a numeric literal
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		Token		value;
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token<Keyword>	value;
 	};
 
 	struct AST_Identifier
 	{
 		// Pretty similar to AST_Literal, should be merged?
-		Node_Type	ast_type;
-		AST_Node*	sibling;
-		Token		value;
+		Node_Type		ast_type;
+		AST_Node*		sibling;
+		Token<Keyword>	value;
 
 		// @Warning I put the Symbol_Table link here as all nodes are allocated in the same buffer
 		// based on the size of the biggest AST_Node Type. So we can really optimize memory usage by
@@ -305,8 +305,8 @@ namespace f
 
 		// @TODO Can we put function declarations in a struct?
 
-		Scope_Type	type;
-		Token*		name; // Functions and struct scopes are named
+		Scope_Type		type;
+		Token<Keyword>*	name; // Functions and struct scopes are named
 
 		Symbol_Table* parent;
 		Symbol_Table* sibling;
@@ -343,7 +343,7 @@ namespace f
 		Symbol_Table* current_symbol_table;
 	};
 
-    void parse(fstd::memory::Array<Token>& tokens, Parsing_Result& ast);
+    void parse(fstd::memory::Array<Token<Keyword>>& tokens, Parsing_Result& ast);
 	inline bool is_binary_operator(const AST_Node* node);
 	inline bool is_unary_operator(const AST_Node* node);
 	void generate_dot_file(const AST_Node* node, const fstd::system::Path& output_file_path);

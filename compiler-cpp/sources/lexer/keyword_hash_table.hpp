@@ -2,6 +2,8 @@
 
 #include <fstd/core/assert.hpp>
 
+#include <fstd/language/types.hpp>
+
 // Keyword_Hash_Table is a hash table that use buckets to save memory.
 // The hash of the key is used directly as an index.
 // We store key with value to be able to handle collisions on hashes.

@@ -208,6 +208,9 @@
     <ClInclude Include="..\third-party\WindowsHModular\include\win32\windows_modular.h">
       <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\lexer\lexer_base.hpp">
+      <Filter>Source Files\lexer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -263,6 +266,9 @@
     </ClCompile>
     <ClCompile Include="..\sources\parser\symbol_solver.cpp">
       <Filter>Source Files\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\lexer\lexer_base.cpp">
+      <Filter>Source Files\lexer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

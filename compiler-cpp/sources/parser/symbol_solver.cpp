@@ -11,7 +11,7 @@
 
 using namespace f;
 
-static AST_Node* get_user_type(Token* identifier, Symbol_Table* symbol_table)
+static AST_Node* get_user_type(Token<Keyword>* identifier, Symbol_Table* symbol_table)
 {
 	uint64_t hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(identifier->text), fstd::language::get_string_size(identifier->text), 0);
 	uint16_t short_hash = hash & 0xffff;

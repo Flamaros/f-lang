@@ -6,6 +6,8 @@
 #include "IR_generator.hpp"
 #include "PE_x86_backend.hpp"
 
+#include "lexer/lexer_base.hpp"
+
 #include <fstd/memory/array.hpp>
 
 #include <fstd/system/path.hpp>
@@ -16,11 +18,6 @@ namespace fstd
 	{
 		struct Logger;
 	}
-}
-
-namespace f
-{
-	struct Token;
 }
 
 struct Globals
@@ -47,5 +44,6 @@ enum class Compiler_Error
 };
 
 void report_error(Compiler_Error error, const char* error_message);
-void report_error(Compiler_Error error, const f::Token& token, const char* error_message);
+template<typename Token>
+void report_error(Compiler_Error error, const Token& token, const char* error_message);
 void abort_compilation();

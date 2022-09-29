@@ -1,8 +1,5 @@
 ﻿#include "lexer.hpp"
 
-#include "hash_table.hpp"
-#include "keyword_hash_table.hpp"
-
 #include "../globals.hpp"
 
 #include <fstd/core/logger.hpp>
@@ -10,8 +7,6 @@
 
 #include <fstd/system/file.hpp>
 #include <fstd/system/path.hpp>
-
-#include <fstd/stream/array_stream.hpp>
 
 #include <fstd/language/defer.hpp>
 #include <fstd/language/flags.hpp>
@@ -37,12 +32,6 @@ static const size_t    tokens_length_heuristic = 5;
 //
 // Flamaros - 18 april 2020
 
-/// Return a key for the punctuation of 2 characters
-constexpr static uint16_t punctuation_key_2(const uint8_t* str)
-{
-    return ((uint16_t)str[0] << 8) | (uint16_t)str[1];
-}
-
 // @Warning
 // Following Hash_Table should be filled at compile time not runtime.
 // I actually didn't check how it goes in C++, but in f-lang it should be
@@ -56,73 +45,6 @@ constexpr static uint16_t punctuation_key_2(const uint8_t* str)
 // previous can be followed by an other one.
 //
 // Flamaros - 17 february 2020
-
-// @TODO remove the use of the initializer list in the Hash_Table
-static Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
-    // Utf8 characters that use 2 runes
-    {punctuation_key_2((uint8_t*)u8"¤"), Punctuation::CURRENCY},
-    {punctuation_key_2((uint8_t*)u8"£"), Punctuation::POUND},
-    {punctuation_key_2((uint8_t*)u8"§"), Punctuation::SECTION},
-
-    {punctuation_key_2((uint8_t*)"//"),	Punctuation::LINE_COMMENT},
-    {punctuation_key_2((uint8_t*)"/*"),	Punctuation::OPEN_BLOCK_COMMENT},
-    {punctuation_key_2((uint8_t*)"*/"),	Punctuation::CLOSE_BLOCK_COMMENT},
-    {punctuation_key_2((uint8_t*)"->"),	Punctuation::ARROW},
-    {punctuation_key_2((uint8_t*)"&&"),	Punctuation::LOGICAL_AND},
-    {punctuation_key_2((uint8_t*)"||"),	Punctuation::LOGICAL_OR},
-    {punctuation_key_2((uint8_t*)"::"),	Punctuation::DOUBLE_COLON},
-    {punctuation_key_2((uint8_t*)".."),	Punctuation::DOUBLE_DOT},
-    {punctuation_key_2((uint8_t*)":="),	Punctuation::COLON_EQUAL},
-    {punctuation_key_2((uint8_t*)"=="),	Punctuation::EQUALITY_TEST},
-    {punctuation_key_2((uint8_t*)"!="),	Punctuation::DIFFERENCE_TEST},
-	{punctuation_key_2((uint8_t*)"\\\""),	Punctuation::ESCAPED_DOUBLE_QUOTE},
-};
-
-static Hash_Table<uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1 = {
-    // White characters (aren't handle for an implicit skip/separation between tokens)
-    {' ', Punctuation::WHITE_CHARACTER},       // space
-    {'\t', Punctuation::WHITE_CHARACTER},      // horizontal tab
-    {'\v', Punctuation::WHITE_CHARACTER},      // vertical tab
-    {'\f', Punctuation::WHITE_CHARACTER},      // feed
-    {'\r', Punctuation::WHITE_CHARACTER},      // carriage return
-    {'\n', Punctuation::NEW_LINE_CHARACTER},   // newline
-    {'~', Punctuation::TILDE},
-    {'`', Punctuation::BACKQUOTE},
-    {'!', Punctuation::BANG},
-    {'@', Punctuation::AT},
-    {'#', Punctuation::HASH},
-    {'$', Punctuation::DOLLAR},
-    {'%', Punctuation::PERCENT},
-    {'^', Punctuation::CARET},
-    {'&', Punctuation::AMPERSAND},
-    {'*', Punctuation::STAR},
-    {'(', Punctuation::OPEN_PARENTHESIS},
-    {')', Punctuation::CLOSE_PARENTHESIS},
-    {'-', Punctuation::DASH},
-    {'+', Punctuation::PLUS},
-    {'=', Punctuation::EQUALS},
-    {'{', Punctuation::OPEN_BRACE},
-    {'}', Punctuation::CLOSE_BRACE},
-    {'[', Punctuation::OPEN_BRACKET},
-    {']', Punctuation::CLOSE_BRACKET},
-    {':', Punctuation::COLON},
-    {';', Punctuation::SEMICOLON},
-    {'\'', Punctuation::SINGLE_QUOTE},
-    {'"', Punctuation::DOUBLE_QUOTE},
-    {'|', Punctuation::PIPE},
-    {'/', Punctuation::SLASH},
-    {'\\', Punctuation::BACKSLASH},
-    {'<', Punctuation::LESS},
-    {'>', Punctuation::GREATER},
-    {',', Punctuation::COMMA},
-    {'.', Punctuation::DOT},
-    {'?', Punctuation::QUESTION_MARK}
-};
-
-static inline bool is_white_punctuation(Punctuation punctuation)
-{
-    return punctuation >= Punctuation::WHITE_CHARACTER;
-}
 
 static uint32_t keyword_key(const language::string_view& str)
 {
@@ -257,19 +179,7 @@ void f::initialize_lexer()
     core::log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: size: %d bytes - nb_used_buckets: %d - nb_collisions: %d\n", keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
 }
 
-static inline void peek(stream::Array_Stream<uint8_t>& stream, int& current_column)
-{
-    stream::peek<uint8_t>(stream);
-    current_column++;
-}
-
-static inline void skip(stream::Array_Stream<uint8_t>& stream, size_t size, int& current_column)
-{
-    stream::skip<uint8_t>(stream, size);
-    current_column += (int)size;
-}
-
-static inline void polish_string_literal(f::Token& token)
+static inline void polish_string_literal(f::Token<Keyword>& token)
 {
     ZoneScopedN("polish_string_literal");
 
@@ -319,13 +229,13 @@ static inline void polish_string_literal(f::Token& token)
     token.value.string = string;
 }
 
-void f::lex(const system::Path& path, memory::Array<Token>& tokens)
+void f::lex(const system::Path& path, memory::Array<Token<Keyword>>& tokens)
 {
     ZoneScopedNC("f::lex", 0x1b5e20);
 
     Lexer_Data                      lexer_data;
     system::File	                file;
-    Token                           file_token;
+    Token<Keyword>                           file_token;
 
     if (system::open_file(file, path, system::File::Opening_Flag::READ) == false) {
         file_token.type = Token_Type::UNKNOWN;
@@ -344,7 +254,7 @@ void f::lex(const system::Path& path, memory::Array<Token>& tokens)
     lex(path, lexer_data.file_buffer, tokens, globals.lexer_data, file_token);
 }
 
-void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer, fstd::memory::Array<Token>& tokens, fstd::memory::Array<f::Lexer_Data>& lexer_data, Token& file_token)
+void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer, fstd::memory::Array<Token<Keyword>>& tokens, fstd::memory::Array<f::Lexer_Data>& lexer_data, Token<Keyword>& file_token)
 {
     ZoneScopedN("lex");
 
@@ -389,7 +299,7 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
 
         punctuation = punctuation_table_1[current_character];
         if (stream::get_remaining_size(stream) >= 2) {
-            punctuation_2 = punctuation_table_2[punctuation_key_2(stream::get_pointer(stream))];
+            punctuation_2 = punctuation_table_2[f::punctuation_key_2(stream::get_pointer(stream))];
         }
 
         if (punctuation != Punctuation::UNKNOWN || punctuation_2 != Punctuation::UNKNOWN) { // Punctuation to analyse
@@ -402,7 +312,7 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
                 peek(stream, current_column);
             }
             else {
-                Token       token;
+                Token<Keyword>       token;
 
                 token.file_path = system::to_string(path);
                 token.line = current_line;
@@ -548,7 +458,7 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
             // Put similar code in the base library
             // https://github.com/ulfjack/ryu/blob/master/ryu/s2f.c
 
-            Token               token;
+            Token<Keyword>               token;
             Numeric_Value_Flag  numeric_literal_flags = Numeric_Value_Flag::IS_DEFAULT;
             uint8_t             next_char = 0;
 
@@ -789,7 +699,7 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
             memory::array_push_back(tokens, token);
 		}
 		else {  // Will be an identifier
-            Token   token;
+            Token<Keyword>   token;
 
             token.file_path = system::to_string(path);
             token.line = current_line;
@@ -834,7 +744,7 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
     log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: nb_find_calls: %d - nb_collisions_in_find: %d\n", keywords.nb_find_calls(), keywords.nb_collisions_in_find());
 }
 
-void f::print(fstd::memory::Array<Token>& tokens)
+void f::print(fstd::memory::Array<Token<Keyword>>& tokens)
 {
     ZoneScopedNC("f::print[tokens]", 0x1b5e20);
 

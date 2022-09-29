@@ -4,8 +4,6 @@
 
 namespace f
 {
-	struct Token;
-
 	struct AST_Node;
 	struct AST_Identifier;
 	struct AST_User_Type_Identifier;
