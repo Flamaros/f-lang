@@ -1,7 +1,6 @@
 #pragma once
 
 #include "hash_table.hpp"
-#include "keyword_hash_table.hpp"
 
 #include <fstd/language/string.hpp>
 #include <fstd/language/string_view.hpp>
@@ -136,6 +135,7 @@ namespace f
 
     extern Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2;
     extern Hash_Table<uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1;
+    extern fstd::language::string_view keyword_invalid_key;
 
     /// Return a key for the punctuation of 2 characters
     constexpr uint16_t punctuation_key_2(const uint8_t* str)
@@ -157,5 +157,33 @@ namespace f
     {
         fstd::stream::skip<uint8_t>(stream, size);
         current_column += (int)size;
+    }
+
+    inline uint32_t keyword_key(const fstd::language::string_view& str)
+    {
+        // @TODO test with a crc32 implementation (that could be better to reduce number of collisions instead of this weird thing)
+
+        fstd::core::Assert(fstd::language::get_string_size(str) > 0);
+
+        if (fstd::language::get_string_size(str) == 1) {
+            return (uint32_t)1 << 8 | (uint32_t)str.ptr[0];
+        }
+        else if (fstd::language::get_string_size(str) == 2) {
+            return (uint32_t)2 << 24 | (uint32_t)str.ptr[0] << 8 | (uint32_t)str.ptr[1];
+        }
+        else if (fstd::language::get_string_size(str) < 5) {
+            return (uint32_t)str.size << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[1]) << 8) | (uint32_t)str.ptr[2];
+        }
+        else {
+            return (uint32_t)str.size << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[2]) << 8) | (uint32_t)str.ptr[4];
+        }
+    }
+
+    inline bool is_digit(char character)
+    {
+        if (character >= '0' && character <= '9') {
+            return true;
+        }
+        return false;
     }
 }

@@ -64,6 +64,11 @@ Ajouter des marker Tracy pour la stack avec les appels récursif
 
 #########################
 
+En C les types doivent être naturellement aligné, sinon c'est un UB. Du coup il faut utiliser alignof(type) pour connaître l'alignement à utiliser lors de leur allocation.
+
+
+#########################
+
 
 
 Il va falloir réfléchir à faire une passe d'analyse qui vérifie les expressions et remplisse l'IR afin que les différents backend n'aient pas à refaire ce job de checker les erreurs de grammaire,...

@@ -40,6 +40,7 @@
     <ClInclude Include="..\sources\fstd\language\types.hpp" />
     <ClInclude Include="..\sources\fstd\macros.hpp" />
     <ClInclude Include="..\sources\fstd\memory\array.hpp" />
+    <ClInclude Include="..\sources\fstd\memory\boolean_array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\hash_table.hpp" />

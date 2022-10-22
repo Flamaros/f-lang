@@ -34,8 +34,6 @@ namespace fstd
 		template<typename Type>
 		void init(Array<Type>& array)
 		{
-			ZoneScopedN("init");
-
 			array.ptr = nullptr;
 			array.reserved = 0;
 			array.size = 0;

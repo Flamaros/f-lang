@@ -16,10 +16,13 @@
 
 #include <magic_enum/magic_enum.hpp> // @TODO remove it
 
+#include <fstd/memory/hash_table.hpp>
+
 using namespace f;
 
 using namespace fstd;
 using namespace fstd::core;
+using namespace fstd::memory;
 
 static const size_t    tokens_length_heuristic = 5;
 
@@ -46,47 +49,19 @@ static const size_t    tokens_length_heuristic = 5;
 //
 // Flamaros - 17 february 2020
 
-static uint32_t keyword_key(const language::string_view& str)
-{
-    // @TODO test with a crc32 implementation (that could be better to reduce number of collisions instead of this weird thing)
-
-    core::Assert(language::get_string_size(str) > 0);
-
-    if (language::get_string_size(str) == 1) {
-        return (uint32_t)1 << 8 | (uint32_t)str.ptr[0];
-    }
-    else if (language::get_string_size(str) == 2) {
-        return (uint32_t)2 << 24 | (uint32_t)str.ptr[0] << 8 | (uint32_t)str.ptr[1];
-    }
-    else if (language::get_string_size(str) < 5) {
-        return (uint32_t)str.size << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[1]) << 8) | (uint32_t)str.ptr[2];
-    }
-    else {
-        return (uint32_t)str.size << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[2]) << 8) | (uint32_t)str.ptr[4];
-    }
-}
-
-static language::string_view keyword_invalid_key;
-
 // @TODO Can't we reduce the size key?
 // To avoid collisions, we may have to find a better way to generate a hash than simply encode the keyword size with the first
 // two characters.
 // @SpeedUp
 //
 // Flamaros - 19 february 2020
-static Keyword_Hash_Table<uint32_t, language::string_view, Keyword, &keyword_invalid_key, Keyword::UNKNOWN>  keywords;
+static memory::Hash_Table<uint32_t, language::string_view, Keyword, 512>  keywords;
 
-static inline Keyword is_keyword(const language::string_view& text)
+static inline Keyword is_keyword(language::string_view& text)
 {
-    return keywords.find(keyword_key(text), text);
-}
+    Keyword* result = hash_table_get(keywords, keyword_key(text), text);
 
-static inline bool is_digit(char character)
-{
-	if (character >= '0' && character <= '9') {
-		return true;
-	}
-	return false;
+    return result ? *result : Keyword::UNKNOWN;
 }
 
 enum class Numeric_Value_Flag
@@ -107,12 +82,13 @@ enum class Numeric_Value_Flag
     { \
         language::string_view   str_view; \
         language::assign(str_view, (uint8_t*)(KEY)); \
-        keywords.insert(keyword_key(str_view), str_view, (Keyword::VALUE)); \
+        Keyword value = (Keyword::VALUE); \
+        hash_table_insert(keywords, keyword_key(str_view), str_view, value); \
     }
 
 void f::initialize_lexer()
 {
-    keywords.set_key_matching_function(&language::are_equals);
+    hash_table_init(keywords, &language::are_equals);
 
     INSERT_KEYWORD("import", IMPORT);
 
@@ -176,7 +152,9 @@ void f::initialize_lexer()
     INSERT_KEYWORD("__VENDOR__", SPECIAL_COMPILER_VENDOR);
     INSERT_KEYWORD("__VERSION__", SPECIAL_COMPILER_VERSION);
 
-    core::log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: size: %d bytes - nb_used_buckets: %d - nb_collisions: %d\n", keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
+#if defined(FSTD_DEBUG)
+    log_stats(keywords, *globals.logger);
+#endif
 }
 
 static inline void polish_string_literal(f::Token<Keyword>& token)
@@ -741,7 +719,9 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
         report_error(Compiler_Error::internal_error, "Overflow the maximum number of tokens that the compiler will be able to handle in future! Actually the buffer have a dynamic size but it will not stay like that for performances!");
     }
 
-    log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: nb_find_calls: %d - nb_collisions_in_find: %d\n", keywords.nb_find_calls(), keywords.nb_collisions_in_find());
+#if defined(FSTD_DEBUG)
+    log_stats(keywords, *globals.logger);
+#endif
 }
 
 void f::print(fstd::memory::Array<Token<Keyword>>& tokens)

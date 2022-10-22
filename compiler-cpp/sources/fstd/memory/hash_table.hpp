@@ -5,6 +5,7 @@
 #include <fstd/system/allocator.hpp>
 
 #include <fstd/memory/array.hpp>
+#include <fstd/memory/boolean_array.hpp>
 
 #include <fstd/core/assert.hpp>
 #include <fstd/core/logger.hpp>
@@ -13,6 +14,8 @@
 
 #include <limits> // @TODO remove it
 #include <type_traits>
+
+// @Warning don't use it with an hash type bigger than uint32_t
 
 //
 // Voir sur les buckets de la hashtable s'il ne faut pas avoir un buffer avec les flag d'usage plutôt que
@@ -85,8 +88,9 @@ namespace fstd
 
 			struct Bucket
 			{
-				Array<Value_POD>	table;
-				size_t				nb_values;	// If 0 the table have a size of 0, else the bucket_size
+				Array<Value_POD>			table;
+				size_t						nb_values;	// If 0 the table have a size of 0, else the bucket_size
+				Boolean_Array<_bucket_size>	init_flags;
 			};
 
 			bool (*compare_function)(const Key_Type&, const Key_Type&) = nullptr;
@@ -100,19 +104,31 @@ namespace fstd
 
 			hash_table.compare_function = compare_function;
 
-			fstd::core::Assert((std::numeric_limits<Hash_Type>::max() + 1) % _bucket_size == 0); // maximum possible value of type Hash_Type should be a multiple of bucket_size
+			fstd::core::Assert(((uint64_t)std::numeric_limits<Hash_Type>::max() + 1) % _bucket_size == 0); // maximum possible value of type Hash_Type should be a multiple of bucket_size
 
 			init(hash_table.buckets);
-			resize_array(hash_table.buckets, (std::numeric_limits<Hash_Type>::max() + 1) / _bucket_size);
+			resize_array(hash_table.buckets, ((uint64_t)std::numeric_limits<Hash_Type>::max() + 1) / _bucket_size);
 
+			// @TODO @SpeedUp find a nice way to do that much faster
+			// In reality we should be able to use a memset, but actually we paid for the genericity of containers.
+			// It takes 70ms!!! to initialize the HashTable of the lexer.
+			// There is absolutely nothing else setting every members to 0 (or nullptr)!!!
+			//
+			// Maybe SAO is the way to go, because in this case we can initialize by batches:
+			//   init_arrays(&bucket->table[0], arrays_count);
+			//   init_boolean_arrays(&bucket->init_flags[0], arrays_count);
+			//   memset(&bucket->nb_values[0], arrays_count * sizeof(bucket->nb_values));
+			//
+			// Or table and boolean tables should not be type but just modules providing helper API without the responsability
+			// of memory management (allocation and initialization).
+			// This might be enough here because these tables aren't resizable here.
 			for (size_t bucket_index = 0; bucket_index < get_array_size(hash_table.buckets); bucket_index++)
 			{
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 				init(bucket->table);
+				init(bucket->init_flags);
 				bucket->nb_values = 0;
 			}
-
-			// @Speed We have to set all values ptr to null, so we can simply use a fill_memory which is more optimal than a basic loop.
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
@@ -131,6 +147,7 @@ namespace fstd
 						system::free(value_pod->value);
 				}
 				release(bucket->table);
+				release(bucket->init_flags);
 			}
 			release(hash_table.buckets);
 		}
@@ -151,18 +168,20 @@ namespace fstd
 				if (get_array_size(bucket->table) == 0)
 				{
 					// We have to initialize the bucket for its first use
-					init(bucket->table);
 					resize_array(bucket->table, _bucket_size);
+					allocate(bucket->init_flags);
 					system::fill_memory(get_array_data(bucket->table), get_array_bytes_size(bucket->table), 0x00);
 				}
 
 				auto value_pod = get_array_element(bucket->table, value_index);
-				if (value_pod->value == nullptr)
+
+				if (boolean_array_get(bucket->init_flags, value_index) == false)
 				{
 					value_pod->key = key;
 					value_pod->value = value;
 
 					bucket->nb_values++;
+					boolean_array_set(bucket->init_flags, value_index, true);
 					return &value_pod->value;
 				}
 				else if (hash_table.compare_function(key, value_pod->key) == true)
@@ -224,11 +243,10 @@ namespace fstd
 				if (get_array_size(bucket->table) == 0)
 					return nullptr;
 
-				auto value_pod = get_array_element(bucket->table, value_index);
-
-				if (value_pod == nullptr) // Slot is empty so the key is not in the hash_table
+				if (boolean_array_get(bucket->init_flags, value_index) == false)
 					return nullptr;
 
+				auto value_pod = get_array_element(bucket->table, value_index);
 				if (hash_table.compare_function(key, value_pod->key) == true)
 					return &value_pod->value;
 					
@@ -238,7 +256,7 @@ namespace fstd
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
-		inline Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator hash_table_begin(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
+		inline typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator hash_table_begin(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
 		{
 			ZoneScopedN("hash_table_begin");
 
@@ -254,8 +272,7 @@ namespace fstd
 
 				for (it.slot_index = 0; it.slot_index < get_array_size(bucket->table); it.slot_index++) // @Warning some buckets aren't allocated so the size can be 0
 				{
-					auto value_pod = get_array_element(bucket->table, it.slot_index);
-					if (value_pod->value != nullptr)
+					if (boolean_array_get(bucket->init_flags, it.slot_index) == true)
 						return it;
 				}
 			}
@@ -264,7 +281,7 @@ namespace fstd
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
-		inline Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& hash_table_next(typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& it)
+		inline typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& hash_table_next(typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& it)
 		{
 			ZoneScopedN("hash_table_next");
 
@@ -278,8 +295,7 @@ namespace fstd
 
 				for (; it.slot_index < get_array_size(bucket->table); it.slot_index++) // @Warning some buckets aren't allocated so the size can be 0
 				{
-					auto value_pod = get_array_element(bucket->table, it.slot_index);
-					if (value_pod->value != nullptr)
+					if (boolean_array_get(bucket->init_flags, it.slot_index) == true)
 						return it;
 				}
 				it.slot_index = 0;
@@ -289,7 +305,7 @@ namespace fstd
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
-		inline Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator hash_table_end(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
+		inline typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator hash_table_end(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
 		{
 			ZoneScopedN("hash_table_end");
 
@@ -321,22 +337,22 @@ namespace fstd
 			if (bucket == nullptr)
 				return nullptr;
 
-			auto value_pod = get_array_element(bucket->table, it.slot_index);
-
-			if (value_pod == nullptr) // Slot is empty so the key is not in the hash_table
+			if (boolean_array_get(bucket->init_flags, it.slot_index) == false)
 				return nullptr;
 
+			auto value_pod = get_array_element(bucket->table, it.slot_index);
 			return &value_pod->value;
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
-		inline void log_stats(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, fstd::core::Logger* logger)
+		inline void log_stats(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, fstd::core::Logger& logger)
 		{
 			ZoneScopedN("log_stats");
 
 			size_t nb_used_buckets = 0;
 			size_t bucket_size = _bucket_size * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD);
-			size_t memory_size = sizeof(Array<Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Bucket>) + get_array_size(hash_table.buckets) * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Bucket);
+			size_t memory_size = sizeof(hash_table.buckets) +
+				get_array_size(hash_table.buckets) * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Bucket);
 
 			for (size_t bucket_index = 0; bucket_index < get_array_size(hash_table.buckets); bucket_index++)
 			{
@@ -345,6 +361,7 @@ namespace fstd
 				if (get_array_size(bucket->table) > 0) {
 					nb_used_buckets++;
 					memory_size += bucket_size;
+					// @TODO + init_flags size
 				}
 			}
 
@@ -355,6 +372,8 @@ namespace fstd
 				"    Occupied memory per allocated bucket: %d bytes\n"
 				"    Occupied memory by entire Hash_Table: %d bytes\n", nb_used_buckets, get_array_size(hash_table.buckets), bucket_size, memory_size);
 		}
+
+		// @TODO I should add a log of colisions like I had with the old Keyword_Hash_Table used by the lexer
 	}
 }
 

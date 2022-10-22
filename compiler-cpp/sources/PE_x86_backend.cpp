@@ -178,60 +178,40 @@ struct ASM
     Operand             operands[3];
 };
 
-namespace __PE_x86_backend
+// @TODO Can't we reduce the size key?
+// To avoid collisions, we may have to find a better way to generate a hash than simply encode the keyword size with the first
+// two characters.
+// @SpeedUp
+//
+// Flamaros - 19 february 2020
+static memory::Hash_Table<uint32_t, language::string_view, x86_Keyword, 512>  x86_keywords;
+
+static inline x86_Keyword x86_is_keyword(language::string_view& text)
 {
-    static uint32_t keyword_key(const language::string_view& str)
-    {
-        // @TODO test with a crc32 implementation (that could be better to reduce number of collisions instead of this weird thing)
+    x86_Keyword* result = memory::hash_table_get(x86_keywords, keyword_key(text), text);
 
-        core::Assert(language::get_string_size(str) > 0);
+    return result ? *result : x86_Keyword::UNKNOWN;
+}
 
-        if (language::get_string_size(str) == 1) {
-            return (uint32_t)1 << 8 | (uint32_t)str.ptr[0];
-        }
-        else if (language::get_string_size(str) == 2) {
-            return (uint32_t)2 << 24 | (uint32_t)str.ptr[0] << 8 | (uint32_t)str.ptr[1];
-        }
-        else if (language::get_string_size(str) < 5) {
-            return (uint32_t)str.size << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[1]) << 8) | (uint32_t)str.ptr[2];
-        }
-        else {
-            return (uint32_t)str.size << 24 | ((uint32_t)(str.ptr[0]) << 16) | ((uint32_t)(str.ptr[2]) << 8) | (uint32_t)str.ptr[4];
-        }
-    }
-
-    static language::string_view keyword_invalid_key;
-
-    // @TODO Can't we reduce the size key?
-    // To avoid collisions, we may have to find a better way to generate a hash than simply encode the keyword size with the first
-    // two characters.
-    // @SpeedUp
-    //
-    // Flamaros - 19 february 2020
-    static Keyword_Hash_Table<uint32_t, language::string_view, x86_Keyword, &keyword_invalid_key, x86_Keyword::UNKNOWN>  keywords;
-
-    static inline x86_Keyword is_keyword(const language::string_view& text)
-    {
-        return keywords.find(keyword_key(text), text);
-    }
-
-    // @TODO remplace it by a nested inlined function in f-lang
+// @TODO remplace it by a nested inlined function in f-lang
 #define INSERT_KEYWORD(KEY, VALUE) \
-        { \
-            language::string_view   str_view; \
-            language::assign(str_view, (uint8_t*)(KEY)); \
-            keywords.insert(keyword_key(str_view), str_view, (x86_Keyword::VALUE)); \
-        }
-
-    static void initialize_lexer()
-    {
-        keywords.set_key_matching_function(&language::are_equals);
-
-        INSERT_KEYWORD("ignore", _IGNORE);
-
-        core::log(*globals.logger, Log_Level::verbose, "[lexer] keywords hash table: size: %d bytes - nb_used_buckets: %d - nb_collisions: %d\n", keywords.compute_used_memory_in_bytes(), keywords.nb_used_buckets(), keywords.nb_collisions());
+    { \
+        language::string_view   str_view; \
+        language::assign(str_view, (uint8_t*)(KEY)); \
+        x86_Keyword value = (x86_Keyword::VALUE); \
+        hash_table_insert(x86_keywords, keyword_key(str_view), str_view, value); \
     }
-};
+
+static void x86_initialize_lexer()
+{
+    memory::hash_table_init(x86_keywords, &language::are_equals);
+
+    INSERT_KEYWORD("ignore", _IGNORE);
+
+#if defined(FSTD_DEBUG)
+    log_stats(x86_keywords, *globals.logger);
+#endif
+}
 
 inline Instruction* allocate_instruction()
 {
@@ -256,7 +236,7 @@ static void lex_instructions_DB()
 {
     ZoneScopedN("lex_instructions_DB");
 
-    __PE_x86_backend::initialize_lexer();
+    x86_initialize_lexer();
 
     static system::Path instructions_file_path; // @warning static to be able to have a string_view on it
     File                instructions_file;
@@ -387,7 +367,7 @@ static void lex_instructions_DB()
                 }
             }
 
-            token.value.keyword = __PE_x86_backend::is_keyword(token.text);
+            token.value.keyword = x86_is_keyword(token.text);
             if (token.value.keyword != x86_Keyword::UNKNOWN) {
                 token.type = Token_Type::KEYWORD;
             }

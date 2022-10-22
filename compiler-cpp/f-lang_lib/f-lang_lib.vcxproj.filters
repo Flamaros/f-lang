@@ -211,6 +211,9 @@
     <ClInclude Include="..\sources\lexer\lexer_base.hpp">
       <Filter>Source Files\lexer</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\memory\boolean_array.hpp">
+      <Filter>Source Files\fstd\memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
