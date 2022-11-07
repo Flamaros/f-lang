@@ -11,8 +11,11 @@ namespace f
     enum class x86_Keyword : uint8_t
     {
         UNKNOWN,
+
         _IGNORE,
 
+        // @TODO document
+        RESB,
 
         // Operand types
         _VOID,

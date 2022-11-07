@@ -207,6 +207,8 @@ static void x86_initialize_lexer()
     memory::hash_table_init(x86_keywords, &language::are_equals);
 
     INSERT_KEYWORD("ignore", _IGNORE);
+    INSERT_KEYWORD("imm", IMM);
+    INSERT_KEYWORD("resb", RESB);
 
 #if defined(FSTD_DEBUG)
     log_stats(x86_keywords, *globals.logger);
@@ -238,11 +240,9 @@ static void lex_instructions_DB()
 
     x86_initialize_lexer();
 
-    static system::Path instructions_file_path; // @warning static to be able to have a string_view on it
+    static system::Path instructions_file_path; // @warning static and never released to be able to have a string_view on it
     File                instructions_file;
     bool                open;
-
-    defer{ system::reset_path(instructions_file_path); };
 
     system::from_native(instructions_file_path, (uint8_t*)"./compiler-cpp/data/insns.dat");
 
@@ -375,7 +375,7 @@ static void lex_instructions_DB()
 
         memory::array_push_back(globals.x86_backend_data.tokens, token);
 
-        core::log(*globals.logger, Log_Level::verbose, "[backend] %v\n", token.text);
+//        core::log(*globals.logger, Log_Level::verbose, "[backend] %v\n", token.text);
     }
 }
 
@@ -391,11 +391,11 @@ static void parse_instructions_DB()
         ARCHITECTURES
     };
 
-    Token<x86_Keyword>			current_token;
-    int             current_line;
-    int             previous_line = 0;
-    Instruction*    current_instruction = nullptr;
-    ParsingState    parsing_state = ParsingState::NAME;
+    Token<x86_Keyword>  current_token;
+    int                 current_line;
+    int                 previous_line = 0;
+    Instruction*        current_instruction = nullptr;
+    ParsingState        parsing_state = ParsingState::NAME;
 
     stream::Array_Stream<Token<x86_Keyword>>	stream;
 
