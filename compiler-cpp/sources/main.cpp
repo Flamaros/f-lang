@@ -25,9 +25,9 @@
 #include <tracy/Tracy.hpp>
 #include <tracy/common/TracySystem.hpp>
 
-#define ENABLE_TOKENS_PRINT 0
-#define ENABLE_DOT_OUTPUT 0
-#define ENABLE_CPP_BACKEND 0
+#define ENABLE_TOKENS_PRINT	0
+#define ENABLE_DOT_OUTPUT	0
+#define ENABLE_CPP_BACKEND	0
 
 using namespace fstd;
 using namespace fstd::core;

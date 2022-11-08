@@ -88,8 +88,8 @@ namespace fstd
 
 			struct Bucket
 			{
+				size_t						nb_values;	// If 0 the buckent is not yet initialized
 				Array<Value_POD>			table;
-				size_t						nb_values;	// If 0 the table have a size of 0, else the bucket_size
 				Boolean_Array<_bucket_size>	init_flags;
 			};
 
@@ -109,26 +109,7 @@ namespace fstd
 			init(hash_table.buckets);
 			resize_array(hash_table.buckets, ((uint64_t)std::numeric_limits<Hash_Type>::max() + 1) / _bucket_size);
 
-			// @TODO @SpeedUp find a nice way to do that much faster
-			// In reality we should be able to use a memset, but actually we paid for the genericity of containers.
-			// It takes 70ms!!! to initialize the HashTable of the lexer.
-			// There is absolutely nothing else setting every members to 0 (or nullptr)!!!
-			//
-			// Maybe SAO is the way to go, because in this case we can initialize by batches:
-			//   init_arrays(&bucket->table[0], arrays_count);
-			//   init_boolean_arrays(&bucket->init_flags[0], arrays_count);
-			//   memset(&bucket->nb_values[0], arrays_count * sizeof(bucket->nb_values));
-			//
-			// Or table and boolean tables should not be type but just modules providing helper API without the responsability
-			// of memory management (allocation and initialization).
-			// This might be enough here because these tables aren't resizable here.
-			for (size_t bucket_index = 0; bucket_index < get_array_size(hash_table.buckets); bucket_index++)
-			{
-				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
-				init(bucket->table);
-				init(bucket->init_flags);
-				bucket->nb_values = 0;
-			}
+			system::zero_memory(get_array_element(hash_table.buckets, 0), sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Bucket));
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
@@ -165,9 +146,12 @@ namespace fstd
 				size_t value_index = hash - (bucket_index * _bucket_size);
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 
-				if (get_array_size(bucket->table) == 0)
+				if (bucket->nb_values == 0)
 				{
 					// We have to initialize the bucket for its first use
+					init(bucket->table);
+					init(bucket->init_flags);
+
 					resize_array(bucket->table, _bucket_size);
 					allocate(bucket->init_flags);
 					system::fill_memory(get_array_data(bucket->table), get_array_bytes_size(bucket->table), 0x00);
@@ -240,7 +224,7 @@ namespace fstd
 				size_t value_index = hash - (bucket_index * _bucket_size);
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 
-				if (get_array_size(bucket->table) == 0)
+				if (bucket->nb_values == 0) // bucket is not iniatilized
 					return nullptr;
 
 				if (boolean_array_get(bucket->init_flags, value_index) == false)
@@ -358,7 +342,7 @@ namespace fstd
 			{
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 
-				if (get_array_size(bucket->table) > 0) {
+				if (bucket->nb_values > 0) {
 					nb_used_buckets++;
 					memory_size += bucket_size;
 					// @TODO + init_flags size
