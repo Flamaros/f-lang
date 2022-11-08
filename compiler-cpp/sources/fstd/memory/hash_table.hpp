@@ -67,7 +67,7 @@ namespace fstd
 		// of the template version of the function by using the parameters types (the hash_table passed by
 		// parameters should already contains in his typeinfo the template parameters (and their types)).
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size = 512>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, uint16_t _bucket_size = 512>
 		struct Hash_Table
 		{
 			static_assert(sizeof(Value_Type) <= sizeof(size_t));
@@ -86,9 +86,12 @@ namespace fstd
 				Value_Type	value;
 			};
 
+			// @TODO @MemOpt
+			// I certainly should optimize the size of the Bucket struct to allow usage of small bucket size like 32
+			// the Array<Value_POD> certainly should be a raw ptr
 			struct Bucket
 			{
-				size_t						nb_values;	// If 0 the buckent is not yet initialized
+				uint16_t					nb_values;	// If 0 the buckent is not yet initialized
 				Array<Value_POD>			table;
 				Boolean_Array<_bucket_size>	init_flags;
 			};
