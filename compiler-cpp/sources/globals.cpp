@@ -17,7 +17,7 @@ using namespace fstd;
 
 // Template instancing
 template void report_error(Compiler_Error error, const f::Token<f::Keyword>& token, const char* error_message);
-template void report_error(Compiler_Error error, const f::Token<f::x86_Keyword>& token, const char* error_message);
+template void report_error(Compiler_Error error, const f::Token<f::x86_DB::x86_Keyword>& token, const char* error_message);
 
 void initialize_globals()
 {

@@ -3,8 +3,6 @@
 #include "IR_generator.hpp"
 
 #include <fstd/system/path.hpp>
-#include <fstd/memory/array.hpp>
-#include <fstd/memory/hash_table.hpp>
 
 namespace f
 {
@@ -52,8 +50,6 @@ namespace f
 
     struct PE_X86_Backend_Data
 	{
-		fstd::memory::Array<Token<x86_Keyword>>	tokens;
-		fstd::memory::Array<uint8_t>			instructions;
 	};
 
 	namespace PE_x86_backend

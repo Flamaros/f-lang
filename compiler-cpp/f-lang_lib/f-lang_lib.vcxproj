@@ -55,6 +55,7 @@
     <ClInclude Include="..\sources\fstd\system\stdio.hpp" />
     <ClInclude Include="..\sources\fstd\system\timer.hpp" />
     <ClInclude Include="..\sources\globals.hpp" />
+    <ClInclude Include="..\sources\instruction_db_loader.hpp" />
     <ClInclude Include="..\sources\IR_generator.hpp" />
     <ClInclude Include="..\sources\lexer\hash_table.hpp" />
     <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp" />
@@ -97,6 +98,7 @@
     <ClCompile Include="..\sources\fstd\system\process.cpp" />
     <ClCompile Include="..\sources\fstd\system\stdio.cpp" />
     <ClCompile Include="..\sources\globals.cpp" />
+    <ClCompile Include="..\sources\instruction_db_loader.cpp" />
     <ClCompile Include="..\sources\IR_generator.cpp" />
     <ClCompile Include="..\sources\lexer\lexer.cpp" />
     <ClCompile Include="..\sources\lexer\lexer_base.cpp" />
