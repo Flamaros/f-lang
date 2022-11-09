@@ -92,7 +92,7 @@ namespace fstd
 			struct Bucket
 			{
 				uint16_t					nb_values;	// If 0 the buckent is not yet initialized
-				Array<Value_POD>			table;
+				Value_POD*					table;
 				Boolean_Array<_bucket_size>	init_flags;
 			};
 
@@ -124,13 +124,14 @@ namespace fstd
 			{
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 
-				for (size_t i = 0; i < get_array_size(bucket->table); i++) // @Warning some buckets aren't allocated so the size can be 0
+				size_t bucket_size = bucket->nb_values == 0 ? 0 : _bucket_size;
+				for (size_t i = 0; i < bucket_size; i++) // @Warning some buckets aren't allocated so the size can be 0
 				{
-					auto value_pod = get_array_element(bucket->table, i);
-					if (value_pod->value != nullptr)
-						system::free(value_pod->value);
+					auto& value_pod = bucket->table[i];
+					if (value_pod.value != nullptr)
+						system::free(value_pod.value);
 				}
-				release(bucket->table);
+				system::free(bucket->table);
 				release(bucket->init_flags);
 			}
 			release(hash_table.buckets);
@@ -152,29 +153,29 @@ namespace fstd
 				if (bucket->nb_values == 0)
 				{
 					// We have to initialize the bucket for its first use
-					init(bucket->table);
 					init(bucket->init_flags);
 
-					resize_array(bucket->table, _bucket_size);
+					size_t bucket_size_in_bytes = _bucket_size * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD);
+					bucket->table = (typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD*)system::allocate(bucket_size_in_bytes);
 					allocate(bucket->init_flags);
-					system::fill_memory(get_array_data(bucket->table), get_array_bytes_size(bucket->table), 0x00);
+					system::fill_memory(bucket->table, bucket_size_in_bytes, 0x00);
 				}
 
-				auto value_pod = get_array_element(bucket->table, value_index);
+				auto& value_pod = bucket->table[value_index];
 
 				if (boolean_array_get(bucket->init_flags, value_index) == false)
 				{
-					value_pod->key = key;
-					value_pod->value = value;
+					value_pod.key = key;
+					value_pod.value = value;
 
 					bucket->nb_values++;
 					boolean_array_set(bucket->init_flags, value_index, true);
-					return &value_pod->value;
+					return &value_pod.value;
 				}
-				else if (hash_table.compare_function(key, value_pod->key) == true)
+				else if (hash_table.compare_function(key, value_pod.key) == true)
 				{
 					// This value already exist
-					return &value_pod->value;
+					return &value_pod.value;
 				}
 
 				// Handle hash collision
@@ -233,9 +234,9 @@ namespace fstd
 				if (boolean_array_get(bucket->init_flags, value_index) == false)
 					return nullptr;
 
-				auto value_pod = get_array_element(bucket->table, value_index);
-				if (hash_table.compare_function(key, value_pod->key) == true)
-					return &value_pod->value;
+				auto& value_pod = bucket->table[value_index];
+				if (hash_table.compare_function(key, value_pod.key) == true)
+					return &value_pod.value;
 					
 				// Increment the hash due to the collision, but we also take care of keeping it in the range.
 				hash = (hash + 1) % std::numeric_limits<Hash_Type>::max();
@@ -257,7 +258,8 @@ namespace fstd
 			{
 				auto* bucket = get_array_element(hash_table.buckets, it.bucket_index);
 
-				for (it.slot_index = 0; it.slot_index < get_array_size(bucket->table); it.slot_index++) // @Warning some buckets aren't allocated so the size can be 0
+				size_t bucket_size = bucket->nb_values == 0 ? 0 : _bucket_size;
+				for (it.slot_index = 0; it.slot_index < bucket_size; it.slot_index++) // @Warning some buckets aren't allocated so the size can be 0
 				{
 					if (boolean_array_get(bucket->init_flags, it.slot_index) == true)
 						return it;
@@ -280,7 +282,8 @@ namespace fstd
 			{
 				auto* bucket = get_array_element(it.hash_table->buckets, it.bucket_index);
 
-				for (; it.slot_index < get_array_size(bucket->table); it.slot_index++) // @Warning some buckets aren't allocated so the size can be 0
+				size_t bucket_size = bucket->nb_values == 0 ? 0 : _bucket_size;
+				for (; it.slot_index < bucket_size; it.slot_index++) // @Warning some buckets aren't allocated so the size can be 0
 				{
 					if (boolean_array_get(bucket->init_flags, it.slot_index) == true)
 						return it;
@@ -327,8 +330,8 @@ namespace fstd
 			if (boolean_array_get(bucket->init_flags, it.slot_index) == false)
 				return nullptr;
 
-			auto value_pod = get_array_element(bucket->table, it.slot_index);
-			return &value_pod->value;
+			auto& value_pod = bucket->table[it.slot_index];
+			return &value_pod.value;
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>

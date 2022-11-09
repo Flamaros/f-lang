@@ -163,6 +163,12 @@ namespace f
     {
         // @TODO test with a crc32 implementation (that could be better to reduce number of collisions instead of this weird thing)
 
+        // @TODO MemOpt To reduce the size of Hash_Table we should try to reduce the size of the hash type. We certainly can use an uin16_t.
+        // Size of keywords is pretty small (biggest one do only 18 chars (can be encoded with 5 bits))
+        // and most keywords use only lowercase characters and there is only 26 characters possible (can be encoded with 5 bits).
+        // Few keywords use '_' character which is just before lowercase alphabet in the ASCII table. (https://www.rapidtables.com/code/text/ascii-table.html)
+        // So the following implementation may require only 20 bits. We can imagine to go down to 16 bits with some "compression" effort.
+
         fstd::core::Assert(fstd::language::get_string_size(str) > 0);
 
         if (fstd::language::get_string_size(str) == 1) {
