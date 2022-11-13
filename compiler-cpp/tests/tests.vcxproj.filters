@@ -31,7 +31,7 @@
     <ClCompile Include="..\sources\tests\main.cpp">
       <Filter>Source Files\tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\third-party\tracy\TracyClient.cpp">
+    <ClCompile Include="..\third-party\tracy\public\TracyClient.cpp">
       <Filter>Source Files\third-party\tracy</Filter>
     </ClCompile>
   </ItemGroup>

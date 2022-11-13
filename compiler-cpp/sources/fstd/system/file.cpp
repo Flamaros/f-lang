@@ -10,7 +10,6 @@
 #endif
 
 #include <tracy/Tracy.hpp>
-#include <tracy/common/TracySystem.hpp>
 
 #include <fstd/core/assert.hpp>
 

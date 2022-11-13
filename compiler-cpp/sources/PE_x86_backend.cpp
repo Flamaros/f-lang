@@ -18,7 +18,6 @@
 #include <assert.h>
 
 #include <tracy/Tracy.hpp>
-#include <tracy/common/TracySystem.hpp>
 
 using namespace fstd;
 using namespace fstd::core;
