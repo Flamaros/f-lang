@@ -49,7 +49,16 @@ namespace f
             // Operand modifier
             _NEAR,
             _FAR,
-            TO
+            TO,
+
+            // Architectures
+            ARCH_8086,
+            ARCH_386,
+            ARCH_X64,
+            ARCH_NOLONG,
+            ARCH_SM,
+            ARCH_LOCK,
+            ARCH_ND,
         };
 
         struct x86_DB_Data
@@ -71,7 +80,7 @@ namespace f
                     ImmediateValue = 0x04,
                 };
                 Type    type;
-                uint8_t size; // size of Register or ImmediateValue, 0 for MemoryAddress and Unused types
+                uint8_t size; // size of Register or ImmediateValue, 0 for MemoryAddress and Unused types, -1 for not specified (all sizes accepted?)
             };
 
             struct Translation_Instructions

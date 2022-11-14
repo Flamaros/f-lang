@@ -55,8 +55,46 @@ namespace f
             memory::hash_table_init(x86_keywords, &language::are_equals);
 
             INSERT_KEYWORD("ignore", _IGNORE);
-            INSERT_KEYWORD("imm", IMM);
+
             INSERT_KEYWORD("resb", RESB);
+
+            INSERT_KEYWORD("void", _VOID);
+            INSERT_KEYWORD("reg8", REG8);
+            INSERT_KEYWORD("reg16", REG16);
+            INSERT_KEYWORD("reg32", REG32);
+            INSERT_KEYWORD("reg64", REG64);
+            INSERT_KEYWORD("reg_al", REG_AL);
+            INSERT_KEYWORD("reg_ax", reg_ax);
+            INSERT_KEYWORD("reg_eax", reg_eax);
+            INSERT_KEYWORD("reg_rax", reg_rax);
+            INSERT_KEYWORD("reg_dx", reg_dx);
+            INSERT_KEYWORD("mem", MEM);
+            INSERT_KEYWORD("mem16", MEM16);
+            INSERT_KEYWORD("mem32", MEM32);
+            INSERT_KEYWORD("mem64", MEM64);
+            INSERT_KEYWORD("mem80", mem80);
+            INSERT_KEYWORD("imm", IMM);
+            INSERT_KEYWORD("imm8", IMM8);
+            INSERT_KEYWORD("imm16", IMM16);
+            INSERT_KEYWORD("imm32", IMM32);
+            INSERT_KEYWORD("imm64", IMM64);
+            INSERT_KEYWORD("sbyteword", SBYTEWORD);
+            INSERT_KEYWORD("sbyteword16", SBYTEWORD16);
+            INSERT_KEYWORD("sbyteword32", SBYTEWORD32);
+            INSERT_KEYWORD("fpureg", fpureg);
+            INSERT_KEYWORD("fpu0", fpu0);
+
+            INSERT_KEYWORD("near", _NEAR);
+            INSERT_KEYWORD("far", _FAR);
+            INSERT_KEYWORD("to", TO);
+
+            INSERT_KEYWORD("8086", ARCH_8086);
+            INSERT_KEYWORD("386", ARCH_386);
+            INSERT_KEYWORD("X64", ARCH_X64);
+            INSERT_KEYWORD("NOLONG", ARCH_NOLONG);
+            INSERT_KEYWORD("SM", ARCH_SM);
+            INSERT_KEYWORD("LOCK", ARCH_LOCK);
+            INSERT_KEYWORD("ND", ARCH_ND);
 
 #if defined(FSTD_DEBUG)
             log_stats(x86_keywords, *globals.logger);
@@ -242,7 +280,7 @@ namespace f
             Token<x86_Keyword>  current_token;
             int                 current_line;
             int                 previous_line = 0;
-            Instruction* current_instruction = nullptr;
+            Instruction*        current_instruction = nullptr;
             ParsingState        parsing_state = ParsingState::NAME;
 
             stream::Array_Stream<Token<x86_Keyword>>	stream;
@@ -255,7 +293,7 @@ namespace f
             {
                 current_token = stream::get(stream);
 
-                current_line = current_token.line;
+                current_line = (int)current_token.line;
 
                 if (previous_line != current_line) { // We have to start a new instruction
                     if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
@@ -287,18 +325,19 @@ namespace f
                             }
                             else if (current_token.value.keyword == x86_Keyword::IMM) {
                                 current_instruction->operands[operand_index].type = Instruction::Operand::Type::ImmediateValue;
-                                current_instruction->operands[operand_index].size = 0; // @TODO
+                                current_instruction->operands[operand_index].size = -1; // @TODO
+                                stream::peek<Token<x86_Keyword>>(stream); // imm
                             }
                             else if (current_token.value.keyword == x86_Keyword::_VOID) {
                                 current_instruction->operands[operand_index].type = Instruction::Operand::Type::Unused;
                                 current_instruction->operands[operand_index].size = 0;
+                                stream::peek<Token<x86_Keyword>>(stream); // void
                             }
                             else {
                                 report_error(Compiler_Error::internal_error, current_token, "x86 backend: [DB instructions parsing] Unknown operand type!");
                             }
                         }
-                        else if (current_token.type == Token_Type::SYNTAXE_OPERATOR)
-                        {
+                        else if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
                             if (current_token.value.punctuation == Punctuation::COMMA) {
                                 operand_index++;
                                 stream::peek<Token<x86_Keyword>>(stream); // ,
@@ -313,8 +352,37 @@ namespace f
                         }
                     }
                     else if (parsing_state == ParsingState::TRANSLATION_INSTRUCTIONS) {
+                        if (current_token.type == Token_Type::KEYWORD) {
+                            if (current_token.value.keyword == x86_Keyword::RESB) {
+                                stream::peek<Token<x86_Keyword>>(stream); // resb
+                            }
+                        }
+                        else if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+                            if (current_token.value.punctuation == Punctuation::CLOSE_BRACKET) {
+                                stream::peek<Token<x86_Keyword>>(stream); // ]
+                                parsing_state = ParsingState::ARCHITECTURES;
+                            }
+                        }
+                        else {
+                            report_error(Compiler_Error::internal_error, current_token, "x86 backend: [DB instructions parsing] Syntax error, translation instructions parsing failed!!!");
+                        }
                     }
                     else if (parsing_state == ParsingState::ARCHITECTURES) {
+                        if (current_token.type == Token_Type::KEYWORD) {
+                            if (current_token.value.keyword == x86_Keyword::ARCH_8086) {
+                                // @TODO push the instruction if valid (resb is not valid)
+
+                                stream::peek<Token<x86_Keyword>>(stream); // resb
+                            }
+                        }
+                        else if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+                            if (current_token.value.punctuation == Punctuation::COMMA) {
+                                stream::peek<Token<x86_Keyword>>(stream); // ,
+                            }
+                        }
+                        else {
+                            report_error(Compiler_Error::internal_error, current_token, "x86 backend: [DB instructions parsing] Syntax error, expecting an architecture keyword.");
+                        }
                     }
                 }
 
