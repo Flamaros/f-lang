@@ -814,9 +814,9 @@ bool f::PE_x86_backend::generate_hello_world()
 
 void f::PE_x86_backend::initialize_backend()
 {
-    ZoneScopedN("f::PE_x86_backend::initialize_backend");
+    //ZoneScopedN("f::PE_x86_backend::initialize_backend");
 
-    x86_DB::load_x86_instruction_DB();
+    //x86_DB::load_x86_instruction_DB();
 }
 
 void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
