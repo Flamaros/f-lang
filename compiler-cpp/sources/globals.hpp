@@ -21,9 +21,15 @@ namespace fstd
 	}
 }
 
+struct Configuration
+{
+	bool	generate_debug_info = false;
+};
+
 struct Globals
 {
 	fstd::core::Logger*					logger = nullptr;
+	Configuration						configuration;
 	fstd::memory::Array<f::Lexer_Data>	lexer_data;
 	f::Parser_Data						parser_data;
 	f::CPP_Backend_Data					cpp_backend_data;

@@ -55,10 +55,12 @@ WriteFile :: (hFile : HANDLE,
 main :: ()
 {
     message:        string  = "Hello World";
+    message2:       string  = "Hello People";
     written_bytes:  DWORD; // Should be default initialized
     hstdOut:        HANDLE  = GetStdHandle(STD_OUTPUT_HANDLE);
 
     WriteFile(hstdOut, message.data, message.size, §written_bytes, 0);
+    WriteFile(hstdOut, message2.data, message2.size, §written_bytes, 0);
 
     ExitProcess(0);
 }

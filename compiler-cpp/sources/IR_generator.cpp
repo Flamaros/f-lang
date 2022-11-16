@@ -170,6 +170,13 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 		// For a string we have to allocate 2 (one for the data pointer, and an other for the size) registers and copy them.
 		//parse_ast();
 
+		if (variable_node->expression) {
+			// @TODO
+			// Est-ce que je dois déclencher un parsing particulier ici afin de pouvoir binder le résultat si l'expression est compiletime
+			// ou récupérer un pointeur sur une section de code à executer?
+
+			parse_ast(parsing_result, ir, variable_node->expression);
+		}
 
 	}
 	else if (node->ast_type == Node_Type::STATEMENT_TYPE_ARRAY) {
@@ -207,8 +214,17 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 		AST_Literal* literal_node = (AST_Literal*)node;
 
 		if (literal_node->value.type == Token_Type::STRING_LITERAL) {
-			//print_to_builder(file_string_builder, literal_node->value.text);
+			Literal literal;
+
 			// @TODO use the *literal_node->value.value.string instead of the token's text
+			memory::reserve_array(literal.data, literal_node->value.text.size + 1);
+			memory::array_copy(literal.data, 0, literal_node->value.text.ptr, literal_node->value.text.size);
+			memory::array_push_back(literal.data, (uint8_t)'\0');
+			literal.RVA = ir.read_only_data.current_RVA;
+
+			// @TODO @SpeedUp see how this bufer can be pre-allocated
+			memory::array_push_back(ir.read_only_data.literals, literal);
+			ir.read_only_data.current_RVA += memory::get_array_size(literal.data);
 		}
 		else if (literal_node->value.type == Token_Type::NUMERIC_LITERAL_I32
 			|| literal_node->value.type == Token_Type::NUMERIC_LITERAL_I64) {
@@ -261,6 +277,15 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 
 		parse_ast(parsing_result, ir, address_of_node->right); // @TODO should be write_type?
 		//print_to_builder(file_string_builder, "*");
+	}
+	else if (node->ast_type == Node_Type::UNARY_OPERATOR_NEGATIVE) {
+		AST_Unary_operator* negative_operator = (AST_Unary_operator*)node;
+
+		report_error(Compiler_Error::warning, "UNARY_OPERATOR_NEGATIVE: TODO implement it\n");
+		// @TODO I should try to evaluate the expression at compile time else generate the runtime code
+		// Depending of kind of compile time expression I may get a "literal" value
+		// Number literal can be inlined in the code as immediate value
+		// String literals and other complexe literals (arrays, structs,...) should go in .rdata section
 	}
 	//else if (node->ast_type == Node_Type::BINARY_OPERATOR_MEMBER_ACCESS) {
 	//	AST_MEMBER_ACCESS* member_access_node = (AST_MEMBER_ACCESS*)node;

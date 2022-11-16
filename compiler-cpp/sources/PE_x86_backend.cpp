@@ -999,9 +999,9 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
         RtlSecureZeroMemory(&rdata_image_section_header, sizeof(rdata_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(rdata_image_section_header.Name, ".rdata", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
-        rdata_image_section_header.Misc.VirtualSize = (DWORD)fstd::language::string_literal_size(message[0]) + 1;
+        rdata_image_section_header.Misc.VirtualSize = (DWORD)ir.read_only_data.current_RVA; // fstd::language::string_literal_size(message[0]) + 1;
         rdata_image_section_header.VirtualAddress = rdata_image_section_virtual_address;
-        rdata_image_section_header.SizeOfRawData = compute_aligned_size(rdata_image_section_header.Misc.VirtualSize, file_alignment); // @TODO should be computed
+        rdata_image_section_header.SizeOfRawData = compute_aligned_size(rdata_image_section_header.Misc.VirtualSize, file_alignment);
         rdata_image_section_header.PointerToRawData = rdata_image_section_pointer_to_raw_data;
         rdata_image_section_header.PointerToRelocations = 0x00;
         rdata_image_section_header.PointerToLinenumbers = 0x00;
@@ -1081,8 +1081,13 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 
         DWORD rdata_section_size = 0;
 
-        write_file(output_file, (uint8_t*)message[0], (DWORD)fstd::language::string_literal_size(message[0]) + 1, &bytes_written); // +1 to write the ending '\0'
-        rdata_section_size += bytes_written;
+        for (size_t i = 0; i < memory::get_array_size(ir.read_only_data.literals); i++) {
+            write_file(output_file, memory::get_array_data(ir.read_only_data.literals[i].data), (uint32_t)memory::get_array_bytes_size(ir.read_only_data.literals[i].data), &bytes_written);
+            rdata_section_size += bytes_written;
+        }
+
+        //write_file(output_file, (uint8_t*)message[0], (DWORD)fstd::language::string_literal_size(message[0]) + 1, &bytes_written); // +1 to write the ending '\0'
+        //rdata_section_size += bytes_written;
 
         write_zeros(output_file, rdata_image_section_header.SizeOfRawData - rdata_section_size);
         size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);

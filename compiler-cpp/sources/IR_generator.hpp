@@ -39,12 +39,25 @@ namespace f
 		uint32_t					name_RVA;
 	};
 
+	struct Literal // Things that go in rdata section like string literals
+	{
+		fstd::memory::Array<uint8_t>	data;
+		size_t							RVA;
+	};
+
+	struct ReadOnlyData
+	{
+		fstd::memory::Array<Literal>	literals;
+		size_t							current_RVA = 0;
+	};
+
 	struct IR
 	{
 		typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32> Imported_Library_Hash_Table;
 
-		Parsing_Result*				parsing_result;
-		Imported_Library_Hash_Table	imported_libraries;
+		Parsing_Result*					parsing_result;
+		Imported_Library_Hash_Table		imported_libraries;
+		ReadOnlyData					read_only_data;
 
 //		fstd::memory::Stack<Register>	registers; // Need to have one stack per scope (global scope, function scope,...)?
 	};
