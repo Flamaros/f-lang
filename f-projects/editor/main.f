@@ -8,6 +8,7 @@ LPCVOID :: §void;
 DWORD :: ui32; // unsigned long
 LPDWORD :: §DWORD;
 ULONG_PTR :: ui64;
+UINT :: ui32;
 
 // @TODO test circular definition of alias at least
 // I should do that with other type definitions
@@ -51,6 +52,7 @@ WriteFile :: (hFile : HANDLE,
 			  nNumberOfBytesToWrite : DWORD,
 			  lpNumberOfBytesWritten : LPDWORD,
 			  lpOverlapped : LPOVERLAPPED) -> BOOL : win32, dll_import("kernel32.dll");
+ExitProcess :: (uExitCode : UINT) -> void : win32, dll_import("kernel32.dll");
 
 main :: ()
 {

@@ -126,9 +126,15 @@ struct ASM
     Operand             operands[3];
 };
 
+// For explanation of "mov ebp, esp"
+// https://stackoverflow.com/questions/21718397/what-are-the-esp-and-the-ebp-registers
+// Ease the compiler debugging
+// @TODO I may want implement option "omit frame pointers" to increase performances by using ebp as general purpose register
+
+
 // @TODO should be generated not hard-coded
 uint8_t	hello_world_instructions[] = {
-    0x89, 0xE5,										   // mov    ebp, esp
+    0x89, 0xE5,										   // mov    ebp, esp           // initialize new call frame (put current stack pointer into base point of current stack)
     0x83, 0xEC, 0x04,								   // sub    esp, 0x4
     0x6A, 0xF5,										   // push   0xfffffff5         // STD_OUTPUT_HANDLE == (DWORD)-11 => 0xfffffff5 en hexa
 #if DLL_MODE == 1
@@ -1236,10 +1242,15 @@ void f::PE_x86_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
         }
 
         // Dll names
-        for (size_t i = 0; i < 1; i++)
+        auto it = hash_table_begin(ir.imported_libraries);
+        auto it_end = hash_table_end(ir.imported_libraries);
+        for (; !equals<uint16_t, fstd::language::string_view, Imported_Library*, 32>(it, it_end); hash_table_next<uint16_t, fstd::language::string_view, Imported_Library*, 32>(it))
         {
-            write_file(output_file, (uint8_t*)dll_names[i], (DWORD)fstd::language::string_literal_size(dll_names[i]) + 1, &bytes_written); // +1 to write the ending '\0'
-            idata_section_size += bytes_written;
+            Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, Imported_Library*, 32>(it);
+
+            write_file(output_file, to_utf8(imported_library->name), get_string_size(imported_library->name), &bytes_written);
+            write_zeros(output_file, 1); // add '\0'
+            idata_section_size += bytes_written + 1;
         }
 
         // @TODO write zeros??? to terminate the import_descriptors table

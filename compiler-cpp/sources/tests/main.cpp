@@ -322,6 +322,18 @@ void test_hash_table()
 	// Check if we can correctly get back both value even with the hash collision
 	fstd::core::Assert((void*)*fstd::memory::hash_table_get(hash_table, short_hash, string_type) == (void*)0x01);
 	fstd::core::Assert((void*)*fstd::memory::hash_table_get(hash_table, short_hash, user_type_with_hash_of_string) == (void*)0x02);
+
+	// Test if we iterate the right number of times with iterators
+	size_t count = 0;
+	auto it = fstd::memory::hash_table_begin(hash_table);
+	auto it_end = fstd::memory::hash_table_end(hash_table);
+	for (; !fstd::memory::equals<uint16_t, fstd::language::string, void*, 512>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string, void*, 512>(it))
+	{
+		count++;
+		void** value = fstd::memory::hash_table_get<uint16_t, fstd::language::string, void*, 512>(it);
+		fstd::core::Assert(*value != nullptr);
+	}
+	fstd::core::Assert(count == 2);
 }
 
 int main(int ac, char** av)

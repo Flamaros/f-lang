@@ -112,7 +112,7 @@ namespace fstd
 			init(hash_table.buckets);
 			resize_array(hash_table.buckets, ((uint64_t)std::numeric_limits<Hash_Type>::max() + 1) / _bucket_size);
 
-			system::zero_memory(get_array_element(hash_table.buckets, 0), sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Bucket));
+			system::zero_memory(get_array_element(hash_table.buckets, 0), get_array_bytes_size(hash_table.buckets));
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
@@ -124,13 +124,6 @@ namespace fstd
 			{
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 
-				size_t bucket_size = bucket->nb_values == 0 ? 0 : _bucket_size;
-				for (size_t i = 0; i < bucket_size; i++) // @Warning some buckets aren't allocated so the size can be 0
-				{
-					auto& value_pod = bucket->table[i];
-					if (value_pod.value != nullptr)
-						system::free(value_pod.value);
-				}
 				system::free(bucket->table);
 				release(bucket->init_flags);
 			}
@@ -154,11 +147,11 @@ namespace fstd
 				{
 					// We have to initialize the bucket for its first use
 					init(bucket->init_flags);
+					allocate(bucket->init_flags);
 
 					size_t bucket_size_in_bytes = _bucket_size * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD);
 					bucket->table = (typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD*)system::allocate(bucket_size_in_bytes);
-					allocate(bucket->init_flags);
-					system::fill_memory(bucket->table, bucket_size_in_bytes, 0x00);
+					system::zero_memory(bucket->table, bucket_size_in_bytes);
 				}
 
 				auto& value_pod = bucket->table[value_index];
