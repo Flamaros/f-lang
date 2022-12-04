@@ -149,9 +149,9 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 			// @TODO
 			// Write the initialization code if necessary (don't have an expression)
 			if (variable_node->expression == nullptr) { // @TODO Later we should do something clever (the back-end optimizer should be able to detect double initializations (taking only last write before first read))
-				if (globals.cpp_backend_data.union_declaration_depth == 0) {
+				//if (globals.cpp_backend_data.union_declaration_depth == 0) {
 					//write_default_initialization(file_string_builder, variable_node, variable_node->type);
-				}
+				//}
 			}
 			else {
 				//print_to_builder(file_string_builder, " = ");
@@ -334,9 +334,9 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 			//indented_print_to_builder(file_string_builder, "union %v\n", union_node->name.text);
 		}
 		//indented_print_to_builder(file_string_builder, "{\n");
-		globals.cpp_backend_data.union_declaration_depth++;
+		//globals.cpp_backend_data.union_declaration_depth++;
 		parse_ast(parsing_result, ir, union_node->first_child);
-		globals.cpp_backend_data.union_declaration_depth--;
+		//globals.cpp_backend_data.union_declaration_depth--;
 		if (union_node->anonymous) {
 			//indented_print_to_builder(file_string_builder, "} "); // @Warning if union is anonymous then the declaration is made at the same type as a variable declaration.
 		}

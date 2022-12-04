@@ -1,9 +1,8 @@
-﻿#include "PE_x86_backend.hpp"
+﻿#include "PE_x64_backend.hpp"
 
 #include "globals.hpp"
 
 #include "IR_generator.hpp"
-#include "CPP_backend.hpp"
 
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
@@ -200,8 +199,8 @@ int main(int ac, char** av)
 
 			system::from_native(output_file_path, (uint8_t*)av[2]);
 
-			f::PE_x86_backend::initialize_backend(); // @TODO see to do it asynchronously (are event better at compile-time to generate C++ code with tables)
-			f::PE_x86_backend::compile(ir, output_file_path);
+			f::PE_x64_backend::initialize_backend(); // @TODO see to do it asynchronously (are event better at compile-time to generate C++ code with tables)
+			f::PE_x64_backend::compile(ir, output_file_path);
 		}
 	}
 
@@ -222,8 +221,6 @@ int main(int ac, char** av)
   //  if (c_generator::generate(output_directory_path, output_file_name, parsing_result)) {
 		//return 0;
   //  }
-
-    f::PE_x86_backend::generate_hello_world();
 
 	FrameMark;
 

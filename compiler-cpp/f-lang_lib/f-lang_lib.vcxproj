@@ -27,7 +27,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\sources\CPP_backend.hpp" />
     <ClInclude Include="..\sources\fstd\core\assert.hpp" />
     <ClInclude Include="..\sources\fstd\core\logger.hpp" />
     <ClInclude Include="..\sources\fstd\core\string_builder.hpp" />
@@ -55,16 +54,15 @@
     <ClInclude Include="..\sources\fstd\system\stdio.hpp" />
     <ClInclude Include="..\sources\fstd\system\timer.hpp" />
     <ClInclude Include="..\sources\globals.hpp" />
-    <ClInclude Include="..\sources\instruction_db_loader.hpp" />
     <ClInclude Include="..\sources\IR_generator.hpp" />
     <ClInclude Include="..\sources\lexer\hash_table.hpp" />
     <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp" />
     <ClInclude Include="..\sources\lexer\lexer.hpp" />
     <ClInclude Include="..\sources\lexer\lexer_base.hpp" />
     <ClInclude Include="..\sources\macros.hpp" />
-    <ClInclude Include="..\sources\PE_x86_backend.hpp" />
     <ClInclude Include="..\sources\parser\parser.hpp" />
     <ClInclude Include="..\sources\parser\symbol_solver.hpp" />
+    <ClInclude Include="..\sources\PE_x64_backend.hpp" />
     <ClInclude Include="..\sources\third-party\magic_enum.hpp" />
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h" />
     <ClInclude Include="..\sources\third-party\SpookyV2.h" />
@@ -86,7 +84,6 @@
     <ClInclude Include="..\third-party\WindowsHModular\include\win32\windows_modular.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\sources\CPP_backend.cpp" />
     <ClCompile Include="..\sources\fstd\core\assert.cpp" />
     <ClCompile Include="..\sources\fstd\core\logger.cpp" />
     <ClCompile Include="..\sources\fstd\core\string_builder.cpp" />
@@ -98,13 +95,12 @@
     <ClCompile Include="..\sources\fstd\system\process.cpp" />
     <ClCompile Include="..\sources\fstd\system\stdio.cpp" />
     <ClCompile Include="..\sources\globals.cpp" />
-    <ClCompile Include="..\sources\instruction_db_loader.cpp" />
     <ClCompile Include="..\sources\IR_generator.cpp" />
     <ClCompile Include="..\sources\lexer\lexer.cpp" />
     <ClCompile Include="..\sources\lexer\lexer_base.cpp" />
-    <ClCompile Include="..\sources\PE_x86_backend.cpp" />
     <ClCompile Include="..\sources\parser\parser.cpp" />
     <ClCompile Include="..\sources\parser\symbol_solver.cpp" />
+    <ClCompile Include="..\sources\PE_x64_backend.cpp" />
     <ClCompile Include="..\sources\third-party\SpookyV2.cpp" />
   </ItemGroup>
   <ItemGroup>

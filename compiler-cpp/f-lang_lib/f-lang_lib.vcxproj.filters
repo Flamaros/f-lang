@@ -55,9 +55,6 @@
     <ClInclude Include="..\sources\macros.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\PE_x86_backend.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\third-party\magic_enum.hpp">
       <Filter>Source Files\third-party</Filter>
     </ClInclude>
@@ -145,9 +142,6 @@
     <ClInclude Include="..\sources\IR_generator.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\CPP_backend.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\fstd\memory\stack.hpp">
       <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
@@ -214,15 +208,12 @@
     <ClInclude Include="..\sources\fstd\memory\boolean_array.hpp">
       <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\instruction_db_loader.hpp">
+    <ClInclude Include="..\sources\PE_x64_backend.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\PE_x86_backend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\fstd\system\file.cpp">
@@ -264,9 +255,6 @@
     <ClCompile Include="..\sources\IR_generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\CPP_backend.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\sources\third-party\SpookyV2.cpp">
       <Filter>Source Files\third-party</Filter>
     </ClCompile>
@@ -276,7 +264,7 @@
     <ClCompile Include="..\sources\lexer\lexer_base.cpp">
       <Filter>Source Files\lexer</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\instruction_db_loader.cpp">
+    <ClCompile Include="..\sources\PE_x64_backend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
