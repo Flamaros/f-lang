@@ -6,24 +6,24 @@ see PE file specification in http://msdn.microsoft.com/en-us/windows/hardware/gg
 \par addresses prefix in program output: fp - file pointer, rva - relative image address when load in memory, va - virtual address with image base address
 \par + - correct file fact, - - incorrect file fact, | - warning, is partially correct or is not standard, i - information
 }
-\par \par checking file C:\\Users\\Xavier\\Documents\\development\\f-lang\\hello_world.exe
-\par \par {\b \cf3 Incorrect file, 1 errors found}\par
+\par \par checking file C:\\Users\\Xavier\\Documents\\development\\f-lang\\f-editor.exe
+\par \par {\b \cf3 Incorrect file, 2 errors found}\par
 \par \par
- +  File length >= 1024 bytes. 0xC00\par
+ +  File length >= 1024 bytes. 0xA00\par
  +  MZ signature found (do not check wether correct MZ-file)\par
 {\cf4  |  fp 0x40 do have not in fp 0x18 in MZ stub (have not in PE file specification)}\par
  +  fp 0x40 do have in fp 0x18 in MZ stub (have not in PE file specification)\par
  +  fp 0x3c contains address for PE signature: fp 0xD0\par
  +  PE signature found\par
-     i  machine 0x14C (0x8664 - AMD64, 0x14c - Intel x86 and compatible, 0x200 - Intel Itanium)\par
-     i  section count 0x4\par
-     i  file creation time 2022.08.19 21:43:10 \par
-     i  optional header size 0xE0\par
+     i  machine 0x8664 (0x8664 - AMD64, 0x14c - Intel x86 and compatible, 0x200 - Intel Itanium)\par
+     i  section count 0x3\par
+     i  file creation time 2022.12.05 20:07:28 \par
+     i  optional header size 0xF0\par
  +  File marked as executable\par
  +  Reserved file flag characteristics 0x0040 is reset\par
      i  0x0002 The image file is valid and can be run\par
-     i  0x0100 Machine is based on a 32-bit-word architecture\par
- +  PE Magic number of file in Optional Header is correct. {\b \cf7 PE32 (32 bit) format file. Is exe}\par
+     i  0x0020 Application can handle > 2 GB addresses\par
+ +  PE Magic number of file in Optional Header is correct. {\b \cf7 PE32+ (64 bit) format file. Is exe}\par
  +  Optional header size is not very small (minimum 0x60 for PE32 or 0x70 for PE32+)\par
      i  Major and minor linker version 0.1\par
      i  size of code 512	(0 kb)\par
@@ -32,7 +32,6 @@ see PE file specification in http://msdn.microsoft.com/en-us/windows/hardware/gg
      i  Address of entry point rva 0x1000\par
  +  Address of entry point is not null and/or file is DLL. 0x1000\par
      i  Base of code rva 0x1000\par
-     i  Base of data rva 0x2000\par
  +  Program have standard image base for exe Windows NT/98 and later 0x400000\par
  +  Section alignment >= FileAlignment: 0x1000 >= 0x200\par
  +  Section alignment % 512 == 0\par
@@ -44,13 +43,12 @@ see PE file specification in http://msdn.microsoft.com/en-us/windows/hardware/gg
      i  Version of program 1.0\par
      i  Version of subsystem 6.1 (NT version)\par
  +  Win32 version reserved and must be null\par
- +  Size of image field does multiple of section alignment (0x5000)\par
+ +  Size of image field does multiple of section alignment (0x4000)\par
  +  Size of headers field does multiple of file alignment (0x400)\par
 {\cf4  |  Check sum of file has not been calculated}\par
  +  Windows Subsystem number correct: 3 (console)\par
  +  DLL characteristics reserved flags in reset state\par
  +  DLL characteristics unknown flags in reset state\par
-     i  0x0040 DLL can be relocated at load time\par
      i  0x0100 Image is NX compatible\par
      i  0x0400 Does not use structured exception (SE) handling. No SE handler may be called in this image\par
      i  0x8000 Terminal Server aware\par
@@ -64,7 +62,7 @@ see PE file specification in http://msdn.microsoft.com/en-us/windows/hardware/gg
  +  Export Table directory entry skipped\par
 \par
  +  Import Table directory entry declared\par
- +  Directory entry virtual address + size <= size of image: rva 0x4000, size 0x14, image size 0x5000\par
+ +  Directory entry virtual address + size <= size of image: rva 0x3000, size 0x28, image size 0x4000\par
  +  Directory entry usually do pointing to not header section (exclude bound import directory)\par
 \par
  +  Resource Table directory entry skipped\par
@@ -90,7 +88,7 @@ see PE file specification in http://msdn.microsoft.com/en-us/windows/hardware/gg
  +  Bound Import directory entry skipped\par
 \par
  +  IAT directory entry declared\par
- +  Directory entry virtual address + size <= size of image: rva 0x4038, size 0xC, image size 0x5000\par
+ +  Directory entry virtual address + size <= size of image: rva 0x3048, size 0x20, image size 0x4000\par
  +  Directory entry usually do pointing to not header section (exclude bound import directory)\par
 \par
  +  Delay Import Descriptor directory entry skipped\par
@@ -101,17 +99,17 @@ see PE file specification in http://msdn.microsoft.com/en-us/windows/hardware/gg
  +  Reserved Directory entry has be null\par
 \par
 \par
- +  Size of headers is correct with file alignmet: 0x400, file alignment 0x200, unalignment size 0x268\par
- +  Size of optional header in PE header is correct. End of headers in fp 0x1C8, size of opt. headers 0xE0\par
+ +  Size of headers is correct with file alignmet: 0x400, file alignment 0x200, unalignment size 0x250\par
+ +  Size of optional header in PE header is correct. End of headers in fp 0x1D8, size of opt. headers 0xF0\par
  i  section name .text\par
-     i  section virtual size 0x2D\par
+     i  section virtual size 0x2C\par
      i  section virtual address 0x1000\par
      +  Section address with alignment to Section Alignment\par
      i  size of raw data 0x200\par
      +  Size of raw data has be multiple of File Alignment: 0x200, FA 0x200\par
      +  File pointer to raw data has be multiple of File Alignment: 0x400\par
      +  File pointer to raw data out of optional header\par
-     +  Raw data in file boundaries 0x600 <= 0xC00\par
+     +  Raw data in file boundaries 0x600 <= 0xA00\par
      +  Relocations not declared\par
      i  Pointer to line numbers deprecated and must be null - well done\par
      i  Number of relocations must be 0 - well done\par
@@ -121,14 +119,14 @@ see PE file specification in http://msdn.microsoft.com/en-us/windows/hardware/gg
              i  0x40000000 The section can be read\par
          +  Section can be read\par
  i  section name .rdata\par
-     i  section virtual size 0x0\par
+     i  section virtual size 0x19\par
      i  section virtual address 0x2000\par
      +  Section address with alignment to Section Alignment\par
      i  size of raw data 0x200\par
      +  Size of raw data has be multiple of File Alignment: 0x200, FA 0x200\par
      +  File pointer to raw data has be multiple of File Alignment: 0x600\par
      +  File pointer to raw data out of optional header\par
-     +  Raw data in file boundaries 0x800 <= 0xC00\par
+     +  Raw data in file boundaries 0x800 <= 0xA00\par
      +  Relocations not declared\par
      i  Pointer to line numbers deprecated and must be null - well done\par
      i  Number of relocations must be 0 - well done\par
@@ -136,15 +134,15 @@ see PE file specification in http://msdn.microsoft.com/en-us/windows/hardware/gg
              i  0x00000040 The section contains initialized data\par
              i  0x40000000 The section can be read\par
          +  Section can be read\par
- i  section name .reloc\par
-     i  section virtual size 0x0\par
+ i  section name .idata\par
+     i  section virtual size 0x7E\par
      i  section virtual address 0x3000\par
      +  Section address with alignment to Section Alignment\par
      i  size of raw data 0x200\par
      +  Size of raw data has be multiple of File Alignment: 0x200, FA 0x200\par
      +  File pointer to raw data has be multiple of File Alignment: 0x800\par
      +  File pointer to raw data out of optional header\par
-     +  Raw data in file boundaries 0xA00 <= 0xC00\par
+     +  Raw data in file boundaries 0xA00 <= 0xA00\par
      +  Relocations not declared\par
      i  Pointer to line numbers deprecated and must be null - well done\par
      i  Number of relocations must be 0 - well done\par
@@ -153,39 +151,21 @@ see PE file specification in http://msdn.microsoft.com/en-us/windows/hardware/gg
              i  0x02000000 The section can be discarded as needed\par
              i  0x40000000 The section can be read\par
          +  Section can be read\par
- i  section name .idata\par
-     i  section virtual size 0x7E\par
-     i  section virtual address 0x4000\par
-     +  Section address with alignment to Section Alignment\par
-     i  size of raw data 0x200\par
-     +  Size of raw data has be multiple of File Alignment: 0x200, FA 0x200\par
-     +  File pointer to raw data has be multiple of File Alignment: 0xA00\par
-     +  File pointer to raw data out of optional header\par
-     +  Raw data in file boundaries 0xC00 <= 0xC00\par
-     +  Relocations not declared\par
-     i  Pointer to line numbers deprecated and must be null - well done\par
-     i  Number of relocations must be 0 - well done\par
-     i  Number of relocations must be 0 - well done\par
-             i  0x00000040 The section contains initialized data\par
-             i  0x02000000 The section can be discarded as needed\par
-             i  0x40000000 The section can be read\par
-         +  Section can be read\par
-         i  section contains import directory: id rva 0x4000, end id rva 0x4014, section rva 0x4000, section end rva 0x4200\par
+         i  section contains import directory: id rva 0x3000, end id rva 0x3028, section rva 0x3000, section end rva 0x3200\par
          +  Import directory in section boundaries\par
          +  Section with import data marked as initializaed data contains\par
-         i  section contains import address table: IAT rva 0x4038, end IAT rva 0x4044, section rva 0x4000, section end rva 0x4200\par
+         i  section contains import address table: IAT rva 0x3048, end IAT rva 0x3068, section rva 0x3000, section end rva 0x3200\par
          +  IAT in section boundaries\par
         {\cf4  |  Section with IAT not marked as writable (in Microsoft PE-specification .idata writable, but such Microsoft programs as notepad.exe contains not writable IAT tables; don't known)}\par
          +  Section with IAT marked as initializaed data contains\par
  +  Section do not intersect\par
-{\cf4  |  Unused pages found at addresses 0x2000 0x3000}\par
-{\cf4  |  Unused pages found at addresses 0x3000 0x4000}\par
+ +  Unused pages (in image) not found\par
  +  Unused sectors (in file) not found\par
 {\cf4  |  File or dll characteristics declare to relocation information contains, but base relocation table is not found}\par
  +  Section 0 .text	is well zero padded (check for only VirtualSize < sizeOfRawData sections)\par
  +  Section 1 .rdata	is well zero padded (check for only VirtualSize < sizeOfRawData sections)\par
- +  Section 2 .reloc	is well zero padded (check for only VirtualSize < sizeOfRawData sections)\par
- +  Section 3 .idata	is well zero padded (check for only VirtualSize < sizeOfRawData sections)\par
+{\b \cf3  -  Section 2 .idata have virtual size 0x7E < size of raw data 0x200 and must be zero padded, but not is it; in address 0x87E bytes (max 16 bytes in hex): 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00}\par
+ +  Import tables skipped (set 'print import flag for print')\par
  +  Import tables\par
 {\b \cf3  -  In checking process raise error L'index se trouve en dehors des limites du tableau.}\par
 \par}

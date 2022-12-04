@@ -98,6 +98,7 @@ namespace fstd
 
 			bool (*compare_function)(const Key_Type&, const Key_Type&) = nullptr;
 			Array<Bucket> buckets;
+			size_t size;
 		};
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
@@ -111,8 +112,9 @@ namespace fstd
 
 			init(hash_table.buckets);
 			resize_array(hash_table.buckets, ((uint64_t)std::numeric_limits<Hash_Type>::max() + 1) / _bucket_size);
-
 			system::zero_memory(get_array_element(hash_table.buckets, 0), get_array_bytes_size(hash_table.buckets));
+
+			hash_table.size = 0;
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
@@ -161,6 +163,7 @@ namespace fstd
 					value_pod.key = key;
 					value_pod.value = value;
 
+					hash_table.size++;
 					bucket->nb_values++;
 					boolean_array_set(bucket->init_flags, value_index, true);
 					return &value_pod.value;
@@ -234,6 +237,14 @@ namespace fstd
 				// Increment the hash due to the collision, but we also take care of keeping it in the range.
 				hash = (hash + 1) % std::numeric_limits<Hash_Type>::max();
 			}
+		}
+
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		inline size_t hash_table_get_size(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
+		{
+			fstd::core::Assert(hash_table.compare_function);
+
+			return hash_table.size;
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>

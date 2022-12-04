@@ -53,3 +53,5 @@ research/vs_x86_hello_world/.vs
 # x64dbg
 tools/x64dbg/release/x32/db
 tools/x64dbg/release/x32/x32dbg.ini
+
+tools/x64dbg/release/x64/x64dbg.ini

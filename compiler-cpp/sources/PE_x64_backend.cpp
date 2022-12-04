@@ -31,16 +31,16 @@ constexpr DWORD	page_size = 4096;	// 4096 on x86
 #if DLL_MODE == 1
 constexpr DWORD	image_base = 0x10000000;
 #else
-constexpr DWORD	image_base = 0x00400000;
+constexpr ULONGLONG	image_base = 0x00400000;
 #endif
 constexpr DWORD	section_alignment = page_size;	// 4;	// @Warning should be greater or equal to file_alignment
 constexpr DWORD	file_alignment = 512;		// 4;		// @TODO check that because the default value according to the official documentation is 512
 constexpr WORD	major_image_version = 1;
 constexpr WORD	minor_image_version = 0;
-constexpr DWORD size_of_stack_reserve = 0x100000;	// @Warning same flags as Visual Studio 2019
-constexpr DWORD size_of_stack_commit = 0x1000;
-constexpr DWORD size_of_heap_reserve = 0x100000;
-constexpr DWORD size_of_heap_commit = 0x1000;
+constexpr ULONGLONG size_of_stack_reserve = 0x100000;	// @Warning same flags as Visual Studio 2019
+constexpr ULONGLONG size_of_stack_commit = 0x1000;
+constexpr ULONGLONG size_of_heap_reserve = 0x100000;
+constexpr ULONGLONG size_of_heap_commit = 0x1000;
 
 // My values (not serialized)
 constexpr size_t PE_header_start_address = 0xD0; // @Warning This value is actually hard coded because I don't have any DOS stub, otherwise I should be able to compute it from the DOS stub size.
@@ -51,7 +51,6 @@ DWORD	size_of_initialized_data = 0;	// The size of the initialized data section,
 DWORD	size_of_uninitialized_data = 0;	// The size of the uninitialized data section (BSS), or the sum of all such sections if there are multiple BSS sections.
 DWORD	address_of_entry_point = 0;	// Relative to image_base
 DWORD	base_of_code = 0;			// Relative to image_base
-DWORD	base_of_data = 0;			// Relative to image_base
 DWORD	size_of_image = 0;			// @Warning must be a multiple of section_alignment, it's the sum of header and section with each size aligned on section_alignement (size that the process will take in memory once loaded)
 DWORD	size_of_headers = 0;		// IMAGE_DOS_HEADER.e_lfanew + 4 byte signature + size of IMAGE_FILE_HEADER + size of optional header + size of all section headers : and rounded at a multiple of file_alignment
 DWORD	image_check_sum = 0;		// Only for drivers, DLL loaded at boot time, DLL loaded in critical system process
@@ -136,9 +135,9 @@ uint8_t	hello_world_instructions[] = {
     0x83, 0xEC, 0x04,								   // sub    esp, 0x4
     0x6A, 0xF5,										   // push   0xfffffff5         // STD_OUTPUT_HANDLE == (DWORD)-11 => 0xfffffff5 en hexa
 #if DLL_MODE == 1
-    0xFF, 0x15, 0x38, 0x40, 0x00, 0x10,				   // call   GetStdHandle       // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x38 (offset in IAT)
+    0xFF, 0x15, 0x38, 0x40, 0x00, 0x10,				   // call   GetStdHandle       // ImageBase 0x10000000 + .idata virtual addr 0x4000 + 0x38 (offset in IAT)
 #else
-    0xFF, 0x15, 0x38, 0x30, 0x40, 0x00,				   // call   GetStdHandle       // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x38 (offset in IAT)
+    0xFF, 0x15, 0x3B, 0x20, 0x00, 0x00,				   // call   GetStdHandle       // ImageBase 0x400000 + .idata virtual addr 0x3000 + 0x48 (offset in IAT) - ((RIP) 0x400000 + 0x1000 + 0x08) 
 #endif
     0x89, 0xC3,										   // mov    ebx, eax
     0x6A, 0x00,										   // push   0x0
@@ -152,18 +151,21 @@ uint8_t	hello_world_instructions[] = {
 #endif
     0x53,											   // push   ebx
 #if DLL_MODE == 1
-    0xFF, 0x15, 0x3C, 0x40, 0x00, 0x10,				   // call   WriteFile          // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x3C (offset in IAT)
+    0xFF, 0x15, 0x3C, 0x40, 0x00, 0x10,				   // call   WriteFile          // ImageBase 0x10000000 + .idata virtual addr 0x4000 + 0x3C (offset in IAT)
 #else
-    0xFF, 0x15, 0x3C, 0x30, 0x40, 0x00,				   // call   WriteFile          // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x3C (offset in IAT)
+    0xFF, 0x15, 0x2D, 0x20, 0x00, 0x00,				   // call   WriteFile          // ImageBase 0x400000 + .idata virtual addr 0x3000 + 0x3C (offset in IAT) - ((RIP) 0x400000 + 0x1000 + 0x1D) 
 #endif
     0x6A, 0x00,										   // push   0x0
 #if DLL_MODE == 1
-    0xFF, 0x15, 0x40, 0x40, 0x00, 0x10,				   // call   ExitProcess        // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x40 (offset in IAT)
+    0xFF, 0x15, 0x40, 0x40, 0x00, 0x10,				   // call   ExitProcess        // ImageBase 0x10000000 + .idata virtual addr 0x4000 + 0x40 (offset in IAT)
 #else
-    0xFF, 0x15, 0x40, 0x30, 0x40, 0x00,				   // call   ExitProcess        // ImageBase 0x400000 + .idata virtual addr 0x4000 + 0x40 (offset in IAT)
+    0xFF, 0x15, 0x2D, 0x20, 0x00, 0x00,				   // call   ExitProcess        // ImageBase 0x400000 + .idata virtual addr 0x3000 + 0x40 (offset in IAT) - ((RIP) 0x400000 + 0x1000 + 0x25) 
 #endif
     0xF4											   // hlt
 };
+
+// @TODO les call prennent un offset par rapport à la position de l'instruction courante (RIP - Register instruction pointer)
+
 
 
 // @TODO get memory page size dynamically:
@@ -304,7 +306,7 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
     current_time_in_seconds_since_1970 = time(nullptr);
 
     IMAGE_DOS_HEADER		image_dos_header;
-    IMAGE_NT_HEADERS32		image_nt_header;	// @Warning should be aligned on 8 byte boundary
+    IMAGE_NT_HEADERS64		image_nt_header;	// @Warning should be aligned on 8 byte boundary
     IMAGE_SECTION_HEADER	text_image_section_header;
     IMAGE_SECTION_HEADER	rdata_image_section_header;
 #if DLL_MODE == 1
@@ -325,7 +327,7 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
     write_zeros(output_file, PE_header_start_address - sizeof(image_dos_header)); // Move to current position (jumping implementation of the DOS_STUB) to PE_header_start_address
 
     image_nt_header.Signature = (WORD)'P' | ((WORD)'E' << 8);	// 'PE\0\0' @Warning take care of the endianness / 0x50450000
-    image_nt_header.FileHeader.Machine = IMAGE_FILE_MACHINE_I386;
+    image_nt_header.FileHeader.Machine = IMAGE_FILE_MACHINE_AMD64;
 #if DLL_MODE == 1
     image_nt_header.FileHeader.NumberOfSections = 4;
 #else
@@ -335,10 +337,9 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
     image_nt_header.FileHeader.PointerToSymbolTable = 0;	// This value should be zero for an image because COFF debugging information is deprecated.
     image_nt_header.FileHeader.NumberOfSymbols = 0;			// This value should be zero for an image because COFF debugging information is deprecated.
     image_nt_header.FileHeader.SizeOfOptionalHeader = sizeof(image_nt_header.OptionalHeader);	// @TODO the size of the OptionalHeader is not fixed, so fixe the sizeof
-    image_nt_header.FileHeader.Characteristics = IMAGE_FILE_EXECUTABLE_IMAGE | IMAGE_FILE_32BIT_MACHINE /*| IMAGE_FILE_DEBUG_STRIPPED*/ /*| IMAGE_FILE_DLL*/;
+    image_nt_header.FileHeader.Characteristics = IMAGE_FILE_EXECUTABLE_IMAGE | IMAGE_FILE_LARGE_ADDRESS_AWARE /*| IMAGE_FILE_DLL*/;
 
-    // Standard COFF fields.
-    image_nt_header.OptionalHeader.Magic = IMAGE_NT_OPTIONAL_HDR32_MAGIC;
+    image_nt_header.OptionalHeader.Magic = IMAGE_NT_OPTIONAL_HDR64_MAGIC;
     image_nt_header.OptionalHeader.MajorLinkerVersion = 0;
     image_nt_header.OptionalHeader.MinorLinkerVersion = 1;
     image_nt_header.OptionalHeader.SizeOfCode = size_of_code;
@@ -346,9 +347,6 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
     image_nt_header.OptionalHeader.SizeOfUninitializedData = size_of_uninitialized_data;
     image_nt_header.OptionalHeader.AddressOfEntryPoint = address_of_entry_point;
     image_nt_header.OptionalHeader.BaseOfCode = base_of_code;
-    image_nt_header.OptionalHeader.BaseOfData = base_of_data;
-
-    // NT additional fields.
     image_nt_header.OptionalHeader.ImageBase = image_base;					// Binary will be loaded at this adress if available else on an other one that will overwrite this value
     image_nt_header.OptionalHeader.SectionAlignment = section_alignment;
     image_nt_header.OptionalHeader.FileAlignment = file_alignment;
@@ -386,7 +384,7 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 #else
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = 0x3000; // @TODO need to be computed and patched
 #endif
-        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = 2 * sizeof(IMAGE_IMPORT_DESCRIPTOR); // kernel32.dll + null entry
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = (hash_table_get_size(ir.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR); // + 1 for the null entry
 
 #if DLL_MODE == 1
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress = 0x3000; // @TODO need to be computed and patched
@@ -396,9 +394,9 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 #endif
 
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-            + 2 * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
-            + sizeof(DWORD) * (3 + 1); // ILT (3 entries + 1 null)
-        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = (3 + 1) * sizeof(DWORD); // @TODO take care of 64bit binaries // null entry count
+            + (hash_table_get_size(ir.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
+            + sizeof(LONGLONG) * (3 + 1); // ILT (3 entries + 1 null)
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = (3 + 1) * sizeof(LONGLONG); // @TODO take care of 64bit binaries // null entry count
     }
 
     image_nt_header_address = (DWORD)get_file_position(output_file);
@@ -481,7 +479,7 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
         RtlCopyMemory(idata_image_section_header.Name, ".idata", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
         idata_image_section_header.Misc.VirtualSize = 126; // @TODO compute it
         idata_image_section_header.VirtualAddress = idata_image_section_virtual_address;
-        idata_image_section_header.SizeOfRawData = compute_aligned_size(idata_image_section_header.Misc.VirtualSize, file_alignment); // @TODO should be computed
+        idata_image_section_header.SizeOfRawData = compute_aligned_size(idata_image_section_header.Misc.VirtualSize, file_alignment);
         idata_image_section_header.PointerToRawData = idata_image_section_pointer_to_raw_data;
         idata_image_section_header.PointerToRelocations = 0x00;
         idata_image_section_header.PointerToLinenumbers = 0x00;
@@ -530,6 +528,8 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
     }
 
 #if DLL_MODE == 1
+    // @TODO check size of types (from x86 to x64)
+
     // Write relocation data (.reloc section data)
     {
         ZoneScopedN("Write relocation data (.reloc section data)");
@@ -583,6 +583,7 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
         // @TODO Make it generic (actually hard coded)
         // @TODO check the section size in the header (idata_image_section_header.SizeOfRawData)
 
+
         DWORD HNT_size = 0;
         for (DWORD i = 0; i < 3; i++) {
             HNT_size += sizeof(WORD);
@@ -602,13 +603,13 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
             // RVA to DLL name
             import_descriptor.Name = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                 + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                + sizeof(DWORD) * (3 + 1) * 2 // IAT + ILT
+                + sizeof(LONGLONG) * (3 + 1) * 2 // IAT + ILT
                 + HNT_size; // HNT
 
             // RVA to IAT (if bound this IAT has actual addresses)
             import_descriptor.FirstThunk = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                 + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                + sizeof(DWORD) * (3 + 1);
+                + sizeof(LONGLONG) * (3 + 1);
 
             write_file(output_file, (uint8_t*)&import_descriptor, sizeof(import_descriptor), &bytes_written);
             idata_section_size += bytes_written;
@@ -617,28 +618,30 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
         write_zeros(output_file, sizeof(IMAGE_IMPORT_DESCRIPTOR));
         idata_section_size += sizeof(IMAGE_IMPORT_DESCRIPTOR);
 
-        // ILT (Import Lookup Table). A simple DWORD per entry that contains RVA to function names
-        // IAT (Import Address Table). A simple DWORD per entry that contains RVA to function address.
+        // ILT (Import Lookup Table). A simple LONGLONG per entry that contains RVA to function names
+        // IAT (Import Address Table). A simple LONGLONG per entry that contains RVA to function address.
         //
         // ILT and IAT are exactly the same in file, but the loader will resolve addresses for the IAT when loading the binary
 
         for (size_t i = 0; i < 2; i++)
         {
             {
-                DWORD RVA;
+                LONGLONG RVA;
 
                 // GetStdHandle
                 RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                     + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                    + sizeof(DWORD) * (3 + 1) * 2 // ILT + IAT
+                    + sizeof(LONGLONG) * (3 + 1) * 2 // ILT + IAT
                     + 0;
                 write_file(output_file, (uint8_t*)&RVA, sizeof(RVA), &bytes_written);
+                DWORD pos = (DWORD)get_file_position(output_file);
+
                 idata_section_size += bytes_written;
 
                 // WriteFile
                 RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                     + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                    + sizeof(DWORD) * (3 + 1) * 2 // ILT + IAT;
+                    + sizeof(LONGLONG) * (3 + 1) * 2 // ILT + IAT;
                     + (DWORD)fstd::language::string_literal_size(kernel32_function_names[0]) + 1 + sizeof(WORD);
                 write_file(output_file, (uint8_t*)&RVA, sizeof(RVA), &bytes_written);
                 idata_section_size += bytes_written;
@@ -646,12 +649,12 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
                 // ExitProcess
                 RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
                     + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                    + sizeof(DWORD) * (3 + 1) * 2 // ILT + IAT;
+                    + sizeof(LONGLONG) * (3 + 1) * 2 // ILT + IAT;
                     + (DWORD)fstd::language::string_literal_size(kernel32_function_names[0]) + 1 + (DWORD)fstd::language::string_literal_size(kernel32_function_names[1]) + 1 + sizeof(WORD) * 2;
                 write_file(output_file, (uint8_t*)&RVA, sizeof(RVA), &bytes_written);
                 idata_section_size += bytes_written;
             }
-            write_zeros(output_file, sizeof(DWORD));
+            write_zeros(output_file, sizeof(LONGLONG));
             idata_section_size += bytes_written;
         }
 
@@ -678,7 +681,7 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
         {
             Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, Imported_Library*, 32>(it);
 
-            write_file(output_file, to_utf8(imported_library->name), get_string_size(imported_library->name), &bytes_written);
+            write_file(output_file, to_utf8(imported_library->name), (uint32_t)get_string_size(imported_library->name), &bytes_written);
             write_zeros(output_file, 1); // add '\0'
             idata_section_size += bytes_written + 1;
         }
@@ -769,10 +772,11 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
         idata_image_section_pointer_to_raw_data = align_address(rdata_image_section_pointer_to_raw_data + rdata_image_section_header.SizeOfRawData, file_alignment);
 #endif
 
-        base_of_data = rdata_section_address;
         // 8192
+        /* Inexistant in x64 only in x86
         set_file_position(output_file, base_of_data_address);
         write_file(output_file, (uint8_t*)&base_of_data, sizeof(base_of_data), &bytes_written);
+        */
     }
 
     // size_of_image
