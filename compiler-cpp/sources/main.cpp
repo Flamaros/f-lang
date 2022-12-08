@@ -72,6 +72,8 @@ int main(int ac, char** av)
 
 #if defined(FSTD_DEBUG)
 	core::set_log_level(*globals.logger, core::Log_Level::verbose);
+#else
+	core::set_log_level(*globals.logger, core::Log_Level::info);
 #endif
 
 	FrameMark;

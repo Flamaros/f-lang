@@ -112,6 +112,17 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 		//write_function_declaration(file_string_builder, ir, function_node);
 
 		if (function_node->scope) {
+			// @TODO make it static
+			fstd::language::string_view	main_string;
+			fstd::language::assign(main_string, (uint8_t*)"main");
+
+			if (language::are_equals(function_node->name.text, main_string)) {
+				log(*globals.logger, Log_Level::info, "[IR] Found entry point\n");
+				// @TODO register the RVA for the backend
+			}
+
+
+
 			//print_to_builder(file_string_builder, "\n");
 			parse_ast(parsing_result, ir, function_node->return_type);
 			//print_to_builder(file_string_builder, " %v(", function_node->name.text);

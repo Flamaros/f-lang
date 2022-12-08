@@ -51,6 +51,19 @@ namespace f
 		size_t							current_RVA = 0;
 	};
 
+	struct CodeData
+	{
+		// RVA and addresses can't be fully computed by the IR generator, so instead the IR generator
+		// simply put a relative offset from the beggining of the targeted section.
+		// This mean that the backend should be able to know to which section the RVA refer.
+		// For some like the entry point the RVA necesseraly point to the code section. But 
+		// for instructions it may depend, a call for instance can target a RVA (or RIP offset) in the IAT or
+		// an address in the code section.
+
+		fstd::memory::Array<uint8_t>	code; // @TODO init with a big size (4kb)
+		uint32_t						entry_point_RVA = 0x00;
+	};
+
 	struct IR
 	{
 		typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32> Imported_Library_Hash_Table;
@@ -58,6 +71,7 @@ namespace f
 		Parsing_Result*					parsing_result;
 		Imported_Library_Hash_Table		imported_libraries;
 		ReadOnlyData					read_only_data;
+		CodeData						code_data;
 
 //		fstd::memory::Stack<Register>	registers; // Need to have one stack per scope (global scope, function scope,...)?
 	};
