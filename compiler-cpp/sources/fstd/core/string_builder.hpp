@@ -17,6 +17,12 @@ namespace fstd
 			memory::Array<language::string>	strings;
 		};
 
+		enum class Numeric_Format
+		{
+			decimal,
+			hexadecimal
+		};
+
 		// Format codes
 		// %% -> '%' (Escape code of % punctuation token)
 		//
@@ -39,8 +45,10 @@ namespace fstd
 		// Flamaros - 03 january 2020
 		void				print_to_builder(String_Builder& builder, const uint8_t* string, size_t size);
 		void				print_to_builder(String_Builder& builder, const uint16_t* string, size_t size);
-		void				print_to_builder(String_Builder& builder, int32_t value);
-		void				print_to_builder(String_Builder& builder, int64_t value);
+		void				print_to_builder(String_Builder& builder, int32_t value, Numeric_Format format = Numeric_Format::decimal);
+		void				print_to_builder(String_Builder& builder, uint32_t value);
+		void				print_to_builder(String_Builder& builder, int64_t value, Numeric_Format format = Numeric_Format::decimal);
+		void				print_to_builder(String_Builder& builder, uint64_t value);
 		void				print_to_builder(String_Builder& builder, language::string value);
 		void				print_to_builder(String_Builder& builder, language::string_view string);
 		void				print_to_builder(String_Builder& builder, const char* format, ...); // Assume that format is an utf8 C string

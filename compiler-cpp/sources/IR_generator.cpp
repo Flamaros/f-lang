@@ -121,6 +121,8 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 				// @TODO register the RVA for the backend
 			}
 
+			
+
 
 
 			//print_to_builder(file_string_builder, "\n");

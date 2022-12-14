@@ -4,6 +4,8 @@
 
 #include <fstd/core/assert.hpp>
 
+#include <type_traits>
+
 namespace fstd
 {
 	namespace language
@@ -17,6 +19,9 @@ namespace fstd
 			"6061626364656667686970717273747576777879"
 			"8081828384858687888990919293949596979899";
 
+		static const uint8_t* padding_buffer = (uint8_t*)
+			"0000000000000000000000000000000000000000000000000000000000000000"; // 64 zeros
+
 		// Inspiration
 		// https://github.com/fmtlib/fmt/blob/master/include/fmt/format.h
 		//
@@ -25,35 +30,54 @@ namespace fstd
 		//
 		// Flamaros - 23 january 2020
 
-		string to_string(int64_t number)
+		template void to_string<int32_t>(int32_t number, string& output);
+		template void to_string<uint32_t>(uint32_t number, string& output);
+		template void to_string<int64_t>(int64_t number, string& output);
+		template void to_string<uint64_t>(uint64_t number, string& output);
+
+		template<typename IntegerType>
+		void to_string(IntegerType number, string& output)
 		{
-			string		result;
+			static_assert(std::is_same<IntegerType, int32_t>::value ||
+						std::is_same<IntegerType, uint32_t>::value ||
+						std::is_same<IntegerType, int64_t>::value ||
+						std::is_same<IntegerType, uint64_t>::value);
+			static_assert(std::is_integral<IntegerType>::value, "to_string works only with integral types.");
+
 			uint8_t*	string;
 			size_t		string_length = 0;	// doesn't contains the sign
 			bool		is_negative = false;
 
-			// value range is from -2,147,483,647 to +2,147,483,647
-			// without decoration we need at most 10 + 1 characters (+1 for the sign)
-			reserve(result, 10 + 1);
-			string = (uint8_t*)to_utf8(result);
+			// value range is from -9,223,372,036,854,775,807 to +9,223,372,036,854,775,807
+			// without decoration we need at most 19 + 1 characters (+1 for the sign)
+			reserve(output, 19 + 1);
+			string = (uint8_t*)to_utf8(output);
 
 			// @TODO May we optimize this code?
 			{
-				uint64_t	quotien = number;
-				uint64_t	reminder;
+				IntegerType	quotien = number;
+				IntegerType	reminder;
 
-				if (number < 0) {
-					is_negative = true;
-					string[0] = '-';
-					string++;
-					quotien = -number;
+				if constexpr (std::is_same<IntegerType, int32_t>::value ||
+							std::is_same<IntegerType, int64_t>::value)
+				{
+					if (number < 0) {
+						is_negative = true;
+						string[0] = '-';
+						string++;
+						quotien = -number;
+					}
 				}
 
 				while (quotien >= 100) {
 					// Integer division is slow so do it for a group of two digits instead
 					// of for every digit. The idea comes from the talk by Alexandrescu
 					// "Three Optimization Tips for C++". See speed-test for a comparison.
-					intrinsic::divide(quotien, 100, &quotien, &reminder);
+
+//					intrinsic::divide(quotien, 100, &quotien, &reminder);
+					reminder = quotien % (uint64_t)100;
+					quotien = quotien / (uint64_t)100;
+
 					reminder = reminder * 2;
 					string[string_length++] = base_10_digits[reminder + 1];
 					string[string_length++] = base_10_digits[reminder];
@@ -74,42 +98,74 @@ namespace fstd
 				}
 			}
 
-			resize(result, string_length + is_negative);
-			return result;
+			resize(output, string_length + is_negative);
 		}
 
-		string to_string(int32_t number, int8_t base)
+		template void to_string<uint32_t>(uint32_t number, int8_t base, string& output);
+		template void to_string<uint64_t>(uint64_t number, int8_t base, string& output);
+
+		// Should I put the base as template parameter for better performances?
+		template<typename IntegerType>
+		void to_string(IntegerType number, int8_t base, string& output)
 		{
+			static_assert(std::is_same<IntegerType, uint32_t>::value ||
+						std::is_same<IntegerType, uint64_t>::value);
+			static_assert(std::is_integral<IntegerType>::value, "to_string works only with integral types.");
+
 			fstd::core::Assert(base >= 2 && base <= 16);
+			
+			// For base 10 we fallback on the specific implementation which handle the sign and is fastest
+			if (base == 10) {
+				to_string(number, output);
+				return;
+			}
 
-			string		result;
 			uint8_t*	string;
-			size_t		string_length = 0;	// doesn't contains the sign
-			bool		is_negative = false;
+			int32_t		string_length = 0;	// signed integer to correctly handle the padding test
 
-			// value range is from -2,147,483,647 to +2,147,483,647
-			// without decoration we need at most 10 + 1 characters (+1 for the sign)
-			reserve(result, 10 + 1);
-			string = (uint8_t*)to_utf8(result);
+			// We can have up to 64 characters when printing in binary a 64 bits number
+			reserve(output, 64);
+			string = (uint8_t*)to_utf8(output);
 
 			// @TODO May we optimize this code?
 			{
-				uint32_t	quotien = number;
-				uint32_t	reminder;
-
-				if (base == 10 && number < 0) {
-					is_negative = true;
-					string[0] = '-';
-					string++;
-					quotien = -number;
-				}
+				IntegerType	quotien = number;
+				IntegerType	reminder;
 
 				if (number) {	// we can't divide 0
 					do
 					{
-						intrinsic::divide(quotien, base, &quotien, &reminder);
+						reminder = quotien % base;
+						quotien = quotien / base;
+
 						string[string_length++] = ordered_digits[reminder];
 					} while (quotien);
+
+					// Padding with 0
+					int32_t padding_size = 0;
+					if constexpr (std::is_same<IntegerType, uint32_t>::value) // 32 bits
+					{
+						if (base == 2) {
+							padding_size = 32 - string_length;
+						}
+						else if (base == 16) {
+							padding_size = 8 - string_length;
+						}
+					}
+					else // 64 bits
+					{
+						if (base == 2) {
+							padding_size = 64 - string_length;
+						}
+						else if (base == 16) {
+							padding_size = 16 - string_length;
+						}
+					}
+
+					if (padding_size > 0) {
+						system::memory_copy(&string[string_length], padding_buffer, padding_size);
+						string_length += padding_size;
+					}
 
 					// Reverse the string
 					size_t middle_cursor = string_length / 2;
@@ -122,8 +178,7 @@ namespace fstd
 				}
 			}
 
-			resize(result, string_length + is_negative);
-			return result;
+			resize(output, string_length);
 		}
 	}
 }

@@ -1,3 +1,29 @@
+Finir le formatage des valeurs en hexadecimal.
+  - Le cast sur le type non signé doit se faire dans la fonction to_string en fonction de la taille du type
+  - Il faut ajouter des 0 de padding au début 0x0000ABBA
+  - Ajouter une version 32bits pour le to_string
+  - faire des version float et double également
+Utiliser correctement to_string pour l'hexa dans string_builder
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 !!!!!!!!!! 
 Mettre lexer_base dans fstd
 

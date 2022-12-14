@@ -57,16 +57,18 @@ void test_integer_to_string_performances()
 		fstd::language::string f_string;
 		start_time = fstd::system::get_time_in_nanoseconds();
 		for (auto& number : numbers) {
-			f_string = fstd::language::to_string(number, 10);
-			release(f_string);
+			fstd::language::to_string(number, f_string);
 		}
 		end_time = fstd::system::get_time_in_nanoseconds();
 		f_implemenation_time = ((end_time - start_time) / 1'000'000.0);
+
+		release(f_string);
 	}
 
 	{
 		ZoneScopedNC("stl to_string", 0xf05545);
 
+		// @Warning std::string are not allocated for small size (the definition of small size can vary with compilers and platforms)
 		std::string std_string;
 		start_time = fstd::system::get_time_in_nanoseconds();
 		for (auto& number : numbers) {
@@ -336,6 +338,62 @@ void test_hash_table()
 	fstd::core::Assert(count == 2);
 }
 
+void test_number_to_string()
+{
+	fstd::language::string f_string;
+	fstd::language::string result_string;
+
+	// Decimal
+	fstd::language::to_string(5'624'978'429, f_string); // 64 bits
+	fstd::language::assign(result_string, (uint8_t*)u8"5624978429");
+	fstd::core::Assert(fstd::language::are_equals(f_string, result_string));
+	release(f_string);
+
+	fstd::language::to_string(-5'624'978'429, f_string); // 64 bits
+	fstd::language::assign(result_string, (uint8_t*)u8"-5624978429");
+	fstd::core::Assert(fstd::language::are_equals(f_string, result_string));
+	release(f_string);
+
+	fstd::language::to_string(2'147'483'647, f_string); // 32 bits
+	fstd::language::assign(result_string, (uint8_t*)u8"2147483647");
+	fstd::core::Assert(fstd::language::are_equals(f_string, result_string));
+	release(f_string);
+
+	fstd::language::to_string(-2'147'483'647, f_string); // 32 bits
+	fstd::language::assign(result_string, (uint8_t*)u8"-2147483647");
+	fstd::core::Assert(fstd::language::are_equals(f_string, result_string));
+	release(f_string);
+
+	// Hexadecimal
+	fstd::language::to_string((uint64_t)5'624'978'429, 16, f_string); // 64 bits
+	fstd::language::assign(result_string, (uint8_t*)u8"000000014F465BFD");
+	fstd::core::Assert(fstd::language::are_equals(f_string, result_string));
+	release(f_string);
+
+	fstd::language::to_string((uint64_t)-5'624'978'429, 16, f_string); // 64 bits
+	fstd::language::assign(result_string, (uint8_t*)u8"FFFFFFFEB0B9A403");
+	fstd::core::Assert(fstd::language::are_equals(f_string, result_string));
+	release(f_string);
+
+	fstd::language::to_string((uint32_t)2'147'483'647, 16, f_string); // 32 bits
+	fstd::language::assign(result_string, (uint8_t*)u8"7FFFFFFF");
+	fstd::core::Assert(fstd::language::are_equals(f_string, result_string));
+	release(f_string);
+
+	fstd::language::to_string((uint32_t)-2'147'483'647, 16, f_string); // 32 bits
+	fstd::language::assign(result_string, (uint8_t*)u8"80000001");
+	fstd::core::Assert(fstd::language::are_equals(f_string, result_string));
+	release(f_string);
+
+	fstd::language::to_string((uint32_t)-1, 16, f_string); // 32 bits
+	fstd::language::assign(result_string, (uint8_t*)u8"FFFFFFFF");
+	fstd::core::Assert(fstd::language::are_equals(f_string, result_string));
+	release(f_string);
+
+	// Tester également avec des nombres signé aux limites
+	// Egalement avec des doubles
+}
+
 int main(int ac, char** av)
 {
 	// Begin Initialization ================================================
@@ -360,7 +418,7 @@ int main(int ac, char** av)
 	FrameMark;
 	// End Initialization ================================================
 
-#if 0
+#if 1
 #	if !defined(_DEBUG)
 	test_integer_to_string_performances();
 #	endif
@@ -369,6 +427,7 @@ int main(int ac, char** av)
 	test_unicode_string_convversions();
 	test_AST_operator_precedence();
 	test_hash_table();
+	test_number_to_string();
 
 	FrameMark;
 

@@ -52,9 +52,6 @@
     <ClInclude Include="..\sources\globals.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\macros.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\third-party\magic_enum.hpp">
       <Filter>Source Files\third-party</Filter>
     </ClInclude>

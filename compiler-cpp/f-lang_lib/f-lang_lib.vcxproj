@@ -59,7 +59,6 @@
     <ClInclude Include="..\sources\lexer\keyword_hash_table.hpp" />
     <ClInclude Include="..\sources\lexer\lexer.hpp" />
     <ClInclude Include="..\sources\lexer\lexer_base.hpp" />
-    <ClInclude Include="..\sources\macros.hpp" />
     <ClInclude Include="..\sources\parser\parser.hpp" />
     <ClInclude Include="..\sources\parser\symbol_solver.hpp" />
     <ClInclude Include="..\sources\PE_x64_backend.hpp" />

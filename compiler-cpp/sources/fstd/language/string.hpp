@@ -128,8 +128,11 @@ namespace fstd
 		// implementation normally at runtime
 		//
 		// Flamaros - 06 january 2020
-		string to_string(int64_t number);
-		string to_string(int32_t number, int8_t base);
+		template<typename IntegerType>
+		void to_string(IntegerType number, string& output);
+
+		template<typename IntegerType>
+		void to_string(IntegerType number, int8_t base, string& output);
 
 		// =====================================================================
 

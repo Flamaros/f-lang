@@ -49,14 +49,26 @@ namespace fstd
 			from_utf16LE_to_utf8(string_view, *string_buffer, false);
 		}
 
-		void print_to_builder(String_Builder& builder, int32_t value)
+		void print_to_builder(String_Builder& builder, int32_t value, Numeric_Format format)
 		{
 			language::string* string_buffer;
+
+			if (format == Numeric_Format::hexadecimal) {
+				print_to_builder(builder, "0x", 2);
+			}
 
 			memory::array_push_back(builder.strings, language::string());
 			string_buffer = memory::get_array_last_element(builder.strings);
 
-			*string_buffer = language::to_string(value);
+			if (format == Numeric_Format::decimal) {
+				language::to_string(value, *string_buffer);
+			}
+			else if (format == Numeric_Format::hexadecimal) {
+				//*string_buffer = language::to_string(value, 16);
+			}
+			else {
+				core::Assert(false);
+			}
 		}
 
 		void print_to_builder(String_Builder& builder, uint32_t value)
@@ -66,17 +78,29 @@ namespace fstd
 			memory::array_push_back(builder.strings, language::string());
 			string_buffer = memory::get_array_last_element(builder.strings);
 
-			*string_buffer = language::to_string(value);
+			language::to_string(value, *string_buffer);
 		}
 
-		void print_to_builder(String_Builder& builder, int64_t value)
+		void print_to_builder(String_Builder& builder, int64_t value, Numeric_Format format)
 		{
 			language::string* string_buffer;
+
+			if (format == Numeric_Format::hexadecimal) {
+				print_to_builder(builder, "0x", 2);
+			}
 
 			memory::array_push_back(builder.strings, language::string());
 			string_buffer = memory::get_array_last_element(builder.strings);
 
-			*string_buffer = language::to_string(value);
+			if (format == Numeric_Format::decimal) {
+				language::to_string(value, *string_buffer);
+			}
+			else if (format == Numeric_Format::hexadecimal) {
+				//*string_buffer = language::to_string(value, 16);
+			}
+			else {
+				core::Assert(false);
+			}
 		}
 
 		void print_to_builder(String_Builder& builder, uint64_t value)
@@ -86,7 +110,7 @@ namespace fstd
 			memory::array_push_back(builder.strings, language::string());
 			string_buffer = memory::get_array_last_element(builder.strings);
 
-			*string_buffer = language::to_string(value);
+			language::to_string(value, *string_buffer);
 		}
 
 		void print_to_builder(String_Builder& builder, float value)
@@ -117,18 +141,6 @@ namespace fstd
 			string_buffer = memory::get_array_last_element(builder.strings);
 
 			language::copy(*string_buffer, 0, value);
-		}
-
-		static void print_to_builder(String_Builder& builder, int32_t value, int32_t base)
-		{
-			Assert(base >= 2 && base <= 16);
-
-			language::string*	string_buffer;
-
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
-
-			*string_buffer = language::to_string(value, base);
 		}
 
 		void print_to_builder(String_Builder& builder, const char* format, ...)
@@ -176,6 +188,28 @@ namespace fstd
 						// no vararg in this case
 						print_to_builder(builder, &language::to_utf8(*format)[position], 1);
 
+						position++;
+					}
+					else if (language::to_utf8(*format)[position] == 'x') {	// 32 bits hexadecimal
+						int32_t value = va_arg(args, int32_t);
+
+						print_to_builder(builder, value, Numeric_Format::hexadecimal);
+						position++;
+					}
+					else if (language::to_utf8(*format)[position] == 'X') {	// 64 bits hexadecimal
+						int64_t value = va_arg(args, int64_t);
+
+						print_to_builder(builder, value, Numeric_Format::hexadecimal);
+						position++;
+					}
+					else if (language::to_utf8(*format)[position] == 'p') {	// pointer size hexadecimal
+#if defined FSTD_X86_64
+						int64_t value = va_arg(args, int64_t);
+#else
+						int64_t value = va_arg(args, int32_t);
+#endif
+
+						print_to_builder(builder, value, Numeric_Format::hexadecimal);
 						position++;
 					}
 					else if (language::to_utf8(*format)[position] == 'd') {	// int32
