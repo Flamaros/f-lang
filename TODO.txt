@@ -1,6 +1,21 @@
+Renomer IR_generator en CodeGenerator
+ - l'interface avec le backend doit se traduire sous forme d'une table de fonctions avec une API précise que les différents backend se doivent de respecter
+ - comme ça je pourrais faire un backend x86 également
+ - Ensuite les backends doivent générer le binaire à partir de la liste d'instruction qu'ils ont eux même généré
+    - C'est à ce moment qu'ils font la résolution des allocations des variables s'ils ont un allocateur infini,...
+	- Qu'ils décident quels optimisations faire ou qu'ils génèrent les info de debug
+ 
+
+TODO le backend x64 doit fournir une interface pour générer le code machine:
+  - Pour allouer les variables (register et stack)
+  - Pour faire les appels de fonction
+  - Doit recupérer du générateur de code générique de quoi faire des Nodes d'une liste chainée d'instructions
+  -
+  - Commencer par lui faire printer les instructions en format humain (Pseudo ASM)
+
+
 Finir le formatage des valeurs en hexadecimal.
   - Le cast sur le type non signé doit se faire dans la fonction to_string en fonction de la taille du type
-  - Il faut ajouter des 0 de padding au début 0x0000ABBA
   - Ajouter une version 32bits pour le to_string
   - faire des version float et double également
 Utiliser correctement to_string pour l'hexa dans string_builder
@@ -345,6 +360,9 @@ Dtoa-fast
 https://github.com/achan001/dtoa-fast
 
 How should I handle nan and inf numbers? I think that it should be defines that comes with the maths module of the default library.
+
+A dirty code to print floats:
+https://gist.github.com/d7samurai/c3e85e08f2a32d2fb3bc9d157c066be9
 
 
 ################################################################################

@@ -60,7 +60,7 @@ namespace f
 		// for instructions it may depend, a call for instance can target a RVA (or RIP offset) in the IAT or
 		// an address in the code section.
 
-		fstd::memory::Array<uint8_t>	code; // @TODO init with a big size (4kb)
+		fstd::memory::Array<uint8_t>	code;
 		uint32_t						entry_point_RVA = 0x00;
 	};
 

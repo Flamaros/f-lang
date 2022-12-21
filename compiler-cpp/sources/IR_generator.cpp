@@ -140,6 +140,26 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 		AST_Statement_Variable* variable_node = (AST_Statement_Variable*)node;
 		AST_Node* type = variable_node->type;
 
+		if (variable_node->is_function_parameter) {
+			// @TODO copy the value to an allocated register (from reserverd register or stack, depending of the calling convention)
+			core::Assert(false);
+		}
+		else {
+			if (variable_node->expression) {
+				// @TODO init the variable with the result of the expression
+				// 1. Generate code for the expression
+				// 2. Get the return value register to be able to asign this register or a copy to the variable
+				// 3. Do the cast if return type and variable type didn't directly match (can be done by the copy) (check if this implicite cast is allowed)
+				//    - Explicit cast should already have generated an instruction from the instruction parsing
+				core::Assert(false);
+			}
+			else {
+				// @TODO generate the value, for basic type it is an immediate value, for a struct the code to generate is a bit more complicated
+				// I should iterate over all members
+			}
+		}
+
+
 		// Write type
 		if (type->ast_type == Node_Type::STATEMENT_TYPE_ARRAY && ((AST_Statement_Type_Array*)type)->array_size != nullptr) {
 			// In this case we have to jump the array modifier
@@ -499,6 +519,8 @@ void f::generate_ir(Parsing_Result& parsing_result, IR& ir)
 	// Initialize data
 	{
 		memory::hash_table_init(ir.imported_libraries, &language::are_equals);
+		memory::init(ir.code_data.code);
+		memory::reserve_array(ir.code_data.code, 4096); // @TODO I really should do something cleaver
 
 		memory::init(globals.ir_data.imported_libraries);
 		memory::reserve_array(globals.ir_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
