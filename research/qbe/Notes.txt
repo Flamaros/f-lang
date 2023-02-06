@@ -1,0 +1,5 @@
+https://c9x.me/compile/bib/
+
+https://briancallahan.net/blog/20210829.html
+
+https://stackoverflow.com/questions/40315803/difference-between-movq-and-movabsq-in-x86-64

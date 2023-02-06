@@ -464,3 +464,9 @@ Inlining:
 https://twitter.com/mmalex/status/1532034169068470273?s=21&t=IYIoovQHiI6cECkpp8d1SA
 
 Ne pas inliner les fonctions récursives
+
+
+
+#####################################
+Aliasing des types:
+https://gist.github.com/shafik/848ae25ee209f698763cffee272a58f8

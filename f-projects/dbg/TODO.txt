@@ -2,3 +2,9 @@ Idee de representation ASM -> source side by side: https://github.com/loov/lensm
 
 Catcher les exceptions:
 https://github.com/x13pixels/remedybg-issues/issues/81
+
+
+Faire la GUI en Dear ImGui?
+
+Commencer par montrer le code ASM, voir comment fait imhex:
+ - aveec https://www.capstone-engine.org/
