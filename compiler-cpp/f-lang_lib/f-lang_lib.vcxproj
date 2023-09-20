@@ -27,6 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\sources\asm\ASM.hpp" />
     <ClInclude Include="..\sources\fstd\core\assert.hpp" />
     <ClInclude Include="..\sources\fstd\core\logger.hpp" />
     <ClInclude Include="..\sources\fstd\core\string_builder.hpp" />
@@ -83,6 +84,7 @@
     <ClInclude Include="..\third-party\WindowsHModular\include\win32\windows_modular.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\sources\ASM\ASM.cpp" />
     <ClCompile Include="..\sources\fstd\core\assert.cpp" />
     <ClCompile Include="..\sources\fstd\core\logger.cpp" />
     <ClCompile Include="..\sources\fstd\core\string_builder.cpp" />

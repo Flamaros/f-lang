@@ -20,3 +20,13 @@ https://github.com/glhrmfrts/carbonlang
 
 Voir tools pour compiler de l'asm:
 http://www.godevtool.com
+
+
+
+---------------
+Code gen article de Martins (Discord Handmade network)
+https://pubby.games/codegen.html
+
+Post sur le discord
+https://discord.com/channels/239737791225790464/241518132928315392/1088929378626437120
+---------------

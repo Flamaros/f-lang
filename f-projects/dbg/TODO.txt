@@ -3,6 +3,10 @@ Idee de representation ASM -> source side by side: https://github.com/loov/lensm
 Catcher les exceptions:
 https://github.com/x13pixels/remedybg-issues/issues/81
 
+Formatage des types:
+https://github.com/x13pixels/remedybg-issues/issues/113
+  - Attention à la problèmatique du rechargement à chaud du code de formatage
+
 
 Faire la GUI en Dear ImGui?
 

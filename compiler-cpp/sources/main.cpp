@@ -7,6 +7,8 @@
 #include "lexer/lexer.hpp"
 #include "parser/parser.hpp"
 
+#include "ASM/ASM.hpp"
+
 #include <fstd/macros.hpp>
 
 #include <fstd/core/string_builder.hpp>
@@ -102,6 +104,22 @@ int main(int ac, char** av)
 
 		message = to_string(string_builder);
 		report_error(Compiler_Error::info, (char*)to_utf8(message));
+	}
+
+	// Compilation of ASM test
+	{
+		system::Path	asm_file_path;
+		system::Path	asm_output_path;
+
+		defer {
+			system::reset_path(asm_file_path);
+			system::reset_path(asm_output_path);
+		};
+
+		system::from_native(asm_file_path, (uint8_t*)u8R"(tests/asm/helloworld.fasm)");
+		system::from_native(asm_output_path, (uint8_t*)u8R"(.\asm_helloworld.exe)");
+
+		f::ASM::compile_file(asm_file_path, asm_output_path, false);
 	}
 
 	{

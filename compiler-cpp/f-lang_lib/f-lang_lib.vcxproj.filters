@@ -44,6 +44,9 @@
     <Filter Include="Source Files\third-party\WindowsHModular\win32">
       <UniqueIdentifier>{434ac355-6301-4560-a2dd-705f5a9372ac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ASM">
+      <UniqueIdentifier>{b41c0f62-e560-497b-9a06-2f3dc4846c8c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
@@ -208,6 +211,9 @@
     <ClInclude Include="..\sources\PE_x64_backend.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\asm\ASM.hpp">
+      <Filter>Source Files\ASM</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -263,6 +269,9 @@
     </ClCompile>
     <ClCompile Include="..\sources\PE_x64_backend.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\ASM\ASM.cpp">
+      <Filter>Source Files\ASM</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
