@@ -470,3 +470,15 @@ Ne pas inliner les fonctions récursives
 #####################################
 Aliasing des types:
 https://gist.github.com/shafik/848ae25ee209f698763cffee272a58f8
+
+
+
+
+
+
+
+#####################################
+Stacktrace?
+https://github.com/jeremy-rifkin/cpptrace/releases/tag/v0.2.0
+
+Pour gérer les crash report?

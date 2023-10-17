@@ -1,9 +1,28 @@
 #include "ASM.hpp"
 
+#include "ASM_lexer.hpp"
+#include "globals.hpp"
+
+#include <fstd/language/defer.hpp>
+#include <fstd/memory/array.hpp>
+#include <fstd/system/file.hpp>
+
+using namespace fstd;
+
 namespace f::ASM
 {
 	void compile_file(const fstd::system::Path& path, const fstd::system::Path& output_path, bool shared_library)
 	{
+		ZoneScopedNC("f::lex", 0x1b5e20);
+
+		fstd::memory::Array<Token>	tokens;
+
+		initialize_lexer();
+		lex(path, tokens);
+		print(tokens);
+
+
+
 		// @TODO
 		// Me faire un lexer
 		//   - Dissocier les keywords et les instructions?
@@ -21,5 +40,17 @@ namespace f::ASM
 		//
 		// Il doit y avoir un label main dans la section .text
 		//    - Sinon erreur
+		//
+		//
+		// BONUS:
+		//		Un label est équivalent à une addresse, si j'ai un symbole comme $ pour récupérer l'addresse de l'instruction
+		//		actuelle, je dois pouvoir implémenter des opérations simple sans AST et sans gestion de précédence sur les opérateurs.
+		//		Car le but est de pouvoir éventuellement faire:
+		//			message:	db "Hello World"		// message est un label qui a une addresse
+		//			len:		dd	$ - message			// $ est l'addresse de l'instruction courante
+		//		Dans l'exemple de code précédent je n'ai absolument pas besoin de me soucier de la précédence des opérateurs
+		//		Car l'opération est trop simple, je ne suis pas sur d'avoir besoin de plus pour la section .data
+		//		Et encore comme mon ASM vise à être généré, normalement le front-end de mon language n'aura même pas
+		//		besoin de cette fonctionnalité, c'est pour ça que c'est du pure bonus pour mes dev.
 	}
 }

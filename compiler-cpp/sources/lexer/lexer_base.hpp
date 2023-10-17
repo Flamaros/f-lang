@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hash_table.hpp"
+#include "lexer_hash_table.hpp"
 
 #include <fstd/language/string.hpp>
 #include <fstd/language/string_view.hpp>
@@ -122,7 +122,7 @@ namespace f
             float			        real_32;
             double			        real_64;
             long double		        real_max;
-            fstd::language::string* string;
+            fstd::language::string* string;		// polish_string_literal is the method that fill it by using text
         };
 
         Token_Type			        type;
@@ -133,8 +133,8 @@ namespace f
         Value				        value;
     };
 
-    extern Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2;
-    extern Hash_Table<uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1;
+    extern lexer::Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2;
+    extern lexer::Hash_Table<uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1;
     extern fstd::language::string_view keyword_invalid_key;
 
     /// Return a key for the punctuation of 2 characters

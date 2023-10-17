@@ -8,7 +8,16 @@ https://github.com/x13pixels/remedybg-issues/issues/113
   - Attention à la problèmatique du rechargement à chaud du code de formatage
 
 
+Avoir un graphique pour voir les liens entre les instances (suivi des pointeurs), pour les listes chainées, tree,...
+
+
 Faire la GUI en Dear ImGui?
 
 Commencer par montrer le code ASM, voir comment fait imhex:
  - aveec https://www.capstone-engine.org/
+
+
+
+
+Avoir une option pour s'attacher automatiquement sur un process qui vient de se lancer tout seul (voir le code dear time)
+  - Interessant par exemple dans le cas de Buildozer qui lance le runtime (s'attacher sur le runtime automatiquement serait cool)

@@ -214,6 +214,12 @@
     <ClInclude Include="..\sources\asm\ASM.hpp">
       <Filter>Source Files\ASM</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\ASM\ASM_lexer.hpp">
+      <Filter>Source Files\ASM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\ASM\ASM_x64.h">
+      <Filter>Source Files\ASM</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -271,6 +277,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\ASM\ASM.cpp">
+      <Filter>Source Files\ASM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\ASM\ASM_lexer.cpp">
       <Filter>Source Files\ASM</Filter>
     </ClCompile>
   </ItemGroup>

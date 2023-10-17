@@ -2,7 +2,10 @@
 
 #include "parser/parser.hpp"
 
+#include <fstd/language/types.hpp>
+#include <fstd/language/string_view.hpp>
 #include <fstd/memory/stack.hpp>
+#include <fstd/memory/hash_table.hpp>
 
 namespace f
 {

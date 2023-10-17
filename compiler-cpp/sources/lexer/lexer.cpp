@@ -78,7 +78,7 @@ enum class Numeric_Value_Flag
 };
 
 // @TODO remplace it by a nested inlined function in f-lang
-#define INSERT_KEYWORD(KEY, VALUE) \
+#define HT_INSERT_VALUE(KEY, VALUE) \
     { \
         language::string_view   str_view; \
         language::assign(str_view, (uint8_t*)(KEY)); \
@@ -90,67 +90,67 @@ void f::initialize_lexer()
 {
     hash_table_init(keywords, &language::are_equals);
 
-    INSERT_KEYWORD("import", IMPORT);
+    HT_INSERT_VALUE("import", IMPORT);
 
-    INSERT_KEYWORD("enum", ENUM);
-    INSERT_KEYWORD("struct", STRUCT);
-    INSERT_KEYWORD("union", UNION);
-    INSERT_KEYWORD("alias", ALIAS);
-    INSERT_KEYWORD("inline", INLINE);
-    INSERT_KEYWORD("static", STATIC);
-    INSERT_KEYWORD("true", TRUE);
-    INSERT_KEYWORD("false", FALSE);
-    INSERT_KEYWORD("nullptr", NULLPTR);
-    INSERT_KEYWORD("immutable", IMMUTABLE);
-    INSERT_KEYWORD("using", USING);
-    INSERT_KEYWORD("new", NEW);
-    INSERT_KEYWORD("delete", DELETE);
+    HT_INSERT_VALUE("enum", ENUM);
+    HT_INSERT_VALUE("struct", STRUCT);
+    HT_INSERT_VALUE("union", UNION);
+    HT_INSERT_VALUE("alias", ALIAS);
+    HT_INSERT_VALUE("inline", INLINE);
+    HT_INSERT_VALUE("static", STATIC);
+    HT_INSERT_VALUE("true", TRUE);
+    HT_INSERT_VALUE("false", FALSE);
+    HT_INSERT_VALUE("nullptr", NULLPTR);
+    HT_INSERT_VALUE("immutable", IMMUTABLE);
+    HT_INSERT_VALUE("using", USING);
+    HT_INSERT_VALUE("new", NEW);
+    HT_INSERT_VALUE("delete", DELETE);
 
     // Control flow
-    INSERT_KEYWORD("if", IF);
-    INSERT_KEYWORD("else", ELSE);
-    INSERT_KEYWORD("do", DO);
-    INSERT_KEYWORD("while", WHILE);
-    INSERT_KEYWORD("for", FOR);
-    INSERT_KEYWORD("foreach", FOREACH);
-    INSERT_KEYWORD("switch", SWITCH);
-    INSERT_KEYWORD("case", CASE);
-    INSERT_KEYWORD("default", DEFAULT);
-    INSERT_KEYWORD("final", FINAL);
-    INSERT_KEYWORD("return", RETURN);
-    INSERT_KEYWORD("exit", EXIT);
+    HT_INSERT_VALUE("if", IF);
+    HT_INSERT_VALUE("else", ELSE);
+    HT_INSERT_VALUE("do", DO);
+    HT_INSERT_VALUE("while", WHILE);
+    HT_INSERT_VALUE("for", FOR);
+    HT_INSERT_VALUE("foreach", FOREACH);
+    HT_INSERT_VALUE("switch", SWITCH);
+    HT_INSERT_VALUE("case", CASE);
+    HT_INSERT_VALUE("default", DEFAULT);
+    HT_INSERT_VALUE("final", FINAL);
+    HT_INSERT_VALUE("return", RETURN);
+    HT_INSERT_VALUE("exit", EXIT);
 
     // Reserved for futur usage
-    INSERT_KEYWORD("public,", PUBLIC);
-    INSERT_KEYWORD("protected,", PROTECTED);
-    INSERT_KEYWORD("private,", PRIVATE);
-    INSERT_KEYWORD("module,", MODULE);
+    HT_INSERT_VALUE("public,", PUBLIC);
+    HT_INSERT_VALUE("protected,", PROTECTED);
+    HT_INSERT_VALUE("private,", PRIVATE);
+    HT_INSERT_VALUE("module,", MODULE);
 
     // Types
-    INSERT_KEYWORD("void", VOID);
-    INSERT_KEYWORD("bool", BOOL);
-    INSERT_KEYWORD("i8", I8);
-    INSERT_KEYWORD("ui8", UI8);
-    INSERT_KEYWORD("i16", I16);
-    INSERT_KEYWORD("ui16", UI16);
-    INSERT_KEYWORD("i32", I32);
-    INSERT_KEYWORD("ui32", UI32);
-    INSERT_KEYWORD("i64", I64);
-    INSERT_KEYWORD("ui64", UI64);
-    INSERT_KEYWORD("f32", F32);
-    INSERT_KEYWORD("f64", F64);
-    INSERT_KEYWORD("string", STRING);
-    INSERT_KEYWORD("string_view", STRING_VIEW);
-    INSERT_KEYWORD("Type", TYPE);
+    HT_INSERT_VALUE("void", VOID);
+    HT_INSERT_VALUE("bool", BOOL);
+    HT_INSERT_VALUE("i8", I8);
+    HT_INSERT_VALUE("ui8", UI8);
+    HT_INSERT_VALUE("i16", I16);
+    HT_INSERT_VALUE("ui16", UI16);
+    HT_INSERT_VALUE("i32", I32);
+    HT_INSERT_VALUE("ui32", UI32);
+    HT_INSERT_VALUE("i64", I64);
+    HT_INSERT_VALUE("ui64", UI64);
+    HT_INSERT_VALUE("f32", F32);
+    HT_INSERT_VALUE("f64", F64);
+    HT_INSERT_VALUE("string", STRING);
+    HT_INSERT_VALUE("string_view", STRING_VIEW);
+    HT_INSERT_VALUE("Type", TYPE);
 
     // Special keywords (interpreted by the lexer)
-    INSERT_KEYWORD("__FILE__", SPECIAL_FILE);
-    INSERT_KEYWORD("__FILE_FULL_PATH__",  SPECIAL_FULL_PATH_FILE);
-    INSERT_KEYWORD("__LINE__", SPECIAL_LINE);
-    INSERT_KEYWORD("__MODULE__", SPECIAL_MODULE);
-    INSERT_KEYWORD("__EOF__", SPECIAL_EOF);
-    INSERT_KEYWORD("__VENDOR__", SPECIAL_COMPILER_VENDOR);
-    INSERT_KEYWORD("__VERSION__", SPECIAL_COMPILER_VERSION);
+    HT_INSERT_VALUE("__FILE__", SPECIAL_FILE);
+    HT_INSERT_VALUE("__FILE_FULL_PATH__",  SPECIAL_FULL_PATH_FILE);
+    HT_INSERT_VALUE("__LINE__", SPECIAL_LINE);
+    HT_INSERT_VALUE("__MODULE__", SPECIAL_MODULE);
+    HT_INSERT_VALUE("__EOF__", SPECIAL_EOF);
+    HT_INSERT_VALUE("__VENDOR__", SPECIAL_COMPILER_VENDOR);
+    HT_INSERT_VALUE("__VERSION__", SPECIAL_COMPILER_VERSION);
 
 #if defined(FSTD_DEBUG)
     log_stats(keywords, *globals.logger);
@@ -215,11 +215,12 @@ void f::lex(const system::Path& path, memory::Array<Token<Keyword>>& tokens)
     system::File	                file;
     Token<Keyword>                           file_token;
 
-    if (system::open_file(file, path, system::File::Opening_Flag::READ) == false) {
-        file_token.type = Token_Type::UNKNOWN;
-        file_token.file_path = system::to_string(path);
-        file_token.line = 0;
-        file_token.column = 0;
+	file_token.type = Token_Type::UNKNOWN;
+	file_token.file_path = system::to_string(path);
+	file_token.line = 0;
+	file_token.column = 0;
+	
+	if (system::open_file(file, path, system::File::Opening_Flag::READ) == false) {
         report_error(Compiler_Error::error, file_token, "Failed to open source file.");
     }
 
@@ -264,7 +265,7 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
     bool has_utf8_boom = stream::is_uft8_bom(stream, true);
 
     if (has_utf8_boom == false) {
-        report_error(Compiler_Error::warning, file_token, "This file doens't have a UTF8 BOM");
+        report_error(Compiler_Error::warning, file_token, "This file doens't have a UTF8 BOM\n");
     }
 
     while (stream::is_eof(stream) == false)

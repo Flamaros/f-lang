@@ -3,7 +3,7 @@
 namespace f
 {
     // @TODO remove the use of the initializer list in the Hash_Table
-    Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
+    lexer::Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
         // Utf8 characters that use 2 runes
         {punctuation_key_2((uint8_t*)u8"¤"), Punctuation::CURRENCY},
         {punctuation_key_2((uint8_t*)u8"£"), Punctuation::POUND},
@@ -23,7 +23,7 @@ namespace f
         {punctuation_key_2((uint8_t*)"\\\""),	Punctuation::ESCAPED_DOUBLE_QUOTE},
     };
 
-    Hash_Table<uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1 = {
+    lexer::Hash_Table<uint8_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_1 = {
         // White characters (aren't handle for an implicit skip/separation between tokens)
         {' ', Punctuation::WHITE_CHARACTER},       // space
         {'\t', Punctuation::WHITE_CHARACTER},      // horizontal tab

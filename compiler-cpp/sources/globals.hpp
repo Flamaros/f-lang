@@ -4,6 +4,7 @@
 #include "parser/parser.hpp"
 #include "IR_generator.hpp"
 #include "PE_x64_backend.hpp"
+#include "ASM/ASM_lexer.hpp"
 
 #include "lexer/lexer_base.hpp"
 
@@ -26,12 +27,13 @@ struct Configuration
 
 struct Globals
 {
-	fstd::core::Logger*					logger = nullptr;
-	Configuration						configuration;
-	fstd::memory::Array<f::Lexer_Data>	lexer_data;
-	f::Parser_Data						parser_data;
-	f::IR_Data							ir_data;
-	f::PE_X64_Backend_Data				x64_backend_data;
+	fstd::core::Logger*						logger = nullptr;
+	Configuration							configuration;
+	fstd::memory::Array<f::Lexer_Data>		lexer_data;
+	fstd::memory::Array<f::ASM::Lexer_Data>	asm_lexer_data;
+	f::Parser_Data							parser_data;
+	f::IR_Data								ir_data;
+	f::PE_X64_Backend_Data					x64_backend_data;
 };
 
 void initialize_globals();
@@ -50,4 +52,5 @@ enum class Compiler_Error
 void report_error(Compiler_Error error, const char* error_message);
 template<typename Token>
 void report_error(Compiler_Error error, const Token& token, const char* error_message);
+void report_error(Compiler_Error error, const f::ASM::Token& token, const char* error_message);
 void abort_compilation();

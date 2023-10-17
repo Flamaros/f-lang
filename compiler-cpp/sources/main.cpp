@@ -90,22 +90,6 @@ int main(int ac, char** av)
 		report_error(Compiler_Error::error, "Wrong argument number, you should specify file paths of input and output files.");
 	}
 
-	// Log compiled file
-	{
-		String_Builder		string_builder;
-		language::string	message;
-
-		defer {
-			free_buffers(string_builder);
-			release(message);
-		};
-
-		print_to_builder(string_builder, "Compiling: \"%Cs\"\n", av[1]);
-
-		message = to_string(string_builder);
-		report_error(Compiler_Error::info, (char*)to_utf8(message));
-	}
-
 	// Compilation of ASM test
 	{
 		system::Path	asm_file_path;
@@ -120,6 +104,29 @@ int main(int ac, char** av)
 		system::from_native(asm_output_path, (uint8_t*)u8R"(.\asm_helloworld.exe)");
 
 		f::ASM::compile_file(asm_file_path, asm_output_path, false);
+	}
+
+	// @TODO handle options correctly
+	// The code following the return don't work for the moment
+	// The IR strategy isn't correct
+	// Put the focus on doing things from bottom up (ASM -> Static Single Assignement -> f-lang)
+	// I don't really need IR representation in my case, I may have 2 backends one for x86 and one for x64 architectures.
+	return 0;
+
+	// Log compiled file
+	{
+		String_Builder		string_builder;
+		language::string	message;
+
+		defer{
+			free_buffers(string_builder);
+			release(message);
+		};
+
+		print_to_builder(string_builder, "Compiling: \"%Cs\"\n", av[1]);
+
+		message = to_string(string_builder);
+		report_error(Compiler_Error::info, (char*)to_utf8(message));
 	}
 
 	{
