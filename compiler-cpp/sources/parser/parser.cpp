@@ -860,7 +860,7 @@ void parse_scope(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Sco
 {
 	ZoneScopedN("parse_scope");
 
-	Token<Keyword>					current_token;
+	Token<Keyword>			current_token;
 	AST_Statement_Scope*	scope_node = allocate_AST_node<AST_Statement_Scope>(nullptr);
 	AST_Node**				current_child = &scope_node->first_child;
 

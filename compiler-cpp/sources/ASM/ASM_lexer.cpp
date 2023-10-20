@@ -289,7 +289,7 @@ namespace f::ASM
 
     void lex(const system::Path& path, memory::Array<Token>& tokens)
     {
-        ZoneScopedNC("f::lex", 0x1b5e20);
+        ZoneScopedNC("f::ASM::lex", 0x1b5e20);
 
         Lexer_Data		lexer_data;
         system::File	file;

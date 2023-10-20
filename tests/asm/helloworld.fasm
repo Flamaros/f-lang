@@ -8,13 +8,13 @@ IMPORTS
 	}
 }
 
-SECTION .data
+SECTION ".data" // @TODO should I support ` or ' character for a special string token type?
 {
 	message:
 		db      "Hello World", 0	; I put an addtionnal 0 but it can be omitted
 }
 
-SECTION .text
+SECTION ".text"
 {
 	main:
 		sub     rsp, 0x20 ; reserve 32 bytes (0x20) of shadow space

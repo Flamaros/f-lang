@@ -82,6 +82,7 @@ namespace f::ASM
         SINGLE_QUOTE,           //    '                 string literal
         DOUBLE_QUOTE,           //    "                 string literal
         COMMA,                  //    ,                 operand separator
+		DOT,                    //    .					instruction type suffix
 
         // White character at end to be able to handle correctly lines that terminate with a separator like semicolon just before a line return
         WHITE_CHARACTER,
