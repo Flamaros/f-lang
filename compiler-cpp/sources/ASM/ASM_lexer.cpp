@@ -21,7 +21,7 @@ namespace f::ASM
     static const size_t    tokens_length_heuristic = 3;
 
     static Hash_Table<uint16_t, string_view, Keyword, 128>      keywords;       // @TODO optimize hash_size and bucket_size
-    static Hash_Table<uint32_t, string_view, Instruction, 128>  instructions;   // @TODO optimize hash_size and bucket_size
+    static Hash_Table<uint16_t, string_view, Instruction, 128>  instructions;   // @TODO optimize hash_size and bucket_size
     static Hash_Table<uint16_t, string_view, Register, 128>     registers;      // @TODO optimize hash_size and bucket_size
 
 	// @TODO remove the use of the initializer list in the Hash_Table
@@ -62,7 +62,7 @@ namespace f::ASM
     static inline Instruction is_instruction(string_view& text)
     {
         uint64_t hash = SpookyHash::Hash64((const void*)to_utf8(text), get_string_size(text), 0);
-        uint32_t short_hash = hash & 0xffff;
+        uint16_t short_hash = hash & 0xffff;
 
         Instruction* result = hash_table_get(instructions, short_hash, text);
 
@@ -105,8 +105,12 @@ namespace f::ASM
 
     void initialize_lexer()
     {
+		ZoneScopedN("f::ASM::initialize_lexer");
+
 		// Keywords
 		{
+			ZoneScopedN("keywords");
+
 			hash_table_init(keywords, &language::are_equals);
 
 			HT_INSERT_VALUE(keywords, uint16_t, Keyword, "IMPORTS", IMPORTS);
@@ -124,18 +128,22 @@ namespace f::ASM
 
 		// Instructions
 		{
+			ZoneScopedN("instructions");
+
 			hash_table_init(instructions, &language::are_equals);
 
-			HT_INSERT_VALUE(instructions, uint32_t, Instruction, "add", ADD);
-			HT_INSERT_VALUE(instructions, uint32_t, Instruction, "call", CALL);
-			HT_INSERT_VALUE(instructions, uint32_t, Instruction, "hlt", HLT);
-			HT_INSERT_VALUE(instructions, uint32_t, Instruction, "hlt", MOV);
-			HT_INSERT_VALUE(instructions, uint32_t, Instruction, "hlt", PUSH);
-			HT_INSERT_VALUE(instructions, uint32_t, Instruction, "hlt", SUB);
+			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "add", ADD);
+			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "call", CALL);
+			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "hlt", HLT);
+			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "hlt", MOV);
+			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "hlt", PUSH);
+			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "hlt", SUB);
 		}
 
 		// Registers
 		{
+			ZoneScopedN("registers");
+
 			hash_table_init(registers, &language::are_equals);
 
 			HT_INSERT_VALUE(registers, uint16_t, Register, "al", AL);
@@ -239,7 +247,7 @@ namespace f::ASM
 
     static inline void polish_string_literal(Token& token)
     {
-        ZoneScopedN("polish_string_literal");
+        ZoneScopedN("f::ASM::polish_string_literal");
 
         fstd::core::Assert(token.type == Token_Type::STRING_LITERAL);
 
