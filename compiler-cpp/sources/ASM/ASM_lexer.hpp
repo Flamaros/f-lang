@@ -34,6 +34,8 @@ namespace f::ASM
 
         // Pseudo instructions (part of the language)
         DB,
+
+		COUNT,
     };
 
     enum class Token_Type : uint8_t

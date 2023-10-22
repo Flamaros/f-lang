@@ -20,9 +20,15 @@ namespace f::ASM
 {
     static const size_t    tokens_length_heuristic = 3;
 
-    static Hash_Table<uint16_t, string_view, Keyword, 128>      keywords;       // @TODO optimize hash_size and bucket_size
-    static Hash_Table<uint16_t, string_view, Instruction, 128>  instructions;   // @TODO optimize hash_size and bucket_size
-    static Hash_Table<uint16_t, string_view, Register, 128>     registers;      // @TODO optimize hash_size and bucket_size
+	// @SpeedUp Ideally I want to store this Hash_Table directly in the binary to avoid cost of allocating and initiliazing it.
+	// Or at least I might be able to open and get file content at the same time of the initialization of the lexer.
+	// Getting file content cost about 100µs and lexer initialization (Hash_Table init + fill) about 400µs.
+	// Notice that even the close_file cost a little and should be done at the same time as the lexing.
+	// But threading might not be ideal since it will require some time for initialization too (thread creation,...).
+	// 
+	// @Speed I store keywords, instructions and registers in a unique Hash_Table to reduce memory usage and optimize token classification.
+	// I offset enum values of instructions by Keyword::COUNT (after keywords) and registers by Keyword::COUNT + Instruction::COUNT (after instructions).
+	static Hash_Table<uint16_t, string_view, uint16_t, 128>      compiler_tokens;       // @TODO rename to compiler_tokens
 
 	// @TODO remove the use of the initializer list in the Hash_Table
 	static lexer::Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
@@ -49,35 +55,37 @@ namespace f::ASM
 		{',', Punctuation::COMMA},
 	};
 
-    static inline Keyword is_keyword(string_view& text)
+	static inline uint16_t* get_compiler_token(string_view& text)
+	{
+		uint64_t hash = SpookyHash::Hash64((const void*)to_utf8(text), get_string_size(text), 0);
+		uint16_t short_hash = hash & 0xffff;
+
+		return hash_table_get(compiler_tokens, short_hash, text);
+	}
+
+    static inline Keyword is_keyword(uint16_t compiler_token)
     {
-        uint64_t hash = SpookyHash::Hash64((const void*)to_utf8(text), get_string_size(text), 0);
-        uint16_t short_hash = hash & 0xffff;
-
-        Keyword* result = hash_table_get(keywords, short_hash, text);
-
-        return result ? *result : Keyword::UNKNOWN;
+		if (compiler_token < (uint16_t)Keyword::COUNT) {
+			return (Keyword)compiler_token;
+		}
+		return Keyword::UNKNOWN;
     }
 
-    static inline Instruction is_instruction(string_view& text)
+    static inline Instruction is_instruction(uint16_t compiler_token)
     {
-        uint64_t hash = SpookyHash::Hash64((const void*)to_utf8(text), get_string_size(text), 0);
-        uint16_t short_hash = hash & 0xffff;
+		if (compiler_token > (uint16_t)Keyword::COUNT && compiler_token < (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT) {
+			return (Instruction)(compiler_token - (uint16_t)Keyword::COUNT);
+		}
+		return Instruction::UNKNOWN;
+	}
 
-        Instruction* result = hash_table_get(instructions, short_hash, text);
-
-        return result ? *result : Instruction::UNKNOWN;
-    }
-
-    static inline Register is_register(string_view& text)
+    static inline Register is_register(uint16_t compiler_token)
     {
-        uint64_t hash = SpookyHash::Hash64((const void*)to_utf8(text), get_string_size(text), 0);
-        uint16_t short_hash = hash & 0xffff;
-
-        Register* result = hash_table_get(registers, short_hash, text);
-
-        return result ? *result : Register::UNKNOWN;
-    }
+		if (compiler_token > (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT) {
+			return (Register)(compiler_token - (uint16_t)Keyword::COUNT - (uint16_t)Instruction::COUNT);
+		}
+		return Register::UNKNOWN;
+	}
 
     enum class Numeric_Value_Flag
     {
@@ -93,32 +101,32 @@ namespace f::ASM
     };
 
     // @TODO remplace it by a nested inlined function in f-lang
-#define HT_INSERT_VALUE(HASH_TABLE, HASH_TYPE, ENUM, KEY, VALUE) \
+#define HT_INSERT_VALUE(ENUM, ENUM_OFFSET, KEY, VALUE) \
     { \
         language::string_view   str_view; \
         language::assign(str_view, (uint8_t*)(KEY)); \
         uint64_t hash = SpookyHash::Hash64((const void*)to_utf8(str_view), get_string_size(str_view), 0); \
-        HASH_TYPE short_hash = hash & 0xffff; \
-		ENUM value = (ENUM::VALUE); \
-        hash_table_insert(HASH_TABLE, short_hash, str_view, value); \
+        uint16_t short_hash = hash & 0xffff; \
+		uint16_t value = (uint16_t)(ENUM::VALUE) + (uint16_t)(ENUM_OFFSET); \
+        hash_table_insert(compiler_tokens, short_hash, str_view, value); \
     }
 
     void initialize_lexer()
     {
 		ZoneScopedN("f::ASM::initialize_lexer");
 
+		hash_table_init(compiler_tokens, &language::are_equals);
+
 		// Keywords
 		{
 			ZoneScopedN("keywords");
 
-			hash_table_init(keywords, &language::are_equals);
-
-			HT_INSERT_VALUE(keywords, uint16_t, Keyword, "IMPORTS", IMPORTS);
-			HT_INSERT_VALUE(keywords, uint16_t, Keyword, "MODULE", MODULE);
-			HT_INSERT_VALUE(keywords, uint16_t, Keyword, "SECTION", SECTION);
+			HT_INSERT_VALUE(Keyword, 0, "IMPORTS", IMPORTS);
+			HT_INSERT_VALUE(Keyword, 0, "MODULE", MODULE);
+			HT_INSERT_VALUE(Keyword, 0, "SECTION", SECTION);
 
 			// Pseudo instructions
-			HT_INSERT_VALUE(keywords, uint16_t, Keyword, "db", DB);
+			HT_INSERT_VALUE(Keyword, 0, "db", DB);
 		}
 
 		// @TODO Move this code into an auto-generated cpp file?
@@ -130,118 +138,114 @@ namespace f::ASM
 		{
 			ZoneScopedN("instructions");
 
-			hash_table_init(instructions, &language::are_equals);
-
-			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "add", ADD);
-			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "call", CALL);
-			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "hlt", HLT);
-			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "hlt", MOV);
-			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "hlt", PUSH);
-			HT_INSERT_VALUE(instructions, uint16_t, Instruction, "hlt", SUB);
+			HT_INSERT_VALUE(Instruction, Keyword::COUNT, "add", ADD);
+			HT_INSERT_VALUE(Instruction, Keyword::COUNT, "call", CALL);
+			HT_INSERT_VALUE(Instruction, Keyword::COUNT, "hlt", HLT);
+			HT_INSERT_VALUE(Instruction, Keyword::COUNT, "mov", MOV);
+			HT_INSERT_VALUE(Instruction, Keyword::COUNT, "push", PUSH);
+			HT_INSERT_VALUE(Instruction, Keyword::COUNT, "sub", SUB);
 		}
 
 		// Registers
 		{
 			ZoneScopedN("registers");
 
-			hash_table_init(registers, &language::are_equals);
-
-			HT_INSERT_VALUE(registers, uint16_t, Register, "al", AL);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "ah", AH);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "ax", AX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "eax", EAX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "rax", RAX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "bl", BL);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "bh", BH);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "bx", BX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "ebx", EBX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "rbx", RBX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cl", CL);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "ch", CH);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cx", CX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "ecx", ECX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "rcx", RCX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "dl", DL);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "dh", DH);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "dx", DX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "edx", EDX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "rdx", RDX);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "spl", SPL);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "sp", SP);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "esp", ESP);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "rsp", RSP);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "bpl", BPL);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "bp", BP);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "ebp", EBP);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "rbp", RBP);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "sil", SIL);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "si", SI);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "esi", ESI);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "rsi", RSI);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "dil", DIL);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "di", DI);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "edi", EDI);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "rdi", RDI);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r8", R8);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r8d", R8D);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r8w", R8W);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r8b", R8B);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r9", R9);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r9d", R9D);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r9w", R9W);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r9b", R9B);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r10", R10);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r10d", R10D);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r10w", R10W);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r10b", R10B);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r11", R11);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r11d", R11D);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r11w", R11W);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r11b", R11B);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r12", R12);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r12d", R12D);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r12w", R12W);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r12b", R12B);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r13", R13);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r13d", R13D);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r13w", R13W);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r13b", R13B);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r14", R14);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r14d", R14D);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r14w", R14W);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r14b", R14B);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r15", R15);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r15d", R15D);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r15w", R15W);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "r15b", R15B);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "es", ES);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cs", CS);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "ss", SS);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "ds", DS);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "fs", FS);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "gs", GS);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "segr6", SEGR6);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "segr7", SEGR7);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr0", CR0);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr1", CR1);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr2", CR2);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr3", CR3);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr4", CR4);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr5", CR5);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr6", CR6);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr7", CR7);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr8", CR8);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr9", CR9);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr10", CR10);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr11", CR11);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr12", CR12);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr13", CR13);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr14", CR14);
-			HT_INSERT_VALUE(registers, uint16_t, Register, "cr15", CR15);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "al", AL);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "ah", AH);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "ax", AX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "eax", EAX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "rax", RAX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "bl", BL);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "bh", BH);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "bx", BX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "ebx", EBX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "rbx", RBX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cl", CL);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "ch", CH);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cx", CX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "ecx", ECX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "rcx", RCX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "dl", DL);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "dh", DH);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "dx", DX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "edx", EDX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "rdx", RDX);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "spl", SPL);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "sp", SP);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "esp", ESP);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "rsp", RSP);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "bpl", BPL);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "bp", BP);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "ebp", EBP);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "rbp", RBP);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "sil", SIL);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "si", SI);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "esi", ESI);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "rsi", RSI);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "dil", DIL);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "di", DI);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "edi", EDI);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "rdi", RDI);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r8", R8);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r8d", R8D);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r8w", R8W);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r8b", R8B);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r9", R9);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r9d", R9D);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r9w", R9W);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r9b", R9B);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r10", R10);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r10d", R10D);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r10w", R10W);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r10b", R10B);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r11", R11);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r11d", R11D);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r11w", R11W);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r11b", R11B);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r12", R12);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r12d", R12D);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r12w", R12W);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r12b", R12B);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r13", R13);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r13d", R13D);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r13w", R13W);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r13b", R13B);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r14", R14);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r14d", R14D);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r14w", R14W);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r14b", R14B);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r15", R15);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r15d", R15D);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r15w", R15W);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "r15b", R15B);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "es", ES);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cs", CS);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "ss", SS);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "ds", DS);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "fs", FS);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "gs", GS);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "segr6", SEGR6);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "segr7", SEGR7);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr0", CR0);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr1", CR1);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr2", CR2);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr3", CR3);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr4", CR4);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr5", CR5);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr6", CR6);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr7", CR7);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr8", CR8);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr9", CR9);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr10", CR10);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr11", CR11);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr12", CR12);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr13", CR13);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr14", CR14);
+			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "cr15", CR15);
 		}
 
 #if defined(FSTD_DEBUG)
-        log_stats(keywords, *globals.logger);
+        log_stats(compiler_tokens, *globals.logger);
 #endif
     }
 
@@ -795,25 +799,29 @@ namespace f::ASM
 				Instruction	instruction;
 				Register	_register;
 				
-				keyword = is_keyword(token.text);
-				if (keyword != Keyword::UNKNOWN) {
-					token.type = Token_Type::KEYWORD;
-					token.value.keyword = keyword;
-					goto register_token;
-				}
+				uint16_t* compiler_token = get_compiler_token(token.text);
 
-				instruction = is_instruction(token.text);
-				if (instruction != Instruction::UNKNOWN) {
-					token.type = Token_Type::INSTRUCTION;
-					token.value.instruction = instruction;
-					goto register_token;
-				}
+				if (compiler_token) {
+					keyword = is_keyword(*compiler_token);
+					if (keyword != Keyword::UNKNOWN) {
+						token.type = Token_Type::KEYWORD;
+						token.value.keyword = keyword;
+						goto register_token;
+					}
 
-				_register = is_register(token.text);
-				if (_register != Register::UNKNOWN) {
-					token.type = Token_Type::REGISTER;
-					token.value._register = _register;
-					goto register_token;
+					instruction = is_instruction(*compiler_token);
+					if (instruction != Instruction::UNKNOWN) {
+						token.type = Token_Type::INSTRUCTION;
+						token.value.instruction = instruction;
+						goto register_token;
+					}
+
+					_register = is_register(*compiler_token);
+					if (_register != Register::UNKNOWN) {
+						token.type = Token_Type::REGISTER;
+						token.value._register = _register;
+						goto register_token;
+					}
 				}
 
 			register_token:
@@ -831,7 +839,7 @@ namespace f::ASM
 		}
 
 #if defined(FSTD_DEBUG)
-		log_stats(keywords, *globals.logger);
+		log_stats(compiler_tokens, *globals.logger);
 #endif
 	}
 

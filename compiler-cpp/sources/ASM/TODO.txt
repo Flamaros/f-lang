@@ -1,0 +1,5 @@
+Optimisations:
+  - polish_string_literal est plutôt lent
+     Je dois voir si je peux éviter de l'utiliser, en ASM je n'ai peut-être pas besoin de supporter des string literal complexe, notamment pour les noms des sections,....
+	 Pour les noms des sections je pourrais avoir des string "raw" délimitées par le caractère ' ou `
+	 

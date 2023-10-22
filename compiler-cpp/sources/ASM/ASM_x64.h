@@ -16,6 +16,8 @@ namespace f::ASM
         MOV,
         PUSH,
         SUB,
+
+		COUNT,
     };
 
     enum class Register : uint8_t // @TODO Can we have more than 256 registers
@@ -156,5 +158,7 @@ namespace f::ASM
 		//
 		//// Bounds registers
 		//bnd0-3	BNDREG		bndreg		0
+
+		COUNT,
 	};
 }
