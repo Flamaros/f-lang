@@ -14,6 +14,10 @@ using namespace fstd::system;
 // @SpeedUp
 // Take a look to: https://github.com/nothings/stb/blob/master/stb_sprintf.h
 
+//  @SpeedUp
+// It does to many allocation
+// I should use something like a temporary allocator
+
 namespace fstd
 {
 	namespace core

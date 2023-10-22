@@ -92,6 +92,10 @@ int main(int ac, char** av)
 
 	// Compilation of ASM test
 	{
+		// @TODO mettre un timer
+		// Utiliser ce timer pour compter le nombre de loc/s que je peux compiler
+
+
 		system::Path	asm_file_path;
 		system::Path	asm_output_path;
 

@@ -1,4 +1,4 @@
-IMPORTS
+﻿IMPORTS
 {
 	MODULE "kernel32.dll"
 	{

@@ -32,7 +32,9 @@ namespace f::ASM
 
 		compile(stream);
 
-
+		// @TODO @Speed
+		// Il faut preallouer le buffer dans lequel je vais mettre le code, il faut compter 1 instructions par ligne dans le ficher.
+		// Et 15bytes par instructions.
 
 		// I may have to use '.' character do allow user type specify the type he want to use (like a cast)
 		// "mov.d" will force the code generator to use a 32 bits version of "mov" instruction (d meaning dword).
