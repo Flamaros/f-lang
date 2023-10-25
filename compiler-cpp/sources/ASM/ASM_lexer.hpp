@@ -18,10 +18,6 @@ Notice:
    if this character is used as unary or binary operator and eventually to modify the token value.
 */
 
-#if defined(TRUE) || defined(FALSE)
-#	error "TRUE or FALSE should not be defined before including this file"
-#endif
-
 namespace f::ASM
 {
     enum class Keyword : uint8_t

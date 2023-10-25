@@ -18,34 +18,34 @@
 // @Warning don't use it with an hash type bigger than uint32_t
 
 //
-// Voir sur les buckets de la hashtable s'il ne faut pas avoir un buffer avec les flag d'usage plutôt que
-// mettre la value en pointeur.Ça prendrait plus de mémoire, mais peut-être que c'est intéressant
-// d'avoir moins d'allocations et copies memoire lors de l'insertion. Dans ce cas ça serait à l'utilisateur
-// de mettre en type pointeur en paramètre template si le type de sa valeur est de grande taille
+// Voir sur les buckets de la hashtable s'il ne faut pas avoir un buffer avec les flag d'usage plutï¿½t que
+// mettre la value en pointeur.ï¿½a prendrait plus de mï¿½moire, mais peut-ï¿½tre que c'est intï¿½ressant
+// d'avoir moins d'allocations et copies memoire lors de l'insertion. Dans ce cas ï¿½a serait ï¿½ l'utilisateur
+// de mettre en type pointeur en paramï¿½tre template si le type de sa valeur est de grande taille
 //
-// Mettre des commentaires là dessus, car pas sûr que ce soit intéressant pour la hashtable où on ne fait
-// pas des insertions par lot à des endroits proches en mémoire.
+// Mettre des commentaires lï¿½ dessus, car pas sï¿½r que ce soit intï¿½ressant pour la hashtable oï¿½ on ne fait
+// pas des insertions par lot ï¿½ des endroits proches en mï¿½moire.
 //
-// Bien mesurer la mémoire consommée, mettre aussi les marqueurs Tracy pour ça.
+// Bien mesurer la mï¿½moire consommï¿½e, mettre aussi les marqueurs Tracy pour ï¿½a.
 //
-// Comparer les perfs avec une unordered_map. Bien documenter le fait que l'itération sur l'ensemble des
-// éléments risque d'être lente.
+// Comparer les perfs avec une unordered_map. Bien documenter le fait que l'itï¿½ration sur l'ensemble des
+// ï¿½lï¿½ments risque d'ï¿½tre lente.
 //
 // 
 // @ TODO il faut voir pour les collisions qui posent pb avec le remove
 // !!!!!! Remplacer les Keyword_Hash_Table par cette version une fois finie
 
-// @Warning L'implémentation se base sur le fait que les éléments ne peuvent pas être supprimés!!!
+// @Warning L'implï¿½mentation se base sur le fait que les ï¿½lï¿½ments ne peuvent pas ï¿½tre supprimï¿½s!!!
 
 
 // @TODO @Warning Pour pouvoir supporter les suppressions
-// Passer sur une liste chaînée pour les valeurs qui ont la même clé, ça sera utile pour le remove.
-// Sinon si les buckets sont assez petits il faut peut-être faire en sorte que la gestion des collisions reste bloquée sur un bucket,
-// ainsi dans le pire des cas on n'iterera jamais sur plus de slot que la taille d'un bucket (à la fois pour la suppression et pour l'insertion).
-// Mais c'est peut-être moins fiable si un bucket arrive à se remplir complètement, on aura des collisions en boucle, est-ce que dans ce cas c'est pas valide
-// d'avoir l'insertion qui échoue? L'utilisateur pourra soit augmenter la taille de ses buckets soit revoir la fonction de hash utilisée.
+// Passer sur une liste chaï¿½nï¿½e pour les valeurs qui ont la mï¿½me clï¿½, ï¿½a sera utile pour le remove.
+// Sinon si les buckets sont assez petits il faut peut-ï¿½tre faire en sorte que la gestion des collisions reste bloquï¿½e sur un bucket,
+// ainsi dans le pire des cas on n'iterera jamais sur plus de slot que la taille d'un bucket (ï¿½ la fois pour la suppression et pour l'insertion).
+// Mais c'est peut-ï¿½tre moins fiable si un bucket arrive ï¿½ se remplir complï¿½tement, on aura des collisions en boucle, est-ce que dans ce cas c'est pas valide
+// d'avoir l'insertion qui ï¿½choue? L'utilisateur pourra soit augmenter la taille de ses buckets soit revoir la fonction de hash utilisï¿½e.
 //
-// Voir quand même pour éviter les copies de valeurs.
+// Voir quand mï¿½me pour ï¿½viter les copies de valeurs.
 // 
 // https://pvk.ca/Blog/more_numerical_experiments_in_hashing.html
 // https://gist.github.com/pervognsen/564e8d54589349855d955d8bd0e57292
@@ -53,7 +53,7 @@
 
 
 // @TODO KeywordHashTable
-// Peut être continuer d'utiliser keyword hashtable mais avec un autre générateur de hash
+// Peut ï¿½tre continuer d'utiliser keyword hashtable mais avec un autre gï¿½nï¿½rateur de hash
 
 #include <tracy/Tracy.hpp>
 
@@ -147,6 +147,8 @@ namespace fstd
 
 				if (bucket->nb_values == 0)
 				{
+					ZoneScopedN("init bucket");
+
 					// We have to initialize the bucket for its first use
 					init(bucket->init_flags);
 					allocate(bucket->init_flags);
@@ -192,8 +194,8 @@ namespace fstd
 
 		//		auto value_pod = get_array_element(bucket->table, value_index);
 		//		// @Fuck
-		//		// Comment retrouver la key quand il y a eu une collision et que la première insertion à été supprimée?
-		//		// Risque de chercher une key a travers toute la hash_table qui a été supprimée. BADDDDD!!!!!
+		//		// Comment retrouver la key quand il y a eu une collision et que la premiï¿½re insertion ï¿½ ï¿½tï¿½ supprimï¿½e?
+		//		// Risque de chercher une key a travers toute la hash_table qui a ï¿½tï¿½ supprimï¿½e. BADDDDD!!!!!
 		//		if (value_pod && hash_table.compare_function(key, value_pod->key) == true)
 		//		{
 

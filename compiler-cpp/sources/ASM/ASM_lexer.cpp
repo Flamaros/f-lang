@@ -28,7 +28,7 @@ namespace f::ASM
 	// 
 	// @Speed I store keywords, instructions and registers in a unique Hash_Table to reduce memory usage and optimize token classification.
 	// I offset enum values of instructions by Keyword::COUNT (after keywords) and registers by Keyword::COUNT + Instruction::COUNT (after instructions).
-	static Hash_Table<uint16_t, string_view, uint16_t, 128>      compiler_tokens;       // @TODO rename to compiler_tokens
+	static Hash_Table<uint16_t, string_view, uint16_t, 64>      compiler_tokens;
 
 	// @TODO remove the use of the initializer list in the Hash_Table
 	static lexer::Hash_Table<uint16_t, Punctuation, Punctuation::UNKNOWN> punctuation_table_2 = {
@@ -101,6 +101,9 @@ namespace f::ASM
     };
 
     // @TODO remplace it by a nested inlined function in f-lang
+	// @SpeedUp Generate a string_view litteral (aka static const), It should be possible to avoid language::assign and store the 
+	// string_view in the binary directly to avoid construction at runtime. Ideally same for the Hash64 computation
+	// With great compile time feature the entire Hash_Table initialization should be done at compile time.
 #define HT_INSERT_VALUE(ENUM, ENUM_OFFSET, KEY, VALUE) \
     { \
         language::string_view   str_view; \
