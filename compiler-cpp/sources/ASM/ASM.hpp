@@ -35,13 +35,30 @@ namespace f
 		//	uint32_t					name_RVA;
 		//};
 
-
+		struct Label
+		{
+			fstd::language::string_view	label;
+			uint64_t					RVA;	// Offset in bytes relative to the beggining of the section
+		};
 
 		struct ADDR_TO_PATCH {
 			fstd::language::string_view		label;			// Label to search for and obtain addr (it is a string_view of the label token)
 			uint32_t						addr_of_addr;	// Where to apply the addr
 		};
-			
+
+		struct Operand
+		{
+			enum class Type
+			{
+				Register,
+				Immediate,
+				Address
+			};
+
+			// union value
+			// size?
+		};
+
 		struct Section
 		{
 			fstd::language::string_view	name; // string_view of the first token parsed of this section
@@ -56,7 +73,37 @@ namespace f
 			Section_Hash_Table	sections;
 		};
 
-		void compile_file(const fstd::system::Path& path, const fstd::system::Path& output_path, bool shared_library);
+		struct Imported_Function
+		{
+			fstd::language::string_view	name;
+			uint32_t					name_RVA;
+		};
+
+		struct Imported_Library
+		{
+			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Function*, 32> Function_Hash_Table;
+
+			fstd::language::string_view	name; // string_view of the first token parsed of this library
+			Function_Hash_Table			functions;
+			uint32_t					name_RVA;
+		};
+
+		struct ASM
+		{
+			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32> Imported_Library_Hash_Table;
+
+			Imported_Library_Hash_Table		imported_libraries;
+		};
+
+		struct ASM_Data
+		{
+			fstd::memory::Array<Imported_Library>	imported_libraries; // @TODO use Bucket_Array
+			fstd::memory::Array<Imported_Function>	imported_functions; // @TODO use Bucket_Array
+		};
+
+		void compile_file(const fstd::system::Path& path, const fstd::system::Path& output_path, bool shared_library, ASM& asm_result);
+
+		void push_instruction(ASM& asm_result, uint16_t instruction, const Operand& operand1, const Operand& operand2);
 
 		// @TODO do the production API 
 		//   - get/create the sections

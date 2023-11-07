@@ -1,0 +1,43 @@
+﻿IMPORTS
+{
+	MODULE "kernel32.dll"
+	{
+		GetStdHandle
+		WriteFile
+		ExitProcess
+	}
+}
+
+SECTION ".data" // @TODO should I support ` or ' character for a special string token type?
+{
+	message:
+		db      "Hello World", 0	; I put an addtionnal 0 but it can be omitted
+}
+
+SECTION ".text"
+{
+	main:
+		mov		ebp, esp
+
+		; hStdOut = GetStdHandle(STD_OUTPUT_HANDLE)
+		sub		esp, 4
+		push	-11
+		call    GetStdHandle
+
+		; WriteFile( hstdOut, message, length(message), &bytes, 0);
+		mov		ebx, eax
+		push	0
+		lea		eax, [ebp-4]
+		push	eax
+		push 	11
+		push	message
+		push	ebx
+		call    WriteFile
+
+		; ExitProcess(0)
+		push	0
+		call    ExitProcess
+
+		; never here
+		hlt
+}

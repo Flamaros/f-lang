@@ -106,6 +106,16 @@ void report_error(Compiler_Error error, const Token& token, const char* error_me
 	}
 }
 
+// @TODO add a "pretty print" version of report_error
+// Once the lexing was done the compiler should be able to pass the pointer instead of a temporary reference on the token.
+// When using pointers, because tokens are stored in an array, 2 methods
+// get_first_token_of_line(const Token* current_token) and get_flast_token_of_line(const Token* current_token)
+// could be implemented in a simple way.
+//
+// I am not sure that it is important to search a way to do this during the lexing part because lexing errors should be easier to
+// handle by the user.
+
+
 void report_error(Compiler_Error error, const f::ASM::Token& token, const char* error_message)
 {
 	core::String_Builder	string_builder;

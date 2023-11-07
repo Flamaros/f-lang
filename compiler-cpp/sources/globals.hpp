@@ -5,6 +5,7 @@
 #include "IR_generator.hpp"
 #include "PE_x64_backend.hpp"
 #include "ASM/ASM_lexer.hpp"
+#include "ASM/ASM.hpp"
 
 #include "lexer/lexer_base.hpp"
 
@@ -30,10 +31,13 @@ struct Globals
 	fstd::core::Logger*						logger = nullptr;
 	Configuration							configuration;
 	fstd::memory::Array<f::Lexer_Data>		lexer_data;
-	fstd::memory::Array<f::ASM::Lexer_Data>	asm_lexer_data;
 	f::Parser_Data							parser_data;
 	f::IR_Data								ir_data;
 	f::PE_X64_Backend_Data					x64_backend_data;
+
+	// f-asm
+	fstd::memory::Array<f::ASM::Lexer_Data>	asm_lexer_data;
+	f::ASM::ASM_Data						asm_data;
 };
 
 void initialize_globals();

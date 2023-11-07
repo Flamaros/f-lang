@@ -242,7 +242,7 @@ namespace fstd
 		}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
-		inline size_t hash_table_get_size(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
+		inline size_t hash_table_get_size(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
 		{
 			fstd::core::Assert(hash_table.compare_function);
 

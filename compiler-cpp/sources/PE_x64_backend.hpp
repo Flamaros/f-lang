@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IR_generator.hpp"
+#include "ASM/ASM.hpp"
 
 #include <fstd/system/path.hpp>
 
@@ -57,6 +57,6 @@ namespace f
 		bool generate_hello_world(); // @TODO remove it
 
 		void initialize_backend();
-		void compile(IR& ir, const fstd::system::Path& output_file_path);
+		void compile(const ASM::ASM& asm_result, const fstd::system::Path& output_file_path);
 	}
 }

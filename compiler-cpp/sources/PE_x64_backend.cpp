@@ -257,7 +257,7 @@ void f::PE_x64_backend::initialize_backend()
     //ZoneScopedN("f::PE_x64_backend::initialize_backend");
 }
 
-void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_path)
+void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::Path& output_file_path)
 {
     ZoneScopedN("f::PE_x64_backend::compile");
 
@@ -384,7 +384,7 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 #else
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = 0x3000; // @TODO need to be computed and patched
 #endif
-        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = (hash_table_get_size(ir.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR); // + 1 for the null entry
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = (hash_table_get_size(asm_result.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR); // + 1 for the null entry
 
 #if DLL_MODE == 1
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress = 0x3000; // @TODO need to be computed and patched
@@ -394,7 +394,7 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
 #endif
 
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-            + (hash_table_get_size(ir.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
+            + (hash_table_get_size(asm_result.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
             + sizeof(LONGLONG) * (3 + 1); // ILT (3 entries + 1 null)
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = (3 + 1) * sizeof(LONGLONG); // @TODO take care of 64bit binaries // null entry count
     }
@@ -433,7 +433,7 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
         RtlSecureZeroMemory(&rdata_image_section_header, sizeof(rdata_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(rdata_image_section_header.Name, ".rdata", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
-        rdata_image_section_header.Misc.VirtualSize = (DWORD)ir.read_only_data.current_RVA; // fstd::language::string_literal_size(message[0]) + 1;
+		rdata_image_section_header.Misc.VirtualSize = 11 + 1; // (DWORD)asm_result.read_only_data.current_RVA; // fstd::language::string_literal_size(message[0]) + 1;
         rdata_image_section_header.VirtualAddress = rdata_image_section_virtual_address;
         rdata_image_section_header.SizeOfRawData = compute_aligned_size(rdata_image_section_header.Misc.VirtualSize, file_alignment);
         rdata_image_section_header.PointerToRawData = rdata_image_section_pointer_to_raw_data;
@@ -510,15 +510,18 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
     }
 
     // Write read only data (.rdata section data)
-    {
+	/* @TODO put it back with the asm frontend that give generic sections names */
+	{
         ZoneScopedN("Write read only data (.rdata section data)");
 
         DWORD rdata_section_size = 0;
 
-        for (size_t i = 0; i < memory::get_array_size(ir.read_only_data.literals); i++) {
-            write_file(output_file, memory::get_array_data(ir.read_only_data.literals[i].data), (uint32_t)memory::get_array_bytes_size(ir.read_only_data.literals[i].data), &bytes_written);
-            rdata_section_size += bytes_written;
-        }
+		write_file(output_file, (uint8_t*)"Hello World", 12, &bytes_written);
+		rdata_section_size += bytes_written;
+		//for (size_t i = 0; i < memory::get_array_size(asm_result.read_only_data.literals); i++) {
+        //    write_file(output_file, memory::get_array_data(asm_result.read_only_data.literals[i].data), (uint32_t)memory::get_array_bytes_size(asm_result.read_only_data.literals[i].data), &bytes_written);
+        //    rdata_section_size += bytes_written;
+        //}
 
         //write_file(output_file, (uint8_t*)message[0], (DWORD)fstd::language::string_literal_size(message[0]) + 1, &bytes_written); // +1 to write the ending '\0'
         //rdata_section_size += bytes_written;
@@ -675,11 +678,11 @@ void f::PE_x64_backend::compile(IR& ir, const fstd::system::Path& output_file_pa
         }
 
         // Dll names
-        auto it = hash_table_begin(ir.imported_libraries);
-        auto it_end = hash_table_end(ir.imported_libraries);
-        for (; !equals<uint16_t, fstd::language::string_view, Imported_Library*, 32>(it, it_end); hash_table_next<uint16_t, fstd::language::string_view, Imported_Library*, 32>(it))
+        auto it = hash_table_begin(asm_result.imported_libraries);
+        auto it_end = hash_table_end(asm_result.imported_libraries);
+        for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it, it_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it))
         {
-            Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, Imported_Library*, 32>(it);
+			ASM::Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it);
 
             write_file(output_file, to_utf8(imported_library->name), (uint32_t)get_string_size(imported_library->name), &bytes_written);
             write_zeros(output_file, 1); // add '\0'

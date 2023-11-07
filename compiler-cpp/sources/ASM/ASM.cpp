@@ -7,13 +7,40 @@
 #include <fstd/memory/array.hpp>
 #include <fstd/system/file.hpp>
 
+#include <third-party/SpookyV2.h>
+
 using namespace fstd;
+
+#define NB_PREALLOCATED_IMPORTED_LIBRARIES				128
+#define NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY	4096
 
 namespace f::ASM
 {
-	void compile(stream::Array_Stream<Token>& stream);
+	inline Imported_Library* allocate_imported_library()
+	{
+		// Ensure that no reallocation could happen during the resize
+		core::Assert(memory::get_array_size(globals.asm_data.imported_libraries) < memory::get_array_reserved(globals.asm_data.imported_libraries));
 
-	void compile_file(const fstd::system::Path& path, const fstd::system::Path& output_path, bool shared_library)
+		memory::resize_array(globals.asm_data.imported_libraries, memory::get_array_size(globals.asm_data.imported_libraries) + 1);
+
+		Imported_Library* new_imported_library = memory::get_array_last_element(globals.asm_data.imported_libraries);
+		return new_imported_library;
+	}
+
+	inline Imported_Function* allocate_imported_function()
+	{
+		// Ensure that no reallocation could happen during the resize
+		core::Assert(memory::get_array_size(globals.asm_data.imported_functions) < memory::get_array_reserved(globals.asm_data.imported_functions));
+
+		memory::resize_array(globals.asm_data.imported_functions, memory::get_array_size(globals.asm_data.imported_functions) + 1);
+
+		Imported_Function* new_imported_function = memory::get_array_last_element(globals.asm_data.imported_functions);
+		return new_imported_function;
+	}
+
+	void compile(ASM& asm_result, stream::Array_Stream<Token>& stream);
+
+	void compile_file(const fstd::system::Path& path, const fstd::system::Path& output_path, bool shared_library, ASM& asm_result)
 	{
 		ZoneScopedNC("f::ASM::compile_file", 0x1b5e20);
 
@@ -26,11 +53,18 @@ namespace f::ASM
 		print(tokens);
 #endif
 
-		stream::Array_Stream<Token>	stream;
+		memory::hash_table_init(asm_result.imported_libraries, &language::are_equals);
 
+		memory::init(globals.asm_data.imported_libraries);
+		memory::reserve_array(globals.asm_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
+
+		memory::init(globals.asm_data.imported_functions);
+		memory::reserve_array(globals.asm_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
+
+		stream::Array_Stream<Token>	stream;
 		stream::initialize_memory_stream<Token>(stream, tokens);
 
-		compile(stream);
+		compile(asm_result, stream);
 
 		// @TODO @Speed
 		// Il faut preallouer le buffer dans lequel je vais mettre le code, il faut compter 1 instructions par ligne dans le ficher.
@@ -68,7 +102,7 @@ namespace f::ASM
 		//		besoin de cette fonctionnalité, c'est pour ça que c'est du pure bonus pour mes dev.
 	}
 
-	void parse_module(stream::Array_Stream<Token>& stream)
+	void parse_module(ASM& asm_result, stream::Array_Stream<Token>& stream)
 	{
 		Token	current_token;
 		Token	module_name;
@@ -79,6 +113,23 @@ namespace f::ASM
 		if (module_name.type != Token_Type::STRING_LITERAL) {
 			report_error(Compiler_Error::error, module_name, "Missing string after \"MODULE\" keyword, you should specify the name of the module.");
 		}
+
+		// Register the module
+		Imported_Library** found_imported_lib;
+
+		uint64_t lib_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(module_name.text), fstd::language::get_string_size(module_name.text), 0);
+		uint16_t lib_short_hash = lib_hash & 0xffff;
+
+		found_imported_lib = fstd::memory::hash_table_get(asm_result.imported_libraries, lib_short_hash, module_name.text);
+		if (found_imported_lib == nullptr) {
+			Imported_Library* new_imported_lib = allocate_imported_library();
+
+			new_imported_lib->name = module_name.text;
+			fstd::memory::hash_table_init(new_imported_lib->functions, &fstd::language::are_equals);
+
+			found_imported_lib = fstd::memory::hash_table_insert(asm_result.imported_libraries, lib_short_hash, module_name.text, new_imported_lib);
+		}
+		// --
 
 		stream::peek<Token>(stream);	// module name
 
@@ -100,14 +151,38 @@ namespace f::ASM
 				return;
 			}
 
-			// @TODO remove that
-			stream::peek<Token>(stream);
+			if (current_token.type != Token_Type::IDENTIFIER) {
+				report_error(Compiler_Error::error, module_name, "Only identifiers are supported inside the \"MODULE\" scope. Those identifier specifies the function names to import.");
+			}
+
+			// Register the function
+			Imported_Function** found_imported_func;
+
+			uint64_t func_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(current_token.text), fstd::language::get_string_size(current_token.text), 0);
+			uint16_t func_short_hash = func_hash & 0xffff;
+
+			found_imported_func = fstd::memory::hash_table_get((*found_imported_lib)->functions, func_short_hash, module_name.text);
+
+			if (found_imported_func == nullptr) {
+				Imported_Function* new_imported_func = allocate_imported_function();
+
+				new_imported_func->name = current_token.text;
+				new_imported_func->name_RVA = 0;
+
+				fstd::memory::hash_table_insert((*found_imported_lib)->functions, func_short_hash, module_name.text, new_imported_func);
+			}
+			else {
+				report_error(Compiler_Error::warning, current_token, "Function already imported!"); // @TODO for the current module
+			}
+			// --
+
+			stream::peek<Token>(stream); // function name
 		}
 
 		report_error(Compiler_Error::error, current_token, "End of file reached. Missing '}' to delimite the \"MODULE\" scope.");
 	}
 
-	void parse_import(stream::Array_Stream<Token>& stream)
+	void parse_import(ASM& asm_result, stream::Array_Stream<Token>& stream)
 	{
 		Token	current_token;
 
@@ -127,7 +202,7 @@ namespace f::ASM
 
 			if (current_token.type == Token_Type::KEYWORD) {
 				if (current_token.value.keyword == Keyword::MODULE) {
-					parse_module(stream);
+					parse_module(asm_result, stream);
 				}
 				else {
 					report_error(Compiler_Error::error, current_token, "Unexpected keyword in \"IMPORTS\" scope.");
@@ -146,7 +221,7 @@ namespace f::ASM
 		report_error(Compiler_Error::error, current_token, "End of file reached. Missing '}' to delimite the \"IMPORTS\" scope.");
 	}
 
-	void parse_section(stream::Array_Stream<Token>& stream)
+	void parse_section(ASM& asm_result, stream::Array_Stream<Token>& stream)
 	{
 		Token	current_token;
 		Token	section_name;
@@ -185,7 +260,7 @@ namespace f::ASM
 		report_error(Compiler_Error::error, current_token, "End of file reached. Missing '}' to delimite the \"SECTION\" scope.");
 	}
 
-	void compile(stream::Array_Stream<Token>& stream)
+	void compile(ASM& asm_result, stream::Array_Stream<Token>& stream)
 	{
 		ZoneScopedNC("f::ASM::compile", 0x1b5e20);
 
@@ -197,10 +272,10 @@ namespace f::ASM
 
 			if (current_token.type == Token_Type::KEYWORD) {
 				if (current_token.value.keyword == Keyword::IMPORTS) {
-					parse_import(stream);
+					parse_import(asm_result, stream);
 				}
 				else if (current_token.value.keyword == Keyword::SECTION) {
-					parse_section(stream);
+					parse_section(asm_result, stream);
 				}
 				else {
 					report_error(Compiler_Error::error, current_token, "Unsupported keyword a this scope level.");
@@ -210,5 +285,11 @@ namespace f::ASM
 				report_error(Compiler_Error::error, current_token, "A keyword is expected, you should start a SECTION or an IMPORTS scope.");
 			}
 		}
+	}
+
+	void push_instruction(ASM& asm_result, uint16_t instruction, const Operand& operand1, const Operand& operand2)
+	{
+		// @TODO continuer de definir la struct Operand
+		// Voir comment supporter l'encodage de l'instruction lea, je ne comprend pas l'operation sur la 2eme operande qui est une immediate value
 	}
 }

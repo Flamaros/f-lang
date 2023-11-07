@@ -84,6 +84,7 @@ int main(int ac, char** av)
 	memory::Array<f::Token<f::Keyword>>	tokens;
 	f::Parsing_Result					parsing_result;
 	f::IR								ir;
+	f::ASM::ASM							asm_result;
 	int									result = 0;
 
 	if (ac != 3) {
@@ -107,8 +108,21 @@ int main(int ac, char** av)
 		system::from_native(asm_file_path, (uint8_t*)u8R"(tests/asm/helloworld.fasm)");
 		system::from_native(asm_output_path, (uint8_t*)u8R"(.\asm_helloworld.exe)");
 
-		f::ASM::compile_file(asm_file_path, asm_output_path, false);
+		f::ASM::compile_file(asm_file_path, asm_output_path, false, asm_result);
 	}
+
+	// Native backend
+	{
+		system::Path	output_file_path;
+
+		defer{ system::reset_path(output_file_path); };
+
+		system::from_native(output_file_path, (uint8_t*)av[2]);
+
+		f::PE_x64_backend::initialize_backend(); // @TODO see to do it asynchronously (are event better at compile-time to generate C++ code with tables)
+		f::PE_x64_backend::compile(asm_result, output_file_path);
+	}
+
 
 	// @TODO handle options correctly
 	// The code following the return don't work for the moment
@@ -223,7 +237,9 @@ int main(int ac, char** av)
 		// Flamaros - 07 may 2020
 
 		// Native backend
-		{
+
+/* @TODO dead with f-asm frontend?
+	{
 			system::Path	output_file_path;
 
 			defer{ system::reset_path(output_file_path); };
@@ -232,7 +248,7 @@ int main(int ac, char** av)
 
 			f::PE_x64_backend::initialize_backend(); // @TODO see to do it asynchronously (are event better at compile-time to generate C++ code with tables)
 			f::PE_x64_backend::compile(ir, output_file_path);
-		}
+		}*/
 	}
 
 

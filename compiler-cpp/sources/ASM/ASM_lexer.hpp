@@ -87,6 +87,10 @@ namespace f::ASM
         NEW_LINE_CHARACTER
     };
 
+	// @SpeedUp @TODO Est-ce que je dois utiliser
+	// #pragma pack(push, 1)
+	// #pragma pack(pop)
+	// ? pour réduire le sizeof de la structure et donc gagner en perf grace à une réduction des cache-miss
     struct Token
     {
     public:
