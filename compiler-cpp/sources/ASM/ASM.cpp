@@ -13,6 +13,7 @@ using namespace fstd;
 
 #define NB_PREALLOCATED_IMPORTED_LIBRARIES				128
 #define NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY	4096
+#define NB_PREALLOCALED_SECTIONS						5		// .text, .rdata, .data, .reloc, .idata
 
 namespace f::ASM
 {
@@ -53,13 +54,22 @@ namespace f::ASM
 		print(tokens);
 #endif
 
-		memory::hash_table_init(asm_result.imported_libraries, &language::are_equals);
+		// Result data
+		{
+			memory::hash_table_init(asm_result.imported_libraries, &language::are_equals);
 
-		memory::init(globals.asm_data.imported_libraries);
-		memory::reserve_array(globals.asm_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
+			memory::init(asm_result.sections);
+			memory::reserve_array(asm_result.sections, NB_PREALLOCALED_SECTIONS);
+		}
 
-		memory::init(globals.asm_data.imported_functions);
-		memory::reserve_array(globals.asm_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
+		// Working data (stored in globals)
+		{
+			memory::init(globals.asm_data.imported_libraries);
+			memory::reserve_array(globals.asm_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
+
+			memory::init(globals.asm_data.imported_functions);
+			memory::reserve_array(globals.asm_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
+		}
 
 		stream::Array_Stream<Token>	stream;
 		stream::initialize_memory_stream<Token>(stream, tokens);
@@ -287,9 +297,33 @@ namespace f::ASM
 		}
 	}
 
-	void push_instruction(ASM& asm_result, uint16_t instruction, const Operand& operand1, const Operand& operand2)
+	Section* create_section(ASM& asm_result, fstd::language::string_view name)
+	{
+		// @TODO add a check to avoid the creation of duplicates
+		// Need I use a Hash_Table to automatically return the previously created section with same name?
+
+		memory::array_push_back(asm_result.sections, Section());
+		Section* new_section = memory::get_array_last_element(asm_result.sections);
+
+		new_section->name = name;
+		memory::init(new_section->data);
+		return new_section;
+	}
+
+	void push_instruction(Section* section, uint16_t instruction, const Operand& operand1, const Operand& operand2)
 	{
 		// @TODO continuer de definir la struct Operand
 		// Voir comment supporter l'encodage de l'instruction lea, je ne comprend pas l'operation sur la 2eme operande qui est une immediate value
+	}
+
+	void push_raw_data(Section* section, uint8_t* data, uint32_t size)
+	{
+		memory::push_back(section->data, data, size);
+	}
+
+	void debug_print(const ASM& asm_result)
+	{
+		// @TODO output all the data for debugging purpose
+		// The printed ASM should match what a debugger with a disasembler output
 	}
 }

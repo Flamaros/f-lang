@@ -1,3 +1,29 @@
+Actuellement ASM_Result n'est utilisé que pour récupérer le nom des librairies à importer.
+  - Le remplissage des IAT est toujours hard-codé (car le code l'est également et les RVA ne seraient pas bonnes sinon).
+
+
+Supprimer l'ir_generator.
+
+
+Commencer la génération des instructions.
+
+
+Gérer les labels
+Gérer les conflits de noms des labels et fonctions importées (comment donner a l'utilisateur la possibilité de spécifier le module correspond à la fonction ?)
+
+Le stream_array doit retourner des pointeurs. Pour éviter les copies de token
+
+
+
+
+
+
+
+
+
+
+
+
 Optimisations:
   - polish_string_literal est plutôt lent
      Je dois voir si je peux éviter de l'utiliser, en ASM je n'ai peut-être pas besoin de supporter des string literal complexe, notamment pour les noms des sections,....
