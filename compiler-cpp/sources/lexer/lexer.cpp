@@ -237,13 +237,13 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
 {
     ZoneScopedN("lex");
 
-    stream::Array_Stream<uint8_t>   stream;
+    stream::Array_Read_Stream<uint8_t>   stream;
     size_t	                        nb_tokens_prediction = 0;
     language::string_view           current_view;
     int					            current_line = 1;
     int					            current_column = 1;
 
-    stream::initialize_memory_stream<uint8_t>(stream, file_buffer);
+    stream::init<uint8_t>(stream, file_buffer);
 
     if (stream::is_eof(stream) == true) {
         return;

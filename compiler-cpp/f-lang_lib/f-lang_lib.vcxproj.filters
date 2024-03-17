@@ -136,9 +136,6 @@
     <ClInclude Include="..\sources\fstd\core\unicode.hpp">
       <Filter>Source Files\fstd\core</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\fstd\stream\array_stream.hpp">
-      <Filter>Source Files\fstd\stream</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\IR_generator.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -219,6 +216,12 @@
     </ClInclude>
     <ClInclude Include="..\sources\ASM\ASM_x64.h">
       <Filter>Source Files\ASM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\stream\array_read_stream.hpp">
+      <Filter>Source Files\fstd\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\stream\memory_write_stream.hpp">
+      <Filter>Source Files\fstd\stream</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -125,7 +125,7 @@ namespace fstd
 		template<typename Type>
 		Type* get_array_element(const Array<Type>& array, size_t index)
 		{
-			fstd::core::Assert(array.reserved > index);
+			fstd::core::Assert(array.size > index);
 			return &array.ptr[index];
 		}
 
@@ -172,5 +172,21 @@ namespace fstd
 		{
 			return array.reserved;
 		}
+
+		// @SpeedUp Est-ce que la fonction de matching doit être en paramètre template afin de pouvoir être inlinée?
+		// Car avec un pointeur sur fonction je ne suis pas sur que le compilateur ou linker soient en mesure de supprimer le call
+		// Le pb c'est qu'en C++ pour être sur que le paramètre template soit une fonction qui respecte le bon prototype est over complicated.
+		template<typename Type, typename SearchType>
+		size_t find_array_element(const Array<Type>& array, const SearchType& value, bool (*match_function)(const SearchType&, const Type&), size_t start_index = 0)
+		{
+			for (size_t i = start_index; i < array.size; i++)
+			{
+				if (match_function(value, array[i])) {
+					return i;
+				}
+			}
+			return -1;
+		}
+
 	}
 }

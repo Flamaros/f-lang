@@ -17,6 +17,7 @@
 #include <fstd/memory/array.hpp>
 #include <fstd/memory/bucket_array.hpp>
 #include <fstd/memory/hash_table.hpp>
+#include <fstd/stream/memory_write_stream.hpp>
 
 namespace f
 {
@@ -65,7 +66,12 @@ namespace f
 		{
 			fstd::language::string_view	name; // string_view of the first token parsed of this section
 
-			fstd::memory::Bucket_Array<uint8_t, 512>	data;
+			fstd::stream::Memory_Write_Stream	stream_data;
+			// @TODO Do I need a Bucket_Array or a Memory_Stream (maybe over the bucket array)?
+			// I need something on which I can read/write, seek, get pos
+			// I want chunks of memory instead of a full contiguous buffer to avoid issue with memory allocation,...
+			// But I don't need to release memory, moving,... auto initialization,...
+
 			// fstd::memory::Bucket_Array<ADDR_TO_PATCH>	addr_to_patch; // bucket_array because we need fast push_back (allocation of bucket_size) and fast iteration (over arrays)
 		};
 
@@ -96,7 +102,7 @@ namespace f
 			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32> Imported_Library_Hash_Table;
 
 			Imported_Library_Hash_Table		imported_libraries;
-			fstd::memory::Array<Section>	sections;
+			fstd::memory::Array<Section>	sections; // @Speed an Array should be good enough, the number of sections will stay very low and search on less than 10 elements is faster on a array than a hash_table
 		};
 
 		struct ASM_Data
@@ -105,10 +111,15 @@ namespace f
 			fstd::memory::Array<Imported_Function>	imported_functions; // @TODO use Bucket_Array
 		};
 
+		inline bool match_section(const fstd::language::string_view& name, const Section& section) {
+			return fstd::language::are_equals(name, section.name);
+		}
+
 		void compile_file(const fstd::system::Path& path, const fstd::system::Path& output_path, bool shared_library, ASM& asm_result);
 
 		// Advanced API
 		// You should create a section keep the pointer to fill it in an efficient way with function helpers when possible
+		// May assert but should not throw compiler errors. Errors coming from the parsing should be raised before calling these functions
 		Section* create_section(ASM& asm_result, fstd::language::string_view name);
 		void push_instruction(Section* section, uint16_t instruction, const Operand& operand1, const Operand& operand2);
 		void push_raw_data(Section* section, uint8_t* data, uint32_t size);

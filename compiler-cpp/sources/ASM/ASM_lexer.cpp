@@ -49,6 +49,7 @@ namespace f::ASM
 		{'`', Punctuation::BACKQUOTE},
 		{'{', Punctuation::OPEN_BRACE},
 		{'}', Punctuation::CLOSE_BRACE},
+		{':', Punctuation::COLON},
 		{';', Punctuation::SEMICOLON},
 		{'\'', Punctuation::SINGLE_QUOTE},
 		{'"', Punctuation::DOUBLE_QUOTE},
@@ -332,13 +333,13 @@ namespace f::ASM
 	{
 		ZoneScopedN("lex");
 
-		stream::Array_Stream<uint8_t>   stream;
+		stream::Array_Read_Stream<uint8_t>   stream;
 		size_t	                        nb_tokens_prediction = 0;
 		language::string_view           current_view;
 		int					            current_line = 1;
 		int					            current_column = 1;
 
-		stream::initialize_memory_stream<uint8_t>(stream, file_buffer);
+		stream::init<uint8_t>(stream, file_buffer);
 
 		if (stream::is_eof(stream) == true) {
 			return;
@@ -394,7 +395,7 @@ namespace f::ASM
 
 					language::assign(current_view, stream::get_pointer(stream), 0);
 
-					if (punctuation_2 == Punctuation::LINE_COMMENT) {
+					if (punctuation_2 == Punctuation::LINE_COMMENT || punctuation == Punctuation::SEMICOLON) {
 						while (stream::is_eof(stream) == false)
 						{
 							uint8_t     current_character;

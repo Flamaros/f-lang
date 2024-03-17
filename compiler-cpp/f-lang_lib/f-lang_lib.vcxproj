@@ -49,7 +49,8 @@
     <ClInclude Include="..\sources\fstd\memory\stack.hpp" />
     <ClInclude Include="..\sources\fstd\os\windows\console.hpp" />
     <ClInclude Include="..\sources\fstd\platform.hpp" />
-    <ClInclude Include="..\sources\fstd\stream\array_stream.hpp" />
+    <ClInclude Include="..\sources\fstd\stream\array_read_stream.hpp" />
+    <ClInclude Include="..\sources\fstd\stream\memory_write_stream.hpp" />
     <ClInclude Include="..\sources\fstd\system\allocator.hpp" />
     <ClInclude Include="..\sources\fstd\system\file.hpp" />
     <ClInclude Include="..\sources\fstd\system\path.hpp" />

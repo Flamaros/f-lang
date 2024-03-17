@@ -7,7 +7,7 @@
 #include <fstd/core/assert.hpp>
 #include <fstd/core/string_builder.hpp>
 
-#include <fstd/stream/array_stream.hpp>
+#include <fstd/stream/array_read_stream.hpp>
 
 #include <fstd/language/defer.hpp>
 

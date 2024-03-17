@@ -8,7 +8,7 @@
 #include <fstd/memory/array.hpp>
 #include <fstd/memory/hash_table.hpp>
 
-#include <fstd/stream/array_stream.hpp>
+#include <fstd/stream/array_read_stream.hpp>
 
 #include <fstd/system/file.hpp>
 #include <fstd/system/stdio.hpp>
@@ -86,22 +86,22 @@ inline Symbol_Table* allocate_symbol_table()
 
 // =============================================================================
 
-static void parse_array(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Type_Array** array_node_);
-static void parse_type(stream::Array_Stream<Token<Keyword>>& stream, AST_Node** type_node);
-static void parse_variable(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Statement_Variable** variable_, bool is_function_parameter = false);
-static inline void parse_alias(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr);
-static void parse_function(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr);
-static void parse_function_call(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Function_Call** emplace_node);
-static void parse_struct(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>* identifier, AST_Node** previous_sibling_addr); /// @param identifier If null the union is anonymous
-static void parse_enum(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr);
-static void parse_union(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>* identifier, AST_Node** previous_sibling_addr); /// @param identifier If null the union is anonymous
-static void parse_binary_operator(stream::Array_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
+static void parse_array(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Statement_Type_Array** array_node_);
+static void parse_type(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Node** type_node);
+static void parse_variable(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Statement_Variable** variable_, bool is_function_parameter = false);
+static inline void parse_alias(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr);
+static void parse_function(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr);
+static void parse_function_call(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Function_Call** emplace_node);
+static void parse_struct(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>* identifier, AST_Node** previous_sibling_addr); /// @param identifier If null the union is anonymous
+static void parse_enum(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr);
+static void parse_union(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>* identifier, AST_Node** previous_sibling_addr); /// @param identifier If null the union is anonymous
+static void parse_binary_operator(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
 static void fix_operations_order(AST_Binary_Operator* binary_operator_node);
-static void parse_unary_operator(stream::Array_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
-static bool parse_expression(stream::Array_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN); // Return true if the expression is scoped by parenthesis
-static void parse_scope(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
-static void parse_struct_scope(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Struct_Type* scope_node_, bool is_root_node = false);
-static void parse_union_scope(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Union_Type* scope_node_, bool is_root_node = false);
+static void parse_unary_operator(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2);
+static bool parse_expression(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Punctuation delimiter_1, Punctuation delimiter_2 = Punctuation::UNKNOWN); // Return true if the expression is scoped by parenthesis
+static void parse_scope(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Statement_Scope** scope_node_, bool is_root_node = false);
+static void parse_struct_scope(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Statement_Struct_Type* scope_node_, bool is_root_node = false);
+static void parse_union_scope(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Statement_Union_Type* scope_node_, bool is_root_node = false);
 
 static void initialize_symbol_table(Symbol_Table* symbol_table, Symbol_Table* parent, Symbol_Table* sibling, Scope_Type type, Token<Keyword>* name);
 
@@ -137,7 +137,7 @@ inline void pop_symbol_table()
 
 // =============================================================================
 
-void parse_array(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Type_Array** array_node_)
+void parse_array(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Statement_Type_Array** array_node_)
 {
 	ZoneScopedN("parse_array");
 
@@ -160,7 +160,7 @@ void parse_array(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Typ
 	stream::peek(stream); // ]
 }
 
-void parse_type(stream::Array_Stream<Token<Keyword>>& stream, AST_Node** type_node)
+void parse_type(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Node** type_node)
 {
 	ZoneScopedN("parse_type");
 
@@ -258,7 +258,7 @@ void parse_type(stream::Array_Stream<Token<Keyword>>& stream, AST_Node** type_no
 	}
 }
 
-void parse_variable(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Statement_Variable** variable_, bool is_function_parameter /* = false */)
+void parse_variable(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Statement_Variable** variable_, bool is_function_parameter /* = false */)
 {
 	ZoneScopedN("parse_variable");
 
@@ -319,7 +319,7 @@ void parse_variable(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>
 	}
 }
 
-void parse_alias(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr)
+void parse_alias(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr)
 {
 	ZoneScopedN("parse_alias");
 
@@ -342,7 +342,7 @@ void parse_alias(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& i
 	}
 }
 
-void parse_function(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr)
+void parse_function(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr)
 {
 	ZoneScopedN("parse_function");
 
@@ -513,7 +513,7 @@ void parse_function(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>
 	}
 }
 
-void parse_function_call(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Function_Call** emplace_node)
+void parse_function_call(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Function_Call** emplace_node)
 {
 	ZoneScopedN("parse_function_call");
 
@@ -546,7 +546,7 @@ void parse_function_call(stream::Array_Stream<Token<Keyword>>& stream, Token<Key
 	*emplace_node = function_call;
 }
 
-void parse_struct(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>* identifier, AST_Node** previous_sibling_addr)
+void parse_struct(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>* identifier, AST_Node** previous_sibling_addr)
 {
 	ZoneScopedN("parse_struct");
 
@@ -588,12 +588,12 @@ void parse_struct(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>* 
 	}
 }
 
-void parse_enum(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr)
+void parse_enum(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>& identifier, AST_Node** previous_sibling_addr)
 {
 	core::Assert(false);
 }
 
-void parse_union(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>* identifier, AST_Node** previous_sibling_addr)
+void parse_union(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keyword>* identifier, AST_Node** previous_sibling_addr)
 {
 	ZoneScopedN("parse_union");
 
@@ -631,7 +631,7 @@ void parse_union(stream::Array_Stream<Token<Keyword>>& stream, Token<Keyword>* i
 	}
 }
 
-void parse_binary_operator(stream::Array_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
+void parse_binary_operator(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
 {
 	ZoneScopedN("parse_binary_operator");
 
@@ -702,7 +702,7 @@ void fix_operations_order(AST_Binary_Operator* binary_operator_node)
 	}
 }
 
-void parse_unary_operator(stream::Array_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
+void parse_unary_operator(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Node_Type node_type, AST_Node** previous_child, Punctuation delimiter_1, Punctuation delimiter_2)
 {
 	ZoneScopedN("parse_unary_operator");
 
@@ -719,7 +719,7 @@ void parse_unary_operator(stream::Array_Stream<Token<Keyword>>& stream, AST_Node
 	parse_expression(stream, &unary_operator_node->right, delimiter_1, delimiter_2);
 }
 
-bool parse_expression(stream::Array_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Punctuation delimiter_1, Punctuation delimiter_2 /* = Punctuation::UNKNOWN */)
+bool parse_expression(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Node** emplace_node, Punctuation delimiter_1, Punctuation delimiter_2 /* = Punctuation::UNKNOWN */)
 {
 	ZoneScopedN("parse_expression");
 
@@ -856,7 +856,7 @@ bool parse_expression(stream::Array_Stream<Token<Keyword>>& stream, AST_Node** e
 	return scoped_by_parenthesis;
 }
 
-void parse_scope(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Scope** scope_node_, bool is_root_node /* = false */)
+void parse_scope(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Statement_Scope** scope_node_, bool is_root_node /* = false */)
 {
 	ZoneScopedN("parse_scope");
 
@@ -989,7 +989,7 @@ void parse_scope(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Sco
 	}
 }
 
-void parse_struct_scope(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Struct_Type* scope_node, bool is_root_node /* = false */)
+void parse_struct_scope(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Statement_Struct_Type* scope_node, bool is_root_node /* = false */)
 {
 	ZoneScopedN("parse_struct_scope");
 
@@ -1092,7 +1092,7 @@ void parse_struct_scope(stream::Array_Stream<Token<Keyword>>& stream, AST_Statem
 	}
 }
 
-void parse_union_scope(stream::Array_Stream<Token<Keyword>>& stream, AST_Statement_Union_Type* scope_node, bool is_root_node /* = false */)
+void parse_union_scope(stream::Array_Read_Stream<Token<Keyword>>& stream, AST_Statement_Union_Type* scope_node, bool is_root_node /* = false */)
 {
 	ZoneScopedN("parse_union_scope");
 
@@ -1214,7 +1214,7 @@ void f::parse(fstd::memory::Array<Token<Keyword>>& tokens, Parsing_Result& parsi
 {
 	ZoneScopedNC("f::parse", 0xff6f00);
 
-	stream::Array_Stream<Token<Keyword>>	stream;
+	stream::Array_Read_Stream<Token<Keyword>>	stream;
 
 	// It is impossible to have more nodes than tokens, so we can easily pre-allocate them to the maximum possible size.
 	// maximum_size = nb_tokens * largest_node_size
@@ -1226,7 +1226,7 @@ void f::parse(fstd::memory::Array<Token<Keyword>>& tokens, Parsing_Result& parsi
 	memory::reserve_array(globals.parser_data.ast_nodes, memory::get_array_size(tokens) * sizeof(AST_Statement_Variable));
 	memory::reserve_array(globals.parser_data.symbol_tables, memory::get_array_size(tokens) * sizeof(Symbol_Table));
 
-	stream::initialize_memory_stream<Token<Keyword>>(stream, tokens);
+	stream::init<Token<Keyword>>(stream, tokens);
 
 	if (stream::is_eof(stream) == true) {
 		return;

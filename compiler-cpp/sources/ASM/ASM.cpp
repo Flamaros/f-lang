@@ -6,10 +6,13 @@
 #include <fstd/language/defer.hpp>
 #include <fstd/memory/array.hpp>
 #include <fstd/system/file.hpp>
+#include <fstd/stream/array_read_stream.hpp>
 
 #include <third-party/SpookyV2.h>
 
 using namespace fstd;
+
+#define SECTION_NAME_MAX_LENGTH	8	// 8 is the maximum supported by PE file format
 
 #define NB_PREALLOCATED_IMPORTED_LIBRARIES				128
 #define NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY	4096
@@ -39,7 +42,7 @@ namespace f::ASM
 		return new_imported_function;
 	}
 
-	void compile(ASM& asm_result, stream::Array_Stream<Token>& stream);
+	void compile(ASM& asm_result, stream::Array_Read_Stream<Token>& stream);
 
 	void compile_file(const fstd::system::Path& path, const fstd::system::Path& output_path, bool shared_library, ASM& asm_result)
 	{
@@ -71,8 +74,8 @@ namespace f::ASM
 			memory::reserve_array(globals.asm_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
 		}
 
-		stream::Array_Stream<Token>	stream;
-		stream::initialize_memory_stream<Token>(stream, tokens);
+		stream::Array_Read_Stream<Token>	stream;
+		stream::init<Token>(stream, tokens);
 
 		compile(asm_result, stream);
 
@@ -112,7 +115,7 @@ namespace f::ASM
 		//		besoin de cette fonctionnalité, c'est pour ça que c'est du pure bonus pour mes dev.
 	}
 
-	void parse_module(ASM& asm_result, stream::Array_Stream<Token>& stream)
+	void parse_module(ASM& asm_result, stream::Array_Read_Stream<Token>& stream)
 	{
 		Token	current_token;
 		Token	module_name;
@@ -192,7 +195,7 @@ namespace f::ASM
 		report_error(Compiler_Error::error, current_token, "End of file reached. Missing '}' to delimite the \"MODULE\" scope.");
 	}
 
-	void parse_import(ASM& asm_result, stream::Array_Stream<Token>& stream)
+	void parse_import(ASM& asm_result, stream::Array_Read_Stream<Token>& stream)
 	{
 		Token	current_token;
 
@@ -231,10 +234,61 @@ namespace f::ASM
 		report_error(Compiler_Error::error, current_token, "End of file reached. Missing '}' to delimite the \"IMPORTS\" scope.");
 	}
 
-	void parse_section(ASM& asm_result, stream::Array_Stream<Token>& stream)
+	void parse_pseudo_instruction(ASM& asm_result, stream::Array_Read_Stream<Token>& stream, Section* section)
 	{
+		size_t	starting_line;
 		Token	current_token;
-		Token	section_name;
+
+		current_token = stream::get(stream);
+		starting_line = current_token.line;
+		fstd::core::Assert(
+			current_token.type == Token_Type::KEYWORD
+			&& current_token.value.keyword >= Keyword::DB
+			&& current_token.value.keyword < Keyword::COUNT);
+		while (stream::is_eof(stream) == false)
+		{
+			// @TODO handle the instruction parsing
+
+			stream::peek(stream);
+			current_token = stream::get(stream);
+			if (current_token.line > starting_line) {
+				break;
+			}
+		}
+	}
+
+	void parse_instruction(ASM& asm_result, stream::Array_Read_Stream<Token>& stream, Section* section)
+	{
+		size_t	starting_line;
+		Token	current_token;
+
+		current_token = stream::get(stream);
+		starting_line = current_token.line;
+		while (stream::is_eof(stream) == false)
+		{
+			// @TODO handle the instruction parsing
+
+			stream::peek(stream);
+			current_token = stream::get(stream);
+			if (current_token.line > starting_line) {
+				break;
+			}
+		}
+	}
+
+	void parse_label(ASM& asm_result, stream::Array_Read_Stream<Token>& stream)
+	{
+		stream::peek<Token>(stream);	// label name
+
+		// @TODO check that it is the right token here, else throw a parsing error
+		stream::peek<Token>(stream);	// :
+	}
+
+	void parse_section(ASM& asm_result, stream::Array_Read_Stream<Token>& stream)
+	{
+		Token		current_token;
+		Token		section_name;
+		Section*	section;
 
 		stream::peek<Token>(stream);	// SECTION
 
@@ -242,6 +296,10 @@ namespace f::ASM
 		if (section_name.type != Token_Type::STRING_LITERAL) {
 			report_error(Compiler_Error::error, section_name, "Missing string after \"SECTION\" keyword, you should specify the name of the section.");
 		}
+		if (get_string_size(section_name.text) > SECTION_NAME_MAX_LENGTH) {
+			report_error(Compiler_Error::error, section_name, "Section name can't be larger than 8 characters (PE file format is the most restrecting supported format here).");
+		}
+		section = create_section(asm_result, section_name.text);
 
 		stream::peek<Token>(stream);	// section name
 
@@ -262,15 +320,24 @@ namespace f::ASM
 				stream::peek<Token>(stream);	// }
 				return;
 			}
-
-			// @TODO remove that
-			stream::peek<Token>(stream);
+			else if (current_token.type == Token_Type::KEYWORD) {
+				parse_pseudo_instruction(asm_result, stream, section);	// @warning should be a pseudo instruction
+			}
+			else if (current_token.type == Token_Type::INSTRUCTION) {
+				parse_instruction(asm_result, stream, section);
+			}
+			else if (current_token.type == Token_Type::IDENTIFIER) {
+				parse_label(asm_result, stream);
+			}
+			else {
+				report_error(Compiler_Error::error, current_token, "A label or an instruction (or pseudo instruction) is expected"); // @TODO improve this error message (should tell more about what it is supported in this context)
+			}
 		}
 
 		report_error(Compiler_Error::error, current_token, "End of file reached. Missing '}' to delimite the \"SECTION\" scope.");
 	}
 
-	void compile(ASM& asm_result, stream::Array_Stream<Token>& stream)
+	void compile(ASM& asm_result, stream::Array_Read_Stream<Token>& stream)
 	{
 		ZoneScopedNC("f::ASM::compile", 0x1b5e20);
 
@@ -299,14 +366,19 @@ namespace f::ASM
 
 	Section* create_section(ASM& asm_result, fstd::language::string_view name)
 	{
-		// @TODO add a check to avoid the creation of duplicates
-		// Need I use a Hash_Table to automatically return the previously created section with same name?
+		core::Assert(get_string_size(name) <= SECTION_NAME_MAX_LENGTH);
+
+		// Return existing section
+		size_t search_result = memory::find_array_element(asm_result.sections, name, &match_section);
+		if (search_result != (size_t)-1) {
+			return memory::get_array_element(asm_result.sections, search_result);
+		}
 
 		memory::array_push_back(asm_result.sections, Section());
 		Section* new_section = memory::get_array_last_element(asm_result.sections);
 
 		new_section->name = name;
-		memory::init(new_section->data);
+		stream::init(new_section->stream_data);
 		return new_section;
 	}
 
@@ -318,7 +390,7 @@ namespace f::ASM
 
 	void push_raw_data(Section* section, uint8_t* data, uint32_t size)
 	{
-		memory::push_back(section->data, data, size);
+		stream::write(section->stream_data, data, size);
 	}
 
 	void debug_print(const ASM& asm_result)

@@ -121,7 +121,7 @@ namespace fstd
 		// The '\0' doesn't count in the string size, but the string buffer is reserved according to.
 		inline void from_utf8_to_utf16LE(const language::string_view& utf8_string, language::UTF16LE_string& utf16LE_string, bool null_terminated)
 		{
-			memory::reserve_array(utf16LE_string.buffer, language::get_string_size(utf8_string) + 1);	// We can't have more code units than in utf8 version
+			memory::resize_array(utf16LE_string.buffer, language::get_string_size(utf8_string) + 1);	// We can't have more code units than in utf8 version and we add 1 for the eventual terminal null
 
 			size_t aligned_size_mod = language::get_string_size(utf8_string) % 4;
 			size_t aligned_size = language::get_string_size(utf8_string) - aligned_size_mod;
@@ -198,11 +198,11 @@ namespace fstd
 				size_t added = to_utf16LE(code_point, (uint16_t*)&utf16LE_string[result_size]);
 				result_size += added;
 			}
-			language::resize(utf16LE_string, result_size);
 
 			if (null_terminated) {
 				*get_array_element(utf16LE_string.buffer, result_size) = 0;
 			}
+			language::resize(utf16LE_string, result_size);
 		}
 
 		inline void from_utf8_to_utf16LE(const language::string& utf8_string, language::UTF16LE_string& utf16LE_string, bool null_terminated)

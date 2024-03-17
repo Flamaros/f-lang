@@ -5,7 +5,7 @@
 #include <fstd/language/string.hpp>
 #include <fstd/language/string_view.hpp>
 
-#include <fstd/stream/array_stream.hpp>
+#include <fstd/stream/array_read_stream.hpp>
 
 #include <fstd/system/path.hpp>
 
@@ -147,13 +147,13 @@ namespace f
         return token_type >= Token_Type::STRING_LITERAL_RAW && token_type <= Token_Type::NUMERIC_LITERAL_REAL;
     }
 
-    inline void peek(fstd::stream::Array_Stream<uint8_t>& stream, int& current_column)
+    inline void peek(fstd::stream::Array_Read_Stream<uint8_t>& stream, int& current_column)
     {
         fstd::stream::peek<uint8_t>(stream);
         current_column++;
     }
 
-    inline void skip(fstd::stream::Array_Stream<uint8_t>& stream, size_t size, int& current_column)
+    inline void skip(fstd::stream::Array_Read_Stream<uint8_t>& stream, size_t size, int& current_column)
     {
         fstd::stream::skip<uint8_t>(stream, size);
         current_column += (int)size;

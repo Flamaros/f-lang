@@ -76,7 +76,8 @@ namespace f::ASM
         BACKQUOTE,              //    `
         OPEN_BRACE,             //    {
         CLOSE_BRACE,            //    }
-        SEMICOLON,              //    ;                 comment
+		COLON,					//    :
+		SEMICOLON,              //    ;                 comment
         SINGLE_QUOTE,           //    '                 string literal
         DOUBLE_QUOTE,           //    "                 string literal
         COMMA,                  //    ,                 operand separator
