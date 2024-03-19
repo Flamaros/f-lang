@@ -2,6 +2,8 @@
 
 #include <fstd/language/types.hpp>
 
+#include <algorithm> // Just for std::min old C macros are....
+
 namespace fstd
 {
 	namespace memory
@@ -23,8 +25,37 @@ namespace fstd
 		template<typename Type, size_t bucket_size>
 		inline void push_back(Bucket_Array<Type, bucket_size>& array, Type& value)
 		{
-			// @TODO
-			// Créer un nouveau bucket si besoin
+			push_back(array, &value, 1);
+		}
+
+		template<typename Type, size_t bucket_size>
+		inline void push_back(Bucket_Array<Type, bucket_size>& array, Type* value, size_t count)
+		{
+			core::Assert(count > 0);
+
+			size_t last_bucket_index = array.size / bucket_size;
+			size_t nb_allocated_buckets = array.ptr ? last_bucket_index + 1 : 0;
+			size_t nb_needed_buckets = count / bucket_size + 1;
+			size_t starting_index_in_bucket = array.size % bucket_size;
+
+			if (nb_needed_buckets > nb_allocated_buckets) {
+				array.ptr = (Type**)system::reallocate(array.ptr, nb_needed_buckets * sizeof(Type*));
+				for (size_t i = last_bucket_index; i < nb_needed_buckets; i++) {
+					array.ptr[i] = (Type*)system::allocate(bucket_size * sizeof(Type));
+				}
+			}
+
+			size_t copied_count = 0;
+			for (size_t i = last_bucket_index; i < nb_needed_buckets; i++) {
+				size_t count_to_copy = std::min(count - copied_count, bucket_size - starting_index_in_bucket);
+				system::memory_copy(&array.ptr[i][starting_index_in_bucket],
+					&value[copied_count], count_to_copy * sizeof(Type));
+				copied_count += count_to_copy;
+
+				starting_index_in_bucket = 0;
+			}
+
+			array.size += count;
 		}
 
 		template<typename Type, size_t bucket_size>

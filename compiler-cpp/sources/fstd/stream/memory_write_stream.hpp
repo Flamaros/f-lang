@@ -7,6 +7,10 @@ namespace fstd
 {
 	namespace stream
 	{
+		// @TODO
+		// Need I support cursor moves?
+		// Need I support reads? With a different cursor than write?
+
 		struct Memory_Write_Stream // @TODO récupérer en param template la taille des buckets?
 		{
 			fstd::memory::Bucket_Array<uint8_t>	buffer;
@@ -23,10 +27,8 @@ namespace fstd
 		}
 
 		inline bool write(Memory_Write_Stream& stream, uint8_t* data, uint32_t size) {
-			core::Assert(false);
-
-			// Resize buffer and write (récupérer la taille des buckets pour faire les memcpy sur les différents buckets)
-			// Il faudrait avoir une méthode pour checker que le Bucket_Array est initialisé quand même (is_init?)
+			memory::push_back(stream.buffer, data, size);
+			stream.position += size;
 
 			return true;
 		}

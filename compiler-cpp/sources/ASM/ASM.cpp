@@ -248,9 +248,27 @@ namespace f::ASM
 		while (stream::is_eof(stream) == false)
 		{
 			// @TODO handle the instruction parsing
+			if (current_token.value.keyword == Keyword::DB) { // @TODO put it in a specific function?
+				stream::peek(stream);	// db
+				current_token = stream::get(stream);
+				// @TODO loop to handle , operand separator
+				if (current_token.type == Token_Type::STRING_LITERAL
+					|| current_token.type == Token_Type::STRING_LITERAL_RAW) {
+					push_raw_data(section, to_utf8(*current_token.value.string), (uint32_t)get_string_size(*current_token.value.string));
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I32) {
+					if (current_token.value.integer < 0 || current_token.value.integer > 256) {
+						report_error(Compiler_Error::error, current_token, "Operand value out of range: if you specify a character by its value it should be in range [0-256].");
+					}
+					unsigned char value = (unsigned char)current_token.value.integer;
+					push_raw_data(section, &value, sizeof(value));
+				}
+			}
+			else {
+				stream::peek(stream);
+				current_token = stream::get(stream);
+			}
 
-			stream::peek(stream);
-			current_token = stream::get(stream);
 			if (current_token.line > starting_line) {
 				break;
 			}
