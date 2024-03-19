@@ -41,6 +41,7 @@
     <ClInclude Include="..\sources\fstd\language\string_view.hpp" />
     <ClInclude Include="..\sources\fstd\language\types.hpp" />
     <ClInclude Include="..\sources\fstd\macros.hpp" />
+    <ClInclude Include="..\sources\fstd\math\math.hpp" />
     <ClInclude Include="..\sources\fstd\memory\array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\boolean_array.hpp" />
     <ClInclude Include="..\sources\fstd\memory\bucket.hpp" />

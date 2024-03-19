@@ -1,8 +1,7 @@
 #pragma once
 
 #include <fstd/language/types.hpp>
-
-#include <algorithm> // Just for std::min old C macros are....
+#include <fstd/math/math.hpp>
 
 namespace fstd
 {
@@ -47,7 +46,7 @@ namespace fstd
 
 			size_t copied_count = 0;
 			for (size_t i = last_bucket_index; i < nb_needed_buckets; i++) {
-				size_t count_to_copy = std::min(count - copied_count, bucket_size - starting_index_in_bucket);
+				size_t count_to_copy = math::min(count - copied_count, bucket_size - starting_index_in_bucket);
 				system::memory_copy(&array.ptr[i][starting_index_in_bucket],
 					&value[copied_count], count_to_copy * sizeof(Type));
 				copied_count += count_to_copy;

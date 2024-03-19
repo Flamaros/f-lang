@@ -47,6 +47,9 @@
     <Filter Include="Source Files\ASM">
       <UniqueIdentifier>{b41c0f62-e560-497b-9a06-2f3dc4846c8c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\fstd\math">
+      <UniqueIdentifier>{62e8d6ed-bacf-4717-856c-39a2914d9549}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
@@ -222,6 +225,9 @@
     </ClInclude>
     <ClInclude Include="..\sources\fstd\stream\memory_write_stream.hpp">
       <Filter>Source Files\fstd\stream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\math\math.hpp">
+      <Filter>Source Files\fstd\math</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
