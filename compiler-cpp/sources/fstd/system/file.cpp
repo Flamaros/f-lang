@@ -1,8 +1,11 @@
 #include "file.hpp"
 
 #include <fstd/language/flags.hpp>
-#include <fstd/core/unicode.hpp>
 #include <fstd/language/string.hpp>
+#include <fstd/core/unicode.hpp>
+#include <fstd/core/assert.hpp>
+#include <fstd/stream/memory_write_stream.hpp>
+#include <fstd/memory/bucket_array.hpp>
 
 #if defined(FSTD_OS_WINDOWS)
 #	include <win32/file.h>
@@ -10,8 +13,6 @@
 #endif
 
 #include <tracy/Tracy.hpp>
-
-#include <fstd/core/assert.hpp>
 
 // @TODO
 //
@@ -181,6 +182,34 @@ namespace fstd
 #else
 #	error
 #endif
+		}
+
+		bool write_file(File& file, const stream::Memory_Write_Stream& stream, uint32_t* nb_written_bytes)
+		{
+			const auto& bucket_array = stream::get_buffer(stream);
+			uint32_t	array_size = (uint32_t)memory::get_array_size(bucket_array);
+			uint32_t	remaining_size = array_size;
+			uint32_t	temp_nb_written_bytes = 0;
+			uint32_t	bucket_size = (uint32_t)memory::get_bucket_size(bucket_array); // Store the contexpr locally to avoid many useless instances of this function
+
+			if (nb_written_bytes) {
+				*nb_written_bytes = 0;
+			}
+			while (remaining_size)
+			{
+				size_t		position = array_size - remaining_size;
+				size_t		bucket_index = position / bucket_size;
+				uint32_t	length = remaining_size > bucket_size ? bucket_size : remaining_size;
+				if (write_file(file, memory::get_bucket(bucket_array, bucket_index), length, &temp_nb_written_bytes) == false) {
+					return false;
+				}
+				remaining_size -= temp_nb_written_bytes;
+				if (nb_written_bytes) {
+					*nb_written_bytes += temp_nb_written_bytes;
+				}
+			}
+
+			return true;
 		}
 	}
 }

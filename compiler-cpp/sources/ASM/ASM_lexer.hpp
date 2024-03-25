@@ -29,7 +29,11 @@ namespace f::ASM
         SECTION,
 
         // Pseudo instructions (part of the language)
-        DB,
+        DB,	// push a byte or an array of bytes (in form of a string literal)
+		// @TODO
+		// DW,	// push a word - 2 bytes
+		// DD,	// push a double word - 4 bytes
+		// DQ,	// push a quad word - 8 bytes
 
 		COUNT,
     };
@@ -97,7 +101,7 @@ namespace f::ASM
     public:
         union Value
         {
-            Punctuation		        punctuation;
+            Punctuation		        punctuation;	// @TODO rename that for consistency with Token_Type SYNTAXE_OPERATOR????
             Keyword			        keyword;
             Instruction             instruction;    // Should be the underlying type if I want to be able to switch at runtime the architecture (uint16_t)
             Register                _register;       // Should be the underlying type if I want to be able to switch at runtime the architecture (uint8_t)

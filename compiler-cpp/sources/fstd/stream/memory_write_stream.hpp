@@ -13,8 +13,8 @@ namespace fstd
 
 		struct Memory_Write_Stream // @TODO récupérer en param template la taille des buckets?
 		{
-			fstd::memory::Bucket_Array<uint8_t>	buffer;
-			size_t								position = 0;
+			memory::Bucket_Array<uint8_t>	buffer;
+			size_t							position = 0;
 		};
 
 		inline void init(Memory_Write_Stream& stream) {
@@ -26,11 +26,23 @@ namespace fstd
 			return stream.position >= memory::get_array_size(stream.buffer);
 		}
 
+		inline size_t get_position(const Memory_Write_Stream& stream) {
+			return stream.position;
+		}
+
+		inline size_t get_size(const Memory_Write_Stream& stream) {
+			return memory::get_array_size(stream.buffer);
+		}
+
 		inline bool write(Memory_Write_Stream& stream, uint8_t* data, uint32_t size) {
 			memory::push_back(stream.buffer, data, size);
 			stream.position += size;
 
 			return true;
+		}
+
+		inline const memory::Bucket_Array<uint8_t>& get_buffer(const Memory_Write_Stream& stream) {
+			return stream.buffer;
 		}
 	}
 }

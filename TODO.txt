@@ -1,3 +1,20 @@
+Commencer a enregistrer les labels:
+  - Les préallouer en fonction du nombre de token que j'ai 1 / 20 ?
+  - Remplir la tamble de hash des labels
+  - Tenter d'utiliser la section .rdata et du coup les labels pour récupérer les RVA à mettre dans le code hard codé du backend
+
+
+
+
+
+
+
+
+
+
+
+
+
 Renomer IR_generator en CodeGenerator
  - l'interface avec le backend doit se traduire sous forme d'une table de fonctions avec une API précise que les différents backend se doivent de respecter
  - comme ça je pourrais faire un backend x86 également

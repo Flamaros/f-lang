@@ -8,12 +8,6 @@
 	}
 }
 
-SECTION ".rdata" // @TODO should I support ` or ' character for a special string token type?
-{
-	message:
-		db      "Hello World", 0	; I put an addtionnal 0 but it can be omitted
-}
-
 SECTION ".text"
 {
 	main:
@@ -27,7 +21,7 @@ SECTION ".text"
 		add		rsp, 0x20
 		mov		rcx, rax								; move previous result (rax: hStdOut) to first parameter register (rcx)
 		mov		rdx, message							; in some asm langages lea instruction is used here, but in nasm labels are directly address
-		mov 	r8, 11
+		mov 	r8, message_length						; in f it should be an immediate value in simplest cases, but as I want my strings to have a length, length is also available in .rdata section
 		mov		r9, 0									; [out, optional] lpNumberOfBytesWritten
 		push	0										; [in, out, optional] lpOverlapped
 		call    WriteFile
@@ -39,4 +33,12 @@ SECTION ".text"
 
 		; never here
 		hlt
+}
+
+SECTION ".rdata" // @TODO should I support ` or ' character for a special string token type?
+{
+	message:
+		db      "Hello World", 0	; I put an addtionnal 0 but it can be omitted
+	message_length:
+		db		12					; 11 + 1 for the ending \0
 }

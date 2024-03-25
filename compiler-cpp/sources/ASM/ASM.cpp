@@ -17,6 +17,7 @@ using namespace fstd;
 #define NB_PREALLOCATED_IMPORTED_LIBRARIES				128
 #define NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY	4096
 #define NB_PREALLOCALED_SECTIONS						5		// .text, .rdata, .data, .reloc, .idata
+#define NB_LABELS_PER_TOKEN								1 / 10.0				
 
 namespace f::ASM
 {
@@ -42,6 +43,17 @@ namespace f::ASM
 		return new_imported_function;
 	}
 
+	inline Label* allocate_Label()
+	{
+		// Ensure that no reallocation could happen during the resize
+		core::Assert(memory::get_array_size(globals.asm_data.labels) < memory::get_array_reserved(globals.asm_data.labels));
+
+		memory::resize_array(globals.asm_data.labels, memory::get_array_size(globals.asm_data.labels) + 1);
+
+		Label* new_label = memory::get_array_last_element(globals.asm_data.labels);
+		return new_label;
+	}
+
 	void compile(ASM& asm_result, stream::Array_Read_Stream<Token>& stream);
 
 	void compile_file(const fstd::system::Path& path, const fstd::system::Path& output_path, bool shared_library, ASM& asm_result)
@@ -60,6 +72,7 @@ namespace f::ASM
 		// Result data
 		{
 			memory::hash_table_init(asm_result.imported_libraries, &language::are_equals);
+			memory::hash_table_init(asm_result.labels, &language::are_equals);
 
 			memory::init(asm_result.sections);
 			memory::reserve_array(asm_result.sections, NB_PREALLOCALED_SECTIONS);
@@ -72,6 +85,9 @@ namespace f::ASM
 
 			memory::init(globals.asm_data.imported_functions);
 			memory::reserve_array(globals.asm_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
+
+			memory::init(globals.asm_data.labels);
+			memory::reserve_array(globals.asm_data.labels, (size_t)(memory::get_array_size(tokens) * NB_LABELS_PER_TOKEN) + 1);	// + 1 to ceil the value
 		}
 
 		stream::Array_Read_Stream<Token>	stream;
@@ -117,6 +133,8 @@ namespace f::ASM
 
 	void parse_module(ASM& asm_result, stream::Array_Read_Stream<Token>& stream)
 	{
+		ZoneScopedNC("f::ASM::parse_module", 0x1b5e20);
+
 		Token	current_token;
 		Token	module_name;
 
@@ -197,6 +215,8 @@ namespace f::ASM
 
 	void parse_import(ASM& asm_result, stream::Array_Read_Stream<Token>& stream)
 	{
+		ZoneScopedNC("f::ASM::parse_import", 0x1b5e20);
+
 		Token	current_token;
 
 		stream::peek<Token>(stream);	// IMPORTS
@@ -236,6 +256,8 @@ namespace f::ASM
 
 	void parse_pseudo_instruction(ASM& asm_result, stream::Array_Read_Stream<Token>& stream, Section* section)
 	{
+		ZoneScopedNC("f::ASM::parse_pseudo_instruction", 0x1b5e20);
+
 		size_t	starting_line;
 		Token	current_token;
 
@@ -245,38 +267,47 @@ namespace f::ASM
 			current_token.type == Token_Type::KEYWORD
 			&& current_token.value.keyword >= Keyword::DB
 			&& current_token.value.keyword < Keyword::COUNT);
-		while (stream::is_eof(stream) == false)
-		{
-			// @TODO handle the instruction parsing
-			if (current_token.value.keyword == Keyword::DB) { // @TODO put it in a specific function?
-				stream::peek(stream);	// db
+
+		if (current_token.value.keyword == Keyword::DB) { // @TODO put it in a specific function?
+			stream::peek(stream);	// db
+			while (current_token.line == starting_line && stream::is_eof(stream) == false)
+			{
 				current_token = stream::get(stream);
-				// @TODO loop to handle , operand separator
+
 				if (current_token.type == Token_Type::STRING_LITERAL
 					|| current_token.type == Token_Type::STRING_LITERAL_RAW) {
 					push_raw_data(section, to_utf8(*current_token.value.string), (uint32_t)get_string_size(*current_token.value.string));
+					stream::peek(stream); // String literal
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I32) {
 					if (current_token.value.integer < 0 || current_token.value.integer > 256) {
 						report_error(Compiler_Error::error, current_token, "Operand value out of range: if you specify a character by its value it should be in range [0-256].");
 					}
 					unsigned char value = (unsigned char)current_token.value.integer;
-					push_raw_data(section, &value, sizeof(value));
+					push_raw_data(section, &value, sizeof(value));	// byte value
+					stream::peek(stream);
+				}
+				else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+					&& current_token.value.punctuation == Punctuation::COMMA) {
+					stream::peek(stream);	// ,
 				}
 			}
-			else {
-				stream::peek(stream);
-				current_token = stream::get(stream);
+			if (stream::is_eof(stream)) {
+				// @TODO Test and improve this error message
+				report_error(Compiler_Error::error, current_token, "End of file reached before the closure of the section");
 			}
-
-			if (current_token.line > starting_line) {
-				break;
-			}
+		}
+		else {
+			// @TODO unknown pseudo instruction
+			stream::peek(stream);
+			current_token = stream::get(stream);
 		}
 	}
 
 	void parse_instruction(ASM& asm_result, stream::Array_Read_Stream<Token>& stream, Section* section)
 	{
+		ZoneScopedNC("f::ASM::parse_instruction", 0x1b5e20);
+
 		size_t	starting_line;
 		Token	current_token;
 
@@ -294,16 +325,47 @@ namespace f::ASM
 		}
 	}
 
-	void parse_label(ASM& asm_result, stream::Array_Read_Stream<Token>& stream)
+	void parse_label(ASM& asm_result, stream::Array_Read_Stream<Token>& stream, Section* section)
 	{
+		ZoneScopedNC("f::ASM::parse_label", 0x1b5e20);
+
+		Token	current_token;
+		Token	label_name;
+
+		label_name = stream::get<Token>(stream);
 		stream::peek<Token>(stream);	// label name
 
-		// @TODO check that it is the right token here, else throw a parsing error
+		Label** found_label;
+
+		uint64_t label_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(label_name.text), fstd::language::get_string_size(label_name.text), 0);
+		uint16_t label_short_hash = label_hash & 0xffff;
+
+		found_label = fstd::memory::hash_table_get(asm_result.labels, label_short_hash, label_name.text);
+		if (found_label) {
+			// @TODO give the position of the first definition
+			report_error(Compiler_Error::error, label_name, "Label already used.");
+		}
+
+		Label* new_label = allocate_Label();
+
+		new_label->label = label_name.text;
+		new_label->section = section;
+		new_label->RVA = stream::get_position(section->stream_data);
+
+		found_label = fstd::memory::hash_table_insert(asm_result.labels, label_short_hash, label_name.text, new_label);
+
+		current_token = stream::get<Token>(stream);
+		if (!(current_token.type == Token_Type::SYNTAXE_OPERATOR
+			&& current_token.value.punctuation == Punctuation::COLON)) {
+			report_error(Compiler_Error::error, label_name, "Syntax error, colon is expected after the label identifier.");
+		}
 		stream::peek<Token>(stream);	// :
 	}
 
 	void parse_section(ASM& asm_result, stream::Array_Read_Stream<Token>& stream)
 	{
+		ZoneScopedNC("f::ASM::parse_section", 0x1b5e20);
+
 		Token		current_token;
 		Token		section_name;
 		Section*	section;
@@ -345,7 +407,7 @@ namespace f::ASM
 				parse_instruction(asm_result, stream, section);
 			}
 			else if (current_token.type == Token_Type::IDENTIFIER) {
-				parse_label(asm_result, stream);
+				parse_label(asm_result, stream, section);
 			}
 			else {
 				report_error(Compiler_Error::error, current_token, "A label or an instruction (or pseudo instruction) is expected"); // @TODO improve this error message (should tell more about what it is supported in this context)
@@ -384,6 +446,8 @@ namespace f::ASM
 
 	Section* create_section(ASM& asm_result, fstd::language::string_view name)
 	{
+		ZoneScopedNC("f::ASM::create_section", 0x1b5e20);
+
 		core::Assert(get_string_size(name) <= SECTION_NAME_MAX_LENGTH);
 
 		// Return existing section
@@ -408,11 +472,24 @@ namespace f::ASM
 
 	void push_raw_data(Section* section, uint8_t* data, uint32_t size)
 	{
+		ZoneScopedNC("f::ASM::push_raw_data", 0x1b5e20);
+
 		stream::write(section->stream_data, data, size);
+	}
+
+	Section* get_section(const ASM& asm_result, fstd::language::string_view name)
+	{
+		size_t search_result = memory::find_array_element(asm_result.sections, name, &match_section);
+		if (search_result != (size_t)-1) {
+			return memory::get_array_element(asm_result.sections, search_result);
+		}
+		return nullptr;
 	}
 
 	void debug_print(const ASM& asm_result)
 	{
+		ZoneScopedNC("f::ASM::debug_print", 0x1b5e20);
+
 		// @TODO output all the data for debugging purpose
 		// The printed ASM should match what a debugger with a disasembler output
 	}

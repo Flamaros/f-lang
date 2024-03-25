@@ -22,6 +22,12 @@ namespace fstd
 		}
 
 		template<typename Type, size_t bucket_size>
+		inline constexpr size_t get_bucket_size(const Bucket_Array<Type, bucket_size>& array)
+		{
+			return bucket_size;
+		}
+
+		template<typename Type, size_t bucket_size>
 		inline void push_back(Bucket_Array<Type, bucket_size>& array, Type& value)
 		{
 			push_back(array, &value, 1);
@@ -55,6 +61,15 @@ namespace fstd
 			}
 
 			array.size += count;
+		}
+
+		template<typename Type, size_t bucket_size>
+		Type* get_bucket(const Bucket_Array<Type, bucket_size>& array, size_t index)
+		{
+			size_t last_bucket_index = array.size / bucket_size;
+			core::Assert(index <= last_bucket_index);
+
+			return array.ptr[index];
 		}
 
 		template<typename Type, size_t bucket_size>

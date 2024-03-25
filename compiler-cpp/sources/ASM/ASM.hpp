@@ -38,17 +38,6 @@ namespace f
 		//	uint32_t					name_RVA;
 		//};
 
-		struct Label
-		{
-			fstd::language::string_view	label;
-			uint64_t					RVA;	// Offset in bytes relative to the beggining of the section
-		};
-
-		struct ADDR_TO_PATCH {
-			fstd::language::string_view		label;			// Label to search for and obtain addr (it is a string_view of the label token)
-			uint32_t						addr_of_addr;	// Where to apply the addr
-		};
-
 		struct Operand
 		{
 			enum class Type
@@ -75,6 +64,18 @@ namespace f
 			// fstd::memory::Bucket_Array<ADDR_TO_PATCH>	addr_to_patch; // bucket_array because we need fast push_back (allocation of bucket_size) and fast iteration (over arrays)
 		};
 
+		struct Label
+		{
+			fstd::language::string_view	label;
+			Section*					section;
+			uint64_t					RVA;	// Offset in bytes relative to the beggining of the section
+		};
+
+		struct ADDR_TO_PATCH {
+			fstd::language::string_view		label;			// Label to search for and obtain addr (it is a string_view of the label token)
+			uint32_t						addr_of_addr;	// Where to apply the addr
+		};
+
 		struct Code
 		{
 			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Section*, 32> Section_Hash_Table;
@@ -99,9 +100,11 @@ namespace f
 
 		struct ASM
 		{
-			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32> Imported_Library_Hash_Table;
+			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32>	Imported_Library_Hash_Table;
+			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Label*, 32>				Label_Hash_Table;
 
 			Imported_Library_Hash_Table		imported_libraries;
+			Label_Hash_Table				labels;
 			fstd::memory::Array<Section>	sections; // @Speed an Array should be good enough, the number of sections will stay very low and search on less than 10 elements is faster on a array than a hash_table
 		};
 
@@ -109,6 +112,7 @@ namespace f
 		{
 			fstd::memory::Array<Imported_Library>	imported_libraries; // @TODO use Bucket_Array
 			fstd::memory::Array<Imported_Function>	imported_functions; // @TODO use Bucket_Array
+			fstd::memory::Array<Label>				labels;				// @TODO use Bucket_Array
 		};
 
 		inline bool match_section(const fstd::language::string_view& name, const Section& section) {
@@ -123,6 +127,8 @@ namespace f
 		Section* create_section(ASM& asm_result, fstd::language::string_view name);
 		void push_instruction(Section* section, uint16_t instruction, const Operand& operand1, const Operand& operand2);
 		void push_raw_data(Section* section, uint8_t* data, uint32_t size);
+
+		Section* get_section(const ASM& asm_result, fstd::language::string_view name);
 
 		// @TODO do the production API 
 		//   - create the import module

@@ -179,10 +179,6 @@ uint8_t* dll_names[] = {
     (uint8_t*)"kernel32.dll",
 };
 
-uint8_t* message[] = {
-    (uint8_t*)"Hello World",
-};
-
 uint8_t* kernel32_function_names[] = {
     (uint8_t*)"GetStdHandle",
     (uint8_t*)"WriteFile",
@@ -426,14 +422,18 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
         write_file(output_file, (uint8_t*)&text_image_section_header, sizeof(text_image_section_header), &bytes_written);
     }
 
-    // .rdata section
+	language::string_view	section_name;
+	language::assign(section_name, (uint8_t*)".rdata");
+	ASM::Section* rdata_section = ASM::get_section(asm_result, section_name);
+
+	// .rdata section
     {
         ZoneScopedN(".rdata section");
 
         RtlSecureZeroMemory(&rdata_image_section_header, sizeof(rdata_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(rdata_image_section_header.Name, ".rdata", 7);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
-		rdata_image_section_header.Misc.VirtualSize = 11 + 1; // (DWORD)asm_result.read_only_data.current_RVA; // fstd::language::string_literal_size(message[0]) + 1;
+		rdata_image_section_header.Misc.VirtualSize = (DWORD)stream::get_size(rdata_section->stream_data);
         rdata_image_section_header.VirtualAddress = rdata_image_section_virtual_address;
         rdata_image_section_header.SizeOfRawData = compute_aligned_size(rdata_image_section_header.Misc.VirtualSize, file_alignment);
         rdata_image_section_header.PointerToRawData = rdata_image_section_pointer_to_raw_data;
@@ -516,7 +516,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
         DWORD rdata_section_size = 0;
 
-		write_file(output_file, (uint8_t*)"Hello World", 12, &bytes_written);
+		write_file(output_file, rdata_section->stream_data, &bytes_written);
 		rdata_section_size += bytes_written;
 		//for (size_t i = 0; i < memory::get_array_size(asm_result.read_only_data.literals); i++) {
         //    write_file(output_file, memory::get_array_data(asm_result.read_only_data.literals[i].data), (uint32_t)memory::get_array_bytes_size(asm_result.read_only_data.literals[i].data), &bytes_written);

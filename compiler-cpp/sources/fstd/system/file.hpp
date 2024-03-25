@@ -26,6 +26,11 @@ const File_Handle Invalid_File_Handle = (File_Handle)0xffffffff'ffffffff;
 
 namespace fstd
 {
+	namespace stream
+	{
+		struct Memory_Write_Stream;
+	}
+
 	namespace system
 	{
 		struct File
@@ -54,5 +59,6 @@ namespace fstd
 		bool							set_file_position(File& file, uint64_t position);
 
 		bool							write_file(File& file, uint8_t* buffer, uint32_t length, uint32_t* nb_written_bytes = nullptr);
+		bool							write_file(File& file, const stream::Memory_Write_Stream& stream, uint32_t* nb_written_bytes = nullptr);
 	}
 }
