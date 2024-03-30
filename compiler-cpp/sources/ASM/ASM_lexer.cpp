@@ -11,6 +11,8 @@
 
 #include <third-party/SpookyV2.h>
 
+#include <cmath> // @TODO remove it (used for powl)
+
 using namespace fstd;
 using namespace fstd::memory;
 using namespace fstd::language;
