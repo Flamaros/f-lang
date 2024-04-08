@@ -457,7 +457,10 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
 
                 current_character = stream::get(stream);
                 if (current_character == 'x') { // hexadecimal
-                    peek(stream, current_column);
+					set_flag(numeric_literal_flags, Numeric_Value_Flag::UNSIGNED_SUFFIX);
+					token.value.unsigned_integer = 0;
+
+					peek(stream, current_column);
                     while (true) {
                         current_character = stream::get(stream);
 
@@ -492,7 +495,10 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
                     }
                 }
                 else if (current_character == 'b') { // binary
-                    peek(stream, current_column);
+					set_flag(numeric_literal_flags, Numeric_Value_Flag::UNSIGNED_SUFFIX);
+					token.value.unsigned_integer = 0;
+					
+					peek(stream, current_column);
                     while (true) {
                         current_character = stream::get(stream);
 

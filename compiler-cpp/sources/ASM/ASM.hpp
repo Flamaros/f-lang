@@ -19,10 +19,14 @@
 #include <fstd/memory/hash_table.hpp>
 #include <fstd/stream/memory_write_stream.hpp>
 
+// @TODO include the proper version of ASM depending on the targetted architecture
+#include "ASM_x64.h"
+
 namespace f
 {
 	namespace ASM
 	{
+		constexpr size_t NB_MAX_OPERAND_PER_INSTRUCTION = 2;
 		//struct Imported_Function
 		//{
 		//	AST_Statement_Function* function;
@@ -40,15 +44,41 @@ namespace f
 
 		struct Operand
 		{
-			enum class Type
+			enum class Type : uint8_t
 			{
-				Register,
-				Immediate,
-				Address
-			};
+				NONE,
+				REGISTER,
+				IMMEDIATE,
+				ADDRESS
+			}				type;
 
-			// union value
-			// size?
+			enum class Size : uint8_t
+			{
+				NONE,	// when the operand isn't used
+				BYTE,
+				WORD,
+				DOUBLE_WORD,
+				QUAD_WORD
+			}				size;
+
+			// @TODO identifier (as string view?)
+			// I may have to put function names as label to get addresses
+			union Value
+			{
+				Register                _register;
+				int64_t			        integer;
+				uint64_t		        unsigned_integer;
+				float			        real_32;
+				double			        real_64;
+				long double		        real_max;
+			}				value;
+		};
+
+		struct Instruction_Desc
+		{
+			uint8_t	opcode;
+			Operand	op1;
+			Operand	op2;
 		};
 
 		struct Section
@@ -123,9 +153,10 @@ namespace f
 
 		// Advanced API
 		// You should create a section keep the pointer to fill it in an efficient way with function helpers when possible
-		// May assert but should not throw compiler errors. Errors coming from the parsing should be raised before calling these functions
+		// Try to generate valid ASM code else compiler errors may happens in these functions, especially in push_instruction which
+		// may fail to find the given instruction for the current targetted architecture
 		Section* create_section(ASM& asm_result, fstd::language::string_view name);
-		void push_instruction(Section* section, uint16_t instruction, const Operand& operand1, const Operand& operand2);
+		void push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2);
 		void push_raw_data(Section* section, uint8_t* data, uint32_t size);
 
 		Section* get_section(const ASM& asm_result, fstd::language::string_view name);

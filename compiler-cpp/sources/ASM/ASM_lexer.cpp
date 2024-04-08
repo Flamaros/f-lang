@@ -262,7 +262,7 @@ namespace f::ASM
         fstd::core::Assert(token.type == Token_Type::STRING_LITERAL);
 
         size_t              token_length = language::get_string_size(token.text);
-        language::string* string = (language::string*)system::allocate(sizeof(language::string));
+        language::string*	string = (language::string*)system::allocate(sizeof(language::string));
 
         init(*string);
         memory::reserve_array(string->buffer, token_length);
@@ -555,6 +555,9 @@ namespace f::ASM
 
 					current_character = stream::get(stream);
 					if (current_character == 'x') { // hexadecimal
+						set_flag(numeric_literal_flags, Numeric_Value_Flag::UNSIGNED_SUFFIX);
+						token.value.unsigned_integer = 0;
+
 						peek(stream, current_column);
 						while (true) {
 							current_character = stream::get(stream);
@@ -590,6 +593,9 @@ namespace f::ASM
 						}
 					}
 					else if (current_character == 'b') { // binary
+						set_flag(numeric_literal_flags, Numeric_Value_Flag::UNSIGNED_SUFFIX);
+						token.value.unsigned_integer = 0;
+
 						peek(stream, current_column);
 						while (true) {
 							current_character = stream::get(stream);

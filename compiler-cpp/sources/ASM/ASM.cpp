@@ -21,6 +21,13 @@ using namespace fstd;
 
 namespace f::ASM
 {
+	// Separated on two tables because in C++ the second dimension of the array can't use an unknown size
+	// So we have a table of indices, and getting the indice for the following instruction can be used to compute the number of descs
+	// for the current instruction. That is why I have one more indice than the instruction count for the last instruction.
+	extern size_t g_instruction_desc_table_indices[(size_t)Instruction::COUNT + 1];
+	extern Instruction_Desc g_instruction_desc_table[];
+	extern Operand::Size g_register_sizes[(size_t)Register::COUNT];
+
 	inline Imported_Library* allocate_imported_library()
 	{
 		// Ensure that no reallocation could happen during the resize
@@ -104,12 +111,12 @@ namespace f::ASM
 
 		// @TODO
 		//
-		// Je n'ai pas besoin de générer un AST
-		//   - Il faut simplement remplir des structures qui correspondent aux différentes parties du binaire
-		//     par exemple il faut pouvoir fragmenter la déclaration des imports de modules, pareil pour les sections
+		// Je n'ai pas besoin de gï¿½nï¿½rer un AST
+		//   - Il faut simplement remplir des structures qui correspondent aux diffï¿½rentes parties du binaire
+		//     par exemple il faut pouvoir fragmenter la dï¿½claration des imports de modules, pareil pour les sections
 		//   - Il faut sans doute une table de label par section
-		//     un label n'est qu'une key dans une table de hash indiquant l'offset par rapport au début de la section
-		//	   afin de pouvoir utiliser un label avant sa déclaration il faut avoir une liste des addresse à patcher
+		//     un label n'est qu'une key dans une table de hash indiquant l'offset par rapport au dï¿½but de la section
+		//	   afin de pouvoir utiliser un label avant sa dï¿½claration il faut avoir une liste des addresse ï¿½ patcher
 		//	   struct ADDR_TO_PATCH {
 		//			string	label;			// Label to search for and obtain addr
 		//			u32		addr_of_addr;	// Where to apply the addr
@@ -120,15 +127,15 @@ namespace f::ASM
 		//
 		//
 		// BONUS:
-		//		Un label est équivalent à une addresse, si j'ai un symbole comme $ pour récupérer l'addresse de l'instruction
-		//		actuelle, je dois pouvoir implémenter des opérations simple sans AST et sans gestion de précédence sur les opérateurs.
-		//		Car le but est de pouvoir éventuellement faire:
+		//		Un label est ï¿½quivalent ï¿½ une addresse, si j'ai un symbole comme $ pour rï¿½cupï¿½rer l'addresse de l'instruction
+		//		actuelle, je dois pouvoir implï¿½menter des opï¿½rations simple sans AST et sans gestion de prï¿½cï¿½dence sur les opï¿½rateurs.
+		//		Car le but est de pouvoir ï¿½ventuellement faire:
 		//			message:	db "Hello World"		// message est un label qui a une addresse
 		//			len:		dd	$ - message			// $ est l'addresse de l'instruction courante
-		//		Dans l'exemple de code précédent je n'ai absolument pas besoin de me soucier de la précédence des opérateurs
-		//		Car l'opération est trop simple, je ne suis pas sur d'avoir besoin de plus pour la section .data
-		//		Et encore comme mon ASM vise à être généré, normalement le front-end de mon language n'aura même pas
-		//		besoin de cette fonctionnalité, c'est pour ça que c'est du pure bonus pour mes dev.
+		//		Dans l'exemple de code prï¿½cï¿½dent je n'ai absolument pas besoin de me soucier de la prï¿½cï¿½dence des opï¿½rateurs
+		//		Car l'opï¿½ration est trop simple, je ne suis pas sur d'avoir besoin de plus pour la section .data
+		//		Et encore comme mon ASM vise ï¿½ ï¿½tre gï¿½nï¿½rï¿½, normalement le front-end de mon language n'aura mï¿½me pas
+		//		besoin de cette fonctionnalitï¿½, c'est pour ï¿½a que c'est du pure bonus pour mes dev.
 	}
 
 	void parse_module(ASM& asm_result, stream::Array_Read_Stream<Token>& stream)
@@ -272,8 +279,6 @@ namespace f::ASM
 			stream::peek(stream);	// db
 			while (current_token.line == starting_line && stream::is_eof(stream) == false)
 			{
-				current_token = stream::get(stream);
-
 				if (current_token.type == Token_Type::STRING_LITERAL
 					|| current_token.type == Token_Type::STRING_LITERAL_RAW) {
 					push_raw_data(section, to_utf8(*current_token.value.string), (uint32_t)get_string_size(*current_token.value.string));
@@ -291,6 +296,8 @@ namespace f::ASM
 					&& current_token.value.punctuation == Punctuation::COMMA) {
 					stream::peek(stream);	// ,
 				}
+
+				current_token = stream::get(stream);
 			}
 			if (stream::is_eof(stream)) {
 				// @TODO Test and improve this error message
@@ -299,8 +306,7 @@ namespace f::ASM
 		}
 		else {
 			// @TODO unknown pseudo instruction
-			stream::peek(stream);
-			current_token = stream::get(stream);
+			report_error(Compiler_Error::error, current_token, "Unknown pseudo instruction");
 		}
 	}
 
@@ -308,20 +314,114 @@ namespace f::ASM
 	{
 		ZoneScopedNC("f::ASM::parse_instruction", 0x1b5e20);
 
-		size_t	starting_line;
-		Token	current_token;
+		size_t		starting_line;
+		Token		current_token;
+		size_t		operand_index = 0;
+		Operand		operands[NB_MAX_OPERAND_PER_INSTRUCTION] = {};	// @Warning Initialized to 0 if one operand isn't used (else the search may fails)
+		Instruction	instruction;
 
 		current_token = stream::get(stream);
 		starting_line = current_token.line;
-		while (stream::is_eof(stream) == false)
-		{
-			// @TODO handle the instruction parsing
+		fstd::core::Assert(
+			current_token.type == Token_Type::INSTRUCTION
+			&& current_token.value.instruction >= Instruction::ADD
+			&& current_token.value.instruction < Instruction::COUNT);
 
-			stream::peek(stream);
-			current_token = stream::get(stream);
-			if (current_token.line > starting_line) {
-				break;
+		while (current_token.line == starting_line && stream::is_eof(stream) == false)
+		{
+			if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+				&& current_token.value.punctuation == Punctuation::COMMA) {
+				operand_index++;
+
+				stream::peek(stream); // ,
 			}
+			else if (current_token.type == Token_Type::INSTRUCTION)
+			{
+				instruction = current_token.value.instruction;
+
+				stream::peek(stream); // Instruction
+			}
+			else {
+				if (operand_index >= NB_MAX_OPERAND_PER_INSTRUCTION) {
+					report_error(Compiler_Error::error, current_token, "It seems that you are trying to use more operands than instructions can support.");
+				}
+
+				if (current_token.type == Token_Type::REGISTER) {
+					operands[operand_index].type = Operand::Type::REGISTER;
+					operands[operand_index].value._register = current_token.value._register;
+					operands[operand_index].size = g_register_sizes[(size_t)current_token.value._register];
+
+					stream::peek(stream); // Register
+				}
+				else if (current_token.type == Token_Type::IDENTIFIER) {
+
+					// @TODO
+
+					stream::peek(stream); // Identifier
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I32) {
+					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].size = Operand::Size::DOUBLE_WORD;
+					operands[operand_index].value.integer = current_token.value.integer;
+
+					stream::peek(stream); // Numeric value
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I64) {
+					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].size = Operand::Size::QUAD_WORD;
+					operands[operand_index].value.integer = current_token.value.integer;
+
+					stream::peek(stream); // Numeric value
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI32) {
+					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].size = Operand::Size::DOUBLE_WORD;
+
+					operands[operand_index].value.unsigned_integer = current_token.value.unsigned_integer;
+
+					stream::peek(stream); // Numeric value
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI64) {
+					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].size = Operand::Size::QUAD_WORD;
+
+					operands[operand_index].value.unsigned_integer = current_token.value.unsigned_integer;
+
+					stream::peek(stream); // Numeric value
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_F32) {
+					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].size = Operand::Size::DOUBLE_WORD;
+
+					operands[operand_index].value.real_32 = current_token.value.real_32;
+
+					stream::peek(stream); // Numeric value
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_F64) {
+					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].size = Operand::Size::QUAD_WORD;
+
+					operands[operand_index].value.real_64 = current_token.value.real_64;
+
+					stream::peek(stream); // Numeric value
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_REAL) {
+					operands[operand_index].value.real_max = current_token.value.real_max;
+
+					stream::peek(stream); // Numeric value
+				}
+				else {
+					report_error(Compiler_Error::error, current_token, "Syntaxe error, unrecognized token type during instruction parsing.");
+				}
+			}
+
+			current_token = stream::get(stream);
+		}
+
+		push_instruction(section, instruction, operands[0], operands[1]);
+		if (stream::is_eof(stream)) {
+			// @TODO Test and improve this error message
+			report_error(Compiler_Error::error, current_token, "End of file reached before the closure of the section");
 		}
 	}
 
@@ -464,10 +564,40 @@ namespace f::ASM
 		return new_section;
 	}
 
-	void push_instruction(Section* section, uint16_t instruction, const Operand& operand1, const Operand& operand2)
+	inline size_t get_first_instruction_desc_index(Instruction instruction)
 	{
+		return g_instruction_desc_table_indices[(size_t)instruction];
+	}
+
+	inline size_t get_next_instruction_first_desc(Instruction instruction)
+	{
+		return g_instruction_desc_table_indices[(size_t)instruction + 1];
+	}
+
+	void push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2)
+	{
+		// Find the instruction decription that match parameters
+		size_t desc_index = get_first_instruction_desc_index(instruction);
+		for (; desc_index < get_next_instruction_first_desc(instruction); desc_index++)
+		{
+			// @TODO handle flags,...
+			if (g_instruction_desc_table[desc_index].op1.type == operand1.type && g_instruction_desc_table[desc_index].op1.size == operand1.size
+				&& ((g_instruction_desc_table[desc_index].op2.type == operand1.type && g_instruction_desc_table[desc_index].op2.size == operand2.size)
+					|| (g_instruction_desc_table[desc_index].op2.type == Operand::Type::NONE && g_instruction_desc_table[desc_index].op2.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
+				break;
+			}
+		}
+		if (desc_index == get_next_instruction_first_desc(instruction)) {
+			// @TODO improve this error message (handle flags)
+			report_error(Compiler_Error::error, "Unable to find encoding description for the instruction .. with operands .. and ...");
+		}
+
+
 		// @TODO continuer de definir la struct Operand
 		// Voir comment supporter l'encodage de l'instruction lea, je ne comprend pas l'operation sur la 2eme operande qui est une immediate value
+
+		// @TODO handle label and addresses (by adding a new ADDR_TO_PATCH)
+		// Function names have certainly to be handled like labels and trigger conflicts with labels
 	}
 
 	void push_raw_data(Section* section, uint8_t* data, uint32_t size)

@@ -17,8 +17,8 @@
 _main:
     ; DWORD  bytes;    
     mov     ebp, esp
-    sub     esp, 4
 
+    sub     esp, 4
     ; hStdOut = GetStdHandle(STD_OUTPUT_HANDLE)
     push    -11
     call    _GetStdHandle@4

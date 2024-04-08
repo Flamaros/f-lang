@@ -52,7 +52,11 @@ namespace f::ASM
 
         STRING_LITERAL_RAW,	// @Warning In this case the text is the value of the token instead of a member of the Value union
         STRING_LITERAL,
-        NUMERIC_LITERAL_I32,
+		NUMERIC_LITERAL_I8,
+		NUMERIC_LITERAL_UI8,
+		NUMERIC_LITERAL_I16,
+		NUMERIC_LITERAL_UI16,
+		NUMERIC_LITERAL_I32,
         NUMERIC_LITERAL_UI32,
         NUMERIC_LITERAL_I64,
         NUMERIC_LITERAL_UI64,

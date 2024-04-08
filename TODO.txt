@@ -1,8 +1,16 @@
-Commencer a enregistrer les labels:
-  - Les préallouer en fonction du nombre de token que j'ai 1 / 20 ?
-  - Remplir la tamble de hash des labels
-  - Tenter d'utiliser la section .rdata et du coup les labels pour récupérer les RVA à mettre dans le code hard codé du backend
+Corriger les pb de classification des numériques literals, il me faut les taille byte, word,... (attention au print de debug) (aussi sur le lexer normal?)
+Il faut faire une struct register_desc (car j'ai besoin en plus de la taille du numéro du registre pour l'encodage de l'instruction)
+   - attention au im dans insns.dat qui ne veux pas dire grand chose car seul le mov prend des immédiate de 64 bits (pour charger en mémoire)
 
+
+code générer des desc des instructions,... avec un nouveau projet dans la solution avec l'utilisation de std::rexgep pour plus de facilité
+
+Il faudra certainement mettre les noms des functions dans les labels car au final ce sont aussi des addresses niveau instruction (ça doit donc entrer en conflit, on ne peux pas mettre un label du meme nom qu'une instruction)
+
+
+
+Si je veux supporter plusieurs architecture avec mon ASM, le plus simple est sans doute de faire un binaire par architecture et linker les enum,... avec des macro
+De toute façon même pour l'IR il faudra qu'il sache qu'elle archi target à cause des différences d'ABI
 
 
 
