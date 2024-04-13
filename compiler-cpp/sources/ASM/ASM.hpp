@@ -156,7 +156,7 @@ namespace f
 		// Try to generate valid ASM code else compiler errors may happens in these functions, especially in push_instruction which
 		// may fail to find the given instruction for the current targetted architecture
 		Section* create_section(ASM& asm_result, fstd::language::string_view name);
-		void push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2);
+		bool push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2);
 		void push_raw_data(Section* section, uint8_t* data, uint32_t size);
 
 		Section* get_section(const ASM& asm_result, fstd::language::string_view name);

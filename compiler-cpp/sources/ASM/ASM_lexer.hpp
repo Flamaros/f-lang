@@ -52,7 +52,7 @@ namespace f::ASM
 
         STRING_LITERAL_RAW,	// @Warning In this case the text is the value of the token instead of a member of the Value union
         STRING_LITERAL,
-		NUMERIC_LITERAL_I8,
+		NUMERIC_LITERAL_I8,	// @Waring should be the first numeric_literal
 		NUMERIC_LITERAL_UI8,
 		NUMERIC_LITERAL_I16,
 		NUMERIC_LITERAL_UI16,
@@ -63,6 +63,7 @@ namespace f::ASM
         NUMERIC_LITERAL_F32,
         NUMERIC_LITERAL_F64,
         NUMERIC_LITERAL_REAL,	// means longue double (80bits computations)
+		// @Warning if you add something here please update function is_numeric_litral
     };
 
     enum class Punctuation : uint8_t
@@ -82,7 +83,9 @@ namespace f::ASM
         // Mostly in the order on a QWERTY keyboard (symbols making a pair are grouped)
         TILDE,                  //    ~                 Should stay the first of single character symbols
         BACKQUOTE,              //    `
-        OPEN_BRACE,             //    {
+		DASH,                   //    -
+		PLUS,                   //    +
+		OPEN_BRACE,             //    {
         CLOSE_BRACE,            //    }
 		COLON,					//    :
 		SEMICOLON,              //    ;                 comment
@@ -144,4 +147,9 @@ namespace f::ASM
     {
         return punctuation >= Punctuation::WHITE_CHARACTER;
     }
+
+	inline bool is_numeric_litral(Token_Type token_type)
+	{
+		return token_type >= Token_Type::NUMERIC_LITERAL_I8;
+	}
 }

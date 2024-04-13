@@ -284,10 +284,12 @@ namespace f::ASM
 					push_raw_data(section, to_utf8(*current_token.value.string), (uint32_t)get_string_size(*current_token.value.string));
 					stream::peek(stream); // String literal
 				}
-				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I32) {
-					if (current_token.value.integer < 0 || current_token.value.integer > 256) {
-						report_error(Compiler_Error::error, current_token, "Operand value out of range: if you specify a character by its value it should be in range [0-256].");
-					}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I8) {
+					unsigned char value = (unsigned char)current_token.value.integer;
+					push_raw_data(section, &value, sizeof(value));	// byte value
+					stream::peek(stream);
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI8) {
 					unsigned char value = (unsigned char)current_token.value.integer;
 					push_raw_data(section, &value, sizeof(value));	// byte value
 					stream::peek(stream);
@@ -295,6 +297,9 @@ namespace f::ASM
 				else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
 					&& current_token.value.punctuation == Punctuation::COMMA) {
 					stream::peek(stream);	// ,
+				}
+				else if (is_numeric_litral(current_token.type)) {
+					report_error(Compiler_Error::error, current_token, "Operand value out of range: if you specify a character by its value it should be in range [0-256].");
 				}
 
 				current_token = stream::get(stream);
@@ -319,6 +324,7 @@ namespace f::ASM
 		size_t		operand_index = 0;
 		Operand		operands[NB_MAX_OPERAND_PER_INSTRUCTION] = {};	// @Warning Initialized to 0 if one operand isn't used (else the search may fails)
 		Instruction	instruction;
+		Token		instruction_token;
 
 		current_token = stream::get(stream);
 		starting_line = current_token.line;
@@ -337,6 +343,7 @@ namespace f::ASM
 			}
 			else if (current_token.type == Token_Type::INSTRUCTION)
 			{
+				instruction_token = current_token;
 				instruction = current_token.value.instruction;
 
 				stream::peek(stream); // Instruction
@@ -354,10 +361,30 @@ namespace f::ASM
 					stream::peek(stream); // Register
 				}
 				else if (current_token.type == Token_Type::IDENTIFIER) {
+					operands[operand_index].type = Operand::Type::ADDRESS;
+//					operands[operand_index].value.integer = current_token.value._register; // @TODO push label or function name here
+					operands[operand_index].size = Operand::Size::QUAD_WORD;	// @TODO base size of the target architecture
 
 					// @TODO
 
 					stream::peek(stream); // Identifier
+				}
+				// @TODO Do we need to do something cleaver to factorize code here?
+				// In the lexer, by having the size and sign as flags on numeric literal?
+				// Or here with a table that give the type of the numeric literal kind?
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I8) {
+					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].size = Operand::Size::BYTE;
+					operands[operand_index].value.integer = current_token.value.integer;
+
+					stream::peek(stream); // Numeric value
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I16) {
+					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].size = Operand::Size::WORD;
+					operands[operand_index].value.integer = current_token.value.integer;
+
+					stream::peek(stream); // Numeric value
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I32) {
 					operands[operand_index].type = Operand::Type::IMMEDIATE;
@@ -370,6 +397,22 @@ namespace f::ASM
 					operands[operand_index].type = Operand::Type::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::QUAD_WORD;
 					operands[operand_index].value.integer = current_token.value.integer;
+
+					stream::peek(stream); // Numeric value
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI8) {
+					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].size = Operand::Size::BYTE;
+
+					operands[operand_index].value.unsigned_integer = current_token.value.unsigned_integer;
+
+					stream::peek(stream); // Numeric value
+				}
+				else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI16) {
+					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].size = Operand::Size::WORD;
+
+					operands[operand_index].value.unsigned_integer = current_token.value.unsigned_integer;
 
 					stream::peek(stream); // Numeric value
 				}
@@ -418,7 +461,10 @@ namespace f::ASM
 			current_token = stream::get(stream);
 		}
 
-		push_instruction(section, instruction, operands[0], operands[1]);
+		if (!push_instruction(section, instruction, operands[0], operands[1])) {
+			report_error(Compiler_Error::error, instruction_token, "Unable to find encoding description for the instruction .. with operands .. and ...");
+		}
+
 		if (stream::is_eof(stream)) {
 			// @TODO Test and improve this error message
 			report_error(Compiler_Error::error, current_token, "End of file reached before the closure of the section");
@@ -574,22 +620,24 @@ namespace f::ASM
 		return g_instruction_desc_table_indices[(size_t)instruction + 1];
 	}
 
-	void push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2)
+	bool push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2)
 	{
 		// Find the instruction decription that match parameters
 		size_t desc_index = get_first_instruction_desc_index(instruction);
 		for (; desc_index < get_next_instruction_first_desc(instruction); desc_index++)
 		{
 			// @TODO handle flags,...
+			// immediate size value promotions
 			if (g_instruction_desc_table[desc_index].op1.type == operand1.type && g_instruction_desc_table[desc_index].op1.size == operand1.size
-				&& ((g_instruction_desc_table[desc_index].op2.type == operand1.type && g_instruction_desc_table[desc_index].op2.size == operand2.size)
+				&& ((g_instruction_desc_table[desc_index].op2.type == operand2.type && g_instruction_desc_table[desc_index].op2.size == operand2.size)
 					|| (g_instruction_desc_table[desc_index].op2.type == Operand::Type::NONE && g_instruction_desc_table[desc_index].op2.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
 				break;
 			}
 		}
 		if (desc_index == get_next_instruction_first_desc(instruction)) {
 			// @TODO improve this error message (handle flags)
-			report_error(Compiler_Error::error, "Unable to find encoding description for the instruction .. with operands .. and ...");
+			// We may have to return false and print the error in the caller to have access to tokens
+			return false;
 		}
 
 
@@ -598,6 +646,7 @@ namespace f::ASM
 
 		// @TODO handle label and addresses (by adding a new ADDR_TO_PATCH)
 		// Function names have certainly to be handled like labels and trigger conflicts with labels
+		return true;
 	}
 
 	void push_raw_data(Section* section, uint8_t* data, uint32_t size)

@@ -8,12 +8,12 @@ namespace f::ASM
 {
 	size_t g_instruction_desc_table_indices[(size_t)Instruction::COUNT + 1] = {
 		0,	// UNKNOWN
-		0,	// UNKNOWN has 0 desc
-		2,
-		4,
-		6,
-		8,
-		10,
+		0,	// ADD - UNKNOWN has 0 desc
+		2,	// CALL
+		3,	// HLT
+		4,	// MOV
+		8,	// PUSH
+		10,	// SUB
 		12
 	};
 
@@ -21,27 +21,27 @@ namespace f::ASM
 		// UNKNOWN
 
 		// ADD
-		{0x00, {Operand::Type::ADDRESS, Operand::Size::BYTE}},
+		{0x83, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::BYTE}}, // ADD     rm64,imm8           [mi:    hle o64 83 /0 ib,s]         X64,LOCK
 		{0x16, {Operand::Type::ADDRESS, Operand::Size::WORD}},
 
 		// CALL
-		{0x00, {Operand::Type::ADDRESS, Operand::Size::BYTE}},
-		{0x16, {Operand::Type::NONE, Operand::Size::NONE}},
+		{0xFF, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::NONE, Operand::Size::NONE}},	// CALL        mem64|far           [m: o64 ff /3]              X64
 
 		// HLT
-		{0x00, {Operand::Type::ADDRESS, Operand::Size::BYTE}},
-		{0x16, {Operand::Type::ADDRESS, Operand::Size::WORD}},
+		{0xF4},	// HLT     void                [   f4]                 8086,PRIV
 
 		// MOV
-		{0x00, {Operand::Type::ADDRESS, Operand::Size::BYTE}},
-		{0x16, {Operand::Type::ADDRESS, Operand::Size::WORD}},
+		{0xB8, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::BYTE}}, // ??? seems to be a double immediate at least: MOV     reg32,imm           [ri:    o32 b8+r id]                386,SM
+		{0xB8, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::BYTE}}, // ??? seems to be a double immediate at least: MOV     reg32,imm           [ri:    o32 b8+r id]                386,SM
+		{0x8B, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     reg64,reg64[rm:o64 8b / r]              X64
+		{0x8B, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOV     reg64,mem           [rm:    o64 8b /r]              X64,SM
 
 		// PUSH
-		{0x00, {Operand::Type::ADDRESS, Operand::Size::BYTE}},
+		{0x6A, {Operand::Type::IMMEDIATE, Operand::Size::BYTE}}, // PUSH        imm8                [i: 6a ib,s]                    186
 		{0x16, {Operand::Type::ADDRESS, Operand::Size::WORD}},
 
 		// SUB
-		{0x83, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::BYTE}}, // SUB     rm32,imm8           [mi:    hle o32 83 /5 ib,s]         386,LOCK
+		{0x83, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::BYTE}}, // SUB     rm64,imm8           [mi:    hle o64 83 /5 ib,s]         X64,LOCK
 		{0x16, {Operand::Type::ADDRESS, Operand::Size::WORD}},
 	};
 
@@ -53,22 +53,22 @@ namespace f::ASM
 		Operand::Size::BYTE,	// AH,
 		Operand::Size::WORD,	// AX,
 		Operand::Size::DOUBLE_WORD,	// EAX,
-		Operand::Size::DOUBLE_WORD,	// RAX,
+		Operand::Size::QUAD_WORD,	// RAX,
 		Operand::Size::BYTE,	// BL,
 		Operand::Size::BYTE,	// BH,
 		Operand::Size::WORD,	// BX,
 		Operand::Size::DOUBLE_WORD,	// EBX,
-		Operand::Size::DOUBLE_WORD,	// RBX,
+		Operand::Size::QUAD_WORD,	// RBX,
 		Operand::Size::BYTE,	// CL,
 		Operand::Size::BYTE,	// CH,
 		Operand::Size::WORD,	// CX,
 		Operand::Size::DOUBLE_WORD,	// ECX,
-		Operand::Size::DOUBLE_WORD,	// RCX,
+		Operand::Size::QUAD_WORD,	// RCX,
 		Operand::Size::BYTE,	// DL,
 		Operand::Size::BYTE,	// DH,
 		Operand::Size::WORD,	// DX,
 		Operand::Size::DOUBLE_WORD,	// EDX,
-		Operand::Size::DOUBLE_WORD,	// RDX,
+		Operand::Size::QUAD_WORD,	// RDX,
 		Operand::Size::BYTE,	// SPL,
 		Operand::Size::WORD,	// SP,
 		Operand::Size::DOUBLE_WORD,	// ESP,

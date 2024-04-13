@@ -49,6 +49,8 @@ namespace f::ASM
 		{'\n', Punctuation::NEW_LINE_CHARACTER},   // newline
 		{'~', Punctuation::TILDE},
 		{'`', Punctuation::BACKQUOTE},
+		{'-', Punctuation::DASH},
+		{'+', Punctuation::PLUS},
 		{'{', Punctuation::OPEN_BRACE},
 		{'}', Punctuation::CLOSE_BRACE},
 		{':', Punctuation::COLON},
@@ -479,7 +481,7 @@ namespace f::ASM
 						peek(stream, current_column);
 
 						bool        raw_string_closed = false;
-						uint8_t* string_literal = stream::get_pointer(stream);
+						uint8_t*	string_literal = stream::get_pointer(stream);
 						size_t      string_size = 0;
 
 						while (stream::is_eof(stream) == false)
@@ -770,16 +772,55 @@ namespace f::ASM
 						token.type = Token_Type::NUMERIC_LITERAL_I64;
 					}
 					else if (is_flag_set(numeric_literal_flags, Numeric_Value_Flag::UNSIGNED_SUFFIX)) {
-						token.type = token.value.unsigned_integer > 4'294'967'295 ? Token_Type::NUMERIC_LITERAL_UI64 : Token_Type::NUMERIC_LITERAL_UI32;
+						if (token.value.unsigned_integer > 0xFFFF'FFFF) {
+							token.type = Token_Type::NUMERIC_LITERAL_UI64;
+						}
+						else if (token.value.unsigned_integer > 0xFFFF) {
+							token.type = Token_Type::NUMERIC_LITERAL_UI32;
+						}
+						else if (token.value.unsigned_integer > 0xFF) {
+							token.type = Token_Type::NUMERIC_LITERAL_UI16;
+						}
+						else
+							token.type = Token_Type::NUMERIC_LITERAL_UI8;
 					}
-					else if (token.value.unsigned_integer > 2'147'483'647) {
-						token.type = Token_Type::NUMERIC_LITERAL_I64;
+					else {
+						if (token.value.unsigned_integer > 0xFFFF'FFFF) {
+							token.type = Token_Type::NUMERIC_LITERAL_I64;
+						}
+						else if (token.value.unsigned_integer > 0xFFFF) {
+							token.type = Token_Type::NUMERIC_LITERAL_I32;
+						}
+						else if (token.value.unsigned_integer > 0xFF) {
+							token.type = Token_Type::NUMERIC_LITERAL_I16;
+						}
+						else
+							token.type = Token_Type::NUMERIC_LITERAL_I8;
 					}
 				}
 
 				// We can simply compute the size of text by comparing the position on the stream with the one at the beginning of the numeric literal
 				language::resize(token.text, stream::get_pointer(stream) - language::to_utf8(token.text));
-				memory::array_push_back(tokens, token);
+
+				// Hack to handle negative numbers (we directly negate the value and replace the previous token if it's a dash)
+				Token* previous_token = memory::get_array_last_element(tokens);
+				if (previous_token->type == Token_Type::SYNTAXE_OPERATOR && previous_token->value.punctuation == Punctuation::DASH) {
+					// May cause issues if the number have an unsigned suffix (because we access the signed version of the value (integer))
+					// @TODO We certainly need to trigger an error
+
+					// We change the type and value of the previous token
+					previous_token->type = token.type;
+					previous_token->value.integer = -token.value.integer;
+					// We merge the previous token with the new one
+					previous_token->text.size = (token.text.ptr + token.text.size) - previous_token->text.ptr;
+				}
+				else if (previous_token->type == Token_Type::SYNTAXE_OPERATOR && previous_token->value.punctuation == Punctuation::PLUS) {
+					// We merge the previous token with the new one
+					previous_token->text.size = (token.text.ptr + token.text.size) - previous_token->text.ptr;
+				}
+				else {
+					memory::array_push_back(tokens, token);
+				}
 			}
 			else {  // Will be an identifier
 				Token   token;
@@ -896,6 +937,18 @@ namespace f::ASM
 				break;
 			case Token_Type::STRING_LITERAL:
 				print_to_builder(string_builder, "%d, %d - \033[38;5;3mSTRING_LITERAL\033[0m: \033[38;5;3m\"%v\"\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+				break;
+			case Token_Type::NUMERIC_LITERAL_I8:
+				print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_I8\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+				break;
+			case Token_Type::NUMERIC_LITERAL_UI8:
+				print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_UI8\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+				break;
+			case Token_Type::NUMERIC_LITERAL_I16:
+				print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_I16\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
+				break;
+			case Token_Type::NUMERIC_LITERAL_UI16:
+				print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_UI16\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
 				break;
 			case Token_Type::NUMERIC_LITERAL_I32:
 				print_to_builder(string_builder, "%d, %d - \033[38;5;14mNUMERIC_LITERAL_I32\033[0m: \033[38;5;14m%v\033[0m", tokens[i].line, tokens[i].column, tokens[i].text);
