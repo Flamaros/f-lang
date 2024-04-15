@@ -26,7 +26,7 @@ namespace f::ASM
 	// for the current instruction. That is why I have one more indice than the instruction count for the last instruction.
 	extern size_t g_instruction_desc_table_indices[(size_t)Instruction::COUNT + 1];
 	extern Instruction_Desc g_instruction_desc_table[];
-	extern Operand::Size g_register_sizes[(size_t)Register::COUNT];
+	extern Register_Desc g_register_desc_table[(size_t)Register::COUNT];
 
 	inline Imported_Library* allocate_imported_library()
 	{
@@ -356,7 +356,7 @@ namespace f::ASM
 				if (current_token.type == Token_Type::REGISTER) {
 					operands[operand_index].type = Operand::Type::REGISTER;
 					operands[operand_index].value._register = current_token.value._register;
-					operands[operand_index].size = g_register_sizes[(size_t)current_token.value._register];
+					operands[operand_index].size = g_register_desc_table[(size_t)current_token.value._register].size;
 
 					stream::peek(stream); // Register
 				}

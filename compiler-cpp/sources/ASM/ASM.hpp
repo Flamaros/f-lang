@@ -74,6 +74,12 @@ namespace f
 			}				value;
 		};
 
+		struct Register_Desc
+		{
+			Operand::Size	size;
+			uint8_t			id;
+		};
+
 		struct Instruction_Desc
 		{
 			uint8_t	opcode;
