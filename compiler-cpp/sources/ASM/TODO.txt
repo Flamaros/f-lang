@@ -1,3 +1,14 @@
+Faire le programme de conversion de la base de données des instructions vers du code c++.
+Gérer les différentes règles d'encodage modr/rm, ... avec les prefix,...
+Gérer le patching des adresses dans les sections (voir le pb du référencement des valeurs)
+Rendre dynamique la génération des tables IAT,... (tout ce qui est relatif aux tables d'adresses des fonctions)
+
+
+
+Il faudra mettre la fonction push_instruction dans les backends par architecture targetées, car l'encodage est très spécifique au set d'instructions.
+
+
+
 Actuellement ASM_Result n'est utilisé que pour récupérer le nom des librairies à importer.
   - Le remplissage des IAT est toujours hard-codé (car le code l'est également et les RVA ne seraient pas bonnes sinon).
 

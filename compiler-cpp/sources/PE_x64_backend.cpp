@@ -389,6 +389,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
             + sizeof(IMAGE_BASE_RELOCATION) + sizeof(rdata_relocation_offsets); // relocation of first memory page of .text section
 #endif
 
+		// @TODO add the function counting (3 here is hard-coded)
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
             + (hash_table_get_size(asm_result.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
             + sizeof(LONGLONG) * (3 + 1); // ILT (3 entries + 1 null)
@@ -401,6 +402,14 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
     core::Assert(image_nt_header.FileHeader.NumberOfSections <= 96);
 
+	language::string_view	section_name;
+
+	language::assign(section_name, (uint8_t*)".text");
+	ASM::Section* text_section = ASM::get_section(asm_result, section_name);
+
+	language::assign(section_name, (uint8_t*)".rdata");
+	ASM::Section* rdata_section = ASM::get_section(asm_result, section_name);
+
     // .text section
     {
         ZoneScopedN(".text section");
@@ -408,7 +417,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
         RtlSecureZeroMemory(&text_image_section_header, sizeof(text_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
 
         RtlCopyMemory(text_image_section_header.Name, ".text", 6);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
-        text_image_section_header.Misc.VirtualSize = sizeof(hello_world_instructions);
+        text_image_section_header.Misc.VirtualSize = (DWORD)stream::get_size(text_section->stream_data);
         text_image_section_header.VirtualAddress = text_image_section_virtual_address;
         text_image_section_header.SizeOfRawData = compute_aligned_size(text_image_section_header.Misc.VirtualSize, file_alignment);
         text_image_section_header.PointerToRawData = text_image_section_pointer_to_raw_data;
@@ -421,10 +430,6 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
         text_image_section_header_address = (DWORD)get_file_position(output_file);
         write_file(output_file, (uint8_t*)&text_image_section_header, sizeof(text_image_section_header), &bytes_written);
     }
-
-	language::string_view	section_name;
-	language::assign(section_name, (uint8_t*)".rdata");
-	ASM::Section* rdata_section = ASM::get_section(asm_result, section_name);
 
 	// .rdata section
     {
@@ -504,8 +509,8 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     {
         ZoneScopedN("Write code (.text section data)");
 
-        write_file(output_file, (uint8_t*)hello_world_instructions, sizeof(hello_world_instructions), &bytes_written);
-        write_zeros(output_file, text_image_section_header.SizeOfRawData - sizeof(hello_world_instructions));
+		write_file(output_file, text_section->stream_data, &bytes_written);
+        write_zeros(output_file, text_image_section_header.SizeOfRawData - bytes_written);
         size_of_image += compute_aligned_size(text_image_section_header.SizeOfRawData, section_alignment);
     }
 
@@ -514,19 +519,8 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 	{
         ZoneScopedN("Write read only data (.rdata section data)");
 
-        DWORD rdata_section_size = 0;
-
 		write_file(output_file, rdata_section->stream_data, &bytes_written);
-		rdata_section_size += bytes_written;
-		//for (size_t i = 0; i < memory::get_array_size(asm_result.read_only_data.literals); i++) {
-        //    write_file(output_file, memory::get_array_data(asm_result.read_only_data.literals[i].data), (uint32_t)memory::get_array_bytes_size(asm_result.read_only_data.literals[i].data), &bytes_written);
-        //    rdata_section_size += bytes_written;
-        //}
-
-        //write_file(output_file, (uint8_t*)message[0], (DWORD)fstd::language::string_literal_size(message[0]) + 1, &bytes_written); // +1 to write the ending '\0'
-        //rdata_section_size += bytes_written;
-
-        write_zeros(output_file, rdata_image_section_header.SizeOfRawData - rdata_section_size);
+        write_zeros(output_file, rdata_image_section_header.SizeOfRawData - bytes_written);
         size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
     }
 

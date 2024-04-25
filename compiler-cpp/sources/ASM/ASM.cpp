@@ -640,6 +640,45 @@ namespace f::ASM
 			return false;
 		}
 
+		uint8_t data[64];
+		uint32_t size = 0;
+
+		// REX.X prefix (for 64bits instruction that is not in 64bits by default)
+		data[size++] = 0b0100 << 4 | 0b1100; // first 4bits are the prefix bit pattern
+
+		data[size] = g_instruction_desc_table[desc_index].opcode;
+		size += sizeof(g_instruction_desc_table[desc_index].opcode);
+
+		// MI type encoding
+		{
+			uint8_t modrm = 0;
+			// modr / m struct :
+			//     (most significant bit)
+			//     2 bits       mod - 00 = > indirect, e.g.[eax]
+			//     01 = > indirect plus byte offset
+			//     10 = > indirect plus word offset
+			//     11 = > register
+			//     3 bits       reg - identifies register
+			//     3 bits       rm - identifies second register or additional data
+			//     (least significant bit)
+
+			// First operand encoded in modr/m struct
+			if (operand1.type == Operand::Type::REGISTER) {
+				modrm |= 0b11 << 6; // register flag
+
+				modrm |= 5 << 3; // second register or additional data (/x value)
+				modrm |= g_register_desc_table[(size_t)operand1.value._register].id;
+
+				data[size++] = modrm;
+			}
+
+			if (operand2.type == Operand::Type::IMMEDIATE
+				&& operand2.size == Operand::Size::BYTE) {
+				data[size++] = (uint8_t)operand2.value.integer;
+			}
+		}
+
+		push_raw_data(section, data, size);
 
 		// @TODO continuer de definir la struct Operand
 		// Voir comment supporter l'encodage de l'instruction lea, je ne comprend pas l'operation sur la 2eme operande qui est une immediate value

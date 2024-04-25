@@ -72,7 +72,7 @@ namespace f::ASM
 		{Operand::Size::BYTE, 0},			// SPL,
 		{Operand::Size::WORD, 0},			// SP,
 		{Operand::Size::DOUBLE_WORD, 0},	// ESP,
-		{Operand::Size::QUAD_WORD, 0},		// RSP,
+		{Operand::Size::QUAD_WORD, 4},		// RSP,
 		{Operand::Size::BYTE, 0},			// BPL,
 		{Operand::Size::WORD, 0},			// BP,
 		{Operand::Size::DOUBLE_WORD, 0},	// EBP,
