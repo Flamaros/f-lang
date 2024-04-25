@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29519.87
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "f-lang", "f-lang\f-lang.vcxproj", "{BCCB6939-B22F-4A98-A3B6-05EE54D11334}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -9,11 +9,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "f-lang", "f-lang\f-lang.vcx
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "f-lang_lib", "f-lang_lib\f-lang_lib.vcxproj", "{C7AA29E6-8C01-4CC5-ADFA-B1F1B5E94FE0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD} = {796110F7-0383-4731-8BE0-5C64F2A54CDD}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tests", "tests\tests.vcxproj", "{933018DC-3DBB-4DA6-8E19-3F9C4DB12552}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C7AA29E6-8C01-4CC5-ADFA-B1F1B5E94FE0} = {C7AA29E6-8C01-4CC5-ADFA-B1F1B5E94FE0}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "f-asm_nasm_db_to_code", "f-asm_nasm_db_to_code\f-asm_nasm_db_to_code.vcxproj", "{796110F7-0383-4731-8BE0-5C64F2A54CDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +66,18 @@ Global
 		{933018DC-3DBB-4DA6-8E19-3F9C4DB12552}.Release-Tracy|x64.Build.0 = Release-Tracy|x64
 		{933018DC-3DBB-4DA6-8E19-3F9C4DB12552}.Release-Tracy|x86.ActiveCfg = Release-Tracy|Win32
 		{933018DC-3DBB-4DA6-8E19-3F9C4DB12552}.Release-Tracy|x86.Build.0 = Release-Tracy|Win32
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Debug|x64.ActiveCfg = Debug|x64
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Debug|x64.Build.0 = Debug|x64
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Debug|x86.ActiveCfg = Debug|Win32
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Debug|x86.Build.0 = Debug|Win32
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Release|x64.ActiveCfg = Release|x64
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Release|x64.Build.0 = Release|x64
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Release|x86.ActiveCfg = Release|Win32
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Release|x86.Build.0 = Release|Win32
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Release-Tracy|x64.ActiveCfg = Release-Tracy|x64
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Release-Tracy|x64.Build.0 = Release-Tracy|x64
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Release-Tracy|x86.ActiveCfg = Release|Win32
+		{796110F7-0383-4731-8BE0-5C64F2A54CDD}.Release-Tracy|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

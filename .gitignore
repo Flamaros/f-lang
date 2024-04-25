@@ -16,6 +16,10 @@ compiler-cpp/Release
 compiler-cpp/Release-Tracy
 compiler-cpp/x64
 compiler-cpp/compileData*
+compiler-cpp/f-asm_nasm_db_to_code/Debug
+compiler-cpp/f-asm_nasm_db_to_code/Release
+compiler-cpp/f-asm_nasm_db_to_code/Release-Tracy
+compiler-cpp/f-asm_nasm_db_to_code/x64
 compiler-cpp/f-lang/Debug
 compiler-cpp/f-lang/Release
 compiler-cpp/f-lang/Release-Tracy
