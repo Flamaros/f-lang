@@ -57,6 +57,96 @@ static vector<string> x64_instruction_sets = {
 */
 };
 
+/// Instruction encoding rules (comments from insns.pl file of NASM compiler)
+/// [operands: opcodes]
+///
+/// The operands word lists the order of the operands :
+///
+/// r = register field in the modr / m
+/// m = modr / m
+/// v = VEX "v" field
+/// i = immediate
+/// s = register field of is4 / imz2 field
+/// - = implicit (unencoded) operand
+/// x = indeX register of mib. 014..017 bytecodes are used.
+///
+/// For an operand that should be filled into more than one field,
+/// enter it as e.g. "r+v".
+std::string operands_regex = R"REG(([rmvis\-x]{0,4}):?)REG";
+
+///my% plain_codes = (
+///		'o16' = > 0320, # 16 - bit operand size
+///		'o32' = > 0321, # 32 - bit operand size
+///		'odf' = > 0322, # Operand size is default
+///		'o64' = > 0324, # 64 - bit operand size requiring REX.W
+///		'o64nw' = > 0323, # Implied 64 - bit operand size(no REX.W)
+///		'a16' = > 0310,
+///		'a32' = > 0311,
+///		'adf' = > 0312, # Address size is default
+///		'a64' = > 0313,
+///		'!osp' = > 0364,
+///		'!asp' = > 0365,
+///		'f2i' = > 0332, # F2 prefix, but 66 for operand size is OK
+///		'f3i' = > 0333, # F3 prefix, but 66 for operand size is OK
+///		'mustrep' = > 0336,
+///		'mustrepne' = > 0337,
+///		'rex.l' = > 0334,
+///		'norexb' = > 0314,
+///		'norexx' = > 0315,
+///		'norexr' = > 0316,
+///		'norexw' = > 0317,
+///		'repe' = > 0335,
+///		'nohi' = > 0325, # Use spl / bpl / sil / dil even without REX
+///		'nof3' = > 0326, # No REP 0xF3 prefix permitted
+///		'norep' = > 0331, # No REP prefix permitted
+///		'wait' = > 0341, # Needs a wait prefix
+///		'resb' = > 0340,
+///		'np' = > 0360, # No prefix
+///		'jcc8' = > 0370, # Match only if Jcc possible with single byte
+///		'jmp8' = > 0371, # Match only if JMP possible with single byte
+///		'jlen' = > 0373, # Length of jump
+///		'hlexr' = > 0271,
+///		'hlenl' = > 0272,
+///		'hle' = > 0273,
+///
+///		# This instruction takes XMM VSIB
+///		'vsibx' = > 0374,
+///		'vm32x' = > 0374,
+///		'vm64x' = > 0374,
+///
+///		# This instruction takes YMM VSIB
+///		'vsiby' = > 0375,
+///		'vm32y' = > 0375,
+///		'vm64y' = > 0375,
+///
+///		# This instruction takes ZMM VSIB
+///		'vsibz' = > 0376,
+///		'vm32z' = > 0376,
+///		'vm64z' = > 0376,
+///		);
+std::string opcode_flags_regex = R"REG((016|032|0df|064|064nw|a16|a32|adf|a64|\!osp|\!asp|f2i|f3i|mustrep|mustrepne|rex\.l|norexb|norexx|norexr|norexw|repe|nohi|nof3|norep|wait|resb|np|jcc8|jmp8|jlen|hlexr|hlenl|hle|vsibx|vm32x|vm64x|vsiby|vm32y|vm64y|vsibz|vm32z|vm64z)?)REG";
+
+std::string opcode_regex = R"REG(([\0-9a-f]+))REG";
+std::string modr_value_regex = R"REG((\/[\dr])?)REG";
+
+/// my% imm_codes = (
+/// 	'ib' = > 020, # imm8
+/// 	'ib,u' = > 024, # Unsigned imm8
+/// 	'iw' = > 030, # imm16
+/// 	'ib,s' = > 0274, # imm8 sign - extended to opsize or bits
+/// 	'iwd' = > 034, # imm16 or imm32, depending on opsize
+/// 	'id' = > 040, # imm32
+/// 	'id,s' = > 0254, # imm32 sign - extended to 64 bits
+/// 	'iwdq' = > 044, # imm16 / 32 / 64, depending on addrsize
+/// 	'rel8' = > 050,
+/// 	'iq' = > 054,
+/// 	'rel16' = > 060,
+/// 	'rel' = > 064, # 16 or 32 bit relative operand
+/// 	'rel32' = > 070,
+/// 	'seg' = > 074,
+/// 	);
+std::string immediates_regex = R"REG((ib|ib,u|iw|ib,s|iwd|id|id,s|iwdq|rel8|iq|rel16|rel|rel32|seg)?)REG";
+
 int main(int ac, char** av)
 {
 #if defined(TRACY_ENABLE)
@@ -138,7 +228,15 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 	{
 		regex	instruction_desc_regex(R"REG((\w+)\s+([\w,]+)\s+(\[[\w\s\/\-:,]+\])\s+([\w,]+))REG");
 		smatch	instruction_desc_match_result;
-		regex	encoding_rules_regex(R"REG(([\-rmi]{0,4}):?\s+(\w+)\s+(\w+)\s+([\da-f]{2})s+(\/[\dr])?\s+([\w,]+))REG");
+		regex	encoding_rules_regex(R"REG(\[)REG"
+			+ operands_regex + R"REG(\s*)REG"
+			+ opcode_flags_regex + R"REG(\s*)REG"
+			+ opcode_flags_regex + R"REG(\s*)REG"
+			+ opcode_regex + R"REG(\s*)REG"
+			+ modr_value_regex + R"REG(\s*)REG"
+			+ immediates_regex
+			+ R"REG(\])REG"
+		);
 		smatch	encoding_rules_match_result;
 
 		string					previous_instruction_name;
@@ -208,7 +306,15 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 				}
 
 				if (is_x64_supported) {
-
+					std::string encoding_rules_string = encoding_rules.str();
+					if (regex_match(encoding_rules_string, encoding_rules_match_result, encoding_rules_regex)) {
+						//sub_match instruction = encoding_rules_match_result[1];
+						//sub_match operand_types = encoding_rules_match_result[2];
+						//sub_match encoding_rules = encoding_rules_match_result[3];
+						//sub_match architectures_flags = encoding_rules_match_result[4];
+						int i = 0;
+						i = 2;
+					}
 
 					x64_cpp_instruction_desc_table << "        "
 						<< instruction << " " << operand_types << endl;
