@@ -24,1426 +24,2039 @@ namespace f::ASM
         157,	// BTR
         166,	// BTS
         175,	// CALL
-        183,	// CBW
-        184,	// CDQ
-        185,	// CDQE
-        186,	// CLC
-        187,	// CLD
-        188,	// CLI
-        189,	// CLTS
-        190,	// CMC
-        191,	// CMP
-        230,	// CMPSB
-        231,	// CMPSD
-        232,	// CMPSQ
-        233,	// CMPSW
-        236,	// CMPXCHG486
-        242,	// CMPXCHG16B
-        243,	// CQO
-        244,	// CWD
-        245,	// CWDE
-        246,	// DAA
-        247,	// DAS
-        248,	// DEC
-        252,	// DIV
-        256,	// ENTER
-        257,	// F2XM1
-        258,	// FABS
-        259,	// FADD
-        262,	// FADDP
-        263,	// FBLD
-        265,	// FBSTP
-        267,	// FCHS
-        268,	// FCLEX
-        269,	// FCOM
-        272,	// FCOMP
-        275,	// FCOMPP
-        276,	// FCOS
-        277,	// FDECSTP
-        278,	// FDISI
-        279,	// FDIV
-        282,	// FDIVP
-        283,	// FDIVR
-        286,	// FDIVRP
-        287,	// FENI
-        288,	// FFREE
-        289,	// FFREEP
-        290,	// FIADD
-        292,	// FICOM
-        294,	// FICOMP
-        296,	// FIDIV
-        298,	// FIDIVR
-        300,	// FILD
-        303,	// FIMUL
-        305,	// FINCSTP
-        306,	// FINIT
-        307,	// FIST
-        309,	// FISTP
-        312,	// FISUB
-        314,	// FISUBR
-        316,	// FLD
-        320,	// FLD1
-        321,	// FLDCW
-        322,	// FLDENV
-        323,	// FLDL2E
-        324,	// FLDL2T
-        325,	// FLDLG2
-        326,	// FLDLN2
-        327,	// FLDPI
-        328,	// FLDZ
-        329,	// FMUL
-        332,	// FMULP
-        333,	// FNCLEX
-        334,	// FNDISI
-        335,	// FNENI
-        336,	// FNINIT
-        337,	// FNOP
-        338,	// FNSAVE
-        339,	// FNSTCW
-        340,	// FNSTENV
-        341,	// FNSTSW
-        343,	// FPATAN
-        344,	// FPREM
-        345,	// FPREM1
-        346,	// FPTAN
-        347,	// FRNDINT
-        348,	// FRSTOR
-        349,	// FSAVE
-        350,	// FSCALE
-        351,	// FSETPM
-        352,	// FSIN
-        353,	// FSINCOS
-        354,	// FSQRT
-        355,	// FST
-        358,	// FSTCW
-        359,	// FSTENV
-        360,	// FSTP
-        364,	// FSTSW
-        366,	// FSUB
-        369,	// FSUBP
-        370,	// FSUBR
-        373,	// FSUBRP
-        374,	// FTST
-        375,	// FUCOM
-        376,	// FUCOMP
-        377,	// FUCOMPP
-        378,	// FXAM
-        379,	// FXCH
-        380,	// FXTRACT
-        381,	// FYL2X
-        382,	// FYL2XP1
-        383,	// HLT
-        384,	// IBTS
-        388,	// ICEBP
-        389,	// IDIV
-        393,	// IMUL
-        427,	// IN
-        433,	// INC
-        437,	// INSB
-        438,	// INSD
-        439,	// INSW
-        440,	// INT
-        441,	// INT01
-        442,	// INT1
-        443,	// INT03
-        444,	// INT3
-        445,	// INTO
-        446,	// INVD
-        447,	// INVLPG
-        449,	// IRET
-        450,	// IRETD
-        451,	// IRETQ
-        452,	// IRETW
-        453,	// JCXZ
-        454,	// JECXZ
-        455,	// JRCXZ
-        456,	// JMP
-        465,	// LAHF
-        466,	// LAR
-        478,	// LDS
-        480,	// LEA
-        486,	// LEAVE
-        487,	// LES
-        489,	// LFENCE
-        490,	// LFS
-        493,	// LGDT
-        494,	// LGS
-        497,	// LIDT
-        498,	// LLDT
-        501,	// LMSW
-        504,	// LOADALL
-        505,	// LOADALL286
-        506,	// LODSB
-        507,	// LODSD
-        508,	// LODSQ
-        509,	// LODSW
-        510,	// LOOP
-        514,	// LOOPE
-        518,	// LOOPNE
-        522,	// LOOPNZ
-        526,	// LOOPZ
-        530,	// LSL
-        542,	// LSS
-        545,	// LTR
-        548,	// MFENCE
-        551,	// MOV
-        608,	// MOVSB
-        609,	// MOVSD
-        610,	// MOVSQ
-        611,	// MOVSW
-        612,	// MOVSX
-        618,	// MOVSXD
-        619,	// MOVSX
-        620,	// MOVZX
-        626,	// MUL
-        630,	// NEG
-        634,	// NOP
-        636,	// NOT
-        640,	// OR
-        679,	// OUT
-        685,	// OUTSB
-        686,	// OUTSD
-        687,	// OUTSW
-        688,	// PAUSE
-        689,	// POP
-        698,	// POPA
-        699,	// POPAD
-        700,	// POPAW
-        701,	// POPF
-        702,	// POPFD
-        703,	// POPFQ
-        704,	// POPFW
-        705,	// PUSH
-        725,	// PUSHA
-        726,	// PUSHAD
-        727,	// PUSHAW
-        728,	// PUSHF
-        729,	// PUSHFD
-        730,	// PUSHFQ
-        731,	// PUSHFW
-        732,	// RCL
-        744,	// RCR
-        756,	// RET
-        758,	// RETF
-        760,	// RETN
-        762,	// RETW
-        764,	// RETFW
-        766,	// RETNW
-        768,	// RETD
-        770,	// RETFD
-        772,	// RETND
-        774,	// RETQ
-        776,	// RETFQ
-        778,	// RETNQ
-        780,	// ROL
-        792,	// ROR
-        804,	// RSDC
-        805,	// RSLDT
-        806,	// RSTS
-        807,	// SAHF
-        808,	// SAL
-        820,	// SALC
-        821,	// SAR
-        833,	// SBB
-        872,	// SCASB
-        873,	// SCASD
-        874,	// SCASQ
-        875,	// SCASW
-        876,	// SFENCE
-        877,	// SGDT
-        878,	// SHL
-        890,	// SHLD
-        902,	// SHR
-        914,	// SHRD
-        926,	// SIDT
-        927,	// SLDT
-        933,	// SKINIT
-        934,	// SMI
-        935,	// SMINTOLD
-        936,	// SMSW
-        941,	// STC
-        942,	// STD
-        943,	// STI
-        944,	// STOSB
-        945,	// STOSD
-        946,	// STOSQ
-        947,	// STOSW
-        948,	// STR
-        953,	// SUB
-        992,	// SVDC
-        993,	// SVLDT
-        994,	// SVTS
-        995,	// SWAPGS
-        996,	// TEST
-        1019,	// UD0
-        1023,	// UD1
-        1027,	// UD2B
-        1031,	// UD2
-        1032,	// UD2A
-        1033,	// UMOV
-        1045,	// VERR
-        1048,	// VERW
-        1051,	// FWAIT
-        1052,	// WBINVD
-        1053,	// XADD
-        1061,	// XBTS
-        1065,	// XCHG
-        1082,	// XLATB
-        1083,	// XLAT
-        1084,	// XOR
-        1128,	// FXRSTOR64
-        1129,	// FXSAVE64
-        1146,	// PEXTRQ
-        1148,	// PINSRQ
-        1153,	// RDPKRU
-        1154,	// WRPKRU
-        1162,	// INCSSPQ
-        1163,	// RDSSPQ
-        1164,	// WRUSSQ
-        1165,	// WRSSQ
+        204,	// CBW
+        205,	// CDQ
+        206,	// CDQE
+        207,	// CLC
+        208,	// CLD
+        209,	// CLI
+        210,	// CLTS
+        211,	// CMC
+        212,	// CMP
+        251,	// CMPSB
+        252,	// CMPSD
+        253,	// CMPSQ
+        254,	// CMPSW
+        257,	// CMPXCHG486
+        263,	// CMPXCHG16B
+        264,	// CQO
+        265,	// CWD
+        266,	// CWDE
+        267,	// DAA
+        268,	// DAS
+        269,	// DEC
+        273,	// DIV
+        277,	// ENTER
+        278,	// F2XM1
+        279,	// FABS
+        280,	// FADD
+        283,	// FADDP
+        284,	// FBLD
+        286,	// FBSTP
+        288,	// FCHS
+        289,	// FCLEX
+        290,	// FCOM
+        293,	// FCOMP
+        296,	// FCOMPP
+        297,	// FCOS
+        298,	// FDECSTP
+        299,	// FDISI
+        300,	// FDIV
+        303,	// FDIVP
+        304,	// FDIVR
+        307,	// FDIVRP
+        308,	// FENI
+        309,	// FFREE
+        310,	// FFREEP
+        311,	// FIADD
+        313,	// FICOM
+        315,	// FICOMP
+        317,	// FIDIV
+        319,	// FIDIVR
+        321,	// FILD
+        324,	// FIMUL
+        326,	// FINCSTP
+        327,	// FINIT
+        328,	// FIST
+        330,	// FISTP
+        333,	// FISUB
+        335,	// FISUBR
+        337,	// FLD
+        341,	// FLD1
+        342,	// FLDCW
+        343,	// FLDENV
+        344,	// FLDL2E
+        345,	// FLDL2T
+        346,	// FLDLG2
+        347,	// FLDLN2
+        348,	// FLDPI
+        349,	// FLDZ
+        350,	// FMUL
+        353,	// FMULP
+        354,	// FNCLEX
+        355,	// FNDISI
+        356,	// FNENI
+        357,	// FNINIT
+        358,	// FNOP
+        359,	// FNSAVE
+        360,	// FNSTCW
+        361,	// FNSTENV
+        362,	// FNSTSW
+        364,	// FPATAN
+        365,	// FPREM
+        366,	// FPREM1
+        367,	// FPTAN
+        368,	// FRNDINT
+        369,	// FRSTOR
+        370,	// FSAVE
+        371,	// FSCALE
+        372,	// FSETPM
+        373,	// FSIN
+        374,	// FSINCOS
+        375,	// FSQRT
+        376,	// FST
+        379,	// FSTCW
+        380,	// FSTENV
+        381,	// FSTP
+        385,	// FSTSW
+        387,	// FSUB
+        390,	// FSUBP
+        391,	// FSUBR
+        394,	// FSUBRP
+        395,	// FTST
+        396,	// FUCOM
+        397,	// FUCOMP
+        398,	// FUCOMPP
+        399,	// FXAM
+        400,	// FXCH
+        401,	// FXTRACT
+        402,	// FYL2X
+        403,	// FYL2XP1
+        404,	// HLT
+        405,	// IBTS
+        409,	// ICEBP
+        410,	// IDIV
+        414,	// IMUL
+        448,	// IN
+        454,	// INC
+        458,	// INSB
+        459,	// INSD
+        460,	// INSW
+        461,	// INT
+        462,	// INT01
+        463,	// INT1
+        464,	// INT03
+        465,	// INT3
+        466,	// INTO
+        467,	// INVD
+        468,	// INVLPG
+        470,	// IRET
+        471,	// IRETD
+        472,	// IRETQ
+        473,	// IRETW
+        474,	// JCXZ
+        475,	// JECXZ
+        476,	// JRCXZ
+        477,	// JMP
+        508,	// LAHF
+        509,	// LAR
+        521,	// LDS
+        523,	// LEA
+        529,	// LEAVE
+        530,	// LES
+        532,	// LFENCE
+        533,	// LFS
+        536,	// LGDT
+        537,	// LGS
+        540,	// LIDT
+        541,	// LLDT
+        544,	// LMSW
+        547,	// LOADALL
+        548,	// LOADALL286
+        549,	// LODSB
+        550,	// LODSD
+        551,	// LODSQ
+        552,	// LODSW
+        553,	// LOOP
+        557,	// LOOPE
+        561,	// LOOPNE
+        565,	// LOOPNZ
+        569,	// LOOPZ
+        573,	// LSL
+        585,	// LSS
+        588,	// LTR
+        591,	// MFENCE
+        594,	// MOV
+        651,	// MOVSB
+        652,	// MOVSD
+        653,	// MOVSQ
+        654,	// MOVSW
+        655,	// MOVSX
+        661,	// MOVSXD
+        662,	// MOVSX
+        663,	// MOVZX
+        669,	// MUL
+        673,	// NEG
+        677,	// NOP
+        679,	// NOT
+        683,	// OR
+        722,	// OUT
+        728,	// OUTSB
+        729,	// OUTSD
+        730,	// OUTSW
+        731,	// PAUSE
+        732,	// POP
+        741,	// POPA
+        742,	// POPAD
+        743,	// POPAW
+        744,	// POPF
+        745,	// POPFD
+        746,	// POPFQ
+        747,	// POPFW
+        748,	// PUSH
+        768,	// PUSHA
+        769,	// PUSHAD
+        770,	// PUSHAW
+        771,	// PUSHF
+        772,	// PUSHFD
+        773,	// PUSHFQ
+        774,	// PUSHFW
+        775,	// RCL
+        787,	// RCR
+        799,	// RET
+        801,	// RETF
+        803,	// RETN
+        805,	// RETW
+        807,	// RETFW
+        809,	// RETNW
+        811,	// RETD
+        813,	// RETFD
+        815,	// RETND
+        817,	// RETQ
+        819,	// RETFQ
+        821,	// RETNQ
+        823,	// ROL
+        835,	// ROR
+        847,	// RSDC
+        848,	// RSLDT
+        849,	// RSTS
+        850,	// SAHF
+        851,	// SAL
+        863,	// SALC
+        864,	// SAR
+        876,	// SBB
+        915,	// SCASB
+        916,	// SCASD
+        917,	// SCASQ
+        918,	// SCASW
+        919,	// SFENCE
+        920,	// SGDT
+        921,	// SHL
+        933,	// SHLD
+        945,	// SHR
+        957,	// SHRD
+        969,	// SIDT
+        970,	// SLDT
+        976,	// SKINIT
+        977,	// SMI
+        978,	// SMINTOLD
+        979,	// SMSW
+        984,	// STC
+        985,	// STD
+        986,	// STI
+        987,	// STOSB
+        988,	// STOSD
+        989,	// STOSQ
+        990,	// STOSW
+        991,	// STR
+        996,	// SUB
+        1035,	// SVDC
+        1036,	// SVLDT
+        1037,	// SVTS
+        1038,	// SWAPGS
+        1039,	// TEST
+        1062,	// UD0
+        1066,	// UD1
+        1070,	// UD2B
+        1074,	// UD2
+        1075,	// UD2A
+        1076,	// UMOV
+        1088,	// VERR
+        1091,	// VERW
+        1094,	// FWAIT
+        1095,	// WBINVD
+        1096,	// XADD
+        1104,	// XBTS
+        1108,	// XCHG
+        1125,	// XLATB
+        1126,	// XLAT
+        1127,	// XOR
+        1171,	// FXRSTOR64
+        1172,	// FXSAVE64
+        1189,	// PEXTRQ
+        1191,	// PINSRQ
+        1196,	// RDPKRU
+        1197,	// WRPKRU
+        1205,	// INCSSPQ
+        1206,	// RDSSPQ
+        1207,	// WRUSSQ
+        1208,	// WRSSQ
     };
 
 
     Instruction_Desc g_instruction_desc_table[] = {
         // UNKNOWN
 
-        AAA void
-        AAD void
-        AAD imm
-        AAM void
-        AAM imm
-        AAS void
-        ADC mem,reg8
-        ADC reg8,reg8
-        ADC mem,reg16
-        ADC reg16,reg16
-        ADC mem,reg32
-        ADC reg32,reg32
-        ADC mem,reg64
-        ADC reg64,reg64
-        ADC reg8,mem
-        ADC reg8,reg8
-        ADC reg16,mem
-        ADC reg16,reg16
-        ADC reg32,mem
-        ADC reg32,reg32
-        ADC reg64,mem
-        ADC reg64,reg64
-        ADC rm16,imm8
-        ADC rm32,imm8
-        ADC rm64,imm8
-        ADC reg_al,imm
-        ADC reg_ax,sbyteword
-        ADC reg_ax,imm
-        ADC reg_eax,sbytedword
-        ADC reg_eax,imm
-        ADC reg_rax,sbytedword
-        ADC reg_rax,imm
-        ADC rm8,imm
-        ADC rm16,sbyteword
-        ADC rm16,imm
-        ADC rm32,sbytedword
-        ADC rm32,imm
-        ADC rm64,sbytedword
-        ADC rm64,imm
-        ADC mem,imm8
-        ADC mem,sbyteword16
-        ADC mem,imm16
-        ADC mem,sbytedword32
-        ADC mem,imm32
-        ADC rm8,imm
-        ADD mem,reg8
-        ADD reg8,reg8
-        ADD mem,reg16
-        ADD reg16,reg16
-        ADD mem,reg32
-        ADD reg32,reg32
-        ADD mem,reg64
-        ADD reg64,reg64
-        ADD reg8,mem
-        ADD reg8,reg8
-        ADD reg16,mem
-        ADD reg16,reg16
-        ADD reg32,mem
-        ADD reg32,reg32
-        ADD reg64,mem
-        ADD reg64,reg64
-        ADD rm16,imm8
-        ADD rm32,imm8
-        ADD rm64,imm8
-        ADD reg_al,imm
-        ADD reg_ax,sbyteword
-        ADD reg_ax,imm
-        ADD reg_eax,sbytedword
-        ADD reg_eax,imm
-        ADD reg_rax,sbytedword
-        ADD reg_rax,imm
-        ADD rm8,imm
-        ADD rm16,sbyteword
-        ADD rm16,imm
-        ADD rm32,sbytedword
-        ADD rm32,imm
-        ADD rm64,sbytedword
-        ADD rm64,imm
-        ADD mem,imm8
-        ADD mem,sbyteword16
-        ADD mem,imm16
-        ADD mem,sbytedword32
-        ADD mem,imm32
-        ADD rm8,imm
-        AND mem,reg8
-        AND reg8,reg8
-        AND mem,reg16
-        AND reg16,reg16
-        AND mem,reg32
-        AND reg32,reg32
-        AND mem,reg64
-        AND reg64,reg64
-        AND reg8,mem
-        AND reg8,reg8
-        AND reg16,mem
-        AND reg16,reg16
-        AND reg32,mem
-        AND reg32,reg32
-        AND reg64,mem
-        AND reg64,reg64
-        AND rm16,imm8
-        AND rm32,imm8
-        AND rm64,imm8
-        AND reg_al,imm
-        AND reg_ax,sbyteword
-        AND reg_ax,imm
-        AND reg_eax,sbytedword
-        AND reg_eax,imm
-        AND reg_rax,sbytedword
-        AND reg_rax,imm
-        AND rm8,imm
-        AND rm16,sbyteword
-        AND rm16,imm
-        AND rm32,sbytedword
-        AND rm32,imm
-        AND rm64,sbytedword
-        AND rm64,imm
-        AND mem,imm8
-        AND mem,sbyteword16
-        AND mem,imm16
-        AND mem,sbytedword32
-        AND mem,imm32
-        AND rm8,imm
-        ARPL mem,reg16
-        ARPL reg16,reg16
-        BOUND reg16,mem
-        BOUND reg32,mem
-        BSF reg16,mem
-        BSF reg16,reg16
-        BSF reg32,mem
-        BSF reg32,reg32
-        BSF reg64,mem
-        BSF reg64,reg64
-        BSR reg16,mem
-        BSR reg16,reg16
-        BSR reg32,mem
-        BSR reg32,reg32
-        BSR reg64,mem
-        BSR reg64,reg64
-        BT mem,reg16
-        BT reg16,reg16
-        BT mem,reg32
-        BT reg32,reg32
-        BT mem,reg64
-        BT reg64,reg64
-        BT rm16,imm
-        BT rm32,imm
-        BT rm64,imm
-        BTC mem,reg16
-        BTC reg16,reg16
-        BTC mem,reg32
-        BTC reg32,reg32
-        BTC mem,reg64
-        BTC reg64,reg64
-        BTC rm16,imm
-        BTC rm32,imm
-        BTC rm64,imm
-        BTR mem,reg16
-        BTR reg16,reg16
-        BTR mem,reg32
-        BTR reg32,reg32
-        BTR mem,reg64
-        BTR reg64,reg64
-        BTR rm16,imm
-        BTR rm32,imm
-        BTR rm64,imm
-        BTS mem,reg16
-        BTS reg16,reg16
-        BTS mem,reg32
-        BTS reg32,reg32
-        BTS mem,reg64
-        BTS reg64,reg64
-        BTS rm16,imm
-        BTS rm32,imm
-        BTS rm64,imm
-        CALL imm
+        // AAA
+        {0x37, , },
+
+        // AAD
+        {0xd50a, , },
+        {0xd5, , },
+
+        // AAM
+        {0xd40a, , },
+        {0xd4, , },
+
+        // AAS
+        {0x3f, , },
+
+        // ADC
+        {0x10, , },
+        {0x10, , },
+        {0x11, , },
+        {0x11, , },
+        {0x11, , },
+        {0x11, , },
+        {0x11, , },
+        {0x11, , },
+        {0x12, , },
+        {0x12, , },
+        {0x13, , },
+        {0x13, , },
+        {0x13, , },
+        {0x13, , },
+        {0x13, , },
+        {0x13, , },
+        {0x83, , },
+        {0x83, , },
+        {0x83, , },
+        {0x14, , },
+        {0x83, , },
+        {0x15, , },
+        {0x83, , },
+        {0x15, , },
+        {0x83, , },
+        {0x15, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x82, , },
+
+        // ADD
+        {0x00, , },
+        {0x00, , },
+        {0x01, , },
+        {0x01, , },
+        {0x01, , },
+        {0x01, , },
+        {0x01, , },
+        {0x01, , },
+        {0x02, , },
+        {0x02, , },
+        {0x03, , },
+        {0x03, , },
+        {0x03, , },
+        {0x03, , },
+        {0x03, , },
+        {0x03, , },
+        {0x83, , },
+        {0x83, , },
+        {0x83, , },
+        {0x04, , },
+        {0x83, , },
+        {0x05, , },
+        {0x83, , },
+        {0x05, , },
+        {0x83, , },
+        {0x05, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x82, , },
+
+        // AND
+        {0x20, , },
+        {0x20, , },
+        {0x21, , },
+        {0x21, , },
+        {0x21, , },
+        {0x21, , },
+        {0x21, , },
+        {0x21, , },
+        {0x22, , },
+        {0x22, , },
+        {0x23, , },
+        {0x23, , },
+        {0x23, , },
+        {0x23, , },
+        {0x23, , },
+        {0x23, , },
+        {0x83, , },
+        {0x83, , },
+        {0x83, , },
+        {0x24, , },
+        {0x83, , },
+        {0x25, , },
+        {0x83, , },
+        {0x25, , },
+        {0x83, , },
+        {0x25, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x82, , },
+
+        // ARPL
+        {0x63, , },
+        {0x63, , },
+
+        // BOUND
+        {0x62, , },
+        {0x62, , },
+
+        // BSF
+        {0x0fbc, , },
+        {0x0fbc, , },
+        {0x0fbc, , },
+        {0x0fbc, , },
+        {0x0fbc, , },
+        {0x0fbc, , },
+
+        // BSR
+        {0x0fbd, , },
+        {0x0fbd, , },
+        {0x0fbd, , },
+        {0x0fbd, , },
+        {0x0fbd, , },
+        {0x0fbd, , },
+
+        // BT
+        {0x0fa3, , },
+        {0x0fa3, , },
+        {0x0fa3, , },
+        {0x0fa3, , },
+        {0x0fa3, , },
+        {0x0fa3, , },
+        {0x0fba, , },
+        {0x0fba, , },
+        {0x0fba, , },
+
+        // BTC
+        {0x0fbb, , },
+        {0x0fbb, , },
+        {0x0fbb, , },
+        {0x0fbb, , },
+        {0x0fbb, , },
+        {0x0fbb, , },
+        {0x0fba, , },
+        {0x0fba, , },
+        {0x0fba, , },
+
+        // BTR
+        {0x0fb3, , },
+        {0x0fb3, , },
+        {0x0fb3, , },
+        {0x0fb3, , },
+        {0x0fb3, , },
+        {0x0fb3, , },
+        {0x0fba, , },
+        {0x0fba, , },
+        {0x0fba, , },
+
+        // BTS
+        {0x0fab, , },
+        {0x0fab, , },
+        {0x0fab, , },
+        {0x0fab, , },
+        {0x0fab, , },
+        {0x0fab, , },
+        {0x0fba, , },
+        {0x0fba, , },
+        {0x0fba, , },
+
+        // CALL
+        {0xe8, , },
+        {0xe8, , },
+        {0x9a, , },
         // Call/jmp near imm/reg/mem is always 64-bit in long mode.
-        CALL imm16
-        CALL imm32
-        CALL imm64
-        CALL mem
-        CALL rm16
-        CALL rm32
-        CALL rm64
-        CBW void
-        CDQ void
-        CDQE void
-        CLC void
-        CLD void
-        CLI void
-        CLTS void
-        CMC void
-        CMP mem,reg8
-        CMP reg8,reg8
-        CMP mem,reg16
-        CMP reg16,reg16
-        CMP mem,reg32
-        CMP reg32,reg32
-        CMP mem,reg64
-        CMP reg64,reg64
-        CMP reg8,mem
-        CMP reg8,reg8
-        CMP reg16,mem
-        CMP reg16,reg16
-        CMP reg32,mem
-        CMP reg32,reg32
-        CMP reg64,mem
-        CMP reg64,reg64
-        CMP rm16,imm8
-        CMP rm32,imm8
-        CMP rm64,imm8
-        CMP reg_al,imm
-        CMP reg_ax,sbyteword
-        CMP reg_ax,imm
-        CMP reg_eax,sbytedword
-        CMP reg_eax,imm
-        CMP reg_rax,sbytedword
-        CMP reg_rax,imm
-        CMP rm8,imm
-        CMP rm16,sbyteword
-        CMP rm16,imm
-        CMP rm32,sbytedword
-        CMP rm32,imm
-        CMP rm64,sbytedword
-        CMP rm64,imm
-        CMP mem,imm8
-        CMP mem,sbyteword16
-        CMP mem,imm16
-        CMP mem,sbytedword32
-        CMP mem,imm32
-        CMP rm8,imm
-        CMPSB void
-        CMPSD void
-        CMPSQ void
-        CMPSW void
-        CMPXCHG mem,reg64
-        CMPXCHG reg64,reg64
-        CMPXCHG486 mem,reg8
-        CMPXCHG486 reg8,reg8
-        CMPXCHG486 mem,reg16
-        CMPXCHG486 reg16,reg16
-        CMPXCHG486 mem,reg32
-        CMPXCHG486 reg32,reg32
-        CMPXCHG16B mem128
-        CQO void
-        CWD void
-        CWDE void
-        DAA void
-        DAS void
-        DEC rm8
-        DEC rm16
-        DEC rm32
-        DEC rm64
-        DIV rm8
-        DIV rm16
-        DIV rm32
-        DIV rm64
-        ENTER imm,imm
-        F2XM1 void
-        FABS void
-        FADD mem32
-        FADD mem64
-        FADD void
-        FADDP void
-        FBLD mem80
-        FBLD mem
-        FBSTP mem80
-        FBSTP mem
-        FCHS void
-        FCLEX void
-        FCOM mem32
-        FCOM mem64
-        FCOM void
-        FCOMP mem32
-        FCOMP mem64
-        FCOMP void
-        FCOMPP void
-        FCOS void
-        FDECSTP void
-        FDISI void
-        FDIV mem32
-        FDIV mem64
-        FDIV void
-        FDIVP void
-        FDIVR mem32
-        FDIVR mem64
-        FDIVR void
-        FDIVRP void
-        FENI void
-        FFREE void
-        FFREEP void
-        FIADD mem32
-        FIADD mem16
-        FICOM mem32
-        FICOM mem16
-        FICOMP mem32
-        FICOMP mem16
-        FIDIV mem32
-        FIDIV mem16
-        FIDIVR mem32
-        FIDIVR mem16
-        FILD mem32
-        FILD mem16
-        FILD mem64
-        FIMUL mem32
-        FIMUL mem16
-        FINCSTP void
-        FINIT void
-        FIST mem32
-        FIST mem16
-        FISTP mem32
-        FISTP mem16
-        FISTP mem64
-        FISUB mem32
-        FISUB mem16
-        FISUBR mem32
-        FISUBR mem16
-        FLD mem32
-        FLD mem64
-        FLD mem80
-        FLD void
-        FLD1 void
-        FLDCW mem
-        FLDENV mem
-        FLDL2E void
-        FLDL2T void
-        FLDLG2 void
-        FLDLN2 void
-        FLDPI void
-        FLDZ void
-        FMUL mem32
-        FMUL mem64
-        FMUL void
-        FMULP void
-        FNCLEX void
-        FNDISI void
-        FNENI void
-        FNINIT void
-        FNOP void
-        FNSAVE mem
-        FNSTCW mem
-        FNSTENV mem
-        FNSTSW mem
-        FNSTSW reg_ax
-        FPATAN void
-        FPREM void
-        FPREM1 void
-        FPTAN void
-        FRNDINT void
-        FRSTOR mem
-        FSAVE mem
-        FSCALE void
-        FSETPM void
-        FSIN void
-        FSINCOS void
-        FSQRT void
-        FST mem32
-        FST mem64
-        FST void
-        FSTCW mem
-        FSTENV mem
-        FSTP mem32
-        FSTP mem64
-        FSTP mem80
-        FSTP void
-        FSTSW mem
-        FSTSW reg_ax
-        FSUB mem32
-        FSUB mem64
-        FSUB void
-        FSUBP void
-        FSUBR mem32
-        FSUBR mem64
-        FSUBR void
-        FSUBRP void
-        FTST void
-        FUCOM void
-        FUCOMP void
-        FUCOMPP void
-        FXAM void
-        FXCH void
-        FXTRACT void
-        FYL2X void
-        FYL2XP1 void
-        HLT void
-        IBTS mem,reg16
-        IBTS reg16,reg16
-        IBTS mem,reg32
-        IBTS reg32,reg32
-        ICEBP void
-        IDIV rm8
-        IDIV rm16
-        IDIV rm32
-        IDIV rm64
-        IMUL rm8
-        IMUL rm16
-        IMUL rm32
-        IMUL rm64
-        IMUL reg16,mem
-        IMUL reg16,reg16
-        IMUL reg32,mem
-        IMUL reg32,reg32
-        IMUL reg64,mem
-        IMUL reg64,reg64
-        IMUL reg16,mem,imm8
-        IMUL reg16,mem,sbyteword
-        IMUL reg16,mem,imm16
-        IMUL reg16,mem,imm
-        IMUL reg16,reg16,imm8
-        IMUL reg16,reg16,sbyteword
-        IMUL reg16,reg16,imm16
-        IMUL reg16,reg16,imm
-        IMUL reg32,mem,imm8
-        IMUL reg32,mem,sbytedword
-        IMUL reg32,mem,imm32
-        IMUL reg32,mem,imm
-        IMUL reg32,reg32,imm8
-        IMUL reg32,reg32,sbytedword
-        IMUL reg32,reg32,imm32
-        IMUL reg32,reg32,imm
-        IMUL reg64,mem,imm8
-        IMUL reg64,mem,sbytedword
-        IMUL reg64,mem,imm32
-        IMUL reg64,mem,imm
-        IMUL reg64,reg64,imm8
-        IMUL reg64,reg64,sbytedword
-        IMUL reg64,reg64,imm32
-        IMUL reg64,reg64,imm
-        IN reg_al,imm
-        IN reg_ax,imm
-        IN reg_eax,imm
-        IN reg_al,reg_dx
-        IN reg_ax,reg_dx
-        IN reg_eax,reg_dx
-        INC rm8
-        INC rm16
-        INC rm32
-        INC rm64
-        INSB void
-        INSD void
-        INSW void
-        INT imm
-        INT01 void
-        INT1 void
-        INT03 void
-        INT3 void
-        INTO void
-        INVD void
-        INVLPG mem
-        INVLPGA reg_rax,reg_ecx
-        IRET void
-        IRETD void
-        IRETQ void
-        IRETW void
-        JCXZ imm
-        JECXZ imm
-        JRCXZ imm
-        JMP imm
-        JMP imm
+        {0xe8, , },
+        {0xe8, , },
+        {0x9a, , },
+        {0xe8, , },
+        {0xe8, , },
+        {0x9a, , },
+        {0xe8, , },
+        {0xe8, , },
+        {0x9a, , },
+        {0x9a, , },
+        {0x9a, , },
+        {0x9a, , },
+        {0x9a, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+
+        // CBW
+        {0x98, , },
+
+        // CDQ
+        {0x99, , },
+
+        // CDQE
+        {0x98, , },
+
+        // CLC
+        {0xf8, , },
+
+        // CLD
+        {0xfc, , },
+
+        // CLI
+        {0xfa, , },
+
+        // CLTS
+        {0x0f06, , },
+
+        // CMC
+        {0xf5, , },
+
+        // CMP
+        {0x38, , },
+        {0x38, , },
+        {0x39, , },
+        {0x39, , },
+        {0x39, , },
+        {0x39, , },
+        {0x39, , },
+        {0x39, , },
+        {0x3a, , },
+        {0x3a, , },
+        {0x3b, , },
+        {0x3b, , },
+        {0x3b, , },
+        {0x3b, , },
+        {0x3b, , },
+        {0x3b, , },
+        {0x83, , },
+        {0x83, , },
+        {0x83, , },
+        {0x3c, , },
+        {0x83, , },
+        {0x3d, , },
+        {0x83, , },
+        {0x3d, , },
+        {0x83, , },
+        {0x3d, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x82, , },
+
+        // CMPSB
+        {0xa6, , },
+
+        // CMPSD
+        {0xa7, , },
+
+        // CMPSQ
+        {0xa7, , },
+
+        // CMPSW
+        {0xa7, , },
+        {0x0fb1, , },
+        {0x0fb1, , },
+
+        // CMPXCHG486
+        {0x0fa6, , },
+        {0x0fa6, , },
+        {0x0fa7, , },
+        {0x0fa7, , },
+        {0x0fa7, , },
+        {0x0fa7, , },
+
+        // CMPXCHG16B
+        {0x0fc7, , },
+
+        // CQO
+        {0x99, , },
+
+        // CWD
+        {0x99, , },
+
+        // CWDE
+        {0x98, , },
+
+        // DAA
+        {0x27, , },
+
+        // DAS
+        {0x2f, , },
+
+        // DEC
+        {0xfe, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+
+        // DIV
+        {0xf6, , },
+        {0xf7, , },
+        {0xf7, , },
+        {0xf7, , },
+
+        // ENTER
+        {0xc8, , },
+
+        // F2XM1
+        {0xd9f0, , },
+
+        // FABS
+        {0xd9e1, , },
+
+        // FADD
+        {0xd8, , },
+        {0xdc, , },
+        {0xdec1, , },
+
+        // FADDP
+        {0xdec1, , },
+
+        // FBLD
+        {0xdf, , },
+        {0xdf, , },
+
+        // FBSTP
+        {0xdf, , },
+        {0xdf, , },
+
+        // FCHS
+        {0xd9e0, , },
+
+        // FCLEX
+        {0xdbe2, , },
+
+        // FCOM
+        {0xd8, , },
+        {0xdc, , },
+        {0xd8d1, , },
+
+        // FCOMP
+        {0xd8, , },
+        {0xdc, , },
+        {0xd8d9, , },
+
+        // FCOMPP
+        {0xded9, , },
+
+        // FCOS
+        {0xd9ff, , },
+
+        // FDECSTP
+        {0xd9f6, , },
+
+        // FDISI
+        {0xdbe1, , },
+
+        // FDIV
+        {0xd8, , },
+        {0xdc, , },
+        {0xdef9, , },
+
+        // FDIVP
+        {0xdef9, , },
+
+        // FDIVR
+        {0xd8, , },
+        {0xdc, , },
+        {0xdef1, , },
+
+        // FDIVRP
+        {0xdef1, , },
+
+        // FENI
+        {0xdbe0, , },
+
+        // FFREE
+        {0xddc1, , },
+
+        // FFREEP
+        {0xdfc1, , },
+
+        // FIADD
+        {0xda, , },
+        {0xde, , },
+
+        // FICOM
+        {0xda, , },
+        {0xde, , },
+
+        // FICOMP
+        {0xda, , },
+        {0xde, , },
+
+        // FIDIV
+        {0xda, , },
+        {0xde, , },
+
+        // FIDIVR
+        {0xda, , },
+        {0xde, , },
+
+        // FILD
+        {0xdb, , },
+        {0xdf, , },
+        {0xdf, , },
+
+        // FIMUL
+        {0xda, , },
+        {0xde, , },
+
+        // FINCSTP
+        {0xd9f7, , },
+
+        // FINIT
+        {0xdbe3, , },
+
+        // FIST
+        {0xdb, , },
+        {0xdf, , },
+
+        // FISTP
+        {0xdb, , },
+        {0xdf, , },
+        {0xdf, , },
+
+        // FISUB
+        {0xda, , },
+        {0xde, , },
+
+        // FISUBR
+        {0xda, , },
+        {0xde, , },
+
+        // FLD
+        {0xd9, , },
+        {0xdd, , },
+        {0xdb, , },
+        {0xd9c1, , },
+
+        // FLD1
+        {0xd9e8, , },
+
+        // FLDCW
+        {0xd9, , },
+
+        // FLDENV
+        {0xd9, , },
+
+        // FLDL2E
+        {0xd9ea, , },
+
+        // FLDL2T
+        {0xd9e9, , },
+
+        // FLDLG2
+        {0xd9ec, , },
+
+        // FLDLN2
+        {0xd9ed, , },
+
+        // FLDPI
+        {0xd9eb, , },
+
+        // FLDZ
+        {0xd9ee, , },
+
+        // FMUL
+        {0xd8, , },
+        {0xdc, , },
+        {0xdec9, , },
+
+        // FMULP
+        {0xdec9, , },
+
+        // FNCLEX
+        {0xdbe2, , },
+
+        // FNDISI
+        {0xdbe1, , },
+
+        // FNENI
+        {0xdbe0, , },
+
+        // FNINIT
+        {0xdbe3, , },
+
+        // FNOP
+        {0xd9d0, , },
+
+        // FNSAVE
+        {0xdd, , },
+
+        // FNSTCW
+        {0xd9, , },
+
+        // FNSTENV
+        {0xd9, , },
+
+        // FNSTSW
+        {0xdd, , },
+        {0xdfe0, , },
+
+        // FPATAN
+        {0xd9f3, , },
+
+        // FPREM
+        {0xd9f8, , },
+
+        // FPREM1
+        {0xd9f5, , },
+
+        // FPTAN
+        {0xd9f2, , },
+
+        // FRNDINT
+        {0xd9fc, , },
+
+        // FRSTOR
+        {0xdd, , },
+
+        // FSAVE
+        {0xdd, , },
+
+        // FSCALE
+        {0xd9fd, , },
+
+        // FSETPM
+        {0xdbe4, , },
+
+        // FSIN
+        {0xd9fe, , },
+
+        // FSINCOS
+        {0xd9fb, , },
+
+        // FSQRT
+        {0xd9fa, , },
+
+        // FST
+        {0xd9, , },
+        {0xdd, , },
+        {0xddd1, , },
+
+        // FSTCW
+        {0xd9, , },
+
+        // FSTENV
+        {0xd9, , },
+
+        // FSTP
+        {0xd9, , },
+        {0xdd, , },
+        {0xdb, , },
+        {0xddd9, , },
+
+        // FSTSW
+        {0xdd, , },
+        {0xdfe0, , },
+
+        // FSUB
+        {0xd8, , },
+        {0xdc, , },
+        {0xdee9, , },
+
+        // FSUBP
+        {0xdee9, , },
+
+        // FSUBR
+        {0xd8, , },
+        {0xdc, , },
+        {0xdee1, , },
+
+        // FSUBRP
+        {0xdee1, , },
+
+        // FTST
+        {0xd9e4, , },
+
+        // FUCOM
+        {0xdde1, , },
+
+        // FUCOMP
+        {0xdde9, , },
+
+        // FUCOMPP
+        {0xdae9, , },
+
+        // FXAM
+        {0xd9e5, , },
+
+        // FXCH
+        {0xd9c9, , },
+
+        // FXTRACT
+        {0xd9f4, , },
+
+        // FYL2X
+        {0xd9f1, , },
+
+        // FYL2XP1
+        {0xd9f9, , },
+
+        // HLT
+        {0xf4, , },
+
+        // IBTS
+        {0x0fa7, , },
+        {0x0fa7, , },
+        {0x0fa7, , },
+        {0x0fa7, , },
+
+        // ICEBP
+        {0xf1, , },
+
+        // IDIV
+        {0xf6, , },
+        {0xf7, , },
+        {0xf7, , },
+        {0xf7, , },
+
+        // IMUL
+        {0xf6, , },
+        {0xf7, , },
+        {0xf7, , },
+        {0xf7, , },
+        {0x0faf, , },
+        {0x0faf, , },
+        {0x0faf, , },
+        {0x0faf, , },
+        {0x0faf, , },
+        {0x0faf, , },
+        {0x6b, , },
+        {0x6b, , },
+        {0x69, , },
+        {0x69, , },
+        {0x6b, , },
+        {0x6b, , },
+        {0x69, , },
+        {0x69, , },
+        {0x6b, , },
+        {0x6b, , },
+        {0x69, , },
+        {0x69, , },
+        {0x6b, , },
+        {0x6b, , },
+        {0x69, , },
+        {0x69, , },
+        {0x6b, , },
+        {0x6b, , },
+        {0x69, , },
+        {0x69, , },
+        {0x6b, , },
+        {0x6b, , },
+        {0x69, , },
+        {0x69, , },
+
+        // IN
+        {0xe4, , },
+        {0xe5, , },
+        {0xe5, , },
+        {0xec, , },
+        {0xed, , },
+        {0xed, , },
+
+        // INC
+        {0xfe, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+
+        // INSB
+        {0x6c, , },
+
+        // INSD
+        {0x6d, , },
+
+        // INSW
+        {0x6d, , },
+
+        // INT
+        {0xcd, , },
+
+        // INT01
+        {0xf1, , },
+
+        // INT1
+        {0xf1, , },
+
+        // INT03
+        {0xcc, , },
+
+        // INT3
+        {0xcc, , },
+
+        // INTO
+        {0xce, , },
+
+        // INVD
+        {0x0f08, , },
+
+        // INVLPG
+        {0x0f01, , },
+        {0x0f01df, , },
+
+        // IRET
+        {0xcf, , },
+
+        // IRETD
+        {0xcf, , },
+
+        // IRETQ
+        {0xcf, , },
+
+        // IRETW
+        {0xcf, , },
+
+        // JCXZ
+        {0xe3, , },
+
+        // JECXZ
+        {0xe3, , },
+
+        // JRCXZ
+        {0xe3, , },
+
+        // JMP
+        {0xeb, , },
+        {0xeb, , },
+        {0xe9, , },
+        {0xe9, , },
+        {0xea, , },
         // Call/jmp near imm/reg/mem is always 64-bit in long mode.
-        JMP imm16
-        JMP imm32
-        JMP imm64
-        JMP mem
-        JMP rm16
-        JMP rm32
-        JMP rm64
-        LAHF void
-        LAR reg16,mem
-        LAR reg16,reg16
-        LAR reg16,reg32
-        LAR reg16,reg64
-        LAR reg32,mem
-        LAR reg32,reg16
-        LAR reg32,reg32
-        LAR reg32,reg64
-        LAR reg64,mem
-        LAR reg64,reg16
-        LAR reg64,reg32
-        LAR reg64,reg64
-        LDS reg16,mem
-        LDS reg32,mem
-        LEA reg16,mem
-        LEA reg32,mem
-        LEA reg64,mem
-        LEA reg16,imm
-        LEA reg32,imm
-        LEA reg64,imm
-        LEAVE void
-        LES reg16,mem
-        LES reg32,mem
-        LFENCE void
-        LFS reg16,mem
-        LFS reg32,mem
-        LFS reg64,mem
-        LGDT mem
-        LGS reg16,mem
-        LGS reg32,mem
-        LGS reg64,mem
-        LIDT mem
-        LLDT mem
-        LLDT mem16
-        LLDT reg16
-        LMSW mem
-        LMSW mem16
-        LMSW reg16
-        LOADALL void
-        LOADALL286 void
-        LODSB void
-        LODSD void
-        LODSQ void
-        LODSW void
-        LOOP imm
-        LOOP imm,reg_cx
-        LOOP imm,reg_ecx
-        LOOP imm,reg_rcx
-        LOOPE imm
-        LOOPE imm,reg_cx
-        LOOPE imm,reg_ecx
-        LOOPE imm,reg_rcx
-        LOOPNE imm
-        LOOPNE imm,reg_cx
-        LOOPNE imm,reg_ecx
-        LOOPNE imm,reg_rcx
-        LOOPNZ imm
-        LOOPNZ imm,reg_cx
-        LOOPNZ imm,reg_ecx
-        LOOPNZ imm,reg_rcx
-        LOOPZ imm
-        LOOPZ imm,reg_cx
-        LOOPZ imm,reg_ecx
-        LOOPZ imm,reg_rcx
-        LSL reg16,mem
-        LSL reg16,reg16
-        LSL reg16,reg32
-        LSL reg16,reg64
-        LSL reg32,mem
-        LSL reg32,reg16
-        LSL reg32,reg32
-        LSL reg32,reg64
-        LSL reg64,mem
-        LSL reg64,reg16
-        LSL reg64,reg32
-        LSL reg64,reg64
-        LSS reg16,mem
-        LSS reg32,mem
-        LSS reg64,mem
-        LTR mem
-        LTR mem16
-        LTR reg16
-        MFENCE void
-        MONITOR reg_rax,reg_ecx,reg_edx
-        MONITORX reg_rax,reg_ecx,reg_edx
-        MOV mem,reg_sreg
-        MOV reg16,reg_sreg
-        MOV reg32,reg_sreg
-        MOV reg64,reg_sreg
-        MOV rm64,reg_sreg
-        MOV reg_sreg,mem
-        MOV reg_sreg,reg16
-        MOV reg_sreg,reg32
-        MOV reg_sreg,reg64
-        MOV reg_sreg,reg16
-        MOV reg_sreg,reg32
-        MOV reg_sreg,rm64
-        MOV reg_al,mem_offs
-        MOV reg_ax,mem_offs
-        MOV reg_eax,mem_offs
-        MOV reg_rax,mem_offs
-        MOV mem_offs,reg_al
-        MOV mem_offs,reg_ax
-        MOV mem_offs,reg_eax
-        MOV mem_offs,reg_rax
-        MOV reg64,reg_creg
-        MOV reg_creg,reg64
-        MOV reg32,reg_dreg
-        MOV reg64,reg_dreg
-        MOV reg_dreg,reg32
-        MOV reg_dreg,reg64
-        MOV reg32,reg_treg
-        MOV reg_treg,reg32
-        MOV mem,reg8
-        MOV reg8,reg8
-        MOV mem,reg16
-        MOV reg16,reg16
-        MOV mem,reg32
-        MOV reg32,reg32
-        MOV mem,reg64
-        MOV reg64,reg64
-        MOV reg8,mem
-        MOV reg8,reg8
-        MOV reg16,mem
-        MOV reg16,reg16
-        MOV reg32,mem
-        MOV reg32,reg32
-        MOV reg64,mem
-        MOV reg64,reg64
-        MOV reg64,sdword
-        MOV rm8,imm
-        MOV rm16,imm
-        MOV rm32,imm
-        MOV rm64,imm
-        MOV rm64,imm32
-        MOV mem,imm8
-        MOV mem,imm16
-        MOV mem,imm32
-        MOVD mmxreg,rm64
-        MOVD rm64,mmxreg
-        MOVQ mmxreg,rm64
-        MOVQ rm64,mmxreg
-        MOVSB void
-        MOVSD void
-        MOVSQ void
-        MOVSW void
-        MOVSX reg16,mem
-        MOVSX reg16,reg8
-        MOVSX reg32,rm8
-        MOVSX reg32,rm16
-        MOVSX reg64,rm8
-        MOVSX reg64,rm16
-        MOVSXD reg64,rm32
-        MOVSX reg64,rm32
-        MOVZX reg16,mem
-        MOVZX reg16,reg8
-        MOVZX reg32,rm8
-        MOVZX reg32,rm16
-        MOVZX reg64,rm8
-        MOVZX reg64,rm16
-        MUL rm8
-        MUL rm16
-        MUL rm32
-        MUL rm64
-        NEG rm8
-        NEG rm16
-        NEG rm32
-        NEG rm64
-        NOP void
-        NOP rm64
-        NOT rm8
-        NOT rm16
-        NOT rm32
-        NOT rm64
-        OR mem,reg8
-        OR reg8,reg8
-        OR mem,reg16
-        OR reg16,reg16
-        OR mem,reg32
-        OR reg32,reg32
-        OR mem,reg64
-        OR reg64,reg64
-        OR reg8,mem
-        OR reg8,reg8
-        OR reg16,mem
-        OR reg16,reg16
-        OR reg32,mem
-        OR reg32,reg32
-        OR reg64,mem
-        OR reg64,reg64
-        OR rm16,imm8
-        OR rm32,imm8
-        OR rm64,imm8
-        OR reg_al,imm
-        OR reg_ax,sbyteword
-        OR reg_ax,imm
-        OR reg_eax,sbytedword
-        OR reg_eax,imm
-        OR reg_rax,sbytedword
-        OR reg_rax,imm
-        OR rm8,imm
-        OR rm16,sbyteword
-        OR rm16,imm
-        OR rm32,sbytedword
-        OR rm32,imm
-        OR rm64,sbytedword
-        OR rm64,imm
-        OR mem,imm8
-        OR mem,sbyteword16
-        OR mem,imm16
-        OR mem,sbytedword32
-        OR mem,imm32
-        OR rm8,imm
-        OUT imm,reg_al
-        OUT imm,reg_ax
-        OUT imm,reg_eax
-        OUT reg_dx,reg_al
-        OUT reg_dx,reg_ax
-        OUT reg_dx,reg_eax
-        OUTSB void
-        OUTSD void
-        OUTSW void
-        PAUSE void
-        POP rm16
-        POP rm32
-        POP rm64
-        POP reg_es
-        POP reg_cs
-        POP reg_ss
-        POP reg_ds
-        POP reg_fs
-        POP reg_gs
-        POPA void
-        POPAD void
-        POPAW void
-        POPF void
-        POPFD void
-        POPFQ void
-        POPFW void
-        PUSH rm16
-        PUSH rm32
-        PUSH rm64
-        PUSH reg_es
-        PUSH reg_cs
-        PUSH reg_ss
-        PUSH reg_ds
-        PUSH reg_fs
-        PUSH reg_gs
-        PUSH imm8
-        PUSH sbyteword16
-        PUSH imm16
-        PUSH sbytedword32
-        PUSH imm32
-        PUSH sbytedword32
-        PUSH imm32
-        PUSH sbytedword64
-        PUSH imm64
-        PUSH sbytedword32
-        PUSH imm32
-        PUSHA void
-        PUSHAD void
-        PUSHAW void
-        PUSHF void
-        PUSHFD void
-        PUSHFQ void
-        PUSHFW void
-        RCL rm8,unity
-        RCL rm8,reg_cl
-        RCL rm8,imm8
-        RCL rm16,unity
-        RCL rm16,reg_cl
-        RCL rm16,imm8
-        RCL rm32,unity
-        RCL rm32,reg_cl
-        RCL rm32,imm8
-        RCL rm64,unity
-        RCL rm64,reg_cl
-        RCL rm64,imm8
-        RCR rm8,unity
-        RCR rm8,reg_cl
-        RCR rm8,imm8
-        RCR rm16,unity
-        RCR rm16,reg_cl
-        RCR rm16,imm8
-        RCR rm32,unity
-        RCR rm32,reg_cl
-        RCR rm32,imm8
-        RCR rm64,unity
-        RCR rm64,reg_cl
-        RCR rm64,imm8
-        RET void
-        RET imm
-        RETF void
-        RETF imm
-        RETN void
-        RETN imm
-        RETW void
-        RETW imm
-        RETFW void
-        RETFW imm
-        RETNW void
-        RETNW imm
-        RETD void
-        RETD imm
-        RETFD void
-        RETFD imm
-        RETND void
-        RETND imm
-        RETQ void
-        RETQ imm
-        RETFQ void
-        RETFQ imm
-        RETNQ void
-        RETNQ imm
-        ROL rm8,unity
-        ROL rm8,reg_cl
-        ROL rm8,imm8
-        ROL rm16,unity
-        ROL rm16,reg_cl
-        ROL rm16,imm8
-        ROL rm32,unity
-        ROL rm32,reg_cl
-        ROL rm32,imm8
-        ROL rm64,unity
-        ROL rm64,reg_cl
-        ROL rm64,imm8
-        ROR rm8,unity
-        ROR rm8,reg_cl
-        ROR rm8,imm8
-        ROR rm16,unity
-        ROR rm16,reg_cl
-        ROR rm16,imm8
-        ROR rm32,unity
-        ROR rm32,reg_cl
-        ROR rm32,imm8
-        ROR rm64,unity
-        ROR rm64,reg_cl
-        ROR rm64,imm8
-        RSDC reg_sreg,mem80
-        RSLDT mem80
-        RSTS mem80
-        SAHF void
-        SAL rm8,unity
-        SAL rm8,reg_cl
-        SAL rm8,imm8
-        SAL rm16,unity
-        SAL rm16,reg_cl
-        SAL rm16,imm8
-        SAL rm32,unity
-        SAL rm32,reg_cl
-        SAL rm32,imm8
-        SAL rm64,unity
-        SAL rm64,reg_cl
-        SAL rm64,imm8
-        SALC void
-        SAR rm8,unity
-        SAR rm8,reg_cl
-        SAR rm8,imm8
-        SAR rm16,unity
-        SAR rm16,reg_cl
-        SAR rm16,imm8
-        SAR rm32,unity
-        SAR rm32,reg_cl
-        SAR rm32,imm8
-        SAR rm64,unity
-        SAR rm64,reg_cl
-        SAR rm64,imm8
-        SBB mem,reg8
-        SBB reg8,reg8
-        SBB mem,reg16
-        SBB reg16,reg16
-        SBB mem,reg32
-        SBB reg32,reg32
-        SBB mem,reg64
-        SBB reg64,reg64
-        SBB reg8,mem
-        SBB reg8,reg8
-        SBB reg16,mem
-        SBB reg16,reg16
-        SBB reg32,mem
-        SBB reg32,reg32
-        SBB reg64,mem
-        SBB reg64,reg64
-        SBB rm16,imm8
-        SBB rm32,imm8
-        SBB rm64,imm8
-        SBB reg_al,imm
-        SBB reg_ax,sbyteword
-        SBB reg_ax,imm
-        SBB reg_eax,sbytedword
-        SBB reg_eax,imm
-        SBB reg_rax,sbytedword
-        SBB reg_rax,imm
-        SBB rm8,imm
-        SBB rm16,sbyteword
-        SBB rm16,imm
-        SBB rm32,sbytedword
-        SBB rm32,imm
-        SBB rm64,sbytedword
-        SBB rm64,imm
-        SBB mem,imm8
-        SBB mem,sbyteword16
-        SBB mem,imm16
-        SBB mem,sbytedword32
-        SBB mem,imm32
-        SBB rm8,imm
-        SCASB void
-        SCASD void
-        SCASQ void
-        SCASW void
-        SFENCE void
-        SGDT mem
-        SHL rm8,unity
-        SHL rm8,reg_cl
-        SHL rm8,imm8
-        SHL rm16,unity
-        SHL rm16,reg_cl
-        SHL rm16,imm8
-        SHL rm32,unity
-        SHL rm32,reg_cl
-        SHL rm32,imm8
-        SHL rm64,unity
-        SHL rm64,reg_cl
-        SHL rm64,imm8
-        SHLD mem,reg16,imm
-        SHLD reg16,reg16,imm
-        SHLD mem,reg32,imm
-        SHLD reg32,reg32,imm
-        SHLD mem,reg64,imm
-        SHLD reg64,reg64,imm
-        SHLD mem,reg16,reg_cl
-        SHLD reg16,reg16,reg_cl
-        SHLD mem,reg32,reg_cl
-        SHLD reg32,reg32,reg_cl
-        SHLD mem,reg64,reg_cl
-        SHLD reg64,reg64,reg_cl
-        SHR rm8,unity
-        SHR rm8,reg_cl
-        SHR rm8,imm8
-        SHR rm16,unity
-        SHR rm16,reg_cl
-        SHR rm16,imm8
-        SHR rm32,unity
-        SHR rm32,reg_cl
-        SHR rm32,imm8
-        SHR rm64,unity
-        SHR rm64,reg_cl
-        SHR rm64,imm8
-        SHRD mem,reg16,imm
-        SHRD reg16,reg16,imm
-        SHRD mem,reg32,imm
-        SHRD reg32,reg32,imm
-        SHRD mem,reg64,imm
-        SHRD reg64,reg64,imm
-        SHRD mem,reg16,reg_cl
-        SHRD reg16,reg16,reg_cl
-        SHRD mem,reg32,reg_cl
-        SHRD reg32,reg32,reg_cl
-        SHRD mem,reg64,reg_cl
-        SHRD reg64,reg64,reg_cl
-        SIDT mem
-        SLDT mem
-        SLDT mem16
-        SLDT reg16
-        SLDT reg32
-        SLDT reg64
-        SLDT reg64
-        SKINIT void
-        SMI void
+        {0xe9, , },
+        {0xe9, , },
+        {0xea, , },
+        {0xe9, , },
+        {0xe9, , },
+        {0xea, , },
+        {0xe9, , },
+        {0xe9, , },
+        {0xea, , },
+        {0xea, , },
+        {0xea, , },
+        {0xea, , },
+        {0xea, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+
+        // LAHF
+        {0x9f, , },
+
+        // LAR
+        {0x0f02, , },
+        {0x0f02, , },
+        {0x0f02, , },
+        {0x0f02, , },
+        {0x0f02, , },
+        {0x0f02, , },
+        {0x0f02, , },
+        {0x0f02, , },
+        {0x0f02, , },
+        {0x0f02, , },
+        {0x0f02, , },
+        {0x0f02, , },
+
+        // LDS
+        {0xc5, , },
+        {0xc5, , },
+
+        // LEA
+        {0x8d, , },
+        {0x8d, , },
+        {0x8d, , },
+        {0x8d, , },
+        {0x8d, , },
+        {0x8d, , },
+
+        // LEAVE
+        {0xc9, , },
+
+        // LES
+        {0xc4, , },
+        {0xc4, , },
+
+        // LFENCE
+        {0x0faee8, , },
+
+        // LFS
+        {0x0fb4, , },
+        {0x0fb4, , },
+        {0x0fb4, , },
+
+        // LGDT
+        {0x0f01, , },
+
+        // LGS
+        {0x0fb5, , },
+        {0x0fb5, , },
+        {0x0fb5, , },
+
+        // LIDT
+        {0x0f01, , },
+
+        // LLDT
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+
+        // LMSW
+        {0x0f01, , },
+        {0x0f01, , },
+        {0x0f01, , },
+
+        // LOADALL
+        {0x0f07, , },
+
+        // LOADALL286
+        {0x0f05, , },
+
+        // LODSB
+        {0xac, , },
+
+        // LODSD
+        {0xad, , },
+
+        // LODSQ
+        {0xad, , },
+
+        // LODSW
+        {0xad, , },
+
+        // LOOP
+        {0xe2, , },
+        {0xe2, , },
+        {0xe2, , },
+        {0xe2, , },
+
+        // LOOPE
+        {0xe1, , },
+        {0xe1, , },
+        {0xe1, , },
+        {0xe1, , },
+
+        // LOOPNE
+        {0xe0, , },
+        {0xe0, , },
+        {0xe0, , },
+        {0xe0, , },
+
+        // LOOPNZ
+        {0xe0, , },
+        {0xe0, , },
+        {0xe0, , },
+        {0xe0, , },
+
+        // LOOPZ
+        {0xe1, , },
+        {0xe1, , },
+        {0xe1, , },
+        {0xe1, , },
+
+        // LSL
+        {0x0f03, , },
+        {0x0f03, , },
+        {0x0f03, , },
+        {0x0f03, , },
+        {0x0f03, , },
+        {0x0f03, , },
+        {0x0f03, , },
+        {0x0f03, , },
+        {0x0f03, , },
+        {0x0f03, , },
+        {0x0f03, , },
+        {0x0f03, , },
+
+        // LSS
+        {0x0fb2, , },
+        {0x0fb2, , },
+        {0x0fb2, , },
+
+        // LTR
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+
+        // MFENCE
+        {0x0faef0, , },
+        {0x0f01c8, , },
+        {0x0f01fa, , },
+
+        // MOV
+        {0x8c, , },
+        {0x8c, , },
+        {0x8c, , },
+        {0x8c, , },
+        {0x8c, , },
+        {0x8e, , },
+        {0x8e, , },
+        {0x8e, , },
+        {0x8e, , },
+        {0x8e, , },
+        {0x8e, , },
+        {0x8e, , },
+        {0xa0, , },
+        {0xa1, , },
+        {0xa1, , },
+        {0xa1, , },
+        {0xa2, , },
+        {0xa3, , },
+        {0xa3, , },
+        {0xa3, , },
+        {0x0f20, , },
+        {0x0f22, , },
+        {0x0f21, , },
+        {0x0f21, , },
+        {0x0f23, , },
+        {0x0f23, , },
+        {0x0f24, , },
+        {0x0f26, , },
+        {0x88, , },
+        {0x88, , },
+        {0x89, , },
+        {0x89, , },
+        {0x89, , },
+        {0x89, , },
+        {0x89, , },
+        {0x89, , },
+        {0x8a, , },
+        {0x8a, , },
+        {0x8b, , },
+        {0x8b, , },
+        {0x8b, , },
+        {0x8b, , },
+        {0x8b, , },
+        {0x8b, , },
+        {0xc7, , },
+        {0xc6, , },
+        {0xc7, , },
+        {0xc7, , },
+        {0xc7, , },
+        {0xc7, , },
+        {0xc6, , },
+        {0xc7, , },
+        {0xc7, , },
+        {0x0f6e, , },
+        {0x0f7e, , },
+        {0x0f6e, , },
+        {0x0f7e, , },
+
+        // MOVSB
+        {0xa4, , },
+
+        // MOVSD
+        {0xa5, , },
+
+        // MOVSQ
+        {0xa5, , },
+
+        // MOVSW
+        {0xa5, , },
+
+        // MOVSX
+        {0x0fbe, , },
+        {0x0fbe, , },
+        {0x0fbe, , },
+        {0x0fbf, , },
+        {0x0fbe, , },
+        {0x0fbf, , },
+
+        // MOVSXD
+        {0x63, , },
+
+        // MOVSX
+        {0x63, , },
+
+        // MOVZX
+        {0x0fb6, , },
+        {0x0fb6, , },
+        {0x0fb6, , },
+        {0x0fb7, , },
+        {0x0fb6, , },
+        {0x0fb7, , },
+
+        // MUL
+        {0xf6, , },
+        {0xf7, , },
+        {0xf7, , },
+        {0xf7, , },
+
+        // NEG
+        {0xf6, , },
+        {0xf7, , },
+        {0xf7, , },
+        {0xf7, , },
+
+        // NOP
+        {0x90, , },
+        {0x0f1f, , },
+
+        // NOT
+        {0xf6, , },
+        {0xf7, , },
+        {0xf7, , },
+        {0xf7, , },
+
+        // OR
+        {0x08, , },
+        {0x08, , },
+        {0x09, , },
+        {0x09, , },
+        {0x09, , },
+        {0x09, , },
+        {0x09, , },
+        {0x09, , },
+        {0x0a, , },
+        {0x0a, , },
+        {0x0b, , },
+        {0x0b, , },
+        {0x0b, , },
+        {0x0b, , },
+        {0x0b, , },
+        {0x0b, , },
+        {0x83, , },
+        {0x83, , },
+        {0x83, , },
+        {0x0c, , },
+        {0x83, , },
+        {0x0d, , },
+        {0x83, , },
+        {0x0d, , },
+        {0x83, , },
+        {0x0d, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x82, , },
+
+        // OUT
+        {0xe6, , },
+        {0xe7, , },
+        {0xe7, , },
+        {0xee, , },
+        {0xef, , },
+        {0xef, , },
+
+        // OUTSB
+        {0x6e, , },
+
+        // OUTSD
+        {0x6f, , },
+
+        // OUTSW
+        {0x6f, , },
+
+        // PAUSE
+        {0x90, , },
+
+        // POP
+        {0x8f, , },
+        {0x8f, , },
+        {0x8f, , },
+        {0x07, , },
+        {0x0f, , },
+        {0x17, , },
+        {0x1f, , },
+        {0x0fa1, , },
+        {0x0fa9, , },
+
+        // POPA
+        {0x61, , },
+
+        // POPAD
+        {0x61, , },
+
+        // POPAW
+        {0x61, , },
+
+        // POPF
+        {0x9d, , },
+
+        // POPFD
+        {0x9d, , },
+
+        // POPFQ
+        {0x9d, , },
+
+        // POPFW
+        {0x9d, , },
+
+        // PUSH
+        {0xff, , },
+        {0xff, , },
+        {0xff, , },
+        {0x06, , },
+        {0x0e, , },
+        {0x16, , },
+        {0x1e, , },
+        {0x0fa0, , },
+        {0x0fa8, , },
+        {0x6a, , },
+        {0x6a, , },
+        {0x68, , },
+        {0x6a, , },
+        {0x68, , },
+        {0x6a, , },
+        {0x68, , },
+        {0x6a, , },
+        {0x68, , },
+        {0x6a, , },
+        {0x68, , },
+
+        // PUSHA
+        {0x60, , },
+
+        // PUSHAD
+        {0x60, , },
+
+        // PUSHAW
+        {0x60, , },
+
+        // PUSHF
+        {0x9c, , },
+
+        // PUSHFD
+        {0x9c, , },
+
+        // PUSHFQ
+        {0x9c, , },
+
+        // PUSHFW
+        {0x9c, , },
+
+        // RCL
+        {0xd0, , },
+        {0xd2, , },
+        {0xc0, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+
+        // RCR
+        {0xd0, , },
+        {0xd2, , },
+        {0xc0, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+
+        // RET
+        {0xc3, , },
+        {0xc2, , },
+
+        // RETF
+        {0xcb, , },
+        {0xca, , },
+
+        // RETN
+        {0xc3, , },
+        {0xc2, , },
+
+        // RETW
+        {0xc3, , },
+        {0xc2, , },
+
+        // RETFW
+        {0xcb, , },
+        {0xca, , },
+
+        // RETNW
+        {0xc3, , },
+        {0xc2, , },
+
+        // RETD
+        {0xc3, , },
+        {0xc2, , },
+
+        // RETFD
+        {0xcb, , },
+        {0xca, , },
+
+        // RETND
+        {0xc3, , },
+        {0xc2, , },
+
+        // RETQ
+        {0xc3, , },
+        {0xc2, , },
+
+        // RETFQ
+        {0xcb, , },
+        {0xca, , },
+
+        // RETNQ
+        {0xc3, , },
+        {0xc2, , },
+
+        // ROL
+        {0xd0, , },
+        {0xd2, , },
+        {0xc0, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+
+        // ROR
+        {0xd0, , },
+        {0xd2, , },
+        {0xc0, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+
+        // RSDC
+        {0x0f79, , },
+
+        // RSLDT
+        {0x0f7b, , },
+
+        // RSTS
+        {0x0f7d, , },
+
+        // SAHF
+        {0x9e, , },
+
+        // SAL
+        {0xd0, , },
+        {0xd2, , },
+        {0xc0, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+
+        // SALC
+        {0xd6, , },
+
+        // SAR
+        {0xd0, , },
+        {0xd2, , },
+        {0xc0, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+
+        // SBB
+        {0x18, , },
+        {0x18, , },
+        {0x19, , },
+        {0x19, , },
+        {0x19, , },
+        {0x19, , },
+        {0x19, , },
+        {0x19, , },
+        {0x1a, , },
+        {0x1a, , },
+        {0x1b, , },
+        {0x1b, , },
+        {0x1b, , },
+        {0x1b, , },
+        {0x1b, , },
+        {0x1b, , },
+        {0x83, , },
+        {0x83, , },
+        {0x83, , },
+        {0x1c, , },
+        {0x83, , },
+        {0x1d, , },
+        {0x83, , },
+        {0x1d, , },
+        {0x83, , },
+        {0x1d, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x82, , },
+
+        // SCASB
+        {0xae, , },
+
+        // SCASD
+        {0xaf, , },
+
+        // SCASQ
+        {0xaf, , },
+
+        // SCASW
+        {0xaf, , },
+
+        // SFENCE
+        {0x0faef8, , },
+
+        // SGDT
+        {0x0f01, , },
+
+        // SHL
+        {0xd0, , },
+        {0xd2, , },
+        {0xc0, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+
+        // SHLD
+        {0x0fa4, , },
+        {0x0fa4, , },
+        {0x0fa4, , },
+        {0x0fa4, , },
+        {0x0fa4, , },
+        {0x0fa4, , },
+        {0x0fa5, , },
+        {0x0fa5, , },
+        {0x0fa5, , },
+        {0x0fa5, , },
+        {0x0fa5, , },
+        {0x0fa5, , },
+
+        // SHR
+        {0xd0, , },
+        {0xd2, , },
+        {0xc0, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+        {0xd1, , },
+        {0xd3, , },
+        {0xc1, , },
+
+        // SHRD
+        {0x0fac, , },
+        {0x0fac, , },
+        {0x0fac, , },
+        {0x0fac, , },
+        {0x0fac, , },
+        {0x0fac, , },
+        {0x0fad, , },
+        {0x0fad, , },
+        {0x0fad, , },
+        {0x0fad, , },
+        {0x0fad, , },
+        {0x0fad, , },
+
+        // SIDT
+        {0x0f01, , },
+
+        // SLDT
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+
+        // SKINIT
+        {0x0f01de, , },
+
+        // SMI
+        {0xf1, , },
         // Older Cyrix chips had this; they had to move due to conflict with MMX
-        SMINTOLD void
-        SMSW mem
-        SMSW mem16
-        SMSW reg16
-        SMSW reg32
-        SMSW reg64
-        STC void
-        STD void
-        STI void
-        STOSB void
-        STOSD void
-        STOSQ void
-        STOSW void
-        STR mem
-        STR mem16
-        STR reg16
-        STR reg32
-        STR reg64
-        SUB mem,reg8
-        SUB reg8,reg8
-        SUB mem,reg16
-        SUB reg16,reg16
-        SUB mem,reg32
-        SUB reg32,reg32
-        SUB mem,reg64
-        SUB reg64,reg64
-        SUB reg8,mem
-        SUB reg8,reg8
-        SUB reg16,mem
-        SUB reg16,reg16
-        SUB reg32,mem
-        SUB reg32,reg32
-        SUB reg64,mem
-        SUB reg64,reg64
-        SUB rm16,imm8
-        SUB rm32,imm8
-        SUB rm64,imm8
-        SUB reg_al,imm
-        SUB reg_ax,sbyteword
-        SUB reg_ax,imm
-        SUB reg_eax,sbytedword
-        SUB reg_eax,imm
-        SUB reg_rax,sbytedword
-        SUB reg_rax,imm
-        SUB rm8,imm
-        SUB rm16,sbyteword
-        SUB rm16,imm
-        SUB rm32,sbytedword
-        SUB rm32,imm
-        SUB rm64,sbytedword
-        SUB rm64,imm
-        SUB mem,imm8
-        SUB mem,sbyteword16
-        SUB mem,imm16
-        SUB mem,sbytedword32
-        SUB mem,imm32
-        SUB rm8,imm
-        SVDC mem80,reg_sreg
-        SVLDT mem80
-        SVTS mem80
-        SWAPGS void
-        TEST mem,reg8
-        TEST reg8,reg8
-        TEST mem,reg16
-        TEST reg16,reg16
-        TEST mem,reg32
-        TEST reg32,reg32
-        TEST mem,reg64
-        TEST reg64,reg64
-        TEST reg8,mem
-        TEST reg16,mem
-        TEST reg32,mem
-        TEST reg64,mem
-        TEST reg_al,imm
-        TEST reg_ax,imm
-        TEST reg_eax,imm
-        TEST reg_rax,imm
-        TEST rm8,imm
-        TEST rm16,imm
-        TEST rm32,imm
-        TEST rm64,imm
-        TEST mem,imm8
-        TEST mem,imm16
-        TEST mem,imm32
-        UD0 void
-        UD0 reg16,rm16
-        UD0 reg32,rm32
-        UD0 reg64,rm64
-        UD1 reg16,rm16
-        UD1 reg32,rm32
-        UD1 reg64,rm64
-        UD1 void
-        UD2B void
-        UD2B reg16,rm16
-        UD2B reg32,rm32
-        UD2B reg64,rm64
-        UD2 void
-        UD2A void
-        UMOV mem,reg8
-        UMOV reg8,reg8
-        UMOV mem,reg16
-        UMOV reg16,reg16
-        UMOV mem,reg32
-        UMOV reg32,reg32
-        UMOV reg8,mem
-        UMOV reg8,reg8
-        UMOV reg16,mem
-        UMOV reg16,reg16
-        UMOV reg32,mem
-        UMOV reg32,reg32
-        VERR mem
-        VERR mem16
-        VERR reg16
-        VERW mem
-        VERW mem16
-        VERW reg16
-        FWAIT void
-        WBINVD void
-        XADD mem,reg8
-        XADD reg8,reg8
-        XADD mem,reg16
-        XADD reg16,reg16
-        XADD mem,reg32
-        XADD reg32,reg32
-        XADD mem,reg64
-        XADD reg64,reg64
-        XBTS reg16,mem
-        XBTS reg16,reg16
-        XBTS reg32,mem
-        XBTS reg32,reg32
+
+        // SMINTOLD
+        {0x0f7e, , },
+
+        // SMSW
+        {0x0f01, , },
+        {0x0f01, , },
+        {0x0f01, , },
+        {0x0f01, , },
+        {0x0f01, , },
+
+        // STC
+        {0xf9, , },
+
+        // STD
+        {0xfd, , },
+
+        // STI
+        {0xfb, , },
+
+        // STOSB
+        {0xaa, , },
+
+        // STOSD
+        {0xab, , },
+
+        // STOSQ
+        {0xab, , },
+
+        // STOSW
+        {0xab, , },
+
+        // STR
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+
+        // SUB
+        {0x28, , },
+        {0x28, , },
+        {0x29, , },
+        {0x29, , },
+        {0x29, , },
+        {0x29, , },
+        {0x29, , },
+        {0x29, , },
+        {0x2a, , },
+        {0x2a, , },
+        {0x2b, , },
+        {0x2b, , },
+        {0x2b, , },
+        {0x2b, , },
+        {0x2b, , },
+        {0x2b, , },
+        {0x83, , },
+        {0x83, , },
+        {0x83, , },
+        {0x2c, , },
+        {0x83, , },
+        {0x2d, , },
+        {0x83, , },
+        {0x2d, , },
+        {0x83, , },
+        {0x2d, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x82, , },
+
+        // SVDC
+        {0x0f78, , },
+
+        // SVLDT
+        {0x0f7a, , },
+
+        // SVTS
+        {0x0f7c, , },
+
+        // SWAPGS
+        {0x0f01f8, , },
+
+        // TEST
+        {0x84, , },
+        {0x84, , },
+        {0x85, , },
+        {0x85, , },
+        {0x85, , },
+        {0x85, , },
+        {0x85, , },
+        {0x85, , },
+        {0x84, , },
+        {0x85, , },
+        {0x85, , },
+        {0x85, , },
+        {0xa8, , },
+        {0xa9, , },
+        {0xa9, , },
+        {0xa9, , },
+        {0xf6, , },
+        {0xf7, , },
+        {0xf7, , },
+        {0xf7, , },
+        {0xf6, , },
+        {0xf7, , },
+        {0xf7, , },
+
+        // UD0
+        {0x0fff, , },
+        {0x0fff, , },
+        {0x0fff, , },
+        {0x0fff, , },
+
+        // UD1
+        {0x0fb9, , },
+        {0x0fb9, , },
+        {0x0fb9, , },
+        {0x0fb9, , },
+
+        // UD2B
+        {0x0fb9, , },
+        {0x0fb9, , },
+        {0x0fb9, , },
+        {0x0fb9, , },
+
+        // UD2
+        {0x0f0b, , },
+
+        // UD2A
+        {0x0f0b, , },
+
+        // UMOV
+        {0x0f10, , },
+        {0x0f10, , },
+        {0x0f11, , },
+        {0x0f11, , },
+        {0x0f11, , },
+        {0x0f11, , },
+        {0x0f12, , },
+        {0x0f12, , },
+        {0x0f13, , },
+        {0x0f13, , },
+        {0x0f13, , },
+        {0x0f13, , },
+
+        // VERR
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+
+        // VERW
+        {0x0f00, , },
+        {0x0f00, , },
+        {0x0f00, , },
+        // fix missing opcode from source https://www.felixcloutier.com/x86/wait:fwait
+
+        // FWAIT
+        {0x9b, , },
+
+        // WBINVD
+        {0x0f09, , },
+
+        // XADD
+        {0x0fc0, , },
+        {0x0fc0, , },
+        {0x0fc1, , },
+        {0x0fc1, , },
+        {0x0fc1, , },
+        {0x0fc1, , },
+        {0x0fc1, , },
+        {0x0fc1, , },
+
+        // XBTS
+        {0x0fa6, , },
+        {0x0fa6, , },
+        {0x0fa6, , },
+        {0x0fa6, , },
         // This must be NOLONG since opcode 90 is NOP, and in 64-bit mode
         // "xchg eax,eax" is *not* a NOP.
-        XCHG reg_eax,reg_eax
-        XCHG reg8,mem
-        XCHG reg8,reg8
-        XCHG reg16,mem
-        XCHG reg16,reg16
-        XCHG reg32,mem
-        XCHG reg32,reg32
-        XCHG reg64,mem
-        XCHG reg64,reg64
-        XCHG mem,reg8
-        XCHG reg8,reg8
-        XCHG mem,reg16
-        XCHG reg16,reg16
-        XCHG mem,reg32
-        XCHG reg32,reg32
-        XCHG mem,reg64
-        XCHG reg64,reg64
-        XLATB void
-        XLAT void
-        XOR mem,reg8
-        XOR reg8,reg8
-        XOR mem,reg16
-        XOR reg16,reg16
-        XOR mem,reg32
-        XOR reg32,reg32
-        XOR mem,reg64
-        XOR reg64,reg64
-        XOR reg8,mem
-        XOR reg8,reg8
-        XOR reg16,mem
-        XOR reg16,reg16
-        XOR reg32,mem
-        XOR reg32,reg32
-        XOR reg64,mem
-        XOR reg64,reg64
-        XOR rm16,imm8
-        XOR rm32,imm8
-        XOR rm64,imm8
-        XOR reg_al,imm
-        XOR reg_ax,sbyteword
-        XOR reg_ax,imm
-        XOR reg_eax,sbytedword
-        XOR reg_eax,imm
-        XOR reg_rax,sbytedword
-        XOR reg_rax,imm
-        XOR rm8,imm
-        XOR rm16,sbyteword
-        XOR rm16,imm
-        XOR rm32,sbytedword
-        XOR rm32,imm
-        XOR rm64,sbytedword
-        XOR rm64,imm
-        XOR mem,imm8
-        XOR mem,sbyteword16
-        XOR mem,imm16
-        XOR mem,sbytedword32
-        XOR mem,imm32
-        XOR rm8,imm
+
+        // XCHG
+        {0x90, , },
+        {0x86, , },
+        {0x86, , },
+        {0x87, , },
+        {0x87, , },
+        {0x87, , },
+        {0x87, , },
+        {0x87, , },
+        {0x87, , },
+        {0x86, , },
+        {0x86, , },
+        {0x87, , },
+        {0x87, , },
+        {0x87, , },
+        {0x87, , },
+        {0x87, , },
+        {0x87, , },
+
+        // XLATB
+        {0xd7, , },
+
+        // XLAT
+        {0xd7, , },
+
+        // XOR
+        {0x30, , },
+        {0x30, , },
+        {0x31, , },
+        {0x31, , },
+        {0x31, , },
+        {0x31, , },
+        {0x31, , },
+        {0x31, , },
+        {0x32, , },
+        {0x32, , },
+        {0x33, , },
+        {0x33, , },
+        {0x33, , },
+        {0x33, , },
+        {0x33, , },
+        {0x33, , },
+        {0x83, , },
+        {0x83, , },
+        {0x83, , },
+        {0x34, , },
+        {0x83, , },
+        {0x35, , },
+        {0x83, , },
+        {0x35, , },
+        {0x83, , },
+        {0x35, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x80, , },
+        {0x83, , },
+        {0x81, , },
+        {0x83, , },
+        {0x81, , },
+        {0x82, , },
         // CMPPS/CMPSS must come after the specific ops; that way the disassembler will find the
         // specific ops first and only disassemble illegal ones as cmpps/cmpss.
-        CVTSI2SS xmmreg,rm64
-        CVTSS2SI reg64,xmmreg
-        CVTSS2SI reg64,mem
-        CVTTSS2SI reg64,xmmrm
-        MOVMSKPS reg64,xmmreg
-        FXRSTOR64 mem
-        FXSAVE64 mem
+        {0xf30f2a, , },
+        {0xf30f2d, , },
+        {0xf30f2d, , },
+        {0xf30f2c, , },
+        {0x0f50, , },
+
+        // FXRSTOR64
+        {0x0fae, , },
+
+        // FXSAVE64
+        {0x0fae, , },
         // Introduced in late Penryn ... we really need to clean up the handling
         // of CPU feature bits.
         // These instructions are not SSE-specific; they are
@@ -1451,31 +2064,35 @@ namespace f::ASM
         // PINSRW is documented as using a reg32, but it's really using only 16 bit
         // -- accept either, but be truthful in disassembly
         // CLFLUSH needs its own feature flag implemented one day
-        MOVNTI mem,reg64
-        MOVQ xmmreg,rm64
-        MOVQ rm64,xmmreg
-        PEXTRW reg64,xmmreg,imm
-        PINSRW xmmreg,reg64,imm
+        {0x0fc3, , },
+        {0x66, , },
+        {0x66, , },
+        {0x660fc5, , },
+        {0x660fc4, , },
         // CMPPD/CMPSD must come after the specific ops; that way the disassembler will find the
         // specific ops first and only disassemble illegal ones as cmppd/cmpsd.
-        CVTSD2SI reg64,xmmreg
-        CVTSD2SI reg64,mem
-        CVTSI2SD xmmreg,rm64
-        CVTTSD2SI reg64,xmmreg
-        CVTTSD2SI reg64,mem
-        MOVMSKPD reg64,xmmreg
-        VMREAD rm64,reg64
-        VMWRITE reg64,rm64
-        LZCNT reg64,rm64
-        EXTRACTPS reg64,xmmreg,imm
-        PEXTRB reg64,xmmreg,imm
-        PEXTRQ rm64,xmmreg,imm
-        PEXTRW reg64,xmmreg,imm
-        PINSRQ xmmreg,mem,imm
-        PINSRQ xmmreg,rm64,imm
-        CRC32 reg64,rm8
-        CRC32 reg64,rm64
-        POPCNT reg64,rm64
+        {0xf20f2d, , },
+        {0xf20f2d, , },
+        {0xf20f2a, , },
+        {0xf20f2c, , },
+        {0xf20f2c, , },
+        {0x66, , },
+        {0x0f78, , },
+        {0x0f79, , },
+        {0x0fbd, , },
+        {0x660f3a17, , },
+        {0x660f3a14, , },
+
+        // PEXTRQ
+        {0x660f3a16, , },
+        {0x660f3a15, , },
+
+        // PINSRQ
+        {0x660f3a22, , },
+        {0x660f3a22, , },
+        {0x0f38f0, , },
+        {0x0f38f1, , },
+        {0x0fb8, , },
         // Is NEHALEM right here?
         // Intel VAES instructions
         // Intel VAES + AVX512VL instructions
@@ -1538,86 +2155,98 @@ namespace f::ASM
         // based on pub number 319433-011 dated July 2011
         //
         // MJC PUBLIC END
-        RDPKRU void
-        WRPKRU void
-        RDPID reg64
-        RDPID reg32
+
+        // RDPKRU
+        {0x0f01ee, , },
+
+        // WRPKRU
+        {0x0f01ef, , },
+        {0xf30fc7, , },
+        {0xf30fc7, , },
         // This one was killed before it saw the light of day
         // AMD Zen v1
-        CLZERO reg_rax
-        PTWRITE rm64
-        MOVDIRI mem64,reg64
-        MOVDIR64B reg64,mem512
-        UMONITOR reg64
-        INCSSPQ reg64
-        RDSSPQ reg64
-        WRUSSQ mem,reg64
-        WRSSQ mem,reg64
+        {0x0f01fc, , },
+        {0x0fae, , },
+        {0x0f38f9, , },
+        {0x660f38f8, , },
+        {0xf30fae, , },
+
+        // INCSSPQ
+        {0xf30fae, , },
+
+        // RDSSPQ
+        {0xf30f1e, , },
+
+        // WRUSSQ
+        {0x660f38f5, , },
+
+        // WRSSQ
+        {0x0f38f6, , },
         // These should be last in the file
-        HINT_NOP0 rm64
-        HINT_NOP1 rm64
-        HINT_NOP2 rm64
-        HINT_NOP3 rm64
-        HINT_NOP4 rm64
-        HINT_NOP5 rm64
-        HINT_NOP6 rm64
-        HINT_NOP7 rm64
-        HINT_NOP8 rm64
-        HINT_NOP9 rm64
-        HINT_NOP10 rm64
-        HINT_NOP11 rm64
-        HINT_NOP12 rm64
-        HINT_NOP13 rm64
-        HINT_NOP14 rm64
-        HINT_NOP15 rm64
-        HINT_NOP16 rm64
-        HINT_NOP17 rm64
-        HINT_NOP18 rm64
-        HINT_NOP19 rm64
-        HINT_NOP20 rm64
-        HINT_NOP21 rm64
-        HINT_NOP22 rm64
-        HINT_NOP23 rm64
-        HINT_NOP24 rm64
-        HINT_NOP25 rm64
-        HINT_NOP26 rm64
-        HINT_NOP27 rm64
-        HINT_NOP28 rm64
-        HINT_NOP29 rm64
-        HINT_NOP30 rm64
-        HINT_NOP31 rm64
-        HINT_NOP32 rm64
-        HINT_NOP33 rm64
-        HINT_NOP34 rm64
-        HINT_NOP35 rm64
-        HINT_NOP36 rm64
-        HINT_NOP37 rm64
-        HINT_NOP38 rm64
-        HINT_NOP39 rm64
-        HINT_NOP40 rm64
-        HINT_NOP41 rm64
-        HINT_NOP42 rm64
-        HINT_NOP43 rm64
-        HINT_NOP44 rm64
-        HINT_NOP45 rm64
-        HINT_NOP46 rm64
-        HINT_NOP47 rm64
-        HINT_NOP48 rm64
-        HINT_NOP49 rm64
-        HINT_NOP50 rm64
-        HINT_NOP51 rm64
-        HINT_NOP52 rm64
-        HINT_NOP53 rm64
-        HINT_NOP54 rm64
-        HINT_NOP55 rm64
-        HINT_NOP56 rm64
-        HINT_NOP57 rm64
-        HINT_NOP58 rm64
-        HINT_NOP59 rm64
-        HINT_NOP60 rm64
-        HINT_NOP61 rm64
-        HINT_NOP62 rm64
-        HINT_NOP63 rm64
+        {0x0f18, , },
+        {0x0f18, , },
+        {0x0f18, , },
+        {0x0f18, , },
+        {0x0f18, , },
+        {0x0f18, , },
+        {0x0f18, , },
+        {0x0f18, , },
+        {0x0f19, , },
+        {0x0f19, , },
+        {0x0f19, , },
+        {0x0f19, , },
+        {0x0f19, , },
+        {0x0f19, , },
+        {0x0f19, , },
+        {0x0f19, , },
+        {0x0f1a, , },
+        {0x0f1a, , },
+        {0x0f1a, , },
+        {0x0f1a, , },
+        {0x0f1a, , },
+        {0x0f1a, , },
+        {0x0f1a, , },
+        {0x0f1a, , },
+        {0x0f1b, , },
+        {0x0f1b, , },
+        {0x0f1b, , },
+        {0x0f1b, , },
+        {0x0f1b, , },
+        {0x0f1b, , },
+        {0x0f1b, , },
+        {0x0f1b, , },
+        {0x0f1c, , },
+        {0x0f1c, , },
+        {0x0f1c, , },
+        {0x0f1c, , },
+        {0x0f1c, , },
+        {0x0f1c, , },
+        {0x0f1c, , },
+        {0x0f1c, , },
+        {0x0f1d, , },
+        {0x0f1d, , },
+        {0x0f1d, , },
+        {0x0f1d, , },
+        {0x0f1d, , },
+        {0x0f1d, , },
+        {0x0f1d, , },
+        {0x0f1d, , },
+        {0x0f1e, , },
+        {0x0f1e, , },
+        {0x0f1e, , },
+        {0x0f1e, , },
+        {0x0f1e, , },
+        {0x0f1e, , },
+        {0x0f1e, , },
+        {0x0f1e, , },
+        {0x0f1f, , },
+        {0x0f1f, , },
+        {0x0f1f, , },
+        {0x0f1f, , },
+        {0x0f1f, , },
+        {0x0f1f, , },
+        {0x0f1f, , },
+        {0x0f1f, , },
     };
 
 

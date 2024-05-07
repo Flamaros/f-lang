@@ -7,6 +7,7 @@
 #include <regex>
 #include <vector>
 #include <algorithm>
+#include <cassert>
 
 #include <tracy/Tracy.hpp>
 
@@ -72,7 +73,7 @@ static vector<string> x64_instruction_sets = {
 ///
 /// For an operand that should be filled into more than one field,
 /// enter it as e.g. "r+v".
-std::string operands_regex = R"REG(([rmvis\-x]{0,4}):?)REG";
+std::string operands_regex_string = R"REG(([\w\-]{0,4}:?\s+).*)REG";
 
 ///my% plain_codes = (
 ///		'o16' = > 0320, # 16 - bit operand size
@@ -124,10 +125,10 @@ std::string operands_regex = R"REG(([rmvis\-x]{0,4}):?)REG";
 ///		'vm32z' = > 0376,
 ///		'vm64z' = > 0376,
 ///		);
-std::string opcode_flags_regex = R"REG((016|032|0df|064|064nw|a16|a32|adf|a64|\!osp|\!asp|f2i|f3i|mustrep|mustrepne|rex\.l|norexb|norexx|norexr|norexw|repe|nohi|nof3|norep|wait|resb|np|jcc8|jmp8|jlen|hlexr|hlenl|hle|vsibx|vm32x|vm64x|vsiby|vm32y|vm64y|vsibz|vm32z|vm64z)?)REG";
+std::string opcode_flags_regex_string = R"REG((\s*)(o16|o32|odf|o64|o64nw|a16|a32|adf|a64|\!osp|\!asp|f2i|f3i|mustrep|mustrepne|rex\.l|norexb|norexx|norexr|norexw|repe|nohi|nof3|norep|wait|resb|np|jcc8|jmp8|jlen|hlexr|hlenl|hle|vsibx|vm32x|vm64x|vsiby|vm32y|vm64y|vsibz|vm32z|vm64z)\s+.*)REG";
 
-std::string opcode_regex = R"REG(([\0-9a-f]+))REG";
-std::string modr_value_regex = R"REG((\/[\dr])?)REG";
+std::string opcode_regex_string = R"REG((\s*)([0-9a-f]{2})\s*.*)REG";
+std::string modr_value_regex_string = R"REG((\/[\dr]\s+)*.*)REG";
 
 /// my% imm_codes = (
 /// 	'ib' = > 020, # imm8
@@ -145,7 +146,7 @@ std::string modr_value_regex = R"REG((\/[\dr])?)REG";
 /// 	'rel32' = > 070,
 /// 	'seg' = > 074,
 /// 	);
-std::string immediates_regex = R"REG((ib|ib,u|iw|ib,s|iwd|id|id,s|iwdq|rel8|iq|rel16|rel|rel32|seg)?)REG";
+std::string immediates_regex_string = R"REG((ib|ib,u|iw|ib,s|iwd|id|id,s|iwdq|rel8|iq|rel16|rel|rel32|seg)?)REG";
 
 int main(int ac, char** av)
 {
@@ -196,7 +197,6 @@ R"CODE(    size_t g_instruction_desc_table_indices[(size_t)Instruction::COUNT + 
 	x64_cpp_instruction_desc_table <<
 R"CODE(    Instruction_Desc g_instruction_desc_table[] = {
         // UNKNOWN
-
 )CODE";
 
 	x64_cpp_register_desc_table <<
@@ -226,24 +226,28 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 	ifstream	insns_dat_file("./data/insns.dat");
 	if (insns_dat_file.is_open())
 	{
-		regex	instruction_desc_regex(R"REG((\w+)\s+([\w,]+)\s+(\[[\w\s\/\-:,]+\])\s+([\w,]+))REG");
+		regex	instruction_desc_regex(R"REG((\w+)\s+([\w,\|\:]+)\s+\[([\w\s\/\-:,]+)\]\s+([\w,]+))REG");
 		smatch	instruction_desc_match_result;
-		regex	encoding_rules_regex(R"REG(\[)REG"
-			+ operands_regex + R"REG(\s*)REG"
-			+ opcode_flags_regex + R"REG(\s*)REG"
-			+ opcode_flags_regex + R"REG(\s*)REG"
-			+ opcode_regex + R"REG(\s*)REG"
-			+ modr_value_regex + R"REG(\s*)REG"
-			+ immediates_regex
-			+ R"REG(\])REG"
-		);
-		smatch	encoding_rules_match_result;
+		regex	operands_regex(operands_regex_string);
+		smatch	operands_match_result;
+		regex	opcode_flags_regex(opcode_flags_regex_string);
+		smatch	opcode_flags_match_result;
+		regex	opcode_regex(opcode_regex_string);
+		smatch	opcode_match_result;
+		regex	modr_value_regex(modr_value_regex_string);
+		smatch	modr_value_match_result;
+		regex	immediates_regex(immediates_regex_string);
+		smatch	immediates_match_result;
 
 		string					previous_instruction_name;
 		size_t					x64_current_instruction_index = 0;
 		Instruction_Kind_State	instruction_state = Instruction_Kind_State::UNKNOWN;
+
+		size_t current_line = 0; // For debugging
 		while (getline(insns_dat_file, read_line))
 		{
+			current_line++;
+
 			if (read_line.starts_with(";;")) { // Verbose comment
 				continue;
 			}
@@ -302,30 +306,55 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 
 						x64_hpp_instruction_enum << "        "
 							<< instruction << "," << endl;
+
+						x64_cpp_instruction_desc_table << endl << "        " << "// " << instruction << endl;
 					}
 				}
 
 				if (is_x64_supported) {
 					std::string encoding_rules_string = encoding_rules.str();
-					if (regex_match(encoding_rules_string, encoding_rules_match_result, encoding_rules_regex)) {
-						//sub_match instruction = encoding_rules_match_result[1];
-						//sub_match operand_types = encoding_rules_match_result[2];
-						//sub_match encoding_rules = encoding_rules_match_result[3];
-						//sub_match architectures_flags = encoding_rules_match_result[4];
-						int i = 0;
-						i = 2;
+
+					std::string opcode;
+					std::string operand1;
+					std::string operand2;
+
+#if defined(_DEBUG)
+					if (encoding_rules_string.find("wait") != std::string::npos)
+					{
+						int i = 1;
+					}
+#endif
+
+					if (regex_match(encoding_rules_string, operands_match_result, operands_regex)
+						&& operands_match_result[1].length()) {
+
+						encoding_rules_string.erase(0, operands_match_result[1].length());
 					}
 
+					while (regex_match(encoding_rules_string, opcode_flags_match_result, opcode_flags_regex)
+						&& opcode_flags_match_result[2].length()) {
+
+						encoding_rules_string.erase(0, opcode_flags_match_result[1].length());
+						encoding_rules_string.erase(0, opcode_flags_match_result[2].length());
+					}
+
+					while (regex_match(encoding_rules_string, opcode_match_result, opcode_regex)
+						&& opcode_match_result[2].length()) {
+						opcode += opcode_match_result[2];
+
+						encoding_rules_string.erase(0, opcode_match_result[1].length());
+						encoding_rules_string.erase(0, opcode_match_result[2].length());
+					}
+
+					assert(!opcode.empty());
+
 					x64_cpp_instruction_desc_table << "        "
-						<< instruction << " " << operand_types << endl;
+						<< "{0x" << opcode << ", " << operand1 << ", " << operand2 << "}," << endl;
 					x64_current_instruction_index++;
 				}
 
 				previous_instruction_name = instruction;
 			}
-
-
-
 		}
 	}
 

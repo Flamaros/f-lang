@@ -288,6 +288,7 @@ namespace f::ASM
         UMOV,
         VERR,
         VERW,
+        // fix missing opcode from source https://www.felixcloutier.com/x86/wait:fwait
         FWAIT,
         WBINVD,
         XADD,
