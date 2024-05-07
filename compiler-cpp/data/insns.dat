@@ -1430,7 +1430,10 @@ VERR        reg16               [m: 0f 00 /4]               286,PROT
 VERW        mem             [m: 0f 00 /5]               286,PROT
 VERW        mem16               [m: 0f 00 /5]               286,PROT
 VERW        reg16               [m: 0f 00 /5]               286,PROT
-FWAIT       void                [   wait]                   8086
+
+; fix missing opcode from source https://www.felixcloutier.com/x86/wait:fwait
+FWAIT       void                [   wait 9b]                   8086
+
 WBINVD      void                [   0f 09]                  486,PRIV
 WRSHR       rm32                [m: o32 0f 37 /0]               P6,CYRIX,SMM
 WRMSR       void                [   0f 30]                  PENT,PRIV
