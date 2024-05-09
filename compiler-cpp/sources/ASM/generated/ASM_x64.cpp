@@ -308,1755 +308,1755 @@ namespace f::ASM
         // UNKNOWN
 
         // AAA
-        {0x37, , },
+        {0x37}, // AAA     void                [   37]                 8086,NOLONG
 
         // AAD
-        {0xd50a, , },
-        {0xd5, , },
+        {0xd50a}, // AAD     void                [   d5 0a]                  8086,NOLONG
+        {0xd5, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AAD     imm             [i: d5 ib,u]                8086,SB,NOLONG
 
         // AAM
-        {0xd40a, , },
-        {0xd4, , },
+        {0xd40a}, // AAM     void                [   d4 0a]                  8086,NOLONG
+        {0xd4, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AAM     imm             [i: d4 ib,u]                8086,SB,NOLONG
 
         // AAS
-        {0x3f, , },
+        {0x3f}, // AAS     void                [   3f]                 8086,NOLONG
 
         // ADC
-        {0x10, , },
-        {0x10, , },
-        {0x11, , },
-        {0x11, , },
-        {0x11, , },
-        {0x11, , },
-        {0x11, , },
-        {0x11, , },
-        {0x12, , },
-        {0x12, , },
-        {0x13, , },
-        {0x13, , },
-        {0x13, , },
-        {0x13, , },
-        {0x13, , },
-        {0x13, , },
-        {0x83, , },
-        {0x83, , },
-        {0x83, , },
-        {0x14, , },
-        {0x83, , },
-        {0x15, , },
-        {0x83, , },
-        {0x15, , },
-        {0x83, , },
-        {0x15, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x82, , },
+        {0x10, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // ADC     mem,reg8            [mr:    hle 10 /r]              8086,SM,LOCK
+        {0x10, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // ADC     reg8,reg8           [mr:    10 /r]                  8086
+        {0x11, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // ADC     mem,reg16           [mr:    hle o16 11 /r]              8086,SM,LOCK
+        {0x11, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // ADC     reg16,reg16         [mr:    o16 11 /r]              8086
+        {0x11, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // ADC     mem,reg32           [mr:    hle o32 11 /r]              386,SM,LOCK
+        {0x11, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // ADC     reg32,reg32         [mr:    o32 11 /r]              386
+        {0x11, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // ADC     mem,reg64           [mr:    hle o64 11 /r]              X64,SM,LOCK
+        {0x11, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // ADC     reg64,reg64         [mr:    o64 11 /r]              X64
+        {0x12, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADC     reg8,mem            [rm:    12 /r]                  8086,SM
+        {0x12, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // ADC     reg8,reg8           [rm:    12 /r]                  8086
+        {0x13, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADC     reg16,mem           [rm:    o16 13 /r]              8086,SM
+        {0x13, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // ADC     reg16,reg16         [rm:    o16 13 /r]              8086
+        {0x13, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADC     reg32,mem           [rm:    o32 13 /r]              386,SM
+        {0x13, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // ADC     reg32,reg32         [rm:    o32 13 /r]              386
+        {0x13, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADC     reg64,mem           [rm:    o64 13 /r]              X64,SM
+        {0x13, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // ADC     reg64,reg64         [rm:    o64 13 /r]              X64
+        {0x83}, // ADC     rm16,imm8           [mi:    hle o16 83 /2 ib,s]         8086,LOCK
+        {0x83}, // ADC     rm32,imm8           [mi:    hle o32 83 /2 ib,s]         386,LOCK
+        {0x83}, // ADC     rm64,imm8           [mi:    hle o64 83 /2 ib,s]         X64,LOCK
+        {0x14, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADC     reg_al,imm          [-i:    14 ib]                  8086,SM
+        {0x83}, // ADC     reg_ax,sbyteword        [mi:    o16 83 /2 ib,s]             8086,SM,ND
+        {0x15, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADC     reg_ax,imm          [-i:    o16 15 iw]              8086,SM
+        {0x83}, // ADC     reg_eax,sbytedword      [mi:    o32 83 /2 ib,s]             386,SM,ND
+        {0x15, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADC     reg_eax,imm         [-i:    o32 15 id]              386,SM
+        {0x83}, // ADC     reg_rax,sbytedword      [mi:    o64 83 /2 ib,s]             X64,SM,ND
+        {0x15, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADC     reg_rax,imm         [-i:    o64 15 id,s]                X64,SM
+        {0x80, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADC     rm8,imm             [mi:    hle 80 /2 ib]               8086,SM,LOCK
+        {0x83}, // ADC     rm16,sbyteword          [mi:    hle o16 83 /2 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADC     rm16,imm            [mi:    hle o16 81 /2 iw]           8086,SM,LOCK
+        {0x83}, // ADC     rm32,sbytedword         [mi:    hle o32 83 /2 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADC     rm32,imm            [mi:    hle o32 81 /2 id]           386,SM,LOCK
+        {0x83}, // ADC     rm64,sbytedword         [mi:    hle o64 83 /2 ib,s]         X64,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADC     rm64,imm            [mi:    hle o64 81 /2 id,s]         X64,SM,LOCK
+        {0x80, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADC     mem,imm8            [mi:    hle 80 /2 ib]               8086,SM,LOCK,ND
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADC     mem,sbyteword16         [mi:    hle o16 83 /2 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADC     mem,imm16           [mi:    hle o16 81 /2 iw]           8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADC     mem,sbytedword32        [mi:    hle o32 83 /2 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADC     mem,imm32           [mi:    hle o32 81 /2 id]           386,SM,LOCK
+        {0x82, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADC     rm8,imm             [mi:    hle 82 /2 ib]               8086,SM,LOCK,ND,NOLONG
 
         // ADD
-        {0x00, , },
-        {0x00, , },
-        {0x01, , },
-        {0x01, , },
-        {0x01, , },
-        {0x01, , },
-        {0x01, , },
-        {0x01, , },
-        {0x02, , },
-        {0x02, , },
-        {0x03, , },
-        {0x03, , },
-        {0x03, , },
-        {0x03, , },
-        {0x03, , },
-        {0x03, , },
-        {0x83, , },
-        {0x83, , },
-        {0x83, , },
-        {0x04, , },
-        {0x83, , },
-        {0x05, , },
-        {0x83, , },
-        {0x05, , },
-        {0x83, , },
-        {0x05, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x82, , },
+        {0x00, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // ADD     mem,reg8            [mr:    hle 00 /r]              8086,SM,LOCK
+        {0x00, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // ADD     reg8,reg8           [mr:    00 /r]                  8086
+        {0x01, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // ADD     mem,reg16           [mr:    hle o16 01 /r]              8086,SM,LOCK
+        {0x01, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // ADD     reg16,reg16         [mr:    o16 01 /r]              8086
+        {0x01, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // ADD     mem,reg32           [mr:    hle o32 01 /r]              386,SM,LOCK
+        {0x01, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // ADD     reg32,reg32         [mr:    o32 01 /r]              386
+        {0x01, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // ADD     mem,reg64           [mr:    hle o64 01 /r]              X64,SM,LOCK
+        {0x01, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // ADD     reg64,reg64         [mr:    o64 01 /r]              X64
+        {0x02, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADD     reg8,mem            [rm:    02 /r]                  8086,SM
+        {0x02, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // ADD     reg8,reg8           [rm:    02 /r]                  8086
+        {0x03, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADD     reg16,mem           [rm:    o16 03 /r]              8086,SM
+        {0x03, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // ADD     reg16,reg16         [rm:    o16 03 /r]              8086
+        {0x03, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADD     reg32,mem           [rm:    o32 03 /r]              386,SM
+        {0x03, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // ADD     reg32,reg32         [rm:    o32 03 /r]              386
+        {0x03, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADD     reg64,mem           [rm:    o64 03 /r]              X64,SM
+        {0x03, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // ADD     reg64,reg64         [rm:    o64 03 /r]              X64
+        {0x83}, // ADD     rm16,imm8           [mi:    hle o16 83 /0 ib,s]         8086,LOCK
+        {0x83}, // ADD     rm32,imm8           [mi:    hle o32 83 /0 ib,s]         386,LOCK
+        {0x83}, // ADD     rm64,imm8           [mi:    hle o64 83 /0 ib,s]         X64,LOCK
+        {0x04, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADD     reg_al,imm          [-i:    04 ib]                  8086,SM
+        {0x83}, // ADD     reg_ax,sbyteword        [mi:    o16 83 /0 ib,s]             8086,SM,ND
+        {0x05, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADD     reg_ax,imm          [-i:    o16 05 iw]              8086,SM
+        {0x83}, // ADD     reg_eax,sbytedword      [mi:    o32 83 /0 ib,s]             386,SM,ND
+        {0x05, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADD     reg_eax,imm         [-i:    o32 05 id]              386,SM
+        {0x83}, // ADD     reg_rax,sbytedword      [mi:    o64 83 /0 ib,s]             X64,SM,ND
+        {0x05, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADD     reg_rax,imm         [-i:    o64 05 id,s]                X64,SM
+        {0x80, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADD     rm8,imm             [mi:    hle 80 /0 ib]               8086,SM,LOCK
+        {0x83}, // ADD     rm16,sbyteword          [mi:    hle o16 83 /0 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADD     rm16,imm            [mi:    hle o16 81 /0 iw]           8086,SM,LOCK
+        {0x83}, // ADD     rm32,sbytedword         [mi:    hle o32 83 /0 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADD     rm32,imm            [mi:    hle o32 81 /0 id]           386,SM,LOCK
+        {0x83}, // ADD     rm64,sbytedword         [mi:    hle o64 83 /0 ib,s]         X64,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADD     rm64,imm            [mi:    hle o64 81 /0 id,s]         X64,SM,LOCK
+        {0x80, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADD     mem,imm8            [mi:    hle 80 /0 ib]               8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADD     mem,sbyteword16         [mi:    hle o16 83 /0 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADD     mem,imm16           [mi:    hle o16 81 /0 iw]           8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADD     mem,sbytedword32        [mi:    hle o32 83 /0 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // ADD     mem,imm32           [mi:    hle o32 81 /0 id]           386,SM,LOCK
+        {0x82, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ADD     rm8,imm             [mi:    hle 82 /0 ib]               8086,SM,LOCK,ND,NOLONG
 
         // AND
-        {0x20, , },
-        {0x20, , },
-        {0x21, , },
-        {0x21, , },
-        {0x21, , },
-        {0x21, , },
-        {0x21, , },
-        {0x21, , },
-        {0x22, , },
-        {0x22, , },
-        {0x23, , },
-        {0x23, , },
-        {0x23, , },
-        {0x23, , },
-        {0x23, , },
-        {0x23, , },
-        {0x83, , },
-        {0x83, , },
-        {0x83, , },
-        {0x24, , },
-        {0x83, , },
-        {0x25, , },
-        {0x83, , },
-        {0x25, , },
-        {0x83, , },
-        {0x25, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x82, , },
+        {0x20, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // AND     mem,reg8            [mr:    hle 20 /r]              8086,SM,LOCK
+        {0x20, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // AND     reg8,reg8           [mr:    20 /r]                  8086
+        {0x21, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // AND     mem,reg16           [mr:    hle o16 21 /r]              8086,SM,LOCK
+        {0x21, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // AND     reg16,reg16         [mr:    o16 21 /r]              8086
+        {0x21, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // AND     mem,reg32           [mr:    hle o32 21 /r]              386,SM,LOCK
+        {0x21, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // AND     reg32,reg32         [mr:    o32 21 /r]              386
+        {0x21, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // AND     mem,reg64           [mr:    hle o64 21 /r]              X64,SM,LOCK
+        {0x21, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // AND     reg64,reg64         [mr:    o64 21 /r]              X64
+        {0x22, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // AND     reg8,mem            [rm:    22 /r]                  8086,SM
+        {0x22, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // AND     reg8,reg8           [rm:    22 /r]                  8086
+        {0x23, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // AND     reg16,mem           [rm:    o16 23 /r]              8086,SM
+        {0x23, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // AND     reg16,reg16         [rm:    o16 23 /r]              8086
+        {0x23, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // AND     reg32,mem           [rm:    o32 23 /r]              386,SM
+        {0x23, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // AND     reg32,reg32         [rm:    o32 23 /r]              386
+        {0x23, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // AND     reg64,mem           [rm:    o64 23 /r]              X64,SM
+        {0x23, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // AND     reg64,reg64         [rm:    o64 23 /r]              X64
+        {0x83}, // AND     rm16,imm8           [mi:    hle o16 83 /4 ib,s]         8086,LOCK
+        {0x83}, // AND     rm32,imm8           [mi:    hle o32 83 /4 ib,s]         386,LOCK
+        {0x83}, // AND     rm64,imm8           [mi:    hle o64 83 /4 ib,s]         X64,LOCK
+        {0x24, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AND     reg_al,imm          [-i:    24 ib]                  8086,SM
+        {0x83}, // AND     reg_ax,sbyteword        [mi:    o16 83 /4 ib,s]             8086,SM,ND
+        {0x25, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AND     reg_ax,imm          [-i:    o16 25 iw]              8086,SM
+        {0x83}, // AND     reg_eax,sbytedword      [mi:    o32 83 /4 ib,s]             386,SM,ND
+        {0x25, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AND     reg_eax,imm         [-i:    o32 25 id]              386,SM
+        {0x83}, // AND     reg_rax,sbytedword      [mi:    o64 83 /4 ib,s]             X64,SM,ND
+        {0x25, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AND     reg_rax,imm         [-i:    o64 25 id,s]                X64,SM
+        {0x80, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AND     rm8,imm             [mi:    hle 80 /4 ib]               8086,SM,LOCK
+        {0x83}, // AND     rm16,sbyteword          [mi:    hle o16 83 /4 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AND     rm16,imm            [mi:    hle o16 81 /4 iw]           8086,SM,LOCK
+        {0x83}, // AND     rm32,sbytedword         [mi:    hle o32 83 /4 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AND     rm32,imm            [mi:    hle o32 81 /4 id]           386,SM,LOCK
+        {0x83}, // AND     rm64,sbytedword         [mi:    hle o64 83 /4 ib,s]         X64,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AND     rm64,imm            [mi:    hle o64 81 /4 id,s]         X64,SM,LOCK
+        {0x80, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // AND     mem,imm8            [mi:    hle 80 /4 ib]               8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // AND     mem,sbyteword16         [mi:    hle o16 83 /4 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // AND     mem,imm16           [mi:    hle o16 81 /4 iw]           8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // AND     mem,sbytedword32        [mi:    hle o32 83 /4 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // AND     mem,imm32           [mi:    hle o32 81 /4 id]           386,SM,LOCK
+        {0x82, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // AND     rm8,imm             [mi:    hle 82 /4 ib]               8086,SM,LOCK,ND,NOLONG
 
         // ARPL
-        {0x63, , },
-        {0x63, , },
+        {0x63, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // ARPL        mem,reg16           [mr:    63 /r]                  286,PROT,SM,NOLONG
+        {0x63, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // ARPL        reg16,reg16         [mr:    63 /r]                  286,PROT,NOLONG
 
         // BOUND
-        {0x62, , },
-        {0x62, , },
+        {0x62, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // BOUND       reg16,mem           [rm:    o16 62 /r]              186,NOLONG
+        {0x62, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // BOUND       reg32,mem           [rm:    o32 62 /r]              386,NOLONG
 
         // BSF
-        {0x0fbc, , },
-        {0x0fbc, , },
-        {0x0fbc, , },
-        {0x0fbc, , },
-        {0x0fbc, , },
-        {0x0fbc, , },
+        {0x0fbc, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // BSF     reg16,mem           [rm:    o16 nof3 0f bc /r]          386,SM
+        {0x0fbc, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // BSF     reg16,reg16         [rm:    o16 nof3 0f bc /r]          386
+        {0x0fbc, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // BSF     reg32,mem           [rm:    o32 nof3 0f bc /r]          386,SM
+        {0x0fbc, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // BSF     reg32,reg32         [rm:    o32 nof3 0f bc /r]          386
+        {0x0fbc, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // BSF     reg64,mem           [rm:    o64 nof3 0f bc /r]          X64,SM
+        {0x0fbc, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // BSF     reg64,reg64         [rm:    o64 nof3 0f bc /r]          X64
 
         // BSR
-        {0x0fbd, , },
-        {0x0fbd, , },
-        {0x0fbd, , },
-        {0x0fbd, , },
-        {0x0fbd, , },
-        {0x0fbd, , },
+        {0x0fbd, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // BSR     reg16,mem           [rm:    o16 nof3 0f bd /r]          386,SM
+        {0x0fbd, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // BSR     reg16,reg16         [rm:    o16 nof3 0f bd /r]          386
+        {0x0fbd, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // BSR     reg32,mem           [rm:    o32 nof3 0f bd /r]          386,SM
+        {0x0fbd, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // BSR     reg32,reg32         [rm:    o32 nof3 0f bd /r]          386
+        {0x0fbd, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // BSR     reg64,mem           [rm:    o64 nof3 0f bd /r]          X64,SM
+        {0x0fbd, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // BSR     reg64,reg64         [rm:    o64 nof3 0f bd /r]          X64
 
         // BT
-        {0x0fa3, , },
-        {0x0fa3, , },
-        {0x0fa3, , },
-        {0x0fa3, , },
-        {0x0fa3, , },
-        {0x0fa3, , },
-        {0x0fba, , },
-        {0x0fba, , },
-        {0x0fba, , },
+        {0x0fa3, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // BT      mem,reg16           [mr:    o16 0f a3 /r]               386,SM
+        {0x0fa3, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // BT      reg16,reg16         [mr:    o16 0f a3 /r]               386
+        {0x0fa3, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // BT      mem,reg32           [mr:    o32 0f a3 /r]               386,SM
+        {0x0fa3, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // BT      reg32,reg32         [mr:    o32 0f a3 /r]               386
+        {0x0fa3, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // BT      mem,reg64           [mr:    o64 0f a3 /r]               X64,SM
+        {0x0fa3, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // BT      reg64,reg64         [mr:    o64 0f a3 /r]               X64
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BT      rm16,imm            [mi:    o16 0f ba /4 ib,u]          386,SB
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BT      rm32,imm            [mi:    o32 0f ba /4 ib,u]          386,SB
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BT      rm64,imm            [mi:    o64 0f ba /4 ib,u]          X64,SB
 
         // BTC
-        {0x0fbb, , },
-        {0x0fbb, , },
-        {0x0fbb, , },
-        {0x0fbb, , },
-        {0x0fbb, , },
-        {0x0fbb, , },
-        {0x0fba, , },
-        {0x0fba, , },
-        {0x0fba, , },
+        {0x0fbb, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // BTC     mem,reg16           [mr:    hle o16 0f bb /r]           386,SM,LOCK
+        {0x0fbb, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // BTC     reg16,reg16         [mr:    o16 0f bb /r]               386
+        {0x0fbb, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // BTC     mem,reg32           [mr:    hle o32 0f bb /r]           386,SM,LOCK
+        {0x0fbb, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // BTC     reg32,reg32         [mr:    o32 0f bb /r]               386
+        {0x0fbb, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // BTC     mem,reg64           [mr:    hle o64 0f bb /r]           X64,SM,LOCK
+        {0x0fbb, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // BTC     reg64,reg64         [mr:    o64 0f bb /r]               X64
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BTC     rm16,imm            [mi:    hle o16 0f ba /7 ib,u]          386,SB,LOCK
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BTC     rm32,imm            [mi:    hle o32 0f ba /7 ib,u]          386,SB,LOCK
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BTC     rm64,imm            [mi:    hle o64 0f ba /7 ib,u]          X64,SB,LOCK
 
         // BTR
-        {0x0fb3, , },
-        {0x0fb3, , },
-        {0x0fb3, , },
-        {0x0fb3, , },
-        {0x0fb3, , },
-        {0x0fb3, , },
-        {0x0fba, , },
-        {0x0fba, , },
-        {0x0fba, , },
+        {0x0fb3, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // BTR     mem,reg16           [mr:    hle o16 0f b3 /r]           386,SM,LOCK
+        {0x0fb3, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // BTR     reg16,reg16         [mr:    o16 0f b3 /r]               386
+        {0x0fb3, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // BTR     mem,reg32           [mr:    hle o32 0f b3 /r]           386,SM,LOCK
+        {0x0fb3, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // BTR     reg32,reg32         [mr:    o32 0f b3 /r]               386
+        {0x0fb3, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // BTR     mem,reg64           [mr:    hle o64 0f b3 /r]           X64,SM,LOCK
+        {0x0fb3, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // BTR     reg64,reg64         [mr:    o64 0f b3 /r]               X64
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BTR     rm16,imm            [mi:    hle o16 0f ba /6 ib,u]          386,SB,LOCK
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BTR     rm32,imm            [mi:    hle o32 0f ba /6 ib,u]          386,SB,LOCK
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BTR     rm64,imm            [mi:    hle o64 0f ba /6 ib,u]          X64,SB,LOCK
 
         // BTS
-        {0x0fab, , },
-        {0x0fab, , },
-        {0x0fab, , },
-        {0x0fab, , },
-        {0x0fab, , },
-        {0x0fab, , },
-        {0x0fba, , },
-        {0x0fba, , },
-        {0x0fba, , },
+        {0x0fab, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // BTS     mem,reg16           [mr:    hle o16 0f ab /r]           386,SM,LOCK
+        {0x0fab, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // BTS     reg16,reg16         [mr:    o16 0f ab /r]               386
+        {0x0fab, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // BTS     mem,reg32           [mr:    hle o32 0f ab /r]           386,SM,LOCK
+        {0x0fab, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // BTS     reg32,reg32         [mr:    o32 0f ab /r]               386
+        {0x0fab, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // BTS     mem,reg64           [mr:    hle o64 0f ab /r]           X64,SM,LOCK
+        {0x0fab, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // BTS     reg64,reg64         [mr:    o64 0f ab /r]               X64
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BTS     rm16,imm            [mi:    hle o16 0f ba /5 ib,u]          386,SB,LOCK
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BTS     rm32,imm            [mi:    hle o32 0f ba /5 ib,u]          386,SB,LOCK
+        {0x0fba, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // BTS     rm64,imm            [mi:    hle o64 0f ba /5 ib,u]          X64,SB,LOCK
 
         // CALL
-        {0xe8, , },
-        {0xe8, , },
-        {0x9a, , },
+        {0xe8, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // CALL        imm             [i: odf e8 rel]             8086,BND
+        {0xe8}, // CALL        imm|near            [i: odf e8 rel]             8086,ND,BND
+        {0x9a}, // CALL        imm|far             [i: odf 9a iwd seg]             8086,ND,NOLONG
         // Call/jmp near imm/reg/mem is always 64-bit in long mode.
-        {0xe8, , },
-        {0xe8, , },
-        {0x9a, , },
-        {0xe8, , },
-        {0xe8, , },
-        {0x9a, , },
-        {0xe8, , },
-        {0xe8, , },
-        {0x9a, , },
-        {0x9a, , },
-        {0x9a, , },
-        {0x9a, , },
-        {0x9a, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
+        {0xe8}, // CALL        imm16               [i: o16 e8 rel]             8086,NOLONG,BND
+        {0xe8}, // CALL        imm16|near          [i: o16 e8 rel]             8086,ND,NOLONG,BND
+        {0x9a}, // CALL        imm16|far           [i: o16 9a iwd seg]             8086,ND,NOLONG
+        {0xe8}, // CALL        imm32               [i: o32 e8 rel]             386,NOLONG,BND
+        {0xe8}, // CALL        imm32|near          [i: o32 e8 rel]             386,ND,NOLONG,BND
+        {0x9a}, // CALL        imm32|far           [i: o32 9a iwd seg]             386,ND,NOLONG
+        {0xe8}, // CALL        imm64               [i: o64nw e8 rel]               X64,BND
+        {0xe8}, // CALL        imm64|near          [i: o64nw e8 rel]               X64,ND,BND
+        {0x9a}, // CALL        imm:imm             [ji:    odf 9a iwd iw]              8086,NOLONG
+        {0x9a}, // CALL        imm16:imm           [ji:    o16 9a iw iw]               8086,NOLONG
+        {0x9a}, // CALL        imm:imm16           [ji:    o16 9a iw iw]               8086,NOLONG
+        {0x9a}, // CALL        imm32:imm           [ji:    o32 9a id iw]               386,NOLONG
+        {0x9a}, // CALL        imm:imm32           [ji:    o32 9a id iw]               386,NOLONG
+        {0xff}, // CALL        mem|far             [m: odf ff /3]              8086,NOLONG
+        {0xff}, // CALL        mem|far             [m: o64 ff /3]              X64
+        {0xff}, // CALL        mem16|far           [m: o16 ff /3]              8086
+        {0xff}, // CALL        mem32|far           [m: o32 ff /3]              386
+        {0xff}, // CALL        mem64|far           [m: o64 ff /3]              X64
+        {0xff}, // CALL        mem|near            [m: odf ff /2]              8086,ND,BND
+        {0xff}, // CALL        rm16|near           [m: o16 ff /2]              8086,NOLONG,ND,BND
+        {0xff}, // CALL        rm32|near           [m: o32 ff /2]              386,NOLONG,ND,BND
+        {0xff}, // CALL        rm64|near           [m: o64nw ff /2]                X64,ND,BND
+        {0xff, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CALL        mem             [m: odf ff /2]              8086,BND
+        {0xff}, // CALL        rm16                [m: o16 ff /2]              8086,NOLONG,BND
+        {0xff}, // CALL        rm32                [m: o32 ff /2]              386,NOLONG,BND
+        {0xff}, // CALL        rm64                [m: o64nw ff /2]                X64,BND
 
         // CBW
-        {0x98, , },
+        {0x98}, // CBW     void                [   o16 98]                 8086
 
         // CDQ
-        {0x99, , },
+        {0x99}, // CDQ     void                [   o32 99]                 386
 
         // CDQE
-        {0x98, , },
+        {0x98}, // CDQE        void                [   o64 98]                 X64
 
         // CLC
-        {0xf8, , },
+        {0xf8}, // CLC     void                [   f8]                 8086
 
         // CLD
-        {0xfc, , },
+        {0xfc}, // CLD     void                [   fc]                 8086
 
         // CLI
-        {0xfa, , },
+        {0xfa}, // CLI     void                [   fa]                 8086
 
         // CLTS
-        {0x0f06, , },
+        {0x0f06}, // CLTS        void                [   0f 06]                  286,PRIV
 
         // CMC
-        {0xf5, , },
+        {0xf5}, // CMC     void                [   f5]                 8086
 
         // CMP
-        {0x38, , },
-        {0x38, , },
-        {0x39, , },
-        {0x39, , },
-        {0x39, , },
-        {0x39, , },
-        {0x39, , },
-        {0x39, , },
-        {0x3a, , },
-        {0x3a, , },
-        {0x3b, , },
-        {0x3b, , },
-        {0x3b, , },
-        {0x3b, , },
-        {0x3b, , },
-        {0x3b, , },
-        {0x83, , },
-        {0x83, , },
-        {0x83, , },
-        {0x3c, , },
-        {0x83, , },
-        {0x3d, , },
-        {0x83, , },
-        {0x3d, , },
-        {0x83, , },
-        {0x3d, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x82, , },
+        {0x38, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // CMP     mem,reg8            [mr:    38 /r]                  8086,SM
+        {0x38, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // CMP     reg8,reg8           [mr:    38 /r]                  8086
+        {0x39, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // CMP     mem,reg16           [mr:    o16 39 /r]              8086,SM
+        {0x39, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // CMP     reg16,reg16         [mr:    o16 39 /r]              8086
+        {0x39, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // CMP     mem,reg32           [mr:    o32 39 /r]              386,SM
+        {0x39, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // CMP     reg32,reg32         [mr:    o32 39 /r]              386
+        {0x39, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CMP     mem,reg64           [mr:    o64 39 /r]              X64,SM
+        {0x39, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CMP     reg64,reg64         [mr:    o64 39 /r]              X64
+        {0x3a, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CMP     reg8,mem            [rm:    3a /r]                  8086,SM
+        {0x3a, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // CMP     reg8,reg8           [rm:    3a /r]                  8086
+        {0x3b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CMP     reg16,mem           [rm:    o16 3b /r]              8086,SM
+        {0x3b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // CMP     reg16,reg16         [rm:    o16 3b /r]              8086
+        {0x3b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CMP     reg32,mem           [rm:    o32 3b /r]              386,SM
+        {0x3b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // CMP     reg32,reg32         [rm:    o32 3b /r]              386
+        {0x3b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CMP     reg64,mem           [rm:    o64 3b /r]              X64,SM
+        {0x3b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CMP     reg64,reg64         [rm:    o64 3b /r]              X64
+        {0x83}, // CMP     rm16,imm8           [mi:    o16 83 /7 ib,s]             8086
+        {0x83}, // CMP     rm32,imm8           [mi:    o32 83 /7 ib,s]             386
+        {0x83}, // CMP     rm64,imm8           [mi:    o64 83 /7 ib,s]             X64
+        {0x3c, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // CMP     reg_al,imm          [-i:    3c ib]                  8086,SM
+        {0x83}, // CMP     reg_ax,sbyteword        [mi:    o16 83 /7 ib,s]             8086,SM,ND
+        {0x3d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // CMP     reg_ax,imm          [-i:    o16 3d iw]              8086,SM
+        {0x83}, // CMP     reg_eax,sbytedword      [mi:    o32 83 /7 ib,s]             386,SM,ND
+        {0x3d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // CMP     reg_eax,imm         [-i:    o32 3d id]              386,SM
+        {0x83}, // CMP     reg_rax,sbytedword      [mi:    o64 83 /7 ib,s]             X64,SM,ND
+        {0x3d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // CMP     reg_rax,imm         [-i:    o64 3d id,s]                X64,SM
+        {0x80, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // CMP     rm8,imm             [mi:    80 /7 ib]               8086,SM
+        {0x83}, // CMP     rm16,sbyteword          [mi:    o16 83 /7 ib,s]             8086,SM,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // CMP     rm16,imm            [mi:    o16 81 /7 iw]               8086,SM
+        {0x83}, // CMP     rm32,sbytedword         [mi:    o32 83 /7 ib,s]             386,SM,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // CMP     rm32,imm            [mi:    o32 81 /7 id]               386,SM
+        {0x83}, // CMP     rm64,sbytedword         [mi:    o64 83 /7 ib,s]             X64,SM,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // CMP     rm64,imm            [mi:    o64 81 /7 id,s]             X64,SM
+        {0x80, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CMP     mem,imm8            [mi:    80 /7 ib]               8086,SM
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CMP     mem,sbyteword16         [mi:    o16 83 /7 ib,s]             8086,SM,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CMP     mem,imm16           [mi:    o16 81 /7 iw]               8086,SM
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CMP     mem,sbytedword32        [mi:    o32 83 /7 ib,s]             386,SM,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CMP     mem,imm32           [mi:    o32 81 /7 id]               386,SM
+        {0x82, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // CMP     rm8,imm             [mi:    82 /7 ib]               8086,SM,ND,NOLONG
 
         // CMPSB
-        {0xa6, , },
+        {0xa6}, // CMPSB       void                [   repe a6]                8086
 
         // CMPSD
-        {0xa7, , },
+        {0xa7}, // CMPSD       void                [   repe o32 a7]                386
 
         // CMPSQ
-        {0xa7, , },
+        {0xa7}, // CMPSQ       void                [   repe o64 a7]                X64
 
         // CMPSW
-        {0xa7, , },
-        {0x0fb1, , },
-        {0x0fb1, , },
+        {0xa7}, // CMPSW       void                [   repe o16 a7]                8086
+        {0x0fb1, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CMPXCHG     mem,reg64           [mr:    hle o64 0f b1 /r]           X64,SM,LOCK
+        {0x0fb1, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CMPXCHG     reg64,reg64         [mr:    o64 0f b1 /r]               X64
 
         // CMPXCHG486
-        {0x0fa6, , },
-        {0x0fa6, , },
-        {0x0fa7, , },
-        {0x0fa7, , },
-        {0x0fa7, , },
-        {0x0fa7, , },
+        {0x0fa6, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // CMPXCHG486  mem,reg8            [mr:    0f a6 /r]               486,SM,UNDOC,ND,LOCK,OBSOLETE
+        {0x0fa6, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // CMPXCHG486  reg8,reg8           [mr:    0f a6 /r]               486,UNDOC,ND,OBSOLETE
+        {0x0fa7, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // CMPXCHG486  mem,reg16           [mr:    o16 0f a7 /r]               486,SM,UNDOC,ND,LOCK,OBSOLETE
+        {0x0fa7, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // CMPXCHG486  reg16,reg16         [mr:    o16 0f a7 /r]               486,UNDOC,ND,OBSOLETE
+        {0x0fa7, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // CMPXCHG486  mem,reg32           [mr:    o32 0f a7 /r]               486,SM,UNDOC,ND,LOCK,OBSOLETE
+        {0x0fa7, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // CMPXCHG486  reg32,reg32         [mr:    o32 0f a7 /r]               486,UNDOC,ND,OBSOLETE
 
         // CMPXCHG16B
-        {0x0fc7, , },
+        {0x0fc7}, // CMPXCHG16B  mem128              [m: o64 0f c7 /1]               X64,LOCK
 
         // CQO
-        {0x99, , },
+        {0x99}, // CQO     void                [   o64 99]                 X64
 
         // CWD
-        {0x99, , },
+        {0x99}, // CWD     void                [   o16 99]                 8086
 
         // CWDE
-        {0x98, , },
+        {0x98}, // CWDE        void                [   o32 98]                 386
 
         // DAA
-        {0x27, , },
+        {0x27}, // DAA     void                [   27]                 8086,NOLONG
 
         // DAS
-        {0x2f, , },
+        {0x2f}, // DAS     void                [   2f]                 8086,NOLONG
 
         // DEC
-        {0xfe, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
+        {0xfe}, // DEC     rm8             [m: hle fe /1]              8086,LOCK
+        {0xff}, // DEC     rm16                [m: hle o16 ff /1]              8086,LOCK
+        {0xff}, // DEC     rm32                [m: hle o32 ff /1]              386,LOCK
+        {0xff}, // DEC     rm64                [m: hle o64 ff /1]              X64,LOCK
 
         // DIV
-        {0xf6, , },
-        {0xf7, , },
-        {0xf7, , },
-        {0xf7, , },
+        {0xf6}, // DIV     rm8             [m: f6 /6]                  8086
+        {0xf7}, // DIV     rm16                [m: o16 f7 /6]              8086
+        {0xf7}, // DIV     rm32                [m: o32 f7 /6]              386
+        {0xf7}, // DIV     rm64                [m: o64 f7 /6]              X64
 
         // ENTER
-        {0xc8, , },
+        {0xc8, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // ENTER       imm,imm             [ij:    c8 iw ib,u]             186
 
         // F2XM1
-        {0xd9f0, , },
+        {0xd9f0}, // F2XM1       void                [   d9 f0]                  8086,FPU
 
         // FABS
-        {0xd9e1, , },
+        {0xd9e1}, // FABS        void                [   d9 e1]                  8086,FPU
 
         // FADD
-        {0xd8, , },
-        {0xdc, , },
-        {0xdec1, , },
+        {0xd8}, // FADD        mem32               [m: d8 /0]                  8086,FPU
+        {0xdc}, // FADD        mem64               [m: dc /0]                  8086,FPU
+        {0xdec1}, // FADD        void                [   de c1]                  8086,FPU,ND
 
         // FADDP
-        {0xdec1, , },
+        {0xdec1}, // FADDP       void                [   de c1]                  8086,FPU,ND
 
         // FBLD
-        {0xdf, , },
-        {0xdf, , },
+        {0xdf}, // FBLD        mem80               [m: df /4]                  8086,FPU
+        {0xdf, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FBLD        mem             [m: df /4]                  8086,FPU
 
         // FBSTP
-        {0xdf, , },
-        {0xdf, , },
+        {0xdf}, // FBSTP       mem80               [m: df /6]                  8086,FPU
+        {0xdf, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FBSTP       mem             [m: df /6]                  8086,FPU
 
         // FCHS
-        {0xd9e0, , },
+        {0xd9e0}, // FCHS        void                [   d9 e0]                  8086,FPU
 
         // FCLEX
-        {0xdbe2, , },
+        {0xdbe2}, // FCLEX       void                [   wait db e2]             8086,FPU
 
         // FCOM
-        {0xd8, , },
-        {0xdc, , },
-        {0xd8d1, , },
+        {0xd8}, // FCOM        mem32               [m: d8 /2]                  8086,FPU
+        {0xdc}, // FCOM        mem64               [m: dc /2]                  8086,FPU
+        {0xd8d1}, // FCOM        void                [   d8 d1]                  8086,FPU,ND
 
         // FCOMP
-        {0xd8, , },
-        {0xdc, , },
-        {0xd8d9, , },
+        {0xd8}, // FCOMP       mem32               [m: d8 /3]                  8086,FPU
+        {0xdc}, // FCOMP       mem64               [m: dc /3]                  8086,FPU
+        {0xd8d9}, // FCOMP       void                [   d8 d9]                  8086,FPU,ND
 
         // FCOMPP
-        {0xded9, , },
+        {0xded9}, // FCOMPP      void                [   de d9]                  8086,FPU
 
         // FCOS
-        {0xd9ff, , },
+        {0xd9ff}, // FCOS        void                [   d9 ff]                  386,FPU
 
         // FDECSTP
-        {0xd9f6, , },
+        {0xd9f6}, // FDECSTP     void                [   d9 f6]                  8086,FPU
 
         // FDISI
-        {0xdbe1, , },
+        {0xdbe1}, // FDISI       void                [   wait db e1]             8086,FPU
 
         // FDIV
-        {0xd8, , },
-        {0xdc, , },
-        {0xdef9, , },
+        {0xd8}, // FDIV        mem32               [m: d8 /6]                  8086,FPU
+        {0xdc}, // FDIV        mem64               [m: dc /6]                  8086,FPU
+        {0xdef9}, // FDIV        void                [   de f9]                  8086,FPU,ND
 
         // FDIVP
-        {0xdef9, , },
+        {0xdef9}, // FDIVP       void                [   de f9]                  8086,FPU,ND
 
         // FDIVR
-        {0xd8, , },
-        {0xdc, , },
-        {0xdef1, , },
+        {0xd8}, // FDIVR       mem32               [m: d8 /7]                  8086,FPU
+        {0xdc}, // FDIVR       mem64               [m: dc /7]                  8086,FPU
+        {0xdef1}, // FDIVR       void                [   de f1]                  8086,FPU,ND
 
         // FDIVRP
-        {0xdef1, , },
+        {0xdef1}, // FDIVRP      void                [   de f1]                  8086,FPU,ND
 
         // FENI
-        {0xdbe0, , },
+        {0xdbe0}, // FENI        void                [   wait db e0]             8086,FPU
 
         // FFREE
-        {0xddc1, , },
+        {0xddc1}, // FFREE       void                [   dd c1]                  8086,FPU
 
         // FFREEP
-        {0xdfc1, , },
+        {0xdfc1}, // FFREEP      void                [   df c1]                  286,FPU,UNDOC
 
         // FIADD
-        {0xda, , },
-        {0xde, , },
+        {0xda}, // FIADD       mem32               [m: da /0]                  8086,FPU
+        {0xde}, // FIADD       mem16               [m: de /0]                  8086,FPU
 
         // FICOM
-        {0xda, , },
-        {0xde, , },
+        {0xda}, // FICOM       mem32               [m: da /2]                  8086,FPU
+        {0xde}, // FICOM       mem16               [m: de /2]                  8086,FPU
 
         // FICOMP
-        {0xda, , },
-        {0xde, , },
+        {0xda}, // FICOMP      mem32               [m: da /3]                  8086,FPU
+        {0xde}, // FICOMP      mem16               [m: de /3]                  8086,FPU
 
         // FIDIV
-        {0xda, , },
-        {0xde, , },
+        {0xda}, // FIDIV       mem32               [m: da /6]                  8086,FPU
+        {0xde}, // FIDIV       mem16               [m: de /6]                  8086,FPU
 
         // FIDIVR
-        {0xda, , },
-        {0xde, , },
+        {0xda}, // FIDIVR      mem32               [m: da /7]                  8086,FPU
+        {0xde}, // FIDIVR      mem16               [m: de /7]                  8086,FPU
 
         // FILD
-        {0xdb, , },
-        {0xdf, , },
-        {0xdf, , },
+        {0xdb}, // FILD        mem32               [m: db /0]                  8086,FPU
+        {0xdf}, // FILD        mem16               [m: df /0]                  8086,FPU
+        {0xdf}, // FILD        mem64               [m: df /5]                  8086,FPU
 
         // FIMUL
-        {0xda, , },
-        {0xde, , },
+        {0xda}, // FIMUL       mem32               [m: da /1]                  8086,FPU
+        {0xde}, // FIMUL       mem16               [m: de /1]                  8086,FPU
 
         // FINCSTP
-        {0xd9f7, , },
+        {0xd9f7}, // FINCSTP     void                [   d9 f7]                  8086,FPU
 
         // FINIT
-        {0xdbe3, , },
+        {0xdbe3}, // FINIT       void                [   wait db e3]             8086,FPU
 
         // FIST
-        {0xdb, , },
-        {0xdf, , },
+        {0xdb}, // FIST        mem32               [m: db /2]                  8086,FPU
+        {0xdf}, // FIST        mem16               [m: df /2]                  8086,FPU
 
         // FISTP
-        {0xdb, , },
-        {0xdf, , },
-        {0xdf, , },
+        {0xdb}, // FISTP       mem32               [m: db /3]                  8086,FPU
+        {0xdf}, // FISTP       mem16               [m: df /3]                  8086,FPU
+        {0xdf}, // FISTP       mem64               [m: df /7]                  8086,FPU
 
         // FISUB
-        {0xda, , },
-        {0xde, , },
+        {0xda}, // FISUB       mem32               [m: da /4]                  8086,FPU
+        {0xde}, // FISUB       mem16               [m: de /4]                  8086,FPU
 
         // FISUBR
-        {0xda, , },
-        {0xde, , },
+        {0xda}, // FISUBR      mem32               [m: da /5]                  8086,FPU
+        {0xde}, // FISUBR      mem16               [m: de /5]                  8086,FPU
 
         // FLD
-        {0xd9, , },
-        {0xdd, , },
-        {0xdb, , },
-        {0xd9c1, , },
+        {0xd9}, // FLD     mem32               [m: d9 /0]                  8086,FPU
+        {0xdd}, // FLD     mem64               [m: dd /0]                  8086,FPU
+        {0xdb}, // FLD     mem80               [m: db /5]                  8086,FPU
+        {0xd9c1}, // FLD     void                [   d9 c1]                  8086,FPU,ND
 
         // FLD1
-        {0xd9e8, , },
+        {0xd9e8}, // FLD1        void                [   d9 e8]                  8086,FPU
 
         // FLDCW
-        {0xd9, , },
+        {0xd9, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FLDCW       mem             [m: d9 /5]                  8086,FPU,SW
 
         // FLDENV
-        {0xd9, , },
+        {0xd9, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FLDENV      mem             [m: d9 /4]                  8086,FPU
 
         // FLDL2E
-        {0xd9ea, , },
+        {0xd9ea}, // FLDL2E      void                [   d9 ea]                  8086,FPU
 
         // FLDL2T
-        {0xd9e9, , },
+        {0xd9e9}, // FLDL2T      void                [   d9 e9]                  8086,FPU
 
         // FLDLG2
-        {0xd9ec, , },
+        {0xd9ec}, // FLDLG2      void                [   d9 ec]                  8086,FPU
 
         // FLDLN2
-        {0xd9ed, , },
+        {0xd9ed}, // FLDLN2      void                [   d9 ed]                  8086,FPU
 
         // FLDPI
-        {0xd9eb, , },
+        {0xd9eb}, // FLDPI       void                [   d9 eb]                  8086,FPU
 
         // FLDZ
-        {0xd9ee, , },
+        {0xd9ee}, // FLDZ        void                [   d9 ee]                  8086,FPU
 
         // FMUL
-        {0xd8, , },
-        {0xdc, , },
-        {0xdec9, , },
+        {0xd8}, // FMUL        mem32               [m: d8 /1]                  8086,FPU
+        {0xdc}, // FMUL        mem64               [m: dc /1]                  8086,FPU
+        {0xdec9}, // FMUL        void                [   de c9]                  8086,FPU,ND
 
         // FMULP
-        {0xdec9, , },
+        {0xdec9}, // FMULP       void                [   de c9]                  8086,FPU,ND
 
         // FNCLEX
-        {0xdbe2, , },
+        {0xdbe2}, // FNCLEX      void                [   db e2]                  8086,FPU
 
         // FNDISI
-        {0xdbe1, , },
+        {0xdbe1}, // FNDISI      void                [   db e1]                  8086,FPU
 
         // FNENI
-        {0xdbe0, , },
+        {0xdbe0}, // FNENI       void                [   db e0]                  8086,FPU
 
         // FNINIT
-        {0xdbe3, , },
+        {0xdbe3}, // FNINIT      void                [   db e3]                  8086,FPU
 
         // FNOP
-        {0xd9d0, , },
+        {0xd9d0}, // FNOP        void                [   d9 d0]                  8086,FPU
 
         // FNSAVE
-        {0xdd, , },
+        {0xdd, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FNSAVE      mem             [m: dd /6]                  8086,FPU
 
         // FNSTCW
-        {0xd9, , },
+        {0xd9, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FNSTCW      mem             [m: d9 /7]                  8086,FPU,SW
 
         // FNSTENV
-        {0xd9, , },
+        {0xd9, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FNSTENV     mem             [m: d9 /6]                  8086,FPU
 
         // FNSTSW
-        {0xdd, , },
-        {0xdfe0, , },
+        {0xdd, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FNSTSW      mem             [m: dd /7]                  8086,FPU,SW
+        {0xdfe0}, // FNSTSW      reg_ax              [-: df e0]                  286,FPU
 
         // FPATAN
-        {0xd9f3, , },
+        {0xd9f3}, // FPATAN      void                [   d9 f3]                  8086,FPU
 
         // FPREM
-        {0xd9f8, , },
+        {0xd9f8}, // FPREM       void                [   d9 f8]                  8086,FPU
 
         // FPREM1
-        {0xd9f5, , },
+        {0xd9f5}, // FPREM1      void                [   d9 f5]                  386,FPU
 
         // FPTAN
-        {0xd9f2, , },
+        {0xd9f2}, // FPTAN       void                [   d9 f2]                  8086,FPU
 
         // FRNDINT
-        {0xd9fc, , },
+        {0xd9fc}, // FRNDINT     void                [   d9 fc]                  8086,FPU
 
         // FRSTOR
-        {0xdd, , },
+        {0xdd, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FRSTOR      mem             [m: dd /4]                  8086,FPU
 
         // FSAVE
-        {0xdd, , },
+        {0xdd, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FSAVE       mem             [m: wait dd /6]             8086,FPU
 
         // FSCALE
-        {0xd9fd, , },
+        {0xd9fd}, // FSCALE      void                [   d9 fd]                  8086,FPU
 
         // FSETPM
-        {0xdbe4, , },
+        {0xdbe4}, // FSETPM      void                [   db e4]                  286,FPU
 
         // FSIN
-        {0xd9fe, , },
+        {0xd9fe}, // FSIN        void                [   d9 fe]                  386,FPU
 
         // FSINCOS
-        {0xd9fb, , },
+        {0xd9fb}, // FSINCOS     void                [   d9 fb]                  386,FPU
 
         // FSQRT
-        {0xd9fa, , },
+        {0xd9fa}, // FSQRT       void                [   d9 fa]                  8086,FPU
 
         // FST
-        {0xd9, , },
-        {0xdd, , },
-        {0xddd1, , },
+        {0xd9}, // FST     mem32               [m: d9 /2]                  8086,FPU
+        {0xdd}, // FST     mem64               [m: dd /2]                  8086,FPU
+        {0xddd1}, // FST     void                [   dd d1]                  8086,FPU,ND
 
         // FSTCW
-        {0xd9, , },
+        {0xd9, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FSTCW       mem             [m: wait d9 /7]             8086,FPU,SW
 
         // FSTENV
-        {0xd9, , },
+        {0xd9, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FSTENV      mem             [m: wait d9 /6]             8086,FPU
 
         // FSTP
-        {0xd9, , },
-        {0xdd, , },
-        {0xdb, , },
-        {0xddd9, , },
+        {0xd9}, // FSTP        mem32               [m: d9 /3]                  8086,FPU
+        {0xdd}, // FSTP        mem64               [m: dd /3]                  8086,FPU
+        {0xdb}, // FSTP        mem80               [m: db /7]                  8086,FPU
+        {0xddd9}, // FSTP        void                [   dd d9]                  8086,FPU,ND
 
         // FSTSW
-        {0xdd, , },
-        {0xdfe0, , },
+        {0xdd, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FSTSW       mem             [m: wait dd /7]             8086,FPU,SW
+        {0xdfe0}, // FSTSW       reg_ax              [-: wait df e0]             286,FPU
 
         // FSUB
-        {0xd8, , },
-        {0xdc, , },
-        {0xdee9, , },
+        {0xd8}, // FSUB        mem32               [m: d8 /4]                  8086,FPU
+        {0xdc}, // FSUB        mem64               [m: dc /4]                  8086,FPU
+        {0xdee9}, // FSUB        void                [   de e9]                  8086,FPU,ND
 
         // FSUBP
-        {0xdee9, , },
+        {0xdee9}, // FSUBP       void                [   de e9]                  8086,FPU,ND
 
         // FSUBR
-        {0xd8, , },
-        {0xdc, , },
-        {0xdee1, , },
+        {0xd8}, // FSUBR       mem32               [m: d8 /5]                  8086,FPU
+        {0xdc}, // FSUBR       mem64               [m: dc /5]                  8086,FPU
+        {0xdee1}, // FSUBR       void                [   de e1]                  8086,FPU,ND
 
         // FSUBRP
-        {0xdee1, , },
+        {0xdee1}, // FSUBRP      void                [   de e1]                  8086,FPU,ND
 
         // FTST
-        {0xd9e4, , },
+        {0xd9e4}, // FTST        void                [   d9 e4]                  8086,FPU
 
         // FUCOM
-        {0xdde1, , },
+        {0xdde1}, // FUCOM       void                [   dd e1]                  386,FPU,ND
 
         // FUCOMP
-        {0xdde9, , },
+        {0xdde9}, // FUCOMP      void                [   dd e9]                  386,FPU,ND
 
         // FUCOMPP
-        {0xdae9, , },
+        {0xdae9}, // FUCOMPP     void                [   da e9]                  386,FPU
 
         // FXAM
-        {0xd9e5, , },
+        {0xd9e5}, // FXAM        void                [   d9 e5]                  8086,FPU
 
         // FXCH
-        {0xd9c9, , },
+        {0xd9c9}, // FXCH        void                [   d9 c9]                  8086,FPU,ND
 
         // FXTRACT
-        {0xd9f4, , },
+        {0xd9f4}, // FXTRACT     void                [   d9 f4]                  8086,FPU
 
         // FYL2X
-        {0xd9f1, , },
+        {0xd9f1}, // FYL2X       void                [   d9 f1]                  8086,FPU
 
         // FYL2XP1
-        {0xd9f9, , },
+        {0xd9f9}, // FYL2XP1     void                [   d9 f9]                  8086,FPU
 
         // HLT
-        {0xf4, , },
+        {0xf4}, // HLT     void                [   f4]                 8086,PRIV
 
         // IBTS
-        {0x0fa7, , },
-        {0x0fa7, , },
-        {0x0fa7, , },
-        {0x0fa7, , },
+        {0x0fa7, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // IBTS        mem,reg16           [mr:    o16 0f a7 /r]               386,SW,UNDOC,ND,OBSOLETE
+        {0x0fa7, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // IBTS        reg16,reg16         [mr:    o16 0f a7 /r]               386,UNDOC,ND,OBSOLETE
+        {0x0fa7, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // IBTS        mem,reg32           [mr:    o32 0f a7 /r]               386,SD,UNDOC,ND,OBSOLETE
+        {0x0fa7, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // IBTS        reg32,reg32         [mr:    o32 0f a7 /r]               386,UNDOC,ND,OBSOLETE
 
         // ICEBP
-        {0xf1, , },
+        {0xf1}, // ICEBP       void                [   f1]                 386,ND
 
         // IDIV
-        {0xf6, , },
-        {0xf7, , },
-        {0xf7, , },
-        {0xf7, , },
+        {0xf6}, // IDIV        rm8             [m: f6 /7]                  8086
+        {0xf7}, // IDIV        rm16                [m: o16 f7 /7]              8086
+        {0xf7}, // IDIV        rm32                [m: o32 f7 /7]              386
+        {0xf7}, // IDIV        rm64                [m: o64 f7 /7]              X64
 
         // IMUL
-        {0xf6, , },
-        {0xf7, , },
-        {0xf7, , },
-        {0xf7, , },
-        {0x0faf, , },
-        {0x0faf, , },
-        {0x0faf, , },
-        {0x0faf, , },
-        {0x0faf, , },
-        {0x0faf, , },
-        {0x6b, , },
-        {0x6b, , },
-        {0x69, , },
-        {0x69, , },
-        {0x6b, , },
-        {0x6b, , },
-        {0x69, , },
-        {0x69, , },
-        {0x6b, , },
-        {0x6b, , },
-        {0x69, , },
-        {0x69, , },
-        {0x6b, , },
-        {0x6b, , },
-        {0x69, , },
-        {0x69, , },
-        {0x6b, , },
-        {0x6b, , },
-        {0x69, , },
-        {0x69, , },
-        {0x6b, , },
-        {0x6b, , },
-        {0x69, , },
-        {0x69, , },
+        {0xf6}, // IMUL        rm8             [m: f6 /5]                  8086
+        {0xf7}, // IMUL        rm16                [m: o16 f7 /5]              8086
+        {0xf7}, // IMUL        rm32                [m: o32 f7 /5]              386
+        {0xf7}, // IMUL        rm64                [m: o64 f7 /5]              X64
+        {0x0faf, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg16,mem           [rm:    o16 0f af /r]               386,SM
+        {0x0faf, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // IMUL        reg16,reg16         [rm:    o16 0f af /r]               386
+        {0x0faf, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg32,mem           [rm:    o32 0f af /r]               386,SM
+        {0x0faf, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // IMUL        reg32,reg32         [rm:    o32 0f af /r]               386
+        {0x0faf, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg64,mem           [rm:    o64 0f af /r]               X64,SM
+        {0x0faf, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // IMUL        reg64,reg64         [rm:    o64 0f af /r]               X64
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg16,mem,imm8          [rmi:   o16 6b /r ib,s]             186,SM
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg16,mem,sbyteword     [rmi:   o16 6b /r ib,s]             186,SM,ND
+        {0x69, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg16,mem,imm16         [rmi:   o16 69 /r iw]               186,SM
+        {0x69, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // IMUL        reg16,mem,imm           [rmi:   o16 69 /r iw]               186,SM,ND
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // IMUL        reg16,reg16,imm8        [rmi:   o16 6b /r ib,s]             186
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // IMUL        reg16,reg16,sbyteword       [rmi:   o16 6b /r ib,s]             186,SM,ND
+        {0x69, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // IMUL        reg16,reg16,imm16       [rmi:   o16 69 /r iw]               186
+        {0x69, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // IMUL        reg16,reg16,imm         [rmi:   o16 69 /r iw]               186,SM,ND
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg32,mem,imm8          [rmi:   o32 6b /r ib,s]             386,SM
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg32,mem,sbytedword        [rmi:   o32 6b /r ib,s]             386,SM,ND
+        {0x69, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg32,mem,imm32         [rmi:   o32 69 /r id]               386,SM
+        {0x69, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // IMUL        reg32,mem,imm           [rmi:   o32 69 /r id]               386,SM,ND
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // IMUL        reg32,reg32,imm8        [rmi:   o32 6b /r ib,s]             386
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // IMUL        reg32,reg32,sbytedword      [rmi:   o32 6b /r ib,s]             386,SM,ND
+        {0x69, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // IMUL        reg32,reg32,imm32       [rmi:   o32 69 /r id]               386
+        {0x69, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // IMUL        reg32,reg32,imm         [rmi:   o32 69 /r id]               386,SM,ND
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg64,mem,imm8          [rmi:   o64 6b /r ib,s]             X64,SM
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg64,mem,sbytedword        [rmi:   o64 6b /r ib,s]             X64,SM,ND
+        {0x69, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // IMUL        reg64,mem,imm32         [rmi:   o64 69 /r id]               X64,SM
+        {0x69, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // IMUL        reg64,mem,imm           [rmi:   o64 69 /r id,s]             X64,SM,ND
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // IMUL        reg64,reg64,imm8        [rmi:   o64 6b /r ib,s]             X64
+        {0x6b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // IMUL        reg64,reg64,sbytedword      [rmi:   o64 6b /r ib,s]             X64,SM,ND
+        {0x69, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // IMUL        reg64,reg64,imm32       [rmi:   o64 69 /r id]               X64
+        {0x69, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // IMUL        reg64,reg64,imm         [rmi:   o64 69 /r id,s]             X64,SM,ND
 
         // IN
-        {0xe4, , },
-        {0xe5, , },
-        {0xe5, , },
-        {0xec, , },
-        {0xed, , },
-        {0xed, , },
+        {0xe4, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // IN      reg_al,imm          [-i:    e4 ib,u]                8086,SB
+        {0xe5, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // IN      reg_ax,imm          [-i:    o16 e5 ib,u]                8086,SB
+        {0xe5, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // IN      reg_eax,imm         [-i:    o32 e5 ib,u]                386,SB
+        {0xec}, // IN      reg_al,reg_dx           [--:    ec]                 8086
+        {0xed}, // IN      reg_ax,reg_dx           [--:    o16 ed]                 8086
+        {0xed}, // IN      reg_eax,reg_dx          [--:    o32 ed]                 386
 
         // INC
-        {0xfe, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
+        {0xfe}, // INC     rm8             [m: hle fe /0]              8086,LOCK
+        {0xff}, // INC     rm16                [m: hle o16 ff /0]              8086,LOCK
+        {0xff}, // INC     rm32                [m: hle o32 ff /0]              386,LOCK
+        {0xff}, // INC     rm64                [m: hle o64 ff /0]              X64,LOCK
 
         // INSB
-        {0x6c, , },
+        {0x6c}, // INSB        void                [   6c]                 186
 
         // INSD
-        {0x6d, , },
+        {0x6d}, // INSD        void                [   o32 6d]                 386
 
         // INSW
-        {0x6d, , },
+        {0x6d}, // INSW        void                [   o16 6d]                 186
 
         // INT
-        {0xcd, , },
+        {0xcd, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // INT     imm             [i: cd ib,u]                8086,SB
 
         // INT01
-        {0xf1, , },
+        {0xf1}, // INT01       void                [   f1]                 386,ND
 
         // INT1
-        {0xf1, , },
+        {0xf1}, // INT1        void                [   f1]                 386
 
         // INT03
-        {0xcc, , },
+        {0xcc}, // INT03       void                [   cc]                 8086,ND
 
         // INT3
-        {0xcc, , },
+        {0xcc}, // INT3        void                [   cc]                 8086
 
         // INTO
-        {0xce, , },
+        {0xce}, // INTO        void                [   ce]                 8086,NOLONG
 
         // INVD
-        {0x0f08, , },
+        {0x0f08}, // INVD        void                [   0f 08]                  486,PRIV
 
         // INVLPG
-        {0x0f01, , },
-        {0x0f01df, , },
+        {0x0f01, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // INVLPG      mem             [m: 0f 01 /7]               486,PRIV
+        {0x0f01df}, // INVLPGA     reg_rax,reg_ecx         [--:    o64nw a64 0f 01 df]         X64,AMD
 
         // IRET
-        {0xcf, , },
+        {0xcf}, // IRET        void                [   odf cf]                 8086
 
         // IRETD
-        {0xcf, , },
+        {0xcf}, // IRETD       void                [   o32 cf]                 386
 
         // IRETQ
-        {0xcf, , },
+        {0xcf}, // IRETQ       void                [   o64 cf]                 X64
 
         // IRETW
-        {0xcf, , },
+        {0xcf}, // IRETW       void                [   o16 cf]                 8086
 
         // JCXZ
-        {0xe3, , },
+        {0xe3, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // JCXZ        imm             [i: a16 e3 rel8]                8086,NOLONG
 
         // JECXZ
-        {0xe3, , },
+        {0xe3, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // JECXZ       imm             [i: a32 e3 rel8]                386
 
         // JRCXZ
-        {0xe3, , },
+        {0xe3, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // JRCXZ       imm             [i: o64nw a64 e3 rel8]          X64
 
         // JMP
-        {0xeb, , },
-        {0xeb, , },
-        {0xe9, , },
-        {0xe9, , },
-        {0xea, , },
+        {0xeb}, // JMP     imm|short           [i: eb rel8]                8086
+        {0xeb, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // JMP     imm             [i: jmp8 eb rel8]               8086,ND
+        {0xe9, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // JMP     imm             [i: odf e9 rel]             8086,BND
+        {0xe9}, // JMP     imm|near            [i: odf e9 rel]             8086,ND,BND
+        {0xea}, // JMP     imm|far             [i: odf ea iwd seg]             8086,ND,NOLONG
         // Call/jmp near imm/reg/mem is always 64-bit in long mode.
-        {0xe9, , },
-        {0xe9, , },
-        {0xea, , },
-        {0xe9, , },
-        {0xe9, , },
-        {0xea, , },
-        {0xe9, , },
-        {0xe9, , },
-        {0xea, , },
-        {0xea, , },
-        {0xea, , },
-        {0xea, , },
-        {0xea, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
+        {0xe9}, // JMP     imm16               [i: o16 e9 rel]             8086,NOLONG,BND
+        {0xe9}, // JMP     imm16|near          [i: o16 e9 rel]             8086,ND,NOLONG,BND
+        {0xea}, // JMP     imm16|far           [i: o16 ea iwd seg]             8086,ND,NOLONG
+        {0xe9}, // JMP     imm32               [i: o32 e9 rel]             386,NOLONG,BND
+        {0xe9}, // JMP     imm32|near          [i: o32 e9 rel]             386,ND,NOLONG,BND
+        {0xea}, // JMP     imm32|far           [i: o32 ea iwd seg]             386,ND,NOLONG
+        {0xe9}, // JMP     imm64               [i: o64nw e9 rel]               X64,BND
+        {0xe9}, // JMP     imm64|near          [i: o64nw e9 rel]               X64,ND,BND
+        {0xea}, // JMP     imm:imm             [ji:    odf ea iwd iw]              8086,NOLONG
+        {0xea}, // JMP     imm16:imm           [ji:    o16 ea iw iw]               8086,NOLONG
+        {0xea}, // JMP     imm:imm16           [ji:    o16 ea iw iw]               8086,NOLONG
+        {0xea}, // JMP     imm32:imm           [ji:    o32 ea id iw]               386,NOLONG
+        {0xea}, // JMP     imm:imm32           [ji:    o32 ea id iw]               386,NOLONG
+        {0xff}, // JMP     mem|far             [m: odf ff /5]              8086,NOLONG
+        {0xff}, // JMP     mem|far             [m: o64 ff /5]              X64
+        {0xff}, // JMP     mem16|far           [m: o16 ff /5]              8086
+        {0xff}, // JMP     mem32|far           [m: o32 ff /5]              386
+        {0xff}, // JMP     mem64|far           [m: o64 ff /5]              X64
+        {0xff}, // JMP     mem|near            [m: odf ff /4]              8086,ND,BND
+        {0xff}, // JMP     rm16|near           [m: o16 ff /4]              8086,NOLONG,ND,BND
+        {0xff}, // JMP     rm32|near           [m: o32 ff /4]              386,NOLONG,ND,BND
+        {0xff}, // JMP     rm64|near           [m: o64nw ff /4]                X64,ND,BND
+        {0xff, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // JMP     mem             [m: odf ff /4]              8086,BND
+        {0xff}, // JMP     rm16                [m: o16 ff /4]              8086,NOLONG,BND
+        {0xff}, // JMP     rm32                [m: o32 ff /4]              386,NOLONG,BND
+        {0xff}, // JMP     rm64                [m: o64nw ff /4]                X64,BND
 
         // LAHF
-        {0x9f, , },
+        {0x9f}, // LAHF        void                [   9f]                 8086
 
         // LAR
-        {0x0f02, , },
-        {0x0f02, , },
-        {0x0f02, , },
-        {0x0f02, , },
-        {0x0f02, , },
-        {0x0f02, , },
-        {0x0f02, , },
-        {0x0f02, , },
-        {0x0f02, , },
-        {0x0f02, , },
-        {0x0f02, , },
-        {0x0f02, , },
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LAR     reg16,mem           [rm:    o16 0f 02 /r]               286,PROT,SW
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // LAR     reg16,reg16         [rm:    o16 0f 02 /r]               286,PROT
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // LAR     reg16,reg32         [rm:    o16 0f 02 /r]               386,PROT
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // LAR     reg16,reg64         [rm:    o16 o64nw 0f 02 /r]         X64,PROT,ND
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LAR     reg32,mem           [rm:    o32 0f 02 /r]               386,PROT,SW
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // LAR     reg32,reg16         [rm:    o32 0f 02 /r]               386,PROT
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // LAR     reg32,reg32         [rm:    o32 0f 02 /r]               386,PROT
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // LAR     reg32,reg64         [rm:    o32 o64nw 0f 02 /r]         X64,PROT,ND
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LAR     reg64,mem           [rm:    o64 0f 02 /r]               X64,PROT,SW
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // LAR     reg64,reg16         [rm:    o64 0f 02 /r]               X64,PROT
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // LAR     reg64,reg32         [rm:    o64 0f 02 /r]               X64,PROT
+        {0x0f02, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // LAR     reg64,reg64         [rm:    o64 0f 02 /r]               X64,PROT
 
         // LDS
-        {0xc5, , },
-        {0xc5, , },
+        {0xc5, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LDS     reg16,mem           [rm:    o16 c5 /r]              8086,NOLONG
+        {0xc5, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LDS     reg32,mem           [rm:    o32 c5 /r]              386,NOLONG
 
         // LEA
-        {0x8d, , },
-        {0x8d, , },
-        {0x8d, , },
-        {0x8d, , },
-        {0x8d, , },
-        {0x8d, , },
+        {0x8d, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LEA     reg16,mem           [rm:    o16 8d /r]              8086,ANYSIZE
+        {0x8d, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LEA     reg32,mem           [rm:    o32 8d /r]              386,ANYSIZE
+        {0x8d, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LEA     reg64,mem           [rm:    o64 8d /r]              X64,ANYSIZE
+        {0x8d, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LEA     reg16,imm           [rm:    o16 8d /r]              8086,ND,ANYSIZE
+        {0x8d, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LEA     reg32,imm           [rm:    o32 8d /r]              386,ND,ANYSIZE
+        {0x8d, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LEA     reg64,imm           [rm:    o64 8d /r]              X64,ND,ANYSIZE
 
         // LEAVE
-        {0xc9, , },
+        {0xc9}, // LEAVE       void                [   c9]                 186
 
         // LES
-        {0xc4, , },
-        {0xc4, , },
+        {0xc4, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LES     reg16,mem           [rm:    o16 c4 /r]              8086,NOLONG
+        {0xc4, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LES     reg32,mem           [rm:    o32 c4 /r]              386,NOLONG
 
         // LFENCE
-        {0x0faee8, , },
+        {0x0faee8}, // LFENCE      void                [   np 0f ae e8]                X64,AMD
 
         // LFS
-        {0x0fb4, , },
-        {0x0fb4, , },
-        {0x0fb4, , },
+        {0x0fb4, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LFS     reg16,mem           [rm:    o16 0f b4 /r]               386
+        {0x0fb4, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LFS     reg32,mem           [rm:    o32 0f b4 /r]               386
+        {0x0fb4, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LFS     reg64,mem           [rm:    o64 0f b4 /r]               X64
 
         // LGDT
-        {0x0f01, , },
+        {0x0f01, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LGDT        mem             [m: 0f 01 /2]               286,PRIV
 
         // LGS
-        {0x0fb5, , },
-        {0x0fb5, , },
-        {0x0fb5, , },
+        {0x0fb5, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LGS     reg16,mem           [rm:    o16 0f b5 /r]               386
+        {0x0fb5, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LGS     reg32,mem           [rm:    o32 0f b5 /r]               386
+        {0x0fb5, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LGS     reg64,mem           [rm:    o64 0f b5 /r]               X64
 
         // LIDT
-        {0x0f01, , },
+        {0x0f01, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LIDT        mem             [m: 0f 01 /3]               286,PRIV
 
         // LLDT
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
+        {0x0f00, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LLDT        mem             [m: 0f 00 /2]               286,PROT,PRIV
+        {0x0f00}, // LLDT        mem16               [m: 0f 00 /2]               286,PROT,PRIV
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::WORD}}, // LLDT        reg16               [m: 0f 00 /2]               286,PROT,PRIV
 
         // LMSW
-        {0x0f01, , },
-        {0x0f01, , },
-        {0x0f01, , },
+        {0x0f01, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LMSW        mem             [m: 0f 01 /6]               286,PRIV
+        {0x0f01}, // LMSW        mem16               [m: 0f 01 /6]               286,PRIV
+        {0x0f01, {Operand::Type::REGISTER, Operand::Size::WORD}}, // LMSW        reg16               [m: 0f 01 /6]               286,PRIV
 
         // LOADALL
-        {0x0f07, , },
+        {0x0f07}, // LOADALL     void                [   0f 07]                  386,UNDOC,ND,OBSOLETE
 
         // LOADALL286
-        {0x0f05, , },
+        {0x0f05}, // LOADALL286  void                [   0f 05]                  286,UNDOC,ND,OBSOLETE
 
         // LODSB
-        {0xac, , },
+        {0xac}, // LODSB       void                [   ac]                 8086
 
         // LODSD
-        {0xad, , },
+        {0xad}, // LODSD       void                [   o32 ad]                 386
 
         // LODSQ
-        {0xad, , },
+        {0xad}, // LODSQ       void                [   o64 ad]                 X64
 
         // LODSW
-        {0xad, , },
+        {0xad}, // LODSW       void                [   o16 ad]                 8086
 
         // LOOP
-        {0xe2, , },
-        {0xe2, , },
-        {0xe2, , },
-        {0xe2, , },
+        {0xe2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOP        imm             [i: adf e2 rel8]                8086
+        {0xe2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOP        imm,reg_cx          [i-:    a16 e2 rel8]                8086,NOLONG
+        {0xe2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOP        imm,reg_ecx         [i-:    a32 e2 rel8]                386
+        {0xe2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOP        imm,reg_rcx         [i-:    a64 e2 rel8]                X64
 
         // LOOPE
-        {0xe1, , },
-        {0xe1, , },
-        {0xe1, , },
-        {0xe1, , },
+        {0xe1, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPE       imm             [i: adf e1 rel8]                8086
+        {0xe1, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPE       imm,reg_cx          [i-:    a16 e1 rel8]                8086,NOLONG
+        {0xe1, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPE       imm,reg_ecx         [i-:    a32 e1 rel8]                386
+        {0xe1, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPE       imm,reg_rcx         [i-:    a64 e1 rel8]                X64
 
         // LOOPNE
-        {0xe0, , },
-        {0xe0, , },
-        {0xe0, , },
-        {0xe0, , },
+        {0xe0, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPNE      imm             [i: adf e0 rel8]                8086
+        {0xe0, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPNE      imm,reg_cx          [i-:    a16 e0 rel8]                8086,NOLONG
+        {0xe0, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPNE      imm,reg_ecx         [i-:    a32 e0 rel8]                386
+        {0xe0, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPNE      imm,reg_rcx         [i-:    a64 e0 rel8]                X64
 
         // LOOPNZ
-        {0xe0, , },
-        {0xe0, , },
-        {0xe0, , },
-        {0xe0, , },
+        {0xe0, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPNZ      imm             [i: adf e0 rel8]                8086
+        {0xe0, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPNZ      imm,reg_cx          [i-:    a16 e0 rel8]                8086,NOLONG
+        {0xe0, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPNZ      imm,reg_ecx         [i-:    a32 e0 rel8]                386
+        {0xe0, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPNZ      imm,reg_rcx         [i-:    a64 e0 rel8]                X64
 
         // LOOPZ
-        {0xe1, , },
-        {0xe1, , },
-        {0xe1, , },
-        {0xe1, , },
+        {0xe1, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPZ       imm             [i: adf e1 rel8]                8086
+        {0xe1, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPZ       imm,reg_cx          [i-:    a16 e1 rel8]                8086,NOLONG
+        {0xe1, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPZ       imm,reg_ecx         [i-:    a32 e1 rel8]                386
+        {0xe1, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // LOOPZ       imm,reg_rcx         [i-:    a64 e1 rel8]                X64
 
         // LSL
-        {0x0f03, , },
-        {0x0f03, , },
-        {0x0f03, , },
-        {0x0f03, , },
-        {0x0f03, , },
-        {0x0f03, , },
-        {0x0f03, , },
-        {0x0f03, , },
-        {0x0f03, , },
-        {0x0f03, , },
-        {0x0f03, , },
-        {0x0f03, , },
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LSL     reg16,mem           [rm:    o16 0f 03 /r]               286,PROT,SW
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // LSL     reg16,reg16         [rm:    o16 0f 03 /r]               286,PROT
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // LSL     reg16,reg32         [rm:    o16 0f 03 /r]               386,PROT
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // LSL     reg16,reg64         [rm:    o16 o64nw 0f 03 /r]         X64,PROT,ND
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LSL     reg32,mem           [rm:    o32 0f 03 /r]               386,PROT,SW
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // LSL     reg32,reg16         [rm:    o32 0f 03 /r]               386,PROT
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // LSL     reg32,reg32         [rm:    o32 0f 03 /r]               386,PROT
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // LSL     reg32,reg64         [rm:    o32 o64nw 0f 03 /r]         X64,PROT,ND
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LSL     reg64,mem           [rm:    o64 0f 03 /r]               X64,PROT,SW
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // LSL     reg64,reg16         [rm:    o64 0f 03 /r]               X64,PROT
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // LSL     reg64,reg32         [rm:    o64 0f 03 /r]               X64,PROT
+        {0x0f03, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // LSL     reg64,reg64         [rm:    o64 0f 03 /r]               X64,PROT
 
         // LSS
-        {0x0fb2, , },
-        {0x0fb2, , },
-        {0x0fb2, , },
+        {0x0fb2, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LSS     reg16,mem           [rm:    o16 0f b2 /r]               386
+        {0x0fb2, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LSS     reg32,mem           [rm:    o32 0f b2 /r]               386
+        {0x0fb2, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LSS     reg64,mem           [rm:    o64 0f b2 /r]               X64
 
         // LTR
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
+        {0x0f00, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // LTR     mem             [m: 0f 00 /3]               286,PROT,PRIV
+        {0x0f00}, // LTR     mem16               [m: 0f 00 /3]               286,PROT,PRIV
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::WORD}}, // LTR     reg16               [m: 0f 00 /3]               286,PROT,PRIV
 
         // MFENCE
-        {0x0faef0, , },
-        {0x0f01c8, , },
-        {0x0f01fa, , },
+        {0x0faef0}, // MFENCE      void                [   np 0f ae f0]                X64,AMD
+        {0x0f01c8}, // MONITOR     reg_rax,reg_ecx,reg_edx     [---:   0f 01 c8]               X64,ND
+        {0x0f01fa}, // MONITORX    reg_rax,reg_ecx,reg_edx     [---:   0f 01 fa]               X64,AMD,ND
 
         // MOV
-        {0x8c, , },
-        {0x8c, , },
-        {0x8c, , },
-        {0x8c, , },
-        {0x8c, , },
-        {0x8e, , },
-        {0x8e, , },
-        {0x8e, , },
-        {0x8e, , },
-        {0x8e, , },
-        {0x8e, , },
-        {0x8e, , },
-        {0xa0, , },
-        {0xa1, , },
-        {0xa1, , },
-        {0xa1, , },
-        {0xa2, , },
-        {0xa3, , },
-        {0xa3, , },
-        {0xa3, , },
-        {0x0f20, , },
-        {0x0f22, , },
-        {0x0f21, , },
-        {0x0f21, , },
-        {0x0f23, , },
-        {0x0f23, , },
-        {0x0f24, , },
-        {0x0f26, , },
-        {0x88, , },
-        {0x88, , },
-        {0x89, , },
-        {0x89, , },
-        {0x89, , },
-        {0x89, , },
-        {0x89, , },
-        {0x89, , },
-        {0x8a, , },
-        {0x8a, , },
-        {0x8b, , },
-        {0x8b, , },
-        {0x8b, , },
-        {0x8b, , },
-        {0x8b, , },
-        {0x8b, , },
-        {0xc7, , },
-        {0xc6, , },
-        {0xc7, , },
-        {0xc7, , },
-        {0xc7, , },
-        {0xc7, , },
-        {0xc6, , },
-        {0xc7, , },
-        {0xc7, , },
-        {0x0f6e, , },
-        {0x0f7e, , },
-        {0x0f6e, , },
-        {0x0f7e, , },
+        {0x8c, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOV     mem,reg_sreg            [mr:    8c /r]                  8086,SW
+        {0x8c, {Operand::Type::REGISTER, Operand::Size::WORD}}, // MOV     reg16,reg_sreg          [mr:    o16 8c /r]              8086
+        {0x8c, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOV     reg32,reg_sreg          [mr:    o32 8c /r]              386
+        {0x8c, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     reg64,reg_sreg          [mr:    o64nw 8c /r]                X64,OPT,ND
+        {0x8c}, // MOV     rm64,reg_sreg           [mr:    o64 8c /r]              X64
+        {0x8e, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOV     reg_sreg,mem            [rm:    8e /r]                  8086,SW
+        {0x8e, {Operand::Type::REGISTER, Operand::Size::WORD}}, // MOV     reg_sreg,reg16          [rm:    8e /r]                  8086,OPT,ND
+        {0x8e, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOV     reg_sreg,reg32          [rm:    8e /r]                  386,OPT,ND
+        {0x8e, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     reg_sreg,reg64          [rm:    o64nw 8e /r]                X64,OPT,ND
+        {0x8e, {Operand::Type::REGISTER, Operand::Size::WORD}}, // MOV     reg_sreg,reg16          [rm:    o16 8e /r]              8086
+        {0x8e, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOV     reg_sreg,reg32          [rm:    o32 8e /r]              386
+        {0x8e}, // MOV     reg_sreg,rm64           [rm:    o64 8e /r]              X64
+        {0xa0}, // MOV     reg_al,mem_offs         [-i:    a0 iwdq]                8086,SM
+        {0xa1}, // MOV     reg_ax,mem_offs         [-i:    o16 a1 iwdq]                8086,SM
+        {0xa1}, // MOV     reg_eax,mem_offs        [-i:    o32 a1 iwdq]                386,SM
+        {0xa1}, // MOV     reg_rax,mem_offs        [-i:    o64 a1 iwdq]                X64,SM
+        {0xa2}, // MOV     mem_offs,reg_al         [i-:    a2 iwdq]                8086,SM,NOHLE
+        {0xa3}, // MOV     mem_offs,reg_ax         [i-:    o16 a3 iwdq]                8086,SM,NOHLE
+        {0xa3}, // MOV     mem_offs,reg_eax        [i-:    o32 a3 iwdq]                386,SM,NOHLE
+        {0xa3}, // MOV     mem_offs,reg_rax        [i-:    o64 a3 iwdq]                X64,SM,NOHLE
+        {0x0f20, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     reg64,reg_creg          [mr:    o64nw 0f 20 /r]             X64,PRIV
+        {0x0f22, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     reg_creg,reg64          [rm:    o64nw 0f 22 /r]             X64,PRIV
+        {0x0f21, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOV     reg32,reg_dreg          [mr:    0f 21 /r]               386,PRIV,NOLONG
+        {0x0f21, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     reg64,reg_dreg          [mr:    o64nw 0f 21 /r]             X64,PRIV
+        {0x0f23, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOV     reg_dreg,reg32          [rm:    0f 23 /r]               386,PRIV,NOLONG
+        {0x0f23, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     reg_dreg,reg64          [rm:    o64nw 0f 23 /r]             X64,PRIV
+        {0x0f24, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOV     reg32,reg_treg          [mr:    0f 24 /r]               386,NOLONG,ND
+        {0x0f26, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOV     reg_treg,reg32          [rm:    0f 26 /r]               386,NOLONG,ND
+        {0x88, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // MOV     mem,reg8            [mr:    hlexr 88 /r]                8086,SM
+        {0x88, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // MOV     reg8,reg8           [mr:    88 /r]                  8086
+        {0x89, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // MOV     mem,reg16           [mr:    hlexr o16 89 /r]            8086,SM
+        {0x89, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // MOV     reg16,reg16         [mr:    o16 89 /r]              8086
+        {0x89, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOV     mem,reg32           [mr:    hlexr o32 89 /r]            386,SM
+        {0x89, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOV     reg32,reg32         [mr:    o32 89 /r]              386
+        {0x89, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     mem,reg64           [mr:    hlexr o64 89 /r]            X64,SM
+        {0x89, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     reg64,reg64         [mr:    o64 89 /r]              X64
+        {0x8a, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOV     reg8,mem            [rm:    8a /r]                  8086,SM
+        {0x8a, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // MOV     reg8,reg8           [rm:    8a /r]                  8086
+        {0x8b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOV     reg16,mem           [rm:    o16 8b /r]              8086,SM
+        {0x8b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // MOV     reg16,reg16         [rm:    o16 8b /r]              8086
+        {0x8b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOV     reg32,mem           [rm:    o32 8b /r]              386,SM
+        {0x8b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOV     reg32,reg32         [rm:    o32 8b /r]              386
+        {0x8b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOV     reg64,mem           [rm:    o64 8b /r]              X64,SM
+        {0x8b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     reg64,reg64         [rm:    o64 8b /r]              X64
+        {0xc7, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOV     reg64,sdword            [mi:    o64 c7 /0 id,s]             X64,SM,OPT,ND
+        {0xc6, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // MOV     rm8,imm             [mi:    hlexr c6 /0 ib]             8086,SM
+        {0xc7, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // MOV     rm16,imm            [mi:    hlexr o16 c7 /0 iw]         8086,SM
+        {0xc7, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // MOV     rm32,imm            [mi:    hlexr o32 c7 /0 id]         386,SM
+        {0xc7, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // MOV     rm64,imm            [mi:    hlexr o64 c7 /0 id,s]           X64,SM
+        {0xc7}, // MOV     rm64,imm32          [mi:    hlexr o64 c7 /0 id,s]           X64
+        {0xc6, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOV     mem,imm8            [mi:    hlexr c6 /0 ib]             8086,SM
+        {0xc7, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOV     mem,imm16           [mi:    hlexr o16 c7 /0 iw]         8086,SM
+        {0xc7, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOV     mem,imm32           [mi:    hlexr o32 c7 /0 id]         386,SM
+        {0x0f6e}, // MOVD        mmxreg,rm64         [rm:    np o64 0f 6e /r]            X64,MMX,SX,ND
+        {0x0f7e}, // MOVD        rm64,mmxreg         [mr:    np o64 0f 7e /r]            X64,MMX,SX,ND
+        {0x0f6e}, // MOVQ        mmxreg,rm64         [rm:    np o64 0f 6e /r]            X64,MMX
+        {0x0f7e}, // MOVQ        rm64,mmxreg         [mr:    np o64 0f 7e /r]            X64,MMX
 
         // MOVSB
-        {0xa4, , },
+        {0xa4}, // MOVSB       void                [   a4]                 8086
 
         // MOVSD
-        {0xa5, , },
+        {0xa5}, // MOVSD       void                [   o32 a5]                 386
 
         // MOVSQ
-        {0xa5, , },
+        {0xa5}, // MOVSQ       void                [   o64 a5]                 X64
 
         // MOVSW
-        {0xa5, , },
+        {0xa5}, // MOVSW       void                [   o16 a5]                 8086
 
         // MOVSX
-        {0x0fbe, , },
-        {0x0fbe, , },
-        {0x0fbe, , },
-        {0x0fbf, , },
-        {0x0fbe, , },
-        {0x0fbf, , },
+        {0x0fbe, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOVSX       reg16,mem           [rm:    o16 0f be /r]               386,SB
+        {0x0fbe, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // MOVSX       reg16,reg8          [rm:    o16 0f be /r]               386
+        {0x0fbe, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOVSX       reg32,rm8           [rm:    o32 0f be /r]               386
+        {0x0fbf, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOVSX       reg32,rm16          [rm:    o32 0f bf /r]               386
+        {0x0fbe, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVSX       reg64,rm8           [rm:    o64 0f be /r]               X64
+        {0x0fbf, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVSX       reg64,rm16          [rm:    o64 0f bf /r]               X64
 
         // MOVSXD
-        {0x63, , },
+        {0x63, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVSXD      reg64,rm32          [rm:    o64 63 /r]              X64
 
         // MOVSX
-        {0x63, , },
+        {0x63, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVSX       reg64,rm32          [rm:    o64 63 /r]              X64,ND
 
         // MOVZX
-        {0x0fb6, , },
-        {0x0fb6, , },
-        {0x0fb6, , },
-        {0x0fb7, , },
-        {0x0fb6, , },
-        {0x0fb7, , },
+        {0x0fb6, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // MOVZX       reg16,mem           [rm:    o16 0f b6 /r]               386,SB
+        {0x0fb6, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // MOVZX       reg16,reg8          [rm:    o16 0f b6 /r]               386
+        {0x0fb6, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOVZX       reg32,rm8           [rm:    o32 0f b6 /r]               386
+        {0x0fb7, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // MOVZX       reg32,rm16          [rm:    o32 0f b7 /r]               386
+        {0x0fb6, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVZX       reg64,rm8           [rm:    o64 0f b6 /r]               X64
+        {0x0fb7, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVZX       reg64,rm16          [rm:    o64 0f b7 /r]               X64
 
         // MUL
-        {0xf6, , },
-        {0xf7, , },
-        {0xf7, , },
-        {0xf7, , },
+        {0xf6}, // MUL     rm8             [m: f6 /4]                  8086
+        {0xf7}, // MUL     rm16                [m: o16 f7 /4]              8086
+        {0xf7}, // MUL     rm32                [m: o32 f7 /4]              386
+        {0xf7}, // MUL     rm64                [m: o64 f7 /4]              X64
 
         // NEG
-        {0xf6, , },
-        {0xf7, , },
-        {0xf7, , },
-        {0xf7, , },
+        {0xf6}, // NEG     rm8             [m: hle f6 /3]              8086,LOCK
+        {0xf7}, // NEG     rm16                [m: hle o16 f7 /3]              8086,LOCK
+        {0xf7}, // NEG     rm32                [m: hle o32 f7 /3]              386,LOCK
+        {0xf7}, // NEG     rm64                [m: hle o64 f7 /3]              X64,LOCK
 
         // NOP
-        {0x90, , },
-        {0x0f1f, , },
+        {0x90}, // NOP     void                [   norexb nof3 90]             8086
+        {0x0f1f}, // NOP     rm64                [m: o64 0f 1f /0]               X64
 
         // NOT
-        {0xf6, , },
-        {0xf7, , },
-        {0xf7, , },
-        {0xf7, , },
+        {0xf6}, // NOT     rm8             [m: hle f6 /2]              8086,LOCK
+        {0xf7}, // NOT     rm16                [m: hle o16 f7 /2]              8086,LOCK
+        {0xf7}, // NOT     rm32                [m: hle o32 f7 /2]              386,LOCK
+        {0xf7}, // NOT     rm64                [m: hle o64 f7 /2]              X64,LOCK
 
         // OR
-        {0x08, , },
-        {0x08, , },
-        {0x09, , },
-        {0x09, , },
-        {0x09, , },
-        {0x09, , },
-        {0x09, , },
-        {0x09, , },
-        {0x0a, , },
-        {0x0a, , },
-        {0x0b, , },
-        {0x0b, , },
-        {0x0b, , },
-        {0x0b, , },
-        {0x0b, , },
-        {0x0b, , },
-        {0x83, , },
-        {0x83, , },
-        {0x83, , },
-        {0x0c, , },
-        {0x83, , },
-        {0x0d, , },
-        {0x83, , },
-        {0x0d, , },
-        {0x83, , },
-        {0x0d, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x82, , },
+        {0x08, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // OR      mem,reg8            [mr:    hle 08 /r]              8086,SM,LOCK
+        {0x08, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // OR      reg8,reg8           [mr:    08 /r]                  8086
+        {0x09, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // OR      mem,reg16           [mr:    hle o16 09 /r]              8086,SM,LOCK
+        {0x09, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // OR      reg16,reg16         [mr:    o16 09 /r]              8086
+        {0x09, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // OR      mem,reg32           [mr:    hle o32 09 /r]              386,SM,LOCK
+        {0x09, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // OR      reg32,reg32         [mr:    o32 09 /r]              386
+        {0x09, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // OR      mem,reg64           [mr:    hle o64 09 /r]              X64,SM,LOCK
+        {0x09, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // OR      reg64,reg64         [mr:    o64 09 /r]              X64
+        {0x0a, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // OR      reg8,mem            [rm:    0a /r]                  8086,SM
+        {0x0a, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // OR      reg8,reg8           [rm:    0a /r]                  8086
+        {0x0b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // OR      reg16,mem           [rm:    o16 0b /r]              8086,SM
+        {0x0b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // OR      reg16,reg16         [rm:    o16 0b /r]              8086
+        {0x0b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // OR      reg32,mem           [rm:    o32 0b /r]              386,SM
+        {0x0b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // OR      reg32,reg32         [rm:    o32 0b /r]              386
+        {0x0b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // OR      reg64,mem           [rm:    o64 0b /r]              X64,SM
+        {0x0b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // OR      reg64,reg64         [rm:    o64 0b /r]              X64
+        {0x83}, // OR      rm16,imm8           [mi:    hle o16 83 /1 ib,s]         8086,LOCK
+        {0x83}, // OR      rm32,imm8           [mi:    hle o32 83 /1 ib,s]         386,LOCK
+        {0x83}, // OR      rm64,imm8           [mi:    hle o64 83 /1 ib,s]         X64,LOCK
+        {0x0c, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OR      reg_al,imm          [-i:    0c ib]                  8086,SM
+        {0x83}, // OR      reg_ax,sbyteword        [mi:    o16 83 /1 ib,s]             8086,SM,ND
+        {0x0d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OR      reg_ax,imm          [-i:    o16 0d iw]              8086,SM
+        {0x83}, // OR      reg_eax,sbytedword      [mi:    o32 83 /1 ib,s]             386,SM,ND
+        {0x0d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OR      reg_eax,imm         [-i:    o32 0d id]              386,SM
+        {0x83}, // OR      reg_rax,sbytedword      [mi:    o64 83 /1 ib,s]             X64,SM,ND
+        {0x0d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OR      reg_rax,imm         [-i:    o64 0d id,s]                X64,SM
+        {0x80, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OR      rm8,imm             [mi:    hle 80 /1 ib]               8086,SM,LOCK
+        {0x83}, // OR      rm16,sbyteword          [mi:    hle o16 83 /1 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OR      rm16,imm            [mi:    hle o16 81 /1 iw]           8086,SM,LOCK
+        {0x83}, // OR      rm32,sbytedword         [mi:    hle o32 83 /1 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OR      rm32,imm            [mi:    hle o32 81 /1 id]           386,SM,LOCK
+        {0x83}, // OR      rm64,sbytedword         [mi:    hle o64 83 /1 ib,s]         X64,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OR      rm64,imm            [mi:    hle o64 81 /1 id,s]         X64,SM,LOCK
+        {0x80, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // OR      mem,imm8            [mi:    hle 80 /1 ib]               8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // OR      mem,sbyteword16         [mi:    hle o16 83 /1 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // OR      mem,imm16           [mi:    hle o16 81 /1 iw]           8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // OR      mem,sbytedword32        [mi:    hle o32 83 /1 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // OR      mem,imm32           [mi:    hle o32 81 /1 id]           386,SM,LOCK
+        {0x82, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OR      rm8,imm             [mi:    hle 82 /1 ib]               8086,SM,LOCK,ND,NOLONG
 
         // OUT
-        {0xe6, , },
-        {0xe7, , },
-        {0xe7, , },
-        {0xee, , },
-        {0xef, , },
-        {0xef, , },
+        {0xe6, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OUT     imm,reg_al          [i-:    e6 ib,u]                8086,SB
+        {0xe7, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OUT     imm,reg_ax          [i-:    o16 e7 ib,u]                8086,SB
+        {0xe7, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // OUT     imm,reg_eax         [i-:    o32 e7 ib,u]                386,SB
+        {0xee}, // OUT     reg_dx,reg_al           [--:    ee]                 8086
+        {0xef}, // OUT     reg_dx,reg_ax           [--:    o16 ef]                 8086
+        {0xef}, // OUT     reg_dx,reg_eax          [--:    o32 ef]                 386
 
         // OUTSB
-        {0x6e, , },
+        {0x6e}, // OUTSB       void                [   6e]                 186
 
         // OUTSD
-        {0x6f, , },
+        {0x6f}, // OUTSD       void                [   o32 6f]                 386
 
         // OUTSW
-        {0x6f, , },
+        {0x6f}, // OUTSW       void                [   o16 6f]                 186
 
         // PAUSE
-        {0x90, , },
+        {0x90}, // PAUSE       void                [   f3i 90]                 8086
 
         // POP
-        {0x8f, , },
-        {0x8f, , },
-        {0x8f, , },
-        {0x07, , },
-        {0x0f, , },
-        {0x17, , },
-        {0x1f, , },
-        {0x0fa1, , },
-        {0x0fa9, , },
+        {0x8f}, // POP     rm16                [m: o16 8f /0]              8086
+        {0x8f}, // POP     rm32                [m: o32 8f /0]              386,NOLONG
+        {0x8f}, // POP     rm64                [m: o64nw 8f /0]                X64
+        {0x07}, // POP     reg_es              [-: 07]                 8086,NOLONG
+        {0x0f}, // POP     reg_cs              [-: 0f]                 8086,UNDOC,ND,OBSOLETE
+        {0x17}, // POP     reg_ss              [-: 17]                 8086,NOLONG
+        {0x1f}, // POP     reg_ds              [-: 1f]                 8086,NOLONG
+        {0x0fa1}, // POP     reg_fs              [-: 0f a1]                  386
+        {0x0fa9}, // POP     reg_gs              [-: 0f a9]                  386
 
         // POPA
-        {0x61, , },
+        {0x61}, // POPA        void                [   odf 61]                 186,NOLONG
 
         // POPAD
-        {0x61, , },
+        {0x61}, // POPAD       void                [   o32 61]                 386,NOLONG
 
         // POPAW
-        {0x61, , },
+        {0x61}, // POPAW       void                [   o16 61]                 186,NOLONG
 
         // POPF
-        {0x9d, , },
+        {0x9d}, // POPF        void                [   odf 9d]                 8086
 
         // POPFD
-        {0x9d, , },
+        {0x9d}, // POPFD       void                [   o32 9d]                 386,NOLONG
 
         // POPFQ
-        {0x9d, , },
+        {0x9d}, // POPFQ       void                [   o32 9d]                 X64
 
         // POPFW
-        {0x9d, , },
+        {0x9d}, // POPFW       void                [   o16 9d]                 8086
 
         // PUSH
-        {0xff, , },
-        {0xff, , },
-        {0xff, , },
-        {0x06, , },
-        {0x0e, , },
-        {0x16, , },
-        {0x1e, , },
-        {0x0fa0, , },
-        {0x0fa8, , },
-        {0x6a, , },
-        {0x6a, , },
-        {0x68, , },
-        {0x6a, , },
-        {0x68, , },
-        {0x6a, , },
-        {0x68, , },
-        {0x6a, , },
-        {0x68, , },
-        {0x6a, , },
-        {0x68, , },
+        {0xff}, // PUSH        rm16                [m: o16 ff /6]              8086
+        {0xff}, // PUSH        rm32                [m: o32 ff /6]              386,NOLONG
+        {0xff}, // PUSH        rm64                [m: o64nw ff /6]                X64
+        {0x06}, // PUSH        reg_es              [-: 06]                 8086,NOLONG
+        {0x0e}, // PUSH        reg_cs              [-: 0e]                 8086,NOLONG
+        {0x16}, // PUSH        reg_ss              [-: 16]                 8086,NOLONG
+        {0x1e}, // PUSH        reg_ds              [-: 1e]                 8086,NOLONG
+        {0x0fa0}, // PUSH        reg_fs              [-: 0f a0]                  386
+        {0x0fa8}, // PUSH        reg_gs              [-: 0f a8]                  386
+        {0x6a}, // PUSH        imm8                [i: 6a ib,s]                    186
+        {0x6a}, // PUSH        sbyteword16         [i: o16 6a ib,s]                186,AR0,SIZE,ND
+        {0x68}, // PUSH        imm16               [i: o16 68 iw]              186,AR0,SIZE
+        {0x6a}, // PUSH        sbytedword32            [i: o32 6a ib,s]                386,NOLONG,AR0,SIZE,ND
+        {0x68}, // PUSH        imm32               [i: o32 68 id]              386,NOLONG,AR0,SIZE
+        {0x6a}, // PUSH        sbytedword32            [i: o32 6a ib,s]                386,NOLONG,SD,ND
+        {0x68}, // PUSH        imm32               [i: o32 68 id]              386,NOLONG,SD
+        {0x6a}, // PUSH        sbytedword64            [i: o64nw 6a ib,s]              X64,AR0,SIZE,ND
+        {0x68}, // PUSH        imm64               [i: o64nw 68 id,s]              X64,AR0,SIZE
+        {0x6a}, // PUSH        sbytedword32            [i: o64nw 6a ib,s]              X64,AR0,SIZE,ND
+        {0x68}, // PUSH        imm32               [i: o64nw 68 id,s]              X64,AR0,SIZE
 
         // PUSHA
-        {0x60, , },
+        {0x60}, // PUSHA       void                [   odf 60]                 186,NOLONG
 
         // PUSHAD
-        {0x60, , },
+        {0x60}, // PUSHAD      void                [   o32 60]                 386,NOLONG
 
         // PUSHAW
-        {0x60, , },
+        {0x60}, // PUSHAW      void                [   o16 60]                 186,NOLONG
 
         // PUSHF
-        {0x9c, , },
+        {0x9c}, // PUSHF       void                [   odf 9c]                 8086
 
         // PUSHFD
-        {0x9c, , },
+        {0x9c}, // PUSHFD      void                [   o32 9c]                 386,NOLONG
 
         // PUSHFQ
-        {0x9c, , },
+        {0x9c}, // PUSHFQ      void                [   o32 9c]                 X64
 
         // PUSHFW
-        {0x9c, , },
+        {0x9c}, // PUSHFW      void                [   o16 9c]                 8086
 
         // RCL
-        {0xd0, , },
-        {0xd2, , },
-        {0xc0, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
+        {0xd0}, // RCL     rm8,unity           [m-:    d0 /2]                  8086
+        {0xd2}, // RCL     rm8,reg_cl          [m-:    d2 /2]                  8086
+        {0xc0}, // RCL     rm8,imm8            [mi:    c0 /2 ib,u]             186
+        {0xd1}, // RCL     rm16,unity          [m-:    o16 d1 /2]              8086
+        {0xd3}, // RCL     rm16,reg_cl         [m-:    o16 d3 /2]              8086
+        {0xc1}, // RCL     rm16,imm8           [mi:    o16 c1 /2 ib,u]             186
+        {0xd1}, // RCL     rm32,unity          [m-:    o32 d1 /2]              386
+        {0xd3}, // RCL     rm32,reg_cl         [m-:    o32 d3 /2]              386
+        {0xc1}, // RCL     rm32,imm8           [mi:    o32 c1 /2 ib,u]             386
+        {0xd1}, // RCL     rm64,unity          [m-:    o64 d1 /2]              X64
+        {0xd3}, // RCL     rm64,reg_cl         [m-:    o64 d3 /2]              X64
+        {0xc1}, // RCL     rm64,imm8           [mi:    o64 c1 /2 ib,u]             X64
 
         // RCR
-        {0xd0, , },
-        {0xd2, , },
-        {0xc0, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
+        {0xd0}, // RCR     rm8,unity           [m-:    d0 /3]                  8086
+        {0xd2}, // RCR     rm8,reg_cl          [m-:    d2 /3]                  8086
+        {0xc0}, // RCR     rm8,imm8            [mi:    c0 /3 ib,u]             186
+        {0xd1}, // RCR     rm16,unity          [m-:    o16 d1 /3]              8086
+        {0xd3}, // RCR     rm16,reg_cl         [m-:    o16 d3 /3]              8086
+        {0xc1}, // RCR     rm16,imm8           [mi:    o16 c1 /3 ib,u]             186
+        {0xd1}, // RCR     rm32,unity          [m-:    o32 d1 /3]              386
+        {0xd3}, // RCR     rm32,reg_cl         [m-:    o32 d3 /3]              386
+        {0xc1}, // RCR     rm32,imm8           [mi:    o32 c1 /3 ib,u]             386
+        {0xd1}, // RCR     rm64,unity          [m-:    o64 d1 /3]              X64
+        {0xd3}, // RCR     rm64,reg_cl         [m-:    o64 d3 /3]              X64
+        {0xc1}, // RCR     rm64,imm8           [mi:    o64 c1 /3 ib,u]             X64
 
         // RET
-        {0xc3, , },
-        {0xc2, , },
+        {0xc3}, // RET     void                [   c3]                 8086,BND
+        {0xc2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RET     imm             [i: c2 iw]                  8086,SW,BND
 
         // RETF
-        {0xcb, , },
-        {0xca, , },
+        {0xcb}, // RETF        void                [   cb]                 8086
+        {0xca, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETF        imm             [i: ca iw]                  8086,SW
 
         // RETN
-        {0xc3, , },
-        {0xc2, , },
+        {0xc3}, // RETN        void                [   c3]                 8086,BND
+        {0xc2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETN        imm             [i: c2 iw]                  8086,SW,BND
 
         // RETW
-        {0xc3, , },
-        {0xc2, , },
+        {0xc3}, // RETW        void                [   o16 c3]                 8086,BND
+        {0xc2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETW        imm             [i: c2 iw]                  8086,SW,BND
 
         // RETFW
-        {0xcb, , },
-        {0xca, , },
+        {0xcb}, // RETFW       void                [   o16 cb]                 8086
+        {0xca, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETFW       imm             [i: o16 ca iw]              8086,SW
 
         // RETNW
-        {0xc3, , },
-        {0xc2, , },
+        {0xc3}, // RETNW       void                [   o16 c3]                 8086,BND
+        {0xc2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETNW       imm             [i: o16 c2 iw]              8086,SW,BND
 
         // RETD
-        {0xc3, , },
-        {0xc2, , },
+        {0xc3}, // RETD        void                [   o32 c3]                 8086,BND,NOLONG
+        {0xc2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETD        imm             [i: o32 c2 iw]              8086,SW,BND,NOLONG
 
         // RETFD
-        {0xcb, , },
-        {0xca, , },
+        {0xcb}, // RETFD       void                [   o32 cb]                 8086
+        {0xca, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETFD       imm             [i: o32 ca iw]              8086,SW
 
         // RETND
-        {0xc3, , },
-        {0xc2, , },
+        {0xc3}, // RETND       void                [   o32 c3]                 8086,BND,NOLONG
+        {0xc2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETND       imm             [i: o32 c2 iw]              8086,SW,BND,NOLONG
 
         // RETQ
-        {0xc3, , },
-        {0xc2, , },
+        {0xc3}, // RETQ        void                [   o64nw c3]               X64,BND
+        {0xc2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETQ        imm             [i: o64nw c2 iw]                X64,SW,BND
 
         // RETFQ
-        {0xcb, , },
-        {0xca, , },
+        {0xcb}, // RETFQ       void                [   o64 cb]                 X64
+        {0xca, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETFQ       imm             [i: o64 ca iw]              X64,SW
 
         // RETNQ
-        {0xc3, , },
-        {0xc2, , },
+        {0xc3}, // RETNQ       void                [   o64nw c3]               X64,BND
+        {0xc2, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // RETNQ       imm             [i: o64nw c2 iw]                X64,SW,BND
 
         // ROL
-        {0xd0, , },
-        {0xd2, , },
-        {0xc0, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
+        {0xd0}, // ROL     rm8,unity           [m-:    d0 /0]                  8086
+        {0xd2}, // ROL     rm8,reg_cl          [m-:    d2 /0]                  8086
+        {0xc0}, // ROL     rm8,imm8            [mi:    c0 /0 ib,u]             186
+        {0xd1}, // ROL     rm16,unity          [m-:    o16 d1 /0]              8086
+        {0xd3}, // ROL     rm16,reg_cl         [m-:    o16 d3 /0]              8086
+        {0xc1}, // ROL     rm16,imm8           [mi:    o16 c1 /0 ib,u]             186
+        {0xd1}, // ROL     rm32,unity          [m-:    o32 d1 /0]              386
+        {0xd3}, // ROL     rm32,reg_cl         [m-:    o32 d3 /0]              386
+        {0xc1}, // ROL     rm32,imm8           [mi:    o32 c1 /0 ib,u]             386
+        {0xd1}, // ROL     rm64,unity          [m-:    o64 d1 /0]              X64
+        {0xd3}, // ROL     rm64,reg_cl         [m-:    o64 d3 /0]              X64
+        {0xc1}, // ROL     rm64,imm8           [mi:    o64 c1 /0 ib,u]             X64
 
         // ROR
-        {0xd0, , },
-        {0xd2, , },
-        {0xc0, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
+        {0xd0}, // ROR     rm8,unity           [m-:    d0 /1]                  8086
+        {0xd2}, // ROR     rm8,reg_cl          [m-:    d2 /1]                  8086
+        {0xc0}, // ROR     rm8,imm8            [mi:    c0 /1 ib,u]             186
+        {0xd1}, // ROR     rm16,unity          [m-:    o16 d1 /1]              8086
+        {0xd3}, // ROR     rm16,reg_cl         [m-:    o16 d3 /1]              8086
+        {0xc1}, // ROR     rm16,imm8           [mi:    o16 c1 /1 ib,u]             186
+        {0xd1}, // ROR     rm32,unity          [m-:    o32 d1 /1]              386
+        {0xd3}, // ROR     rm32,reg_cl         [m-:    o32 d3 /1]              386
+        {0xc1}, // ROR     rm32,imm8           [mi:    o32 c1 /1 ib,u]             386
+        {0xd1}, // ROR     rm64,unity          [m-:    o64 d1 /1]              X64
+        {0xd3}, // ROR     rm64,reg_cl         [m-:    o64 d3 /1]              X64
+        {0xc1}, // ROR     rm64,imm8           [mi:    o64 c1 /1 ib,u]             X64
 
         // RSDC
-        {0x0f79, , },
+        {0x0f79}, // RSDC        reg_sreg,mem80          [rm:    0f 79 /r]               486,CYRIX,SMM
 
         // RSLDT
-        {0x0f7b, , },
+        {0x0f7b}, // RSLDT       mem80               [m: 0f 7b /0]               486,CYRIX,SMM
 
         // RSTS
-        {0x0f7d, , },
+        {0x0f7d}, // RSTS        mem80               [m: 0f 7d /0]               486,CYRIX,SMM
 
         // SAHF
-        {0x9e, , },
+        {0x9e}, // SAHF        void                [   9e]                 8086
 
         // SAL
-        {0xd0, , },
-        {0xd2, , },
-        {0xc0, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
+        {0xd0}, // SAL     rm8,unity           [m-:    d0 /4]                  8086,ND
+        {0xd2}, // SAL     rm8,reg_cl          [m-:    d2 /4]                  8086,ND
+        {0xc0}, // SAL     rm8,imm8            [mi:    c0 /4 ib,u]             186,ND
+        {0xd1}, // SAL     rm16,unity          [m-:    o16 d1 /4]              8086,ND
+        {0xd3}, // SAL     rm16,reg_cl         [m-:    o16 d3 /4]              8086,ND
+        {0xc1}, // SAL     rm16,imm8           [mi:    o16 c1 /4 ib,u]             186,ND
+        {0xd1}, // SAL     rm32,unity          [m-:    o32 d1 /4]              386,ND
+        {0xd3}, // SAL     rm32,reg_cl         [m-:    o32 d3 /4]              386,ND
+        {0xc1}, // SAL     rm32,imm8           [mi:    o32 c1 /4 ib,u]             386,ND
+        {0xd1}, // SAL     rm64,unity          [m-:    o64 d1 /4]              X64,ND
+        {0xd3}, // SAL     rm64,reg_cl         [m-:    o64 d3 /4]              X64,ND
+        {0xc1}, // SAL     rm64,imm8           [mi:    o64 c1 /4 ib,u]             X64,ND
 
         // SALC
-        {0xd6, , },
+        {0xd6}, // SALC        void                [   d6]                 8086,UNDOC
 
         // SAR
-        {0xd0, , },
-        {0xd2, , },
-        {0xc0, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
+        {0xd0}, // SAR     rm8,unity           [m-:    d0 /7]                  8086
+        {0xd2}, // SAR     rm8,reg_cl          [m-:    d2 /7]                  8086
+        {0xc0}, // SAR     rm8,imm8            [mi:    c0 /7 ib,u]             186
+        {0xd1}, // SAR     rm16,unity          [m-:    o16 d1 /7]              8086
+        {0xd3}, // SAR     rm16,reg_cl         [m-:    o16 d3 /7]              8086
+        {0xc1}, // SAR     rm16,imm8           [mi:    o16 c1 /7 ib,u]             186
+        {0xd1}, // SAR     rm32,unity          [m-:    o32 d1 /7]              386
+        {0xd3}, // SAR     rm32,reg_cl         [m-:    o32 d3 /7]              386
+        {0xc1}, // SAR     rm32,imm8           [mi:    o32 c1 /7 ib,u]             386
+        {0xd1}, // SAR     rm64,unity          [m-:    o64 d1 /7]              X64
+        {0xd3}, // SAR     rm64,reg_cl         [m-:    o64 d3 /7]              X64
+        {0xc1}, // SAR     rm64,imm8           [mi:    o64 c1 /7 ib,u]             X64
 
         // SBB
-        {0x18, , },
-        {0x18, , },
-        {0x19, , },
-        {0x19, , },
-        {0x19, , },
-        {0x19, , },
-        {0x19, , },
-        {0x19, , },
-        {0x1a, , },
-        {0x1a, , },
-        {0x1b, , },
-        {0x1b, , },
-        {0x1b, , },
-        {0x1b, , },
-        {0x1b, , },
-        {0x1b, , },
-        {0x83, , },
-        {0x83, , },
-        {0x83, , },
-        {0x1c, , },
-        {0x83, , },
-        {0x1d, , },
-        {0x83, , },
-        {0x1d, , },
-        {0x83, , },
-        {0x1d, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x82, , },
+        {0x18, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // SBB     mem,reg8            [mr:    hle 18 /r]              8086,SM,LOCK
+        {0x18, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // SBB     reg8,reg8           [mr:    18 /r]                  8086
+        {0x19, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SBB     mem,reg16           [mr:    hle o16 19 /r]              8086,SM,LOCK
+        {0x19, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SBB     reg16,reg16         [mr:    o16 19 /r]              8086
+        {0x19, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SBB     mem,reg32           [mr:    hle o32 19 /r]              386,SM,LOCK
+        {0x19, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SBB     reg32,reg32         [mr:    o32 19 /r]              386
+        {0x19, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SBB     mem,reg64           [mr:    hle o64 19 /r]              X64,SM,LOCK
+        {0x19, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SBB     reg64,reg64         [mr:    o64 19 /r]              X64
+        {0x1a, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SBB     reg8,mem            [rm:    1a /r]                  8086,SM
+        {0x1a, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // SBB     reg8,reg8           [rm:    1a /r]                  8086
+        {0x1b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SBB     reg16,mem           [rm:    o16 1b /r]              8086,SM
+        {0x1b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SBB     reg16,reg16         [rm:    o16 1b /r]              8086
+        {0x1b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SBB     reg32,mem           [rm:    o32 1b /r]              386,SM
+        {0x1b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SBB     reg32,reg32         [rm:    o32 1b /r]              386
+        {0x1b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SBB     reg64,mem           [rm:    o64 1b /r]              X64,SM
+        {0x1b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SBB     reg64,reg64         [rm:    o64 1b /r]              X64
+        {0x83}, // SBB     rm16,imm8           [mi:    hle o16 83 /3 ib,s]         8086,LOCK
+        {0x83}, // SBB     rm32,imm8           [mi:    hle o32 83 /3 ib,s]         386,LOCK
+        {0x83}, // SBB     rm64,imm8           [mi:    hle o64 83 /3 ib,s]         X64,LOCK
+        {0x1c, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SBB     reg_al,imm          [-i:    1c ib]                  8086,SM
+        {0x83}, // SBB     reg_ax,sbyteword        [mi:    o16 83 /3 ib,s]             8086,SM,ND
+        {0x1d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SBB     reg_ax,imm          [-i:    o16 1d iw]              8086,SM
+        {0x83}, // SBB     reg_eax,sbytedword      [mi:    o32 83 /3 ib,s]             386,SM,ND
+        {0x1d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SBB     reg_eax,imm         [-i:    o32 1d id]              386,SM
+        {0x83}, // SBB     reg_rax,sbytedword      [mi:    o64 83 /3 ib,s]             X64,SM,ND
+        {0x1d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SBB     reg_rax,imm         [-i:    o64 1d id,s]                X64,SM
+        {0x80, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SBB     rm8,imm             [mi:    hle 80 /3 ib]               8086,SM,LOCK
+        {0x83}, // SBB     rm16,sbyteword          [mi:    hle o16 83 /3 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SBB     rm16,imm            [mi:    hle o16 81 /3 iw]           8086,SM,LOCK
+        {0x83}, // SBB     rm32,sbytedword         [mi:    hle o32 83 /3 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SBB     rm32,imm            [mi:    hle o32 81 /3 id]           386,SM,LOCK
+        {0x83}, // SBB     rm64,sbytedword         [mi:    hle o64 83 /3 ib,s]         X64,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SBB     rm64,imm            [mi:    hle o64 81 /3 id,s]         X64,SM,LOCK
+        {0x80, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SBB     mem,imm8            [mi:    hle 80 /3 ib]               8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SBB     mem,sbyteword16         [mi:    hle o16 83 /3 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SBB     mem,imm16           [mi:    hle o16 81 /3 iw]           8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SBB     mem,sbytedword32        [mi:    hle o32 83 /3 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SBB     mem,imm32           [mi:    hle o32 81 /3 id]           386,SM,LOCK
+        {0x82, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SBB     rm8,imm             [mi:    hle 82 /3 ib]               8086,SM,LOCK,ND,NOLONG
 
         // SCASB
-        {0xae, , },
+        {0xae}, // SCASB       void                [   repe ae]                8086
 
         // SCASD
-        {0xaf, , },
+        {0xaf}, // SCASD       void                [   repe o32 af]                386
 
         // SCASQ
-        {0xaf, , },
+        {0xaf}, // SCASQ       void                [   repe o64 af]                X64
 
         // SCASW
-        {0xaf, , },
+        {0xaf}, // SCASW       void                [   repe o16 af]                8086
 
         // SFENCE
-        {0x0faef8, , },
+        {0x0faef8}, // SFENCE      void                [   np 0f ae f8]                X64,AMD
 
         // SGDT
-        {0x0f01, , },
+        {0x0f01, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SGDT        mem             [m: 0f 01 /0]               286
 
         // SHL
-        {0xd0, , },
-        {0xd2, , },
-        {0xc0, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
+        {0xd0}, // SHL     rm8,unity           [m-:    d0 /4]                  8086
+        {0xd2}, // SHL     rm8,reg_cl          [m-:    d2 /4]                  8086
+        {0xc0}, // SHL     rm8,imm8            [mi:    c0 /4 ib,u]             186
+        {0xd1}, // SHL     rm16,unity          [m-:    o16 d1 /4]              8086
+        {0xd3}, // SHL     rm16,reg_cl         [m-:    o16 d3 /4]              8086
+        {0xc1}, // SHL     rm16,imm8           [mi:    o16 c1 /4 ib,u]             186
+        {0xd1}, // SHL     rm32,unity          [m-:    o32 d1 /4]              386
+        {0xd3}, // SHL     rm32,reg_cl         [m-:    o32 d3 /4]              386
+        {0xc1}, // SHL     rm32,imm8           [mi:    o32 c1 /4 ib,u]             386
+        {0xd1}, // SHL     rm64,unity          [m-:    o64 d1 /4]              X64
+        {0xd3}, // SHL     rm64,reg_cl         [m-:    o64 d3 /4]              X64
+        {0xc1}, // SHL     rm64,imm8           [mi:    o64 c1 /4 ib,u]             X64
 
         // SHLD
-        {0x0fa4, , },
-        {0x0fa4, , },
-        {0x0fa4, , },
-        {0x0fa4, , },
-        {0x0fa4, , },
-        {0x0fa4, , },
-        {0x0fa5, , },
-        {0x0fa5, , },
-        {0x0fa5, , },
-        {0x0fa5, , },
-        {0x0fa5, , },
-        {0x0fa5, , },
+        {0x0fa4, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHLD        mem,reg16,imm           [mri:   o16 0f a4 /r ib,u]          386,SM2,SB,AR2
+        {0x0fa4, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHLD        reg16,reg16,imm         [mri:   o16 0f a4 /r ib,u]          386,SM2,SB,AR2
+        {0x0fa4, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHLD        mem,reg32,imm           [mri:   o32 0f a4 /r ib,u]          386,SM2,SB,AR2
+        {0x0fa4, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHLD        reg32,reg32,imm         [mri:   o32 0f a4 /r ib,u]          386,SM2,SB,AR2
+        {0x0fa4, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHLD        mem,reg64,imm           [mri:   o64 0f a4 /r ib,u]          X64,SM2,SB,AR2
+        {0x0fa4, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHLD        reg64,reg64,imm         [mri:   o64 0f a4 /r ib,u]          X64,SM2,SB,AR2
+        {0x0fa5, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SHLD        mem,reg16,reg_cl        [mr-:   o16 0f a5 /r]               386,SM
+        {0x0fa5, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SHLD        reg16,reg16,reg_cl      [mr-:   o16 0f a5 /r]               386
+        {0x0fa5, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SHLD        mem,reg32,reg_cl        [mr-:   o32 0f a5 /r]               386,SM
+        {0x0fa5, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SHLD        reg32,reg32,reg_cl      [mr-:   o32 0f a5 /r]               386
+        {0x0fa5, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SHLD        mem,reg64,reg_cl        [mr-:   o64 0f a5 /r]               X64,SM
+        {0x0fa5, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SHLD        reg64,reg64,reg_cl      [mr-:   o64 0f a5 /r]               X64
 
         // SHR
-        {0xd0, , },
-        {0xd2, , },
-        {0xc0, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
-        {0xd1, , },
-        {0xd3, , },
-        {0xc1, , },
+        {0xd0}, // SHR     rm8,unity           [m-:    d0 /5]                  8086
+        {0xd2}, // SHR     rm8,reg_cl          [m-:    d2 /5]                  8086
+        {0xc0}, // SHR     rm8,imm8            [mi:    c0 /5 ib,u]             186
+        {0xd1}, // SHR     rm16,unity          [m-:    o16 d1 /5]              8086
+        {0xd3}, // SHR     rm16,reg_cl         [m-:    o16 d3 /5]              8086
+        {0xc1}, // SHR     rm16,imm8           [mi:    o16 c1 /5 ib,u]             186
+        {0xd1}, // SHR     rm32,unity          [m-:    o32 d1 /5]              386
+        {0xd3}, // SHR     rm32,reg_cl         [m-:    o32 d3 /5]              386
+        {0xc1}, // SHR     rm32,imm8           [mi:    o32 c1 /5 ib,u]             386
+        {0xd1}, // SHR     rm64,unity          [m-:    o64 d1 /5]              X64
+        {0xd3}, // SHR     rm64,reg_cl         [m-:    o64 d3 /5]              X64
+        {0xc1}, // SHR     rm64,imm8           [mi:    o64 c1 /5 ib,u]             X64
 
         // SHRD
-        {0x0fac, , },
-        {0x0fac, , },
-        {0x0fac, , },
-        {0x0fac, , },
-        {0x0fac, , },
-        {0x0fac, , },
-        {0x0fad, , },
-        {0x0fad, , },
-        {0x0fad, , },
-        {0x0fad, , },
-        {0x0fad, , },
-        {0x0fad, , },
+        {0x0fac, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHRD        mem,reg16,imm           [mri:   o16 0f ac /r ib,u]          386,SM2,SB,AR2
+        {0x0fac, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHRD        reg16,reg16,imm         [mri:   o16 0f ac /r ib,u]          386,SM2,SB,AR2
+        {0x0fac, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHRD        mem,reg32,imm           [mri:   o32 0f ac /r ib,u]          386,SM2,SB,AR2
+        {0x0fac, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHRD        reg32,reg32,imm         [mri:   o32 0f ac /r ib,u]          386,SM2,SB,AR2
+        {0x0fac, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHRD        mem,reg64,imm           [mri:   o64 0f ac /r ib,u]          X64,SM2,SB,AR2
+        {0x0fac, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SHRD        reg64,reg64,imm         [mri:   o64 0f ac /r ib,u]          X64,SM2,SB,AR2
+        {0x0fad, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SHRD        mem,reg16,reg_cl        [mr-:   o16 0f ad /r]               386,SM
+        {0x0fad, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SHRD        reg16,reg16,reg_cl      [mr-:   o16 0f ad /r]               386
+        {0x0fad, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SHRD        mem,reg32,reg_cl        [mr-:   o32 0f ad /r]               386,SM
+        {0x0fad, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SHRD        reg32,reg32,reg_cl      [mr-:   o32 0f ad /r]               386
+        {0x0fad, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SHRD        mem,reg64,reg_cl        [mr-:   o64 0f ad /r]               X64,SM
+        {0x0fad, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SHRD        reg64,reg64,reg_cl      [mr-:   o64 0f ad /r]               X64
 
         // SIDT
-        {0x0f01, , },
+        {0x0f01, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SIDT        mem             [m: 0f 01 /1]               286
 
         // SLDT
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
+        {0x0f00, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SLDT        mem             [m: 0f 00 /0]               286
+        {0x0f00}, // SLDT        mem16               [m: 0f 00 /0]               286
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SLDT        reg16               [m: o16 0f 00 /0]               286
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SLDT        reg32               [m: o32 0f 00 /0]               386
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SLDT        reg64               [m: o64nw 0f 00 /0]             X64,ND
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SLDT        reg64               [m: o64 0f 00 /0]               X64
 
         // SKINIT
-        {0x0f01de, , },
+        {0x0f01de}, // SKINIT      void                [   0f 01 de]               X64
 
         // SMI
-        {0xf1, , },
+        {0xf1}, // SMI     void                [   f1]                 386,UNDOC
         // Older Cyrix chips had this; they had to move due to conflict with MMX
 
         // SMINTOLD
-        {0x0f7e, , },
+        {0x0f7e}, // SMINTOLD    void                [   0f 7e]                  486,CYRIX,ND,OBSOLETE
 
         // SMSW
-        {0x0f01, , },
-        {0x0f01, , },
-        {0x0f01, , },
-        {0x0f01, , },
-        {0x0f01, , },
+        {0x0f01, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SMSW        mem             [m: 0f 01 /4]               286
+        {0x0f01}, // SMSW        mem16               [m: 0f 01 /4]               286
+        {0x0f01, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SMSW        reg16               [m: o16 0f 01 /4]               286
+        {0x0f01, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SMSW        reg32               [m: o32 0f 01 /4]               386
+        {0x0f01, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SMSW        reg64               [m: o64 0f 01 /4]               X64
 
         // STC
-        {0xf9, , },
+        {0xf9}, // STC     void                [   f9]                 8086
 
         // STD
-        {0xfd, , },
+        {0xfd}, // STD     void                [   fd]                 8086
 
         // STI
-        {0xfb, , },
+        {0xfb}, // STI     void                [   fb]                 8086
 
         // STOSB
-        {0xaa, , },
+        {0xaa}, // STOSB       void                [   aa]                 8086
 
         // STOSD
-        {0xab, , },
+        {0xab}, // STOSD       void                [   o32 ab]                 386
 
         // STOSQ
-        {0xab, , },
+        {0xab}, // STOSQ       void                [   o64 ab]                 X64
 
         // STOSW
-        {0xab, , },
+        {0xab}, // STOSW       void                [   o16 ab]                 8086
 
         // STR
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
+        {0x0f00, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // STR     mem             [m: 0f 00 /1]               286,PROT
+        {0x0f00}, // STR     mem16               [m: 0f 00 /1]               286,PROT
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::WORD}}, // STR     reg16               [m: o16 0f 00 /1]               286,PROT
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // STR     reg32               [m: o32 0f 00 /1]               386,PROT
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // STR     reg64               [m: o64 0f 00 /1]               X64
 
         // SUB
-        {0x28, , },
-        {0x28, , },
-        {0x29, , },
-        {0x29, , },
-        {0x29, , },
-        {0x29, , },
-        {0x29, , },
-        {0x29, , },
-        {0x2a, , },
-        {0x2a, , },
-        {0x2b, , },
-        {0x2b, , },
-        {0x2b, , },
-        {0x2b, , },
-        {0x2b, , },
-        {0x2b, , },
-        {0x83, , },
-        {0x83, , },
-        {0x83, , },
-        {0x2c, , },
-        {0x83, , },
-        {0x2d, , },
-        {0x83, , },
-        {0x2d, , },
-        {0x83, , },
-        {0x2d, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x82, , },
+        {0x28, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // SUB     mem,reg8            [mr:    hle 28 /r]              8086,SM,LOCK
+        {0x28, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // SUB     reg8,reg8           [mr:    28 /r]                  8086
+        {0x29, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SUB     mem,reg16           [mr:    hle o16 29 /r]              8086,SM,LOCK
+        {0x29, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SUB     reg16,reg16         [mr:    o16 29 /r]              8086
+        {0x29, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SUB     mem,reg32           [mr:    hle o32 29 /r]              386,SM,LOCK
+        {0x29, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SUB     reg32,reg32         [mr:    o32 29 /r]              386
+        {0x29, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SUB     mem,reg64           [mr:    hle o64 29 /r]              X64,SM,LOCK
+        {0x29, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SUB     reg64,reg64         [mr:    o64 29 /r]              X64
+        {0x2a, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SUB     reg8,mem            [rm:    2a /r]                  8086,SM
+        {0x2a, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // SUB     reg8,reg8           [rm:    2a /r]                  8086
+        {0x2b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SUB     reg16,mem           [rm:    o16 2b /r]              8086,SM
+        {0x2b, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // SUB     reg16,reg16         [rm:    o16 2b /r]              8086
+        {0x2b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SUB     reg32,mem           [rm:    o32 2b /r]              386,SM
+        {0x2b, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // SUB     reg32,reg32         [rm:    o32 2b /r]              386
+        {0x2b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SUB     reg64,mem           [rm:    o64 2b /r]              X64,SM
+        {0x2b, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // SUB     reg64,reg64         [rm:    o64 2b /r]              X64
+        {0x83}, // SUB     rm16,imm8           [mi:    hle o16 83 /5 ib,s]         8086,LOCK
+        {0x83}, // SUB     rm32,imm8           [mi:    hle o32 83 /5 ib,s]         386,LOCK
+        {0x83}, // SUB     rm64,imm8           [mi:    hle o64 83 /5 ib,s]         X64,LOCK
+        {0x2c, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SUB     reg_al,imm          [-i:    2c ib]                  8086,SM
+        {0x83}, // SUB     reg_ax,sbyteword        [mi:    o16 83 /5 ib,s]             8086,SM,ND
+        {0x2d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SUB     reg_ax,imm          [-i:    o16 2d iw]              8086,SM
+        {0x83}, // SUB     reg_eax,sbytedword      [mi:    o32 83 /5 ib,s]             386,SM,ND
+        {0x2d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SUB     reg_eax,imm         [-i:    o32 2d id]              386,SM
+        {0x83}, // SUB     reg_rax,sbytedword      [mi:    o64 83 /5 ib,s]             X64,SM,ND
+        {0x2d, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SUB     reg_rax,imm         [-i:    o64 2d id,s]                X64,SM
+        {0x80, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SUB     rm8,imm             [mi:    hle 80 /5 ib]               8086,SM,LOCK
+        {0x83}, // SUB     rm16,sbyteword          [mi:    hle o16 83 /5 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SUB     rm16,imm            [mi:    hle o16 81 /5 iw]           8086,SM,LOCK
+        {0x83}, // SUB     rm32,sbytedword         [mi:    hle o32 83 /5 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SUB     rm32,imm            [mi:    hle o32 81 /5 id]           386,SM,LOCK
+        {0x83}, // SUB     rm64,sbytedword         [mi:    hle o64 83 /5 ib,s]         X64,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SUB     rm64,imm            [mi:    hle o64 81 /5 id,s]         X64,SM,LOCK
+        {0x80, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SUB     mem,imm8            [mi:    hle 80 /5 ib]               8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SUB     mem,sbyteword16         [mi:    hle o16 83 /5 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SUB     mem,imm16           [mi:    hle o16 81 /5 iw]           8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SUB     mem,sbytedword32        [mi:    hle o32 83 /5 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // SUB     mem,imm32           [mi:    hle o32 81 /5 id]           386,SM,LOCK
+        {0x82, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // SUB     rm8,imm             [mi:    hle 82 /5 ib]               8086,SM,LOCK,ND,NOLONG
 
         // SVDC
-        {0x0f78, , },
+        {0x0f78}, // SVDC        mem80,reg_sreg          [mr:    0f 78 /r]               486,CYRIX,SMM
 
         // SVLDT
-        {0x0f7a, , },
+        {0x0f7a}, // SVLDT       mem80               [m: 0f 7a /0]               486,CYRIX,SMM,ND
 
         // SVTS
-        {0x0f7c, , },
+        {0x0f7c}, // SVTS        mem80               [m: 0f 7c /0]               486,CYRIX,SMM
 
         // SWAPGS
-        {0x0f01f8, , },
+        {0x0f01f8}, // SWAPGS      void                [   0f 01 f8]               X64
 
         // TEST
-        {0x84, , },
-        {0x84, , },
-        {0x85, , },
-        {0x85, , },
-        {0x85, , },
-        {0x85, , },
-        {0x85, , },
-        {0x85, , },
-        {0x84, , },
-        {0x85, , },
-        {0x85, , },
-        {0x85, , },
-        {0xa8, , },
-        {0xa9, , },
-        {0xa9, , },
-        {0xa9, , },
-        {0xf6, , },
-        {0xf7, , },
-        {0xf7, , },
-        {0xf7, , },
-        {0xf6, , },
-        {0xf7, , },
-        {0xf7, , },
+        {0x84, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // TEST        mem,reg8            [mr:    84 /r]                  8086,SM
+        {0x84, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // TEST        reg8,reg8           [mr:    84 /r]                  8086
+        {0x85, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // TEST        mem,reg16           [mr:    o16 85 /r]              8086,SM
+        {0x85, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // TEST        reg16,reg16         [mr:    o16 85 /r]              8086
+        {0x85, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // TEST        mem,reg32           [mr:    o32 85 /r]              386,SM
+        {0x85, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // TEST        reg32,reg32         [mr:    o32 85 /r]              386
+        {0x85, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // TEST        mem,reg64           [mr:    o64 85 /r]              X64,SM
+        {0x85, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // TEST        reg64,reg64         [mr:    o64 85 /r]              X64
+        {0x84, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // TEST        reg8,mem            [rm:    84 /r]                  8086,SM
+        {0x85, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // TEST        reg16,mem           [rm:    o16 85 /r]              8086,SM
+        {0x85, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // TEST        reg32,mem           [rm:    o32 85 /r]              386,SM
+        {0x85, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // TEST        reg64,mem           [rm:    o64 85 /r]              X64,SM
+        {0xa8, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // TEST        reg_al,imm          [-i:    a8 ib]                  8086,SM
+        {0xa9, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // TEST        reg_ax,imm          [-i:    o16 a9 iw]              8086,SM
+        {0xa9, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // TEST        reg_eax,imm         [-i:    o32 a9 id]              386,SM
+        {0xa9, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // TEST        reg_rax,imm         [-i:    o64 a9 id,s]                X64,SM
+        {0xf6, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // TEST        rm8,imm             [mi:    f6 /0 ib]               8086,SM
+        {0xf7, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // TEST        rm16,imm            [mi:    o16 f7 /0 iw]               8086,SM
+        {0xf7, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // TEST        rm32,imm            [mi:    o32 f7 /0 id]               386,SM
+        {0xf7, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // TEST        rm64,imm            [mi:    o64 f7 /0 id,s]             X64,SM
+        {0xf6, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // TEST        mem,imm8            [mi:    f6 /0 ib]               8086,SM
+        {0xf7, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // TEST        mem,imm16           [mi:    o16 f7 /0 iw]               8086,SM
+        {0xf7, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // TEST        mem,imm32           [mi:    o32 f7 /0 id]               386,SM
 
         // UD0
-        {0x0fff, , },
-        {0x0fff, , },
-        {0x0fff, , },
-        {0x0fff, , },
+        {0x0fff}, // UD0     void                [   0f ff]                  186,OBSOLETE
+        {0x0fff, {Operand::Type::REGISTER, Operand::Size::WORD}}, // UD0     reg16,rm16          [rm:    o16 0f ff /r]               186
+        {0x0fff, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // UD0     reg32,rm32          [rm:    o32 0f ff /r]               186
+        {0x0fff, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // UD0     reg64,rm64          [rm:    o64 0f ff /r]               186
 
         // UD1
-        {0x0fb9, , },
-        {0x0fb9, , },
-        {0x0fb9, , },
-        {0x0fb9, , },
+        {0x0fb9, {Operand::Type::REGISTER, Operand::Size::WORD}}, // UD1     reg16,rm16          [rm:    o16 0f b9 /r]               186
+        {0x0fb9, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // UD1     reg32,rm32          [rm:    o32 0f b9 /r]               186
+        {0x0fb9, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // UD1     reg64,rm64          [rm:    o64 0f b9 /r]               186
+        {0x0fb9}, // UD1     void                [   0f b9]                  186,ND
 
         // UD2B
-        {0x0fb9, , },
-        {0x0fb9, , },
-        {0x0fb9, , },
-        {0x0fb9, , },
+        {0x0fb9}, // UD2B        void                [   0f b9]                  186,ND
+        {0x0fb9, {Operand::Type::REGISTER, Operand::Size::WORD}}, // UD2B        reg16,rm16          [rm:    o16 0f b9 /r]               186,ND
+        {0x0fb9, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // UD2B        reg32,rm32          [rm:    o32 0f b9 /r]               186,ND
+        {0x0fb9, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // UD2B        reg64,rm64          [rm:    o64 0f b9 /r]               186,ND
 
         // UD2
-        {0x0f0b, , },
+        {0x0f0b}, // UD2     void                [   0f 0b]                  186
 
         // UD2A
-        {0x0f0b, , },
+        {0x0f0b}, // UD2A        void                [   0f 0b]                  186,ND
 
         // UMOV
-        {0x0f10, , },
-        {0x0f10, , },
-        {0x0f11, , },
-        {0x0f11, , },
-        {0x0f11, , },
-        {0x0f11, , },
-        {0x0f12, , },
-        {0x0f12, , },
-        {0x0f13, , },
-        {0x0f13, , },
-        {0x0f13, , },
-        {0x0f13, , },
+        {0x0f10, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // UMOV        mem,reg8            [mr:    np 0f 10 /r]                386,UNDOC,SM,ND
+        {0x0f10, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // UMOV        reg8,reg8           [mr:    np 0f 10 /r]                386,UNDOC,ND
+        {0x0f11, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // UMOV        mem,reg16           [mr:    np o16 0f 11 /r]            386,UNDOC,SM,ND
+        {0x0f11, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // UMOV        reg16,reg16         [mr:    np o16 0f 11 /r]            386,UNDOC,ND
+        {0x0f11, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // UMOV        mem,reg32           [mr:    np o32 0f 11 /r]            386,UNDOC,SM,ND
+        {0x0f11, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // UMOV        reg32,reg32         [mr:    np o32 0f 11 /r]            386,UNDOC,ND
+        {0x0f12, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // UMOV        reg8,mem            [rm:    np 0f 12 /r]                386,UNDOC,SM,ND
+        {0x0f12, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // UMOV        reg8,reg8           [rm:    np 0f 12 /r]                386,UNDOC,ND
+        {0x0f13, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // UMOV        reg16,mem           [rm:    np o16 0f 13 /r]            386,UNDOC,SM,ND
+        {0x0f13, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // UMOV        reg16,reg16         [rm:    np o16 0f 13 /r]            386,UNDOC,ND
+        {0x0f13, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // UMOV        reg32,mem           [rm:    np o32 0f 13 /r]            386,UNDOC,SM,ND
+        {0x0f13, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // UMOV        reg32,reg32         [rm:    np o32 0f 13 /r]            386,UNDOC,ND
 
         // VERR
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
+        {0x0f00, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // VERR        mem             [m: 0f 00 /4]               286,PROT
+        {0x0f00}, // VERR        mem16               [m: 0f 00 /4]               286,PROT
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::WORD}}, // VERR        reg16               [m: 0f 00 /4]               286,PROT
 
         // VERW
-        {0x0f00, , },
-        {0x0f00, , },
-        {0x0f00, , },
+        {0x0f00, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // VERW        mem             [m: 0f 00 /5]               286,PROT
+        {0x0f00}, // VERW        mem16               [m: 0f 00 /5]               286,PROT
+        {0x0f00, {Operand::Type::REGISTER, Operand::Size::WORD}}, // VERW        reg16               [m: 0f 00 /5]               286,PROT
         // fix missing opcode from source https://www.felixcloutier.com/x86/wait:fwait
 
         // FWAIT
-        {0x9b, , },
+        {0x9b}, // FWAIT       void                [   wait 9b]                   8086
 
         // WBINVD
-        {0x0f09, , },
+        {0x0f09}, // WBINVD      void                [   0f 09]                  486,PRIV
 
         // XADD
-        {0x0fc0, , },
-        {0x0fc0, , },
-        {0x0fc1, , },
-        {0x0fc1, , },
-        {0x0fc1, , },
-        {0x0fc1, , },
-        {0x0fc1, , },
-        {0x0fc1, , },
+        {0x0fc0, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // XADD        mem,reg8            [mr:    hle 0f c0 /r]               486,SM,LOCK
+        {0x0fc0, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // XADD        reg8,reg8           [mr:    0f c0 /r]               486
+        {0x0fc1, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // XADD        mem,reg16           [mr:    hle o16 0f c1 /r]           486,SM,LOCK
+        {0x0fc1, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // XADD        reg16,reg16         [mr:    o16 0f c1 /r]               486
+        {0x0fc1, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // XADD        mem,reg32           [mr:    hle o32 0f c1 /r]           486,SM,LOCK
+        {0x0fc1, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // XADD        reg32,reg32         [mr:    o32 0f c1 /r]               486
+        {0x0fc1, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // XADD        mem,reg64           [mr:    hle o64 0f c1 /r]           X64,SM,LOCK
+        {0x0fc1, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // XADD        reg64,reg64         [mr:    o64 0f c1 /r]               X64
 
         // XBTS
-        {0x0fa6, , },
-        {0x0fa6, , },
-        {0x0fa6, , },
-        {0x0fa6, , },
+        {0x0fa6, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XBTS        reg16,mem           [rm:    o16 0f a6 /r]               386,SW,UNDOC,ND
+        {0x0fa6, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // XBTS        reg16,reg16         [rm:    o16 0f a6 /r]               386,UNDOC,ND
+        {0x0fa6, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XBTS        reg32,mem           [rm:    o32 0f a6 /r]               386,SD,UNDOC,ND
+        {0x0fa6, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // XBTS        reg32,reg32         [rm:    o32 0f a6 /r]               386,UNDOC,ND
         // This must be NOLONG since opcode 90 is NOP, and in 64-bit mode
         // "xchg eax,eax" is *not* a NOP.
 
         // XCHG
-        {0x90, , },
-        {0x86, , },
-        {0x86, , },
-        {0x87, , },
-        {0x87, , },
-        {0x87, , },
-        {0x87, , },
-        {0x87, , },
-        {0x87, , },
-        {0x86, , },
-        {0x86, , },
-        {0x87, , },
-        {0x87, , },
-        {0x87, , },
-        {0x87, , },
-        {0x87, , },
-        {0x87, , },
+        {0x90}, // XCHG        reg_eax,reg_eax         [--:    o32 90]                 386,NOLONG
+        {0x86, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XCHG        reg8,mem            [rm:    hlenl 86 /r]                8086,SM,LOCK
+        {0x86, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // XCHG        reg8,reg8           [rm:    86 /r]                  8086
+        {0x87, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XCHG        reg16,mem           [rm:    hlenl o16 87 /r]            8086,SM,LOCK
+        {0x87, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // XCHG        reg16,reg16         [rm:    o16 87 /r]              8086
+        {0x87, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XCHG        reg32,mem           [rm:    hlenl o32 87 /r]            386,SM,LOCK
+        {0x87, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // XCHG        reg32,reg32         [rm:    o32 87 /r]              386
+        {0x87, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XCHG        reg64,mem           [rm:    hlenl o64 87 /r]            X64,SM,LOCK
+        {0x87, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // XCHG        reg64,reg64         [rm:    o64 87 /r]              X64
+        {0x86, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // XCHG        mem,reg8            [mr:    hlenl 86 /r]                8086,SM,LOCK
+        {0x86, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // XCHG        reg8,reg8           [mr:    86 /r]                  8086
+        {0x87, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // XCHG        mem,reg16           [mr:    hlenl o16 87 /r]            8086,SM,LOCK
+        {0x87, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // XCHG        reg16,reg16         [mr:    o16 87 /r]              8086
+        {0x87, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // XCHG        mem,reg32           [mr:    hlenl o32 87 /r]            386,SM,LOCK
+        {0x87, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // XCHG        reg32,reg32         [mr:    o32 87 /r]              386
+        {0x87, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // XCHG        mem,reg64           [mr:    hlenl o64 87 /r]            X64,SM,LOCK
+        {0x87, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // XCHG        reg64,reg64         [mr:    o64 87 /r]              X64
 
         // XLATB
-        {0xd7, , },
+        {0xd7}, // XLATB       void                [   d7]                 8086
 
         // XLAT
-        {0xd7, , },
+        {0xd7}, // XLAT        void                [   d7]                 8086
 
         // XOR
-        {0x30, , },
-        {0x30, , },
-        {0x31, , },
-        {0x31, , },
-        {0x31, , },
-        {0x31, , },
-        {0x31, , },
-        {0x31, , },
-        {0x32, , },
-        {0x32, , },
-        {0x33, , },
-        {0x33, , },
-        {0x33, , },
-        {0x33, , },
-        {0x33, , },
-        {0x33, , },
-        {0x83, , },
-        {0x83, , },
-        {0x83, , },
-        {0x34, , },
-        {0x83, , },
-        {0x35, , },
-        {0x83, , },
-        {0x35, , },
-        {0x83, , },
-        {0x35, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x80, , },
-        {0x83, , },
-        {0x81, , },
-        {0x83, , },
-        {0x81, , },
-        {0x82, , },
+        {0x30, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // XOR     mem,reg8            [mr:    hle 30 /r]              8086,SM,LOCK
+        {0x30, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // XOR     reg8,reg8           [mr:    30 /r]                  8086
+        {0x31, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // XOR     mem,reg16           [mr:    hle o16 31 /r]              8086,SM,LOCK
+        {0x31, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // XOR     reg16,reg16         [mr:    o16 31 /r]              8086
+        {0x31, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // XOR     mem,reg32           [mr:    hle o32 31 /r]              386,SM,LOCK
+        {0x31, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // XOR     reg32,reg32         [mr:    o32 31 /r]              386
+        {0x31, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // XOR     mem,reg64           [mr:    hle o64 31 /r]              X64,SM,LOCK
+        {0x31, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // XOR     reg64,reg64         [mr:    o64 31 /r]              X64
+        {0x32, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XOR     reg8,mem            [rm:    32 /r]                  8086,SM
+        {0x32, {Operand::Type::REGISTER, Operand::Size::BYTE}, {Operand::Type::REGISTER, Operand::Size::BYTE}}, // XOR     reg8,reg8           [rm:    32 /r]                  8086
+        {0x33, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XOR     reg16,mem           [rm:    o16 33 /r]              8086,SM
+        {0x33, {Operand::Type::REGISTER, Operand::Size::WORD}, {Operand::Type::REGISTER, Operand::Size::WORD}}, // XOR     reg16,reg16         [rm:    o16 33 /r]              8086
+        {0x33, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XOR     reg32,mem           [rm:    o32 33 /r]              386,SM
+        {0x33, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // XOR     reg32,reg32         [rm:    o32 33 /r]              386
+        {0x33, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XOR     reg64,mem           [rm:    o64 33 /r]              X64,SM
+        {0x33, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // XOR     reg64,reg64         [rm:    o64 33 /r]              X64
+        {0x83}, // XOR     rm16,imm8           [mi:    hle o16 83 /6 ib,s]         8086,LOCK
+        {0x83}, // XOR     rm32,imm8           [mi:    hle o32 83 /6 ib,s]         386,LOCK
+        {0x83}, // XOR     rm64,imm8           [mi:    hle o64 83 /6 ib,s]         X64,LOCK
+        {0x34, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // XOR     reg_al,imm          [-i:    34 ib]                  8086,SM
+        {0x83}, // XOR     reg_ax,sbyteword        [mi:    o16 83 /6 ib,s]             8086,SM,ND
+        {0x35, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // XOR     reg_ax,imm          [-i:    o16 35 iw]              8086,SM
+        {0x83}, // XOR     reg_eax,sbytedword      [mi:    o32 83 /6 ib,s]             386,SM,ND
+        {0x35, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // XOR     reg_eax,imm         [-i:    o32 35 id]              386,SM
+        {0x83}, // XOR     reg_rax,sbytedword      [mi:    o64 83 /6 ib,s]             X64,SM,ND
+        {0x35, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // XOR     reg_rax,imm         [-i:    o64 35 id,s]                X64,SM
+        {0x80, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // XOR     rm8,imm             [mi:    hle 80 /6 ib]               8086,SM,LOCK
+        {0x83}, // XOR     rm16,sbyteword          [mi:    hle o16 83 /6 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // XOR     rm16,imm            [mi:    hle o16 81 /6 iw]           8086,SM,LOCK
+        {0x83}, // XOR     rm32,sbytedword         [mi:    hle o32 83 /6 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // XOR     rm32,imm            [mi:    hle o32 81 /6 id]           386,SM,LOCK
+        {0x83}, // XOR     rm64,sbytedword         [mi:    hle o64 83 /6 ib,s]         X64,SM,LOCK,ND
+        {0x81, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // XOR     rm64,imm            [mi:    hle o64 81 /6 id,s]         X64,SM,LOCK
+        {0x80, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XOR     mem,imm8            [mi:    hle 80 /6 ib]               8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XOR     mem,sbyteword16         [mi:    hle o16 83 /6 ib,s]         8086,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XOR     mem,imm16           [mi:    hle o16 81 /6 iw]           8086,SM,LOCK
+        {0x83, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XOR     mem,sbytedword32        [mi:    hle o32 83 /6 ib,s]         386,SM,LOCK,ND
+        {0x81, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // XOR     mem,imm32           [mi:    hle o32 81 /6 id]           386,SM,LOCK
+        {0x82, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // XOR     rm8,imm             [mi:    hle 82 /6 ib]               8086,SM,LOCK,ND,NOLONG
         // CMPPS/CMPSS must come after the specific ops; that way the disassembler will find the
         // specific ops first and only disassemble illegal ones as cmpps/cmpss.
-        {0xf30f2a, , },
-        {0xf30f2d, , },
-        {0xf30f2d, , },
-        {0xf30f2c, , },
-        {0x0f50, , },
+        {0xf30f2a}, // CVTSI2SS    xmmreg,rm64         [rm:    o64 f3 0f 2a /r]            X64,SSE,SQ,AR1
+        {0xf30f2d, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CVTSS2SI    reg64,xmmreg            [rm:    o64 f3 0f 2d /r]            X64,SSE,SD,AR1
+        {0xf30f2d, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CVTSS2SI    reg64,mem           [rm:    o64 f3 0f 2d /r]            X64,SSE,SD,AR1
+        {0xf30f2c, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CVTTSS2SI   reg64,xmmrm         [rm:    o64 f3 0f 2c /r]            X64,SSE,SD,AR1
+        {0x0f50, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVMSKPS    reg64,xmmreg            [rm:    np o64 0f 50 /r]            X64,SSE
 
         // FXRSTOR64
-        {0x0fae, , },
+        {0x0fae, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FXRSTOR64   mem             [m: o64 np 0f ae /1]            X64,SSE,FPU
 
         // FXSAVE64
-        {0x0fae, , },
+        {0x0fae, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // FXSAVE64    mem             [m: o64 np 0f ae /0]            X64,SSE,FPU
         // Introduced in late Penryn ... we really need to clean up the handling
         // of CPU feature bits.
         // These instructions are not SSE-specific; they are
@@ -2064,35 +2064,35 @@ namespace f::ASM
         // PINSRW is documented as using a reg32, but it's really using only 16 bit
         // -- accept either, but be truthful in disassembly
         // CLFLUSH needs its own feature flag implemented one day
-        {0x0fc3, , },
-        {0x66, , },
-        {0x66, , },
-        {0x660fc5, , },
-        {0x660fc4, , },
+        {0x0fc3, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVNTI      mem,reg64           [mr:    o64 np 0f c3 /r]            X64,SQ
+        {0x66}, // MOVQ        xmmreg,rm64         [rm:    66 o64 0f 6e /r]            X64,SSE2
+        {0x66}, // MOVQ        rm64,xmmreg         [mr:    66 o64 0f 7e /r]            X64,SSE2
+        {0x660fc5, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // PEXTRW      reg64,xmmreg,imm        [rmi:   66 0f c5 /r ib,u]           X64,SSE2,SB,AR2,ND
+        {0x660fc4, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // PINSRW      xmmreg,reg64,imm        [rmi:   66 0f c4 /r ib,u]           X64,SSE2,SB,AR2,ND
         // CMPPD/CMPSD must come after the specific ops; that way the disassembler will find the
         // specific ops first and only disassemble illegal ones as cmppd/cmpsd.
-        {0xf20f2d, , },
-        {0xf20f2d, , },
-        {0xf20f2a, , },
-        {0xf20f2c, , },
-        {0xf20f2c, , },
-        {0x66, , },
-        {0x0f78, , },
-        {0x0f79, , },
-        {0x0fbd, , },
-        {0x660f3a17, , },
-        {0x660f3a14, , },
+        {0xf20f2d, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CVTSD2SI    reg64,xmmreg            [rm:    o64 f2 0f 2d /r]            X64,SSE2,SQ,AR1
+        {0xf20f2d, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CVTSD2SI    reg64,mem           [rm:    o64 f2 0f 2d /r]            X64,SSE2,SQ,AR1
+        {0xf20f2a}, // CVTSI2SD    xmmreg,rm64         [rm:    o64 f2 0f 2a /r]            X64,SSE2,SQ,AR1
+        {0xf20f2c, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CVTTSD2SI   reg64,xmmreg            [rm:    o64 f2 0f 2c /r]            X64,SSE2,SQ,AR1
+        {0xf20f2c, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}}, // CVTTSD2SI   reg64,mem           [rm:    o64 f2 0f 2c /r]            X64,SSE2,SQ,AR1
+        {0x66, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVMSKPD    reg64,xmmreg            [rm:    66 o64 0f 50 /r]            X64,SSE2
+        {0x0f78, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // VMREAD      rm64,reg64          [mr:    o64nw np 0f 78 /r]          X64,VMX,SQ
+        {0x0f79, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // VMWRITE     reg64,rm64          [rm:    o64nw np 0f 79 /r]          X64,VMX,SQ
+        {0x0fbd, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // LZCNT       reg64,rm64          [rm:    o64 f3i 0f bd /r]           X64,AMD
+        {0x660f3a17, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // EXTRACTPS   reg64,xmmreg,imm        [mri:   o64 66 0f 3a 17 /r ib,u]        SSE41,X64
+        {0x660f3a14, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // PEXTRB      reg64,xmmreg,imm        [mri:   o64nw 66 0f 3a 14 /r ib,u]      SSE41,X64
 
         // PEXTRQ
-        {0x660f3a16, , },
-        {0x660f3a15, , },
+        {0x660f3a16, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // PEXTRQ      rm64,xmmreg,imm         [mri:   o64 66 0f 3a 16 /r ib,u]        SSE41,X64
+        {0x660f3a15, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // PEXTRW      reg64,xmmreg,imm        [mri:   o64 66 0f 3a 15 /r ib,u]        SSE41,X64
 
         // PINSRQ
-        {0x660f3a22, , },
-        {0x660f3a22, , },
-        {0x0f38f0, , },
-        {0x0f38f1, , },
-        {0x0fb8, , },
+        {0x660f3a22, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // PINSRQ      xmmreg,mem,imm          [rmi:   o64 66 0f 3a 22 /r ib,u]        SSE41,X64,SB,AR2
+        {0x660f3a22, {Operand::Type::IMMEDIATE, Operand::Size::QUAD_WORD}}, // PINSRQ      xmmreg,rm64,imm         [rmi:   o64 66 0f 3a 22 /r ib,u]        SSE41,X64,SB,AR2
+        {0x0f38f0, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CRC32       reg64,rm8           [rm:    o64 f2i 0f 38 f0 /r]            SSE42,X64
+        {0x0f38f1, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // CRC32       reg64,rm64          [rm:    o64 f2i 0f 38 f1 /r]            SSE42,X64
+        {0x0fb8, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // POPCNT      reg64,rm64          [rm:    o64 f3i 0f b8 /r]           NEHALEM,SQ,X64
         // Is NEHALEM right here?
         // Intel VAES instructions
         // Intel VAES + AVX512VL instructions
@@ -2157,96 +2157,96 @@ namespace f::ASM
         // MJC PUBLIC END
 
         // RDPKRU
-        {0x0f01ee, , },
+        {0x0f01ee}, // RDPKRU      void                [   0f 01 ee]               X64,FUTURE
 
         // WRPKRU
-        {0x0f01ef, , },
-        {0xf30fc7, , },
-        {0xf30fc7, , },
+        {0x0f01ef}, // WRPKRU      void                [   0f 01 ef]               X64,FUTURE
+        {0xf30fc7, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // RDPID       reg64               [m: o64nw f3 0f c7 /7]          X64,FUTURE
+        {0xf30fc7, {Operand::Type::REGISTER, Operand::Size::DOUBLE_WORD}}, // RDPID       reg32               [m: f3 0f c7 /7]                X64,UNDOC,FUTURE
         // This one was killed before it saw the light of day
         // AMD Zen v1
-        {0x0f01fc, , },
-        {0x0fae, , },
-        {0x0f38f9, , },
-        {0x660f38f8, , },
-        {0xf30fae, , },
+        {0x0f01fc}, // CLZERO      reg_rax             [-: a64 0f 01 fc]               FUTURE,AMD,ND,X64
+        {0x0fae}, // PTWRITE     rm64                [m: o64 np 0f ae /4]            X64,FUTURE
+        {0x0f38f9, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVDIRI     mem64,reg64         [mr:    o64 0f 38 f9 /r]            FUTURE,X64,SQ
+        {0x660f38f8, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // MOVDIR64B   reg64,mem512            [rm:    o64nw a64 66 0f 38 f8 /r]       FUTURE,X64
+        {0xf30fae, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // UMONITOR    reg64               [m: o64nw a64 f3 0f ae /6]          FUTURE,X64
 
         // INCSSPQ
-        {0xf30fae, , },
+        {0xf30fae, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // INCSSPQ     reg64               [m: o64 f3 0f ae /5]            CET,FUTURE,X64
 
         // RDSSPQ
-        {0xf30f1e, , },
+        {0xf30f1e, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // RDSSPQ      reg64               [m: o64 f3 0f 1e /1]            CET,FUTURE,X64
 
         // WRUSSQ
-        {0x660f38f5, , },
+        {0x660f38f5, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // WRUSSQ      mem,reg64           [mr:    o64 66 0f 38 f5 /r]         CET,FUTURE,X64
 
         // WRSSQ
-        {0x0f38f6, , },
+        {0x0f38f6, {Operand::Type::ADDRESS, Operand::Size::QUAD_WORD}, {Operand::Type::REGISTER, Operand::Size::QUAD_WORD}}, // WRSSQ       mem,reg64           [mr:    o64 0f 38 f6 /r]            CET,FUTURE,X64
         // These should be last in the file
-        {0x0f18, , },
-        {0x0f18, , },
-        {0x0f18, , },
-        {0x0f18, , },
-        {0x0f18, , },
-        {0x0f18, , },
-        {0x0f18, , },
-        {0x0f18, , },
-        {0x0f19, , },
-        {0x0f19, , },
-        {0x0f19, , },
-        {0x0f19, , },
-        {0x0f19, , },
-        {0x0f19, , },
-        {0x0f19, , },
-        {0x0f19, , },
-        {0x0f1a, , },
-        {0x0f1a, , },
-        {0x0f1a, , },
-        {0x0f1a, , },
-        {0x0f1a, , },
-        {0x0f1a, , },
-        {0x0f1a, , },
-        {0x0f1a, , },
-        {0x0f1b, , },
-        {0x0f1b, , },
-        {0x0f1b, , },
-        {0x0f1b, , },
-        {0x0f1b, , },
-        {0x0f1b, , },
-        {0x0f1b, , },
-        {0x0f1b, , },
-        {0x0f1c, , },
-        {0x0f1c, , },
-        {0x0f1c, , },
-        {0x0f1c, , },
-        {0x0f1c, , },
-        {0x0f1c, , },
-        {0x0f1c, , },
-        {0x0f1c, , },
-        {0x0f1d, , },
-        {0x0f1d, , },
-        {0x0f1d, , },
-        {0x0f1d, , },
-        {0x0f1d, , },
-        {0x0f1d, , },
-        {0x0f1d, , },
-        {0x0f1d, , },
-        {0x0f1e, , },
-        {0x0f1e, , },
-        {0x0f1e, , },
-        {0x0f1e, , },
-        {0x0f1e, , },
-        {0x0f1e, , },
-        {0x0f1e, , },
-        {0x0f1e, , },
-        {0x0f1f, , },
-        {0x0f1f, , },
-        {0x0f1f, , },
-        {0x0f1f, , },
-        {0x0f1f, , },
-        {0x0f1f, , },
-        {0x0f1f, , },
-        {0x0f1f, , },
+        {0x0f18}, // HINT_NOP0   rm64                [m: o64 0f 18 /0]               X64,UNDOC
+        {0x0f18}, // HINT_NOP1   rm64                [m: o64 0f 18 /1]               X64,UNDOC
+        {0x0f18}, // HINT_NOP2   rm64                [m: o64 0f 18 /2]               X64,UNDOC
+        {0x0f18}, // HINT_NOP3   rm64                [m: o64 0f 18 /3]               X64,UNDOC
+        {0x0f18}, // HINT_NOP4   rm64                [m: o64 0f 18 /4]               X64,UNDOC
+        {0x0f18}, // HINT_NOP5   rm64                [m: o64 0f 18 /5]               X64,UNDOC
+        {0x0f18}, // HINT_NOP6   rm64                [m: o64 0f 18 /6]               X64,UNDOC
+        {0x0f18}, // HINT_NOP7   rm64                [m: o64 0f 18 /7]               X64,UNDOC
+        {0x0f19}, // HINT_NOP8   rm64                [m: o64 0f 19 /0]               X64,UNDOC
+        {0x0f19}, // HINT_NOP9   rm64                [m: o64 0f 19 /1]               X64,UNDOC
+        {0x0f19}, // HINT_NOP10  rm64                [m: o64 0f 19 /2]               X64,UNDOC
+        {0x0f19}, // HINT_NOP11  rm64                [m: o64 0f 19 /3]               X64,UNDOC
+        {0x0f19}, // HINT_NOP12  rm64                [m: o64 0f 19 /4]               X64,UNDOC
+        {0x0f19}, // HINT_NOP13  rm64                [m: o64 0f 19 /5]               X64,UNDOC
+        {0x0f19}, // HINT_NOP14  rm64                [m: o64 0f 19 /6]               X64,UNDOC
+        {0x0f19}, // HINT_NOP15  rm64                [m: o64 0f 19 /7]               X64,UNDOC
+        {0x0f1a}, // HINT_NOP16  rm64                [m: o64 0f 1a /0]               X64,UNDOC
+        {0x0f1a}, // HINT_NOP17  rm64                [m: o64 0f 1a /1]               X64,UNDOC
+        {0x0f1a}, // HINT_NOP18  rm64                [m: o64 0f 1a /2]               X64,UNDOC
+        {0x0f1a}, // HINT_NOP19  rm64                [m: o64 0f 1a /3]               X64,UNDOC
+        {0x0f1a}, // HINT_NOP20  rm64                [m: o64 0f 1a /4]               X64,UNDOC
+        {0x0f1a}, // HINT_NOP21  rm64                [m: o64 0f 1a /5]               X64,UNDOC
+        {0x0f1a}, // HINT_NOP22  rm64                [m: o64 0f 1a /6]               X64,UNDOC
+        {0x0f1a}, // HINT_NOP23  rm64                [m: o64 0f 1a /7]               X64,UNDOC
+        {0x0f1b}, // HINT_NOP24  rm64                [m: o64 0f 1b /0]               X64,UNDOC
+        {0x0f1b}, // HINT_NOP25  rm64                [m: o64 0f 1b /1]               X64,UNDOC
+        {0x0f1b}, // HINT_NOP26  rm64                [m: o64 0f 1b /2]               X64,UNDOC
+        {0x0f1b}, // HINT_NOP27  rm64                [m: o64 0f 1b /3]               X64,UNDOC
+        {0x0f1b}, // HINT_NOP28  rm64                [m: o64 0f 1b /4]               X64,UNDOC
+        {0x0f1b}, // HINT_NOP29  rm64                [m: o64 0f 1b /5]               X64,UNDOC
+        {0x0f1b}, // HINT_NOP30  rm64                [m: o64 0f 1b /6]               X64,UNDOC
+        {0x0f1b}, // HINT_NOP31  rm64                [m: o64 0f 1b /7]               X64,UNDOC
+        {0x0f1c}, // HINT_NOP32  rm64                [m: o64 0f 1c /0]               X64,UNDOC
+        {0x0f1c}, // HINT_NOP33  rm64                [m: o64 0f 1c /1]               X64,UNDOC
+        {0x0f1c}, // HINT_NOP34  rm64                [m: o64 0f 1c /2]               X64,UNDOC
+        {0x0f1c}, // HINT_NOP35  rm64                [m: o64 0f 1c /3]               X64,UNDOC
+        {0x0f1c}, // HINT_NOP36  rm64                [m: o64 0f 1c /4]               X64,UNDOC
+        {0x0f1c}, // HINT_NOP37  rm64                [m: o64 0f 1c /5]               X64,UNDOC
+        {0x0f1c}, // HINT_NOP38  rm64                [m: o64 0f 1c /6]               X64,UNDOC
+        {0x0f1c}, // HINT_NOP39  rm64                [m: o64 0f 1c /7]               X64,UNDOC
+        {0x0f1d}, // HINT_NOP40  rm64                [m: o64 0f 1d /0]               X64,UNDOC
+        {0x0f1d}, // HINT_NOP41  rm64                [m: o64 0f 1d /1]               X64,UNDOC
+        {0x0f1d}, // HINT_NOP42  rm64                [m: o64 0f 1d /2]               X64,UNDOC
+        {0x0f1d}, // HINT_NOP43  rm64                [m: o64 0f 1d /3]               X64,UNDOC
+        {0x0f1d}, // HINT_NOP44  rm64                [m: o64 0f 1d /4]               X64,UNDOC
+        {0x0f1d}, // HINT_NOP45  rm64                [m: o64 0f 1d /5]               X64,UNDOC
+        {0x0f1d}, // HINT_NOP46  rm64                [m: o64 0f 1d /6]               X64,UNDOC
+        {0x0f1d}, // HINT_NOP47  rm64                [m: o64 0f 1d /7]               X64,UNDOC
+        {0x0f1e}, // HINT_NOP48  rm64                [m: o64 0f 1e /0]               X64,UNDOC
+        {0x0f1e}, // HINT_NOP49  rm64                [m: o64 0f 1e /1]               X64,UNDOC
+        {0x0f1e}, // HINT_NOP50  rm64                [m: o64 0f 1e /2]               X64,UNDOC
+        {0x0f1e}, // HINT_NOP51  rm64                [m: o64 0f 1e /3]               X64,UNDOC
+        {0x0f1e}, // HINT_NOP52  rm64                [m: o64 0f 1e /4]               X64,UNDOC
+        {0x0f1e}, // HINT_NOP53  rm64                [m: o64 0f 1e /5]               X64,UNDOC
+        {0x0f1e}, // HINT_NOP54  rm64                [m: o64 0f 1e /6]               X64,UNDOC
+        {0x0f1e}, // HINT_NOP55  rm64                [m: o64 0f 1e /7]               X64,UNDOC
+        {0x0f1f}, // HINT_NOP56  rm64                [m: o64 0f 1f /0]               X64,UNDOC
+        {0x0f1f}, // HINT_NOP57  rm64                [m: o64 0f 1f /1]               X64,UNDOC
+        {0x0f1f}, // HINT_NOP58  rm64                [m: o64 0f 1f /2]               X64,UNDOC
+        {0x0f1f}, // HINT_NOP59  rm64                [m: o64 0f 1f /3]               X64,UNDOC
+        {0x0f1f}, // HINT_NOP60  rm64                [m: o64 0f 1f /4]               X64,UNDOC
+        {0x0f1f}, // HINT_NOP61  rm64                [m: o64 0f 1f /5]               X64,UNDOC
+        {0x0f1f}, // HINT_NOP62  rm64                [m: o64 0f 1f /6]               X64,UNDOC
+        {0x0f1f}, // HINT_NOP63  rm64                [m: o64 0f 1f /7]               X64,UNDOC
     };
 
 

@@ -1,4 +1,4 @@
-﻿#include <filesystem>
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -8,10 +8,25 @@
 #include <vector>
 #include <algorithm>
 #include <cassert>
+#include <unordered_map>
 
 #include <tracy/Tracy.hpp>
 
 using namespace std;
+
+#if defined(TRACY_ENABLE)
+void* operator new(std::size_t count)
+{
+	auto ptr = malloc(count);
+	TracyAlloc(ptr, count);
+	return ptr;
+}
+void operator delete(void* ptr) noexcept
+{
+	TracyFree(ptr);
+	free(ptr);
+}
+#endif
 
 enum class Instruction_Kind_State
 {
@@ -56,6 +71,22 @@ static vector<string> x64_instruction_sets = {
 	"AVX2",
 	"AVX512",
 */
+};
+
+struct Operand_Info
+{
+	string	type;
+	string	size;
+};
+
+unordered_map<string, Operand_Info> operands_info = {
+	{"imm", {"IMMEDIATE", "QUAD_WORD"}},
+	{"mem", {"ADDRESS", "QUAD_WORD"}},
+	{"reg", {"REGISTER", "QUAD_WORD"}},
+	{"reg8", {"REGISTER", "BYTE"}},
+	{"reg16", {"REGISTER", "WORD"}},
+	{"reg32", {"REGISTER", "DOUBLE_WORD"}},
+	{"reg64", {"REGISTER", "QUAD_WORD"}},
 };
 
 /// Instruction encoding rules (comments from insns.pl file of NASM compiler)
@@ -315,8 +346,8 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 					std::string encoding_rules_string = encoding_rules.str();
 
 					std::string opcode;
-					std::string operand1;
-					std::string operand2;
+					uint8_t		opcode_size = 0;
+					std::vector<std::string> operand_descs;
 
 #if defined(_DEBUG)
 					if (encoding_rules_string.find("wait") != std::string::npos)
@@ -331,6 +362,26 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 						encoding_rules_string.erase(0, operands_match_result[1].length());
 					}
 
+					// operands
+					vector<string>	operands_types_array = split(operand_types, ',');
+					for (const string& operand : operands_types_array) {
+						stringstream	operand_desc;
+
+						if (operand == "void") {	// Here just the format of the string that should contains "4 columns"
+							break;
+						}
+
+						auto it_operand_info = operands_info.find(operand);
+						if (it_operand_info == operands_info.end()) {
+//							operand_desc << "0xBAD'F00D /* Operand not correctly analyzed */";
+//							operand_descs.push_back(operand_desc.str());
+						}
+						else {
+							operand_desc << "{" << "Operand::Type::" << it_operand_info->second.type << ", " << "Operand::Size::" << it_operand_info->second.size << "}";
+							operand_descs.push_back(operand_desc.str());
+						}
+					}
+
 					while (regex_match(encoding_rules_string, opcode_flags_match_result, opcode_flags_regex)
 						&& opcode_flags_match_result[2].length()) {
 
@@ -341,6 +392,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 					while (regex_match(encoding_rules_string, opcode_match_result, opcode_regex)
 						&& opcode_match_result[2].length()) {
 						opcode += opcode_match_result[2];
+						opcode_size += 1;
 
 						encoding_rules_string.erase(0, opcode_match_result[1].length());
 						encoding_rules_string.erase(0, opcode_match_result[2].length());
@@ -348,8 +400,18 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 
 					assert(!opcode.empty());
 
-					x64_cpp_instruction_desc_table << "        "
-						<< "{0x" << opcode << ", " << operand1 << ", " << operand2 << "}," << endl;
+					{	// write instruction line in x64_cpp_instruction_desc_table
+						x64_cpp_instruction_desc_table << "        "
+							<< "{0x" << opcode
+							/* << ", " << std::to_string(opcode_size)*/; // @TODO uncomment
+						for (const string& operand_desc : operand_descs) {
+							x64_cpp_instruction_desc_table << ", " << operand_desc;
+						}
+						x64_cpp_instruction_desc_table << "},"
+							<< " // " << read_line
+							<< endl;
+					}
+
 					x64_current_instruction_index++;
 				}
 

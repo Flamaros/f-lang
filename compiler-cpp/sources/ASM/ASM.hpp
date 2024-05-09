@@ -52,7 +52,7 @@ namespace f
 				ADDRESS
 			}				type;
 
-			enum class Size : uint8_t
+			enum class Size : uint8_t	// @TODO replace that by a size in bytes???
 			{
 				NONE,	// when the operand isn't used
 				BYTE,
@@ -83,8 +83,10 @@ namespace f
 		struct Instruction_Desc
 		{
 			uint8_t	opcode;
-			Operand	op1;
-			Operand	op2;
+			// uint32_t	opcode;
+			// uint8_t		opcode_size;
+			Operand		op1;
+			Operand		op2;
 		};
 
 		struct Section
