@@ -29,7 +29,7 @@
   <ItemGroup>
     <ClInclude Include="..\sources\asm\ASM.hpp" />
     <ClInclude Include="..\sources\ASM\ASM_lexer.hpp" />
-    <ClInclude Include="..\sources\ASM\ASM_x64.h" />
+    <ClInclude Include="..\sources\ASM\generated\ASM_x64.hpp" />
     <ClInclude Include="..\sources\fstd\core\assert.hpp" />
     <ClInclude Include="..\sources\fstd\core\logger.hpp" />
     <ClInclude Include="..\sources\fstd\core\string_builder.hpp" />
@@ -90,7 +90,7 @@
   <ItemGroup>
     <ClCompile Include="..\sources\ASM\ASM.cpp" />
     <ClCompile Include="..\sources\ASM\ASM_lexer.cpp" />
-    <ClCompile Include="..\sources\ASM\ASM_x64.cpp" />
+    <ClCompile Include="..\sources\ASM\generated\ASM_x64.cpp" />
     <ClCompile Include="..\sources\fstd\core\assert.cpp" />
     <ClCompile Include="..\sources\fstd\core\logger.cpp" />
     <ClCompile Include="..\sources\fstd\core\string_builder.cpp" />

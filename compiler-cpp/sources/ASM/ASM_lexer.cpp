@@ -146,6 +146,8 @@ namespace f::ASM
 		{
 			ZoneScopedN("instructions");
 
+			// @TODO call generated code here that fill the hash_table
+
 			HT_INSERT_VALUE(Instruction, Keyword::COUNT, "add", ADD);
 			HT_INSERT_VALUE(Instruction, Keyword::COUNT, "call", CALL);
 			HT_INSERT_VALUE(Instruction, Keyword::COUNT, "hlt", HLT);
@@ -157,6 +159,8 @@ namespace f::ASM
 		// Registers
 		{
 			ZoneScopedN("registers");
+
+			// @TODO call generated code here that fill the hash_table
 
 			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "al", AL);
 			HT_INSERT_VALUE(Register, (uint16_t)Keyword::COUNT + (uint16_t)Instruction::COUNT, "ah", AH);

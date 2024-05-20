@@ -50,6 +50,9 @@
     <Filter Include="Source Files\fstd\math">
       <UniqueIdentifier>{62e8d6ed-bacf-4717-856c-39a2914d9549}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ASM\generated">
+      <UniqueIdentifier>{967c9547-3804-400b-bbf9-73d90a193923}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
@@ -217,9 +220,6 @@
     <ClInclude Include="..\sources\ASM\ASM_lexer.hpp">
       <Filter>Source Files\ASM</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\ASM\ASM_x64.h">
-      <Filter>Source Files\ASM</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\fstd\stream\array_read_stream.hpp">
       <Filter>Source Files\fstd\stream</Filter>
     </ClInclude>
@@ -228,6 +228,9 @@
     </ClInclude>
     <ClInclude Include="..\sources\fstd\math\math.hpp">
       <Filter>Source Files\fstd\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\ASM\generated\ASM_x64.hpp">
+      <Filter>Source Files\ASM\generated</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -291,8 +294,8 @@
     <ClCompile Include="..\sources\ASM\ASM_lexer.cpp">
       <Filter>Source Files\ASM</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\ASM\ASM_x64.cpp">
-      <Filter>Source Files\ASM</Filter>
+    <ClCompile Include="..\sources\ASM\generated\ASM_x64.cpp">
+      <Filter>Source Files\ASM\generated</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

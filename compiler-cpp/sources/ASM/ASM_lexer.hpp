@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ASM_x64.h"
+#include "generated/ASM_x64.hpp"
 
 #include <fstd/memory/array.hpp>
 

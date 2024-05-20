@@ -4,6 +4,7 @@
 #include "globals.hpp"
 
 #include <fstd/language/defer.hpp>
+#include <fstd/language/flags.hpp>
 #include <fstd/memory/array.hpp>
 #include <fstd/system/file.hpp>
 #include <fstd/stream/array_read_stream.hpp>
@@ -354,14 +355,14 @@ namespace f::ASM
 				}
 
 				if (current_token.type == Token_Type::REGISTER) {
-					operands[operand_index].type = Operand::Type::REGISTER;
+					operands[operand_index].type_flags = Operand::Type_Flags::REGISTER;
 					operands[operand_index].value._register = current_token.value._register;
 					operands[operand_index].size = g_register_desc_table[(size_t)current_token.value._register].size;
 
 					stream::peek(stream); // Register
 				}
 				else if (current_token.type == Token_Type::IDENTIFIER) {
-					operands[operand_index].type = Operand::Type::ADDRESS;
+					operands[operand_index].type_flags = Operand::Type_Flags::ADDRESS;
 //					operands[operand_index].value.integer = current_token.value._register; // @TODO push label or function name here
 					operands[operand_index].size = Operand::Size::QUAD_WORD;	// @TODO base size of the target architecture
 
@@ -373,35 +374,35 @@ namespace f::ASM
 				// In the lexer, by having the size and sign as flags on numeric literal?
 				// Or here with a table that give the type of the numeric literal kind?
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I8) {
-					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::BYTE;
 					operands[operand_index].value.integer = current_token.value.integer;
 
 					stream::peek(stream); // Numeric value
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I16) {
-					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::WORD;
 					operands[operand_index].value.integer = current_token.value.integer;
 
 					stream::peek(stream); // Numeric value
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I32) {
-					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::DOUBLE_WORD;
 					operands[operand_index].value.integer = current_token.value.integer;
 
 					stream::peek(stream); // Numeric value
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I64) {
-					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::QUAD_WORD;
 					operands[operand_index].value.integer = current_token.value.integer;
 
 					stream::peek(stream); // Numeric value
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI8) {
-					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::BYTE;
 
 					operands[operand_index].value.unsigned_integer = current_token.value.unsigned_integer;
@@ -409,7 +410,7 @@ namespace f::ASM
 					stream::peek(stream); // Numeric value
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI16) {
-					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::WORD;
 
 					operands[operand_index].value.unsigned_integer = current_token.value.unsigned_integer;
@@ -417,7 +418,7 @@ namespace f::ASM
 					stream::peek(stream); // Numeric value
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI32) {
-					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::DOUBLE_WORD;
 
 					operands[operand_index].value.unsigned_integer = current_token.value.unsigned_integer;
@@ -425,7 +426,7 @@ namespace f::ASM
 					stream::peek(stream); // Numeric value
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI64) {
-					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::QUAD_WORD;
 
 					operands[operand_index].value.unsigned_integer = current_token.value.unsigned_integer;
@@ -433,7 +434,7 @@ namespace f::ASM
 					stream::peek(stream); // Numeric value
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_F32) {
-					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::DOUBLE_WORD;
 
 					operands[operand_index].value.real_32 = current_token.value.real_32;
@@ -441,7 +442,7 @@ namespace f::ASM
 					stream::peek(stream); // Numeric value
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_F64) {
-					operands[operand_index].type = Operand::Type::IMMEDIATE;
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;
 					operands[operand_index].size = Operand::Size::QUAD_WORD;
 
 					operands[operand_index].value.real_64 = current_token.value.real_64;
@@ -628,9 +629,10 @@ namespace f::ASM
 		{
 			// @TODO handle flags,...
 			// immediate size value promotions
-			if (g_instruction_desc_table[desc_index].op1.type == operand1.type && g_instruction_desc_table[desc_index].op1.size == operand1.size
-				&& ((g_instruction_desc_table[desc_index].op2.type == operand2.type && g_instruction_desc_table[desc_index].op2.size == operand2.size)
-					|| (g_instruction_desc_table[desc_index].op2.type == Operand::Type::NONE && g_instruction_desc_table[desc_index].op2.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
+			if (((is_flag_set(g_instruction_desc_table[desc_index].op1.type_flags, operand1.type_flags) && g_instruction_desc_table[desc_index].op1.size == operand1.size)
+				|| (g_instruction_desc_table[desc_index].op1.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op1.size == Operand::Size::NONE))
+				&& ((is_flag_set(g_instruction_desc_table[desc_index].op2.type_flags, operand2.type_flags) && g_instruction_desc_table[desc_index].op2.size == operand2.size)
+					|| (g_instruction_desc_table[desc_index].op2.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op2.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
 				break;
 			}
 		}
@@ -646,8 +648,9 @@ namespace f::ASM
 		// REX.X prefix (for 64bits instruction that is not in 64bits by default)
 		data[size++] = 0b0100 << 4 | 0b1100; // first 4bits are the prefix bit pattern
 
-		data[size] = g_instruction_desc_table[desc_index].opcode;
-		size += sizeof(g_instruction_desc_table[desc_index].opcode);
+		for (uint8_t i = 0; i < g_instruction_desc_table[desc_index].opcode_size; i++) {
+			data[size++] = ((uint8_t*)&g_instruction_desc_table[desc_index].opcode)[i];
+		}
 
 		// MI type encoding
 		{
@@ -663,7 +666,7 @@ namespace f::ASM
 			//     (least significant bit)
 
 			// First operand encoded in modr/m struct
-			if (operand1.type == Operand::Type::REGISTER) {
+			if (operand1.type_flags == (uint8_t)Operand::Type_Flags::REGISTER) {
 				modrm |= 0b11 << 6; // register flag
 
 				modrm |= 5 << 3; // second register or additional data (/x value)
@@ -672,7 +675,7 @@ namespace f::ASM
 				data[size++] = modrm;
 			}
 
-			if (operand2.type == Operand::Type::IMMEDIATE
+			if (operand2.type_flags == (uint8_t)Operand::Type_Flags::IMMEDIATE
 				&& operand2.size == Operand::Size::BYTE) {
 				data[size++] = (uint8_t)operand2.value.integer;
 			}

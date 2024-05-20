@@ -886,8 +886,8 @@ MOVSX       reg32,rm8           [rm:    o32 0f be /r]               386
 MOVSX       reg32,rm16          [rm:    o32 0f bf /r]               386
 MOVSX       reg64,rm8           [rm:    o64 0f be /r]               X64
 MOVSX       reg64,rm16          [rm:    o64 0f bf /r]               X64
-MOVSXD      reg64,rm32          [rm:    o64 63 /r]              X64
 MOVSX       reg64,rm32          [rm:    o64 63 /r]              X64,ND
+MOVSXD      reg64,rm32          [rm:    o64 63 /r]              X64
 MOVZX       reg16,mem           [rm:    o16 0f b6 /r]               386,SB
 MOVZX       reg16,reg8          [rm:    o16 0f b6 /r]               386
 MOVZX       reg32,rm8           [rm:    o32 0f b6 /r]               386

@@ -20,7 +20,7 @@
 #include <fstd/stream/memory_write_stream.hpp>
 
 // @TODO include the proper version of ASM depending on the targetted architecture
-#include "ASM_x64.h"
+#include "generated/ASM_x64.hpp"
 
 namespace f
 {
@@ -44,21 +44,24 @@ namespace f
 
 		struct Operand
 		{
-			enum class Type : uint8_t
+			enum Type_Flags : uint8_t
 			{
-				NONE,
-				REGISTER,
-				IMMEDIATE,
-				ADDRESS
-			}				type;
+				NONE		= 0b0000,
+				REGISTER	= 0b0001,
+				IMMEDIATE	= 0b0010,
+				ADDRESS		= 0b0100
+			};
+			uint8_t	type_flags;	// @Fuck workaround to be able to use the enum as flags without cast
 
 			enum class Size : uint8_t	// @TODO replace that by a size in bytes???
 			{
 				NONE,	// when the operand isn't used
+				UNKNOWN,	// For some register not documented and/or I don't plan to use
 				BYTE,
 				WORD,
 				DOUBLE_WORD,
-				QUAD_WORD
+				QUAD_WORD,
+				ADDRESS_SIZE
 			}				size;
 
 			// @TODO identifier (as string view?)
@@ -82,11 +85,12 @@ namespace f
 
 		struct Instruction_Desc
 		{
-			uint8_t	opcode;
-			// uint32_t	opcode;
-			// uint8_t		opcode_size;
+			uint32_t	opcode;
+			uint8_t		opcode_size;
 			Operand		op1;
 			Operand		op2;
+			Operand		op3;
+			Operand		op4;
 		};
 
 		struct Section

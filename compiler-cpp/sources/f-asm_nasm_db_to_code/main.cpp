@@ -48,6 +48,13 @@ std::vector<std::string> split(const std::string& s, char delim)
 	return result;
 }
 
+string to_upper(const string& s)
+{
+	string result = s;
+	transform(result.begin(), result.end(), result.begin(), ::toupper);
+	return result;
+}
+
 static vector<string> x64_instruction_sets = {
 	"186",
 	"286",
@@ -73,21 +80,67 @@ static vector<string> x64_instruction_sets = {
 */
 };
 
+static unordered_map<string, string> register_size_from_disassembler_class = {
+	{"reg8", "BYTE"},
+	{"reg8_rex", "BYTE"},
+	{"reg16", "WORD"},
+	{"reg32", "DOUBLE_WORD"},
+	{"reg64", "QUAD_WORD"},
+
+	{"sreg", "WORD"},	// In x86 (in real and protected mode)
+
+	{"creg", "ADDRESS_SIZE"},	// 32bits en x86 - 64bits In x64 in long mode
+
+	{"dreg", "ADDRESS_SIZE"},	// 32bits en x86 - 64bits In x64 in long mode
+
+	{"treg", "UNKNOWN"},
+	{"fpureg", "UNKNOWN"},
+	{"mmxreg", "UNKNOWN"},
+	{"xmmreg", "UNKNOWN"},
+	{"ymmreg", "UNKNOWN"},
+	{"zmmreg", "UNKNOWN"},
+	{"opmaskreg", "UNKNOWN"},
+	{"bndreg", "UNKNOWN"},
+};
+
 struct Operand_Info
 {
 	string	type;
 	string	size;
 };
 
-unordered_map<string, Operand_Info> operands_info = {
-	{"imm", {"IMMEDIATE", "QUAD_WORD"}},
-	{"mem", {"ADDRESS", "QUAD_WORD"}},
-	{"reg", {"REGISTER", "QUAD_WORD"}},
-	{"reg8", {"REGISTER", "BYTE"}},
-	{"reg16", {"REGISTER", "WORD"}},
-	{"reg32", {"REGISTER", "DOUBLE_WORD"}},
-	{"reg64", {"REGISTER", "QUAD_WORD"}},
-};
+unordered_map<string, Operand_Info> operands_info;
+
+void generate_operands_info()
+{
+	operands_info = {
+	{"imm", {"Operand::Type_Flags::IMMEDIATE", "QUAD_WORD"}},
+	{"imm8", {"Operand::Type_Flags::IMMEDIATE", "BYTE"}},
+	{"imm16", {"Operand::Type_Flags::IMMEDIATE", "WORD"}},
+	{"imm32", {"Operand::Type_Flags::IMMEDIATE", "DOUBLE_WORD"}},
+	{"imm64", {"Operand::Type_Flags::IMMEDIATE", "QUAD_WORD"}},
+
+	// @TODO do all size of mem
+	{"mem", {"Operand::Type_Flags::ADDRESS", "ADDRESS_SIZE"}},
+
+	{"reg", {"Operand::Type_Flags::REGISTER", "QUAD_WORD"}},
+	{"reg8", {"Operand::Type_Flags::REGISTER", "BYTE"}},
+	{"reg16", {"Operand::Type_Flags::REGISTER", "WORD"}},
+	{"reg32", {"Operand::Type_Flags::REGISTER", "DOUBLE_WORD"}},
+	{"reg64", {"Operand::Type_Flags::REGISTER", "QUAD_WORD"}},
+
+	// @TODO what rm stand for exactly, register and memory or RM of ModRM ?
+	{"rm16", {"Operand::Type_Flags::REGISTER | Operand::Type_Flags::ADDRESS", "WORD"}},
+	{"rm32", {"Operand::Type_Flags::REGISTER | Operand::Type_Flags::ADDRESS", "DOUBLE_WORD"}},
+	{"rm64", {"Operand::Type_Flags::REGISTER | Operand::Type_Flags::ADDRESS", "QUAD_WORD"}},
+
+	// @TODO add registers specified by name
+	// @TODO sbyteword,...
+	};
+
+	// @TODO get registers to add them to operands_info (some instructions support only few specific registers)
+	// Need to get registers by parameter
+}
 
 /// Instruction encoding rules (comments from insns.pl file of NASM compiler)
 /// [operands: opcodes]
@@ -254,6 +307,67 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 )CODE";
 
 	string		read_line;
+
+	ifstream	regs_dat_file("./data/regs.dat");
+	if (regs_dat_file.is_open())
+	{
+		regex	register_desc_regex(R"REG(([\w-]+)\s+(\w+)\s+([\w,]+)\s+(\d+)\s*(\w*))REG");
+		smatch	register_desc_match_result;
+		regex	registers_regex(R"REG(([a-z]+)(\d+)-(\d+)([a-z]*))REG");
+		smatch	registers_match_result;
+
+		size_t current_line = 0; // For debugging
+
+		while (getline(regs_dat_file, read_line))
+		{
+			current_line++;
+
+			if (read_line.starts_with("##")) { // Verbose comment
+				continue;
+			}
+			
+			if (read_line.starts_with("#")) {
+				continue;
+			}
+
+			if (regex_match(read_line, register_desc_match_result, register_desc_regex)) {
+				string registers = register_desc_match_result[1];
+				string assembler_class = register_desc_match_result[2];
+				string disassembler_classes_string = register_desc_match_result[3];
+				string register_number = register_desc_match_result[4];
+				string token_flag = register_desc_match_result[4];
+
+				vector<string> disassembler_classes = split(disassembler_classes_string, ',');
+				string register_size = register_size_from_disassembler_class[disassembler_classes[0]];
+
+				if (regex_match(registers, registers_match_result, registers_regex)) {
+					string prefix = registers_match_result[1];
+					string first_index = registers_match_result[2];
+					string last_index = registers_match_result[3];
+					string suffix = registers_match_result[4];
+
+					int first = stoi(first_index);
+					int last = stoi(last_index);
+					for (int i = first; i <= last; i++) {
+						x64_hpp_register_enum << "        " << to_upper(prefix) << i << to_upper(suffix) << "," << endl;
+						x64_cpp_register_desc_table << "        " << "{Operand::Size::" << register_size << ", " << stoi(register_number) << "}," << endl;
+					}
+				}
+				else {
+					x64_hpp_register_enum << "        " << to_upper(registers) << "," << endl;
+					x64_cpp_register_desc_table << "        " << "{Operand::Size::" << register_size << ", " << stoi(register_number) << "}," << endl;
+				}
+			}
+
+
+			// @TODO
+			// Remplir la fonction de remplissage de la hash_table des register en lower et upper case (optionnel avec un define?)
+
+		}
+	}
+
+	generate_operands_info();
+
 	ifstream	insns_dat_file("./data/insns.dat");
 	if (insns_dat_file.is_open())
 	{
@@ -272,6 +386,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 
 		string					previous_instruction_name;
 		size_t					x64_current_instruction_index = 0;
+		size_t					x64_nb_instruction = 0;
 		Instruction_Kind_State	instruction_state = Instruction_Kind_State::UNKNOWN;
 
 		size_t current_line = 0; // For debugging
@@ -336,9 +451,11 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 							<< x64_current_instruction_index << "," << "\t// " << instruction << endl;
 
 						x64_hpp_instruction_enum << "        "
-							<< instruction << "," << endl;
+							<< instruction << ",\t// " << x64_nb_instruction + 1 << endl;
 
 						x64_cpp_instruction_desc_table << endl << "        " << "// " << instruction << endl;
+
+						x64_nb_instruction++;
 					}
 				}
 
@@ -377,7 +494,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 //							operand_descs.push_back(operand_desc.str());
 						}
 						else {
-							operand_desc << "{" << "Operand::Type::" << it_operand_info->second.type << ", " << "Operand::Size::" << it_operand_info->second.size << "}";
+							operand_desc << "{" << it_operand_info->second.type << ", " << "Operand::Size::" << it_operand_info->second.size << "}";
 							operand_descs.push_back(operand_desc.str());
 						}
 					}
@@ -402,8 +519,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 
 					{	// write instruction line in x64_cpp_instruction_desc_table
 						x64_cpp_instruction_desc_table << "        "
-							<< "{0x" << opcode
-							/* << ", " << std::to_string(opcode_size)*/; // @TODO uncomment
+							<< "{0x" << opcode << ", " << std::to_string(opcode_size);
 						for (const string& operand_desc : operand_descs) {
 							x64_cpp_instruction_desc_table << ", " << operand_desc;
 						}

@@ -10,299 +10,298 @@ namespace f::ASM
     {
         UNKNOWN,
 
-        AAA,
-        AAD,
-        AAM,
-        AAS,
-        ADC,
-        ADD,
-        AND,
-        ARPL,
-        BOUND,
-        BSF,
-        BSR,
-        BT,
-        BTC,
-        BTR,
-        BTS,
-        CALL,
+        AAA,	// 1
+        AAD,	// 2
+        AAM,	// 3
+        AAS,	// 4
+        ADC,	// 5
+        ADD,	// 6
+        AND,	// 7
+        ARPL,	// 8
+        BOUND,	// 9
+        BSF,	// 10
+        BSR,	// 11
+        BT,	// 12
+        BTC,	// 13
+        BTR,	// 14
+        BTS,	// 15
+        CALL,	// 16
         // Call/jmp near imm/reg/mem is always 64-bit in long mode.
-        CBW,
-        CDQ,
-        CDQE,
-        CLC,
-        CLD,
-        CLI,
-        CLTS,
-        CMC,
-        CMP,
-        CMPSB,
-        CMPSD,
-        CMPSQ,
-        CMPSW,
-        CMPXCHG486,
-        CMPXCHG16B,
-        CQO,
-        CWD,
-        CWDE,
-        DAA,
-        DAS,
-        DEC,
-        DIV,
-        ENTER,
-        F2XM1,
-        FABS,
-        FADD,
-        FADDP,
-        FBLD,
-        FBSTP,
-        FCHS,
-        FCLEX,
-        FCOM,
-        FCOMP,
-        FCOMPP,
-        FCOS,
-        FDECSTP,
-        FDISI,
-        FDIV,
-        FDIVP,
-        FDIVR,
-        FDIVRP,
-        FENI,
-        FFREE,
-        FFREEP,
-        FIADD,
-        FICOM,
-        FICOMP,
-        FIDIV,
-        FIDIVR,
-        FILD,
-        FIMUL,
-        FINCSTP,
-        FINIT,
-        FIST,
-        FISTP,
-        FISUB,
-        FISUBR,
-        FLD,
-        FLD1,
-        FLDCW,
-        FLDENV,
-        FLDL2E,
-        FLDL2T,
-        FLDLG2,
-        FLDLN2,
-        FLDPI,
-        FLDZ,
-        FMUL,
-        FMULP,
-        FNCLEX,
-        FNDISI,
-        FNENI,
-        FNINIT,
-        FNOP,
-        FNSAVE,
-        FNSTCW,
-        FNSTENV,
-        FNSTSW,
-        FPATAN,
-        FPREM,
-        FPREM1,
-        FPTAN,
-        FRNDINT,
-        FRSTOR,
-        FSAVE,
-        FSCALE,
-        FSETPM,
-        FSIN,
-        FSINCOS,
-        FSQRT,
-        FST,
-        FSTCW,
-        FSTENV,
-        FSTP,
-        FSTSW,
-        FSUB,
-        FSUBP,
-        FSUBR,
-        FSUBRP,
-        FTST,
-        FUCOM,
-        FUCOMP,
-        FUCOMPP,
-        FXAM,
-        FXCH,
-        FXTRACT,
-        FYL2X,
-        FYL2XP1,
-        HLT,
-        IBTS,
-        ICEBP,
-        IDIV,
-        IMUL,
-        IN,
-        INC,
-        INSB,
-        INSD,
-        INSW,
-        INT,
-        INT01,
-        INT1,
-        INT03,
-        INT3,
-        INTO,
-        INVD,
-        INVLPG,
-        IRET,
-        IRETD,
-        IRETQ,
-        IRETW,
-        JCXZ,
-        JECXZ,
-        JRCXZ,
-        JMP,
+        CBW,	// 17
+        CDQ,	// 18
+        CDQE,	// 19
+        CLC,	// 20
+        CLD,	// 21
+        CLI,	// 22
+        CLTS,	// 23
+        CMC,	// 24
+        CMP,	// 25
+        CMPSB,	// 26
+        CMPSD,	// 27
+        CMPSQ,	// 28
+        CMPSW,	// 29
+        CMPXCHG486,	// 30
+        CMPXCHG16B,	// 31
+        CQO,	// 32
+        CWD,	// 33
+        CWDE,	// 34
+        DAA,	// 35
+        DAS,	// 36
+        DEC,	// 37
+        DIV,	// 38
+        ENTER,	// 39
+        F2XM1,	// 40
+        FABS,	// 41
+        FADD,	// 42
+        FADDP,	// 43
+        FBLD,	// 44
+        FBSTP,	// 45
+        FCHS,	// 46
+        FCLEX,	// 47
+        FCOM,	// 48
+        FCOMP,	// 49
+        FCOMPP,	// 50
+        FCOS,	// 51
+        FDECSTP,	// 52
+        FDISI,	// 53
+        FDIV,	// 54
+        FDIVP,	// 55
+        FDIVR,	// 56
+        FDIVRP,	// 57
+        FENI,	// 58
+        FFREE,	// 59
+        FFREEP,	// 60
+        FIADD,	// 61
+        FICOM,	// 62
+        FICOMP,	// 63
+        FIDIV,	// 64
+        FIDIVR,	// 65
+        FILD,	// 66
+        FIMUL,	// 67
+        FINCSTP,	// 68
+        FINIT,	// 69
+        FIST,	// 70
+        FISTP,	// 71
+        FISUB,	// 72
+        FISUBR,	// 73
+        FLD,	// 74
+        FLD1,	// 75
+        FLDCW,	// 76
+        FLDENV,	// 77
+        FLDL2E,	// 78
+        FLDL2T,	// 79
+        FLDLG2,	// 80
+        FLDLN2,	// 81
+        FLDPI,	// 82
+        FLDZ,	// 83
+        FMUL,	// 84
+        FMULP,	// 85
+        FNCLEX,	// 86
+        FNDISI,	// 87
+        FNENI,	// 88
+        FNINIT,	// 89
+        FNOP,	// 90
+        FNSAVE,	// 91
+        FNSTCW,	// 92
+        FNSTENV,	// 93
+        FNSTSW,	// 94
+        FPATAN,	// 95
+        FPREM,	// 96
+        FPREM1,	// 97
+        FPTAN,	// 98
+        FRNDINT,	// 99
+        FRSTOR,	// 100
+        FSAVE,	// 101
+        FSCALE,	// 102
+        FSETPM,	// 103
+        FSIN,	// 104
+        FSINCOS,	// 105
+        FSQRT,	// 106
+        FST,	// 107
+        FSTCW,	// 108
+        FSTENV,	// 109
+        FSTP,	// 110
+        FSTSW,	// 111
+        FSUB,	// 112
+        FSUBP,	// 113
+        FSUBR,	// 114
+        FSUBRP,	// 115
+        FTST,	// 116
+        FUCOM,	// 117
+        FUCOMP,	// 118
+        FUCOMPP,	// 119
+        FXAM,	// 120
+        FXCH,	// 121
+        FXTRACT,	// 122
+        FYL2X,	// 123
+        FYL2XP1,	// 124
+        HLT,	// 125
+        IBTS,	// 126
+        ICEBP,	// 127
+        IDIV,	// 128
+        IMUL,	// 129
+        IN,	// 130
+        INC,	// 131
+        INSB,	// 132
+        INSD,	// 133
+        INSW,	// 134
+        INT,	// 135
+        INT01,	// 136
+        INT1,	// 137
+        INT03,	// 138
+        INT3,	// 139
+        INTO,	// 140
+        INVD,	// 141
+        INVLPG,	// 142
+        IRET,	// 143
+        IRETD,	// 144
+        IRETQ,	// 145
+        IRETW,	// 146
+        JCXZ,	// 147
+        JECXZ,	// 148
+        JRCXZ,	// 149
+        JMP,	// 150
         // Call/jmp near imm/reg/mem is always 64-bit in long mode.
-        LAHF,
-        LAR,
-        LDS,
-        LEA,
-        LEAVE,
-        LES,
-        LFENCE,
-        LFS,
-        LGDT,
-        LGS,
-        LIDT,
-        LLDT,
-        LMSW,
-        LOADALL,
-        LOADALL286,
-        LODSB,
-        LODSD,
-        LODSQ,
-        LODSW,
-        LOOP,
-        LOOPE,
-        LOOPNE,
-        LOOPNZ,
-        LOOPZ,
-        LSL,
-        LSS,
-        LTR,
-        MFENCE,
-        MOV,
-        MOVSB,
-        MOVSD,
-        MOVSQ,
-        MOVSW,
-        MOVSX,
-        MOVSXD,
-        MOVSX,
-        MOVZX,
-        MUL,
-        NEG,
-        NOP,
-        NOT,
-        OR,
-        OUT,
-        OUTSB,
-        OUTSD,
-        OUTSW,
-        PAUSE,
-        POP,
-        POPA,
-        POPAD,
-        POPAW,
-        POPF,
-        POPFD,
-        POPFQ,
-        POPFW,
-        PUSH,
-        PUSHA,
-        PUSHAD,
-        PUSHAW,
-        PUSHF,
-        PUSHFD,
-        PUSHFQ,
-        PUSHFW,
-        RCL,
-        RCR,
-        RET,
-        RETF,
-        RETN,
-        RETW,
-        RETFW,
-        RETNW,
-        RETD,
-        RETFD,
-        RETND,
-        RETQ,
-        RETFQ,
-        RETNQ,
-        ROL,
-        ROR,
-        RSDC,
-        RSLDT,
-        RSTS,
-        SAHF,
-        SAL,
-        SALC,
-        SAR,
-        SBB,
-        SCASB,
-        SCASD,
-        SCASQ,
-        SCASW,
-        SFENCE,
-        SGDT,
-        SHL,
-        SHLD,
-        SHR,
-        SHRD,
-        SIDT,
-        SLDT,
-        SKINIT,
-        SMI,
+        LAHF,	// 151
+        LAR,	// 152
+        LDS,	// 153
+        LEA,	// 154
+        LEAVE,	// 155
+        LES,	// 156
+        LFENCE,	// 157
+        LFS,	// 158
+        LGDT,	// 159
+        LGS,	// 160
+        LIDT,	// 161
+        LLDT,	// 162
+        LMSW,	// 163
+        LOADALL,	// 164
+        LOADALL286,	// 165
+        LODSB,	// 166
+        LODSD,	// 167
+        LODSQ,	// 168
+        LODSW,	// 169
+        LOOP,	// 170
+        LOOPE,	// 171
+        LOOPNE,	// 172
+        LOOPNZ,	// 173
+        LOOPZ,	// 174
+        LSL,	// 175
+        LSS,	// 176
+        LTR,	// 177
+        MFENCE,	// 178
+        MOV,	// 179
+        MOVSB,	// 180
+        MOVSD,	// 181
+        MOVSQ,	// 182
+        MOVSW,	// 183
+        MOVSX,	// 184
+        MOVSXD,	// 185
+        MOVZX,	// 186
+        MUL,	// 187
+        NEG,	// 188
+        NOP,	// 189
+        NOT,	// 190
+        OR,	// 191
+        OUT,	// 192
+        OUTSB,	// 193
+        OUTSD,	// 194
+        OUTSW,	// 195
+        PAUSE,	// 196
+        POP,	// 197
+        POPA,	// 198
+        POPAD,	// 199
+        POPAW,	// 200
+        POPF,	// 201
+        POPFD,	// 202
+        POPFQ,	// 203
+        POPFW,	// 204
+        PUSH,	// 205
+        PUSHA,	// 206
+        PUSHAD,	// 207
+        PUSHAW,	// 208
+        PUSHF,	// 209
+        PUSHFD,	// 210
+        PUSHFQ,	// 211
+        PUSHFW,	// 212
+        RCL,	// 213
+        RCR,	// 214
+        RET,	// 215
+        RETF,	// 216
+        RETN,	// 217
+        RETW,	// 218
+        RETFW,	// 219
+        RETNW,	// 220
+        RETD,	// 221
+        RETFD,	// 222
+        RETND,	// 223
+        RETQ,	// 224
+        RETFQ,	// 225
+        RETNQ,	// 226
+        ROL,	// 227
+        ROR,	// 228
+        RSDC,	// 229
+        RSLDT,	// 230
+        RSTS,	// 231
+        SAHF,	// 232
+        SAL,	// 233
+        SALC,	// 234
+        SAR,	// 235
+        SBB,	// 236
+        SCASB,	// 237
+        SCASD,	// 238
+        SCASQ,	// 239
+        SCASW,	// 240
+        SFENCE,	// 241
+        SGDT,	// 242
+        SHL,	// 243
+        SHLD,	// 244
+        SHR,	// 245
+        SHRD,	// 246
+        SIDT,	// 247
+        SLDT,	// 248
+        SKINIT,	// 249
+        SMI,	// 250
         // Older Cyrix chips had this; they had to move due to conflict with MMX
-        SMINTOLD,
-        SMSW,
-        STC,
-        STD,
-        STI,
-        STOSB,
-        STOSD,
-        STOSQ,
-        STOSW,
-        STR,
-        SUB,
-        SVDC,
-        SVLDT,
-        SVTS,
-        SWAPGS,
-        TEST,
-        UD0,
-        UD1,
-        UD2B,
-        UD2,
-        UD2A,
-        UMOV,
-        VERR,
-        VERW,
+        SMINTOLD,	// 251
+        SMSW,	// 252
+        STC,	// 253
+        STD,	// 254
+        STI,	// 255
+        STOSB,	// 256
+        STOSD,	// 257
+        STOSQ,	// 258
+        STOSW,	// 259
+        STR,	// 260
+        SUB,	// 261
+        SVDC,	// 262
+        SVLDT,	// 263
+        SVTS,	// 264
+        SWAPGS,	// 265
+        TEST,	// 266
+        UD0,	// 267
+        UD1,	// 268
+        UD2B,	// 269
+        UD2,	// 270
+        UD2A,	// 271
+        UMOV,	// 272
+        VERR,	// 273
+        VERW,	// 274
         // fix missing opcode from source https://www.felixcloutier.com/x86/wait:fwait
-        FWAIT,
-        WBINVD,
-        XADD,
-        XBTS,
+        FWAIT,	// 275
+        WBINVD,	// 276
+        XADD,	// 277
+        XBTS,	// 278
         // This must be NOLONG since opcode 90 is NOP, and in 64-bit mode
         // "xchg eax,eax" is *not* a NOP.
-        XCHG,
-        XLATB,
-        XLAT,
-        XOR,
+        XCHG,	// 279
+        XLATB,	// 280
+        XLAT,	// 281
+        XOR,	// 282
         // CMPPS/CMPSS must come after the specific ops; that way the disassembler will find the
         // specific ops first and only disassemble illegal ones as cmpps/cmpss.
-        FXRSTOR64,
-        FXSAVE64,
+        FXRSTOR64,	// 283
+        FXSAVE64,	// 284
         // Introduced in late Penryn ... we really need to clean up the handling
         // of CPU feature bits.
         // These instructions are not SSE-specific; they are
@@ -312,8 +311,8 @@ namespace f::ASM
         // CLFLUSH needs its own feature flag implemented one day
         // CMPPD/CMPSD must come after the specific ops; that way the disassembler will find the
         // specific ops first and only disassemble illegal ones as cmppd/cmpsd.
-        PEXTRQ,
-        PINSRQ,
+        PEXTRQ,	// 285
+        PINSRQ,	// 286
         // Is NEHALEM right here?
         // Intel VAES instructions
         // Intel VAES + AVX512VL instructions
@@ -376,14 +375,14 @@ namespace f::ASM
         // based on pub number 319433-011 dated July 2011
         //
         // MJC PUBLIC END
-        RDPKRU,
-        WRPKRU,
+        RDPKRU,	// 287
+        WRPKRU,	// 288
         // This one was killed before it saw the light of day
         // AMD Zen v1
-        INCSSPQ,
-        RDSSPQ,
-        WRUSSQ,
-        WRSSQ,
+        INCSSPQ,	// 289
+        RDSSPQ,	// 290
+        WRUSSQ,	// 291
+        WRSSQ,	// 292
         // These should be last in the file
 
 		COUNT,
@@ -393,6 +392,246 @@ namespace f::ASM
     {
         UNKNOWN,
 
+        AL,
+        AH,
+        AX,
+        EAX,
+        RAX,
+        BL,
+        BH,
+        BX,
+        EBX,
+        RBX,
+        CL,
+        CH,
+        CX,
+        ECX,
+        RCX,
+        DL,
+        DH,
+        DX,
+        EDX,
+        RDX,
+        SPL,
+        SP,
+        ESP,
+        RSP,
+        BPL,
+        BP,
+        EBP,
+        RBP,
+        SIL,
+        SI,
+        ESI,
+        RSI,
+        DIL,
+        DI,
+        EDI,
+        RDI,
+        R8B,
+        R9B,
+        R10B,
+        R11B,
+        R12B,
+        R13B,
+        R14B,
+        R15B,
+        R8W,
+        R9W,
+        R10W,
+        R11W,
+        R12W,
+        R13W,
+        R14W,
+        R15W,
+        R8D,
+        R9D,
+        R10D,
+        R11D,
+        R12D,
+        R13D,
+        R14D,
+        R15D,
+        R8,
+        R9,
+        R10,
+        R11,
+        R12,
+        R13,
+        R14,
+        R15,
+        ES,
+        CS,
+        SS,
+        DS,
+        FS,
+        GS,
+        SEGR6,
+        SEGR7,
+        CR0,
+        CR1,
+        CR2,
+        CR3,
+        CR4,
+        CR5,
+        CR6,
+        CR7,
+        CR8,
+        CR9,
+        CR10,
+        CR11,
+        CR12,
+        CR13,
+        CR14,
+        CR15,
+        DR0,
+        DR1,
+        DR2,
+        DR3,
+        DR4,
+        DR5,
+        DR6,
+        DR7,
+        DR8,
+        DR9,
+        DR10,
+        DR11,
+        DR12,
+        DR13,
+        DR14,
+        DR15,
+        TR0,
+        TR1,
+        TR2,
+        TR3,
+        TR4,
+        TR5,
+        TR6,
+        TR7,
+        ST0,
+        ST1,
+        ST2,
+        ST3,
+        ST4,
+        ST5,
+        ST6,
+        ST7,
+        MM0,
+        MM1,
+        MM2,
+        MM3,
+        MM4,
+        MM5,
+        MM6,
+        MM7,
+        XMM0,
+        XMM1,
+        XMM2,
+        XMM3,
+        XMM4,
+        XMM5,
+        XMM6,
+        XMM7,
+        XMM8,
+        XMM9,
+        XMM10,
+        XMM11,
+        XMM12,
+        XMM13,
+        XMM14,
+        XMM15,
+        XMM16,
+        XMM17,
+        XMM18,
+        XMM19,
+        XMM20,
+        XMM21,
+        XMM22,
+        XMM23,
+        XMM24,
+        XMM25,
+        XMM26,
+        XMM27,
+        XMM28,
+        XMM29,
+        XMM30,
+        XMM31,
+        YMM0,
+        YMM1,
+        YMM2,
+        YMM3,
+        YMM4,
+        YMM5,
+        YMM6,
+        YMM7,
+        YMM8,
+        YMM9,
+        YMM10,
+        YMM11,
+        YMM12,
+        YMM13,
+        YMM14,
+        YMM15,
+        YMM16,
+        YMM17,
+        YMM18,
+        YMM19,
+        YMM20,
+        YMM21,
+        YMM22,
+        YMM23,
+        YMM24,
+        YMM25,
+        YMM26,
+        YMM27,
+        YMM28,
+        YMM29,
+        YMM30,
+        YMM31,
+        ZMM0,
+        ZMM1,
+        ZMM2,
+        ZMM3,
+        ZMM4,
+        ZMM5,
+        ZMM6,
+        ZMM7,
+        ZMM8,
+        ZMM9,
+        ZMM10,
+        ZMM11,
+        ZMM12,
+        ZMM13,
+        ZMM14,
+        ZMM15,
+        ZMM16,
+        ZMM17,
+        ZMM18,
+        ZMM19,
+        ZMM20,
+        ZMM21,
+        ZMM22,
+        ZMM23,
+        ZMM24,
+        ZMM25,
+        ZMM26,
+        ZMM27,
+        ZMM28,
+        ZMM29,
+        ZMM30,
+        ZMM31,
+        K0,
+        K1,
+        K2,
+        K3,
+        K4,
+        K5,
+        K6,
+        K7,
+        BND0,
+        BND1,
+        BND2,
+        BND3,
 
 		COUNT,
     };
