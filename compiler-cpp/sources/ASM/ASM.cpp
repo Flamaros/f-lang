@@ -621,37 +621,8 @@ namespace f::ASM
 		return g_instruction_desc_table_indices[(size_t)instruction + 1];
 	}
 
-	bool push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2)
+	void encode_operand(uint8_t data[64], uint32_t& size, const Operand& desc_operand, const Operand& operand)
 	{
-		// Find the instruction decription that match parameters
-		size_t desc_index = get_first_instruction_desc_index(instruction);
-		for (; desc_index < get_next_instruction_first_desc(instruction); desc_index++)
-		{
-			// @TODO handle flags,...
-			// immediate size value promotions
-			if (((is_flag_set(g_instruction_desc_table[desc_index].op1.type_flags, operand1.type_flags) && g_instruction_desc_table[desc_index].op1.size == operand1.size)
-				|| (g_instruction_desc_table[desc_index].op1.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op1.size == Operand::Size::NONE))
-				&& ((is_flag_set(g_instruction_desc_table[desc_index].op2.type_flags, operand2.type_flags) && g_instruction_desc_table[desc_index].op2.size == operand2.size)
-					|| (g_instruction_desc_table[desc_index].op2.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op2.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
-				break;
-			}
-		}
-		if (desc_index == get_next_instruction_first_desc(instruction)) {
-			// @TODO improve this error message (handle flags)
-			// We may have to return false and print the error in the caller to have access to tokens
-			return false;
-		}
-
-		uint8_t data[64];
-		uint32_t size = 0;
-
-		// REX.X prefix (for 64bits instruction that is not in 64bits by default)
-		data[size++] = 0b0100 << 4 | 0b1100; // first 4bits are the prefix bit pattern
-
-		for (uint8_t i = 0; i < g_instruction_desc_table[desc_index].opcode_size; i++) {
-			data[size++] = ((uint8_t*)&g_instruction_desc_table[desc_index].opcode)[i];
-		}
-
 		// MI type encoding
 		{
 			uint8_t modrm = 0;
@@ -666,20 +637,88 @@ namespace f::ASM
 			//     (least significant bit)
 
 			// First operand encoded in modr/m struct
-			if (operand1.type_flags == (uint8_t)Operand::Type_Flags::REGISTER) {
+			if (operand.type_flags == (uint8_t)Operand::Type_Flags::REGISTER) {
 				modrm |= 0b11 << 6; // register flag
 
 				modrm |= 5 << 3; // second register or additional data (/x value)
-				modrm |= g_register_desc_table[(size_t)operand1.value._register].id;
+				modrm |= g_register_desc_table[(size_t)operand.value._register].id;
 
 				data[size++] = modrm;
 			}
-
-			if (operand2.type_flags == (uint8_t)Operand::Type_Flags::IMMEDIATE
-				&& operand2.size == Operand::Size::BYTE) {
-				data[size++] = (uint8_t)operand2.value.integer;
+			else if (operand.type_flags == (uint8_t)Operand::Type_Flags::IMMEDIATE) {
+				// desc_operand give us the number of bytes to write (in some cases we use an instruction supporting a bigger immediate that needed
+				// because it may have not a version with the size we want)
+				if (desc_operand.size == Operand::Size::BYTE) {
+					data[size++] = (uint8_t)operand.value.integer;
+				}
+				else if (desc_operand.size == Operand::Size::WORD) {
+					uint16_t value = (uint16_t)operand.value.integer;
+					for (uint8_t i = 0; i < 2; i++) {
+						data[size++] = ((uint8_t*)&value)[i];
+					}
+				}
+				else if (desc_operand.size == Operand::Size::DOUBLE_WORD) {
+					uint32_t value = (uint32_t)operand.value.integer;
+					for (uint8_t i = 0; i < 2; i++) {
+						data[size++] = ((uint8_t*)&value)[i];
+					}
+				}
+				else if (desc_operand.size == Operand::Size::QUAD_WORD
+					|| desc_operand.size == Operand::Size::ADDRESS_SIZE) { // @Warning x64 as target
+					uint64_t value = operand.value.integer;
+					for (uint8_t i = 0; i < 2; i++) {
+						data[size++] = ((uint8_t*)&value)[i];
+					}
+				}
+				else {
+					// @TODO improve this error message (handle flags)
+					// We may have to return false and print the error in the caller to have access to tokens
+					report_error(Compiler_Error::error, "Operand size not supported");
+				}
 			}
 		}
+
+	}
+
+	bool push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2)
+	{
+		// Find the instruction decription that match parameters
+		size_t desc_index = get_first_instruction_desc_index(instruction);
+		for (; desc_index < get_next_instruction_first_desc(instruction); desc_index++)
+		{
+			// @TODO handle flags,...
+			// immediate size value promotions
+			if (((is_flag_set(g_instruction_desc_table[desc_index].op1.type_flags, operand1.type_flags) && g_instruction_desc_table[desc_index].op1.size >= operand1.size)
+				|| (operand1.type_flags == Operand::Type_Flags::NONE && operand1.size == Operand::Size::NONE
+					&& g_instruction_desc_table[desc_index].op1.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op1.size == Operand::Size::NONE))
+				&& ((is_flag_set(g_instruction_desc_table[desc_index].op2.type_flags, operand2.type_flags) && g_instruction_desc_table[desc_index].op2.size >= operand2.size)
+					|| (operand2.type_flags == Operand::Type_Flags::NONE && operand2.size == Operand::Size::NONE
+						&& g_instruction_desc_table[desc_index].op2.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op2.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
+				break;
+			}
+		}
+		if (desc_index == get_next_instruction_first_desc(instruction)) {
+			// @TODO improve this error message (handle flags)
+			// We may have to return false and print the error in the caller to have access to tokens
+			return false;
+		}
+
+		uint8_t data[64];
+		uint32_t size = 0;
+
+		// REX.X prefix (for 64bits instruction that is not in 64bits by default)
+		if (operand1.size == Operand::Size::QUAD_WORD || operand2.size == Operand::Size::QUAD_WORD) {
+			// @TODO check the instruction desc encoding flags here
+
+			data[size++] = 0b0100 << 4 | 0b1100; // first 4bits are the prefix bit pattern
+		}
+
+		for (uint8_t i = 0; i < g_instruction_desc_table[desc_index].opcode_size; i++) {
+			data[size++] = ((uint8_t*)&g_instruction_desc_table[desc_index].opcode)[i];
+		}
+
+		encode_operand(data, size, g_instruction_desc_table[desc_index].op1, operand1);
+		encode_operand(data, size, g_instruction_desc_table[desc_index].op2, operand2);
 
 		push_raw_data(section, data, size);
 

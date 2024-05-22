@@ -55,13 +55,15 @@ namespace f
 
 			enum class Size : uint8_t	// @TODO replace that by a size in bytes???
 			{
+				// @Warning should be from the slowest to the biggest size
+
 				NONE,	// when the operand isn't used
 				UNKNOWN,	// For some register not documented and/or I don't plan to use
 				BYTE,
 				WORD,
 				DOUBLE_WORD,
 				QUAD_WORD,
-				ADDRESS_SIZE
+				ADDRESS_SIZE	// @Warning can be an issue in 32bits or with SSE instructions, because the order can be wrong
 			}				size;
 
 			// @TODO identifier (as string view?)

@@ -387,6 +387,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 		string					previous_instruction_name;
 		size_t					x64_current_instruction_index = 0;
 		size_t					x64_nb_instruction = 0;
+		size_t					x64_nb_instruction_desc = 0;
 		Instruction_Kind_State	instruction_state = Instruction_Kind_State::UNKNOWN;
 
 		size_t current_line = 0; // For debugging
@@ -524,7 +525,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 							x64_cpp_instruction_desc_table << ", " << operand_desc;
 						}
 						x64_cpp_instruction_desc_table << "},"
-							<< " // " << read_line
+							<< " // [" << x64_nb_instruction_desc++ << "] " << read_line
 							<< endl;
 					}
 
