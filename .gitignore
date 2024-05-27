@@ -33,6 +33,9 @@ compiler-cpp/tests/Release
 compiler-cpp/tests/Release-Tracy
 compiler-cpp/tests/x64
 
+# All generated sources of compiler-cpp/
+compiler-cpp/sources/ASM/generated/*
+
 # QtCreator
 build-*
 

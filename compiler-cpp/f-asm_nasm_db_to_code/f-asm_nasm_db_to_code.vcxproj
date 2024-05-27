@@ -98,6 +98,24 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CustomBuildAfterTargets>BuildLink</CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <CustomBuildAfterTargets>BuildLink</CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">
+    <CustomBuildAfterTargets>BuildLink</CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CustomBuildAfterTargets>BuildLink</CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <CustomBuildAfterTargets>BuildLink</CustomBuildAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">
+    <CustomBuildAfterTargets>BuildLink</CustomBuildAfterTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -112,6 +130,14 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CustomBuildStep>
+      <Command>$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Message>Generating ASM_x64.cpp and ASM_x64.hpp sources</Message>
+      <Inputs>$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)\data\insns.dat;$(SolutionDir)\data\regs.dat</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -131,6 +157,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CustomBuildStep>
+      <Command>$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Message>Generating ASM_x64.cpp and ASM_x64.hpp sources</Message>
+      <Inputs>$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)\data\insns.dat;$(SolutionDir)\data\regs.dat</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">
     <ClCompile>
@@ -150,6 +184,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CustomBuildStep>
+      <Command>$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Message>Generating ASM_x64.cpp and ASM_x64.hpp sources</Message>
+      <Inputs>$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)\data\insns.dat;$(SolutionDir)\data\regs.dat</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -165,6 +207,14 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CustomBuildStep>
+      <Command>$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Message>Generating ASM_x64.cpp and ASM_x64.hpp sources</Message>
+      <Inputs>$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)\data\insns.dat;$(SolutionDir)\data\regs.dat</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -184,6 +234,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CustomBuildStep>
+      <Command>$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Message>Generating ASM_x64.cpp and ASM_x64.hpp sources</Message>
+      <Inputs>$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)\data\insns.dat;$(SolutionDir)\data\regs.dat</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">
     <ClCompile>
@@ -203,6 +261,14 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CustomBuildStep>
+      <Command>$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Message>Generating ASM_x64.cpp and ASM_x64.hpp sources</Message>
+      <Inputs>$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)\data\insns.dat;$(SolutionDir)\data\regs.dat</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\f-asm_nasm_db_to_code\main.cpp" />
