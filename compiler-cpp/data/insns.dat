@@ -367,8 +367,6 @@ DIV     rm64                [m: o64 f7 /6]              X64
 DMINT       void                [   0f 39]                  P6,CYRIX
 EMMS        void                [   0f 77]                  PENT,MMX
 ENTER       imm,imm             [ij:    c8 iw ib,u]             186
-EQU     imm             ignore                      8086
-EQU     imm:imm             ignore                      8086
 F2XM1       void                [   d9 f0]                  8086,FPU
 FABS        void                [   d9 e1]                  8086,FPU
 FADD        mem32               [m: d8 /0]                  8086,FPU
