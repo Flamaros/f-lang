@@ -229,9 +229,6 @@
     <ClInclude Include="..\sources\fstd\math\math.hpp">
       <Filter>Source Files\fstd\math</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\ASM\generated\ASM_x64.hpp">
-      <Filter>Source Files\ASM\generated</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -294,13 +291,18 @@
     <ClCompile Include="..\sources\ASM\ASM_lexer.cpp">
       <Filter>Source Files\ASM</Filter>
     </ClCompile>
-    <ClCompile Include="..\sources\ASM\generated\ASM_x64.cpp">
-      <Filter>Source Files\ASM\generated</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\third-party\WindowsHModular\include\win32\make.bat">
       <Filter>Source Files\third-party\WindowsHModular\win32</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\sources\ASM\generated\ASM_x64.cpp">
+      <Filter>Source Files\ASM\generated</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\sources\ASM\generated\ASM_x64.hpp">
+      <Filter>Source Files\ASM\generated</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

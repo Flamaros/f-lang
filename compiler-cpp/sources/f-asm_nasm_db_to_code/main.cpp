@@ -110,11 +110,15 @@ struct Operand_Info
 };
 
 unordered_map<string, Operand_Info> operands_info;
+unordered_map<string, string> immediates_info;
 
-void generate_operands_info()
+void generate_operands_and_immediates_info()
 {
 	operands_info = {
-	{"imm", {"Operand::Type_Flags::IMMEDIATE", "QUAD_WORD"}},
+	// void : no need to insert something
+	// Empty string for size, means that it should be dertimined in an other way
+
+	{"imm", {"Operand::Type_Flags::IMMEDIATE", ""}},
 	{"imm8", {"Operand::Type_Flags::IMMEDIATE", "BYTE"}},
 	{"imm16", {"Operand::Type_Flags::IMMEDIATE", "WORD"}},
 	{"imm32", {"Operand::Type_Flags::IMMEDIATE", "DOUBLE_WORD"}},
@@ -123,7 +127,7 @@ void generate_operands_info()
 	// @TODO do all size of mem
 	{"mem", {"Operand::Type_Flags::ADDRESS", "ADDRESS_SIZE"}},
 
-	{"reg", {"Operand::Type_Flags::REGISTER", "QUAD_WORD"}},
+	{"reg", {"Operand::Type_Flags::REGISTER", "QUAD_WORD"}},	// UNKNOWN?
 	{"reg8", {"Operand::Type_Flags::REGISTER", "BYTE"}},
 	{"reg16", {"Operand::Type_Flags::REGISTER", "WORD"}},
 	{"reg32", {"Operand::Type_Flags::REGISTER", "DOUBLE_WORD"}},
@@ -134,12 +138,39 @@ void generate_operands_info()
 	{"rm32", {"Operand::Type_Flags::REGISTER | Operand::Type_Flags::ADDRESS", "DOUBLE_WORD"}},
 	{"rm64", {"Operand::Type_Flags::REGISTER | Operand::Type_Flags::ADDRESS", "QUAD_WORD"}},
 
+	// Signed immediates
+	{"sbyteword", {"Operand::Type_Flags::IMMEDIATE", "BYTE"}},	// Why with ib,s ?
+	{"sbyteword16", {"Operand::Type_Flags::IMMEDIATE", "BYTE"}},	// Why with ib,s ?
+	{"sbytedword", {"Operand::Type_Flags::IMMEDIATE", "BYTE"}},		// Why with ib,s ?
+	{"sbytedword32", {"Operand::Type_Flags::IMMEDIATE", "BYTE"}},		// Why with ib,s ?
+	{"sdword", {"Operand::Type_Flags::IMMEDIATE", "DOUBLE_WORD"}},
+
+	// Unsigned immediates
+	{"udword", {"Operand::Type_Flags::IMMEDIATE", "DOUBLE_WORD"}},
+
 	// @TODO add registers specified by name
 	// @TODO sbyteword,...
 	};
 
 	// @TODO get registers to add them to operands_info (some instructions support only few specific registers)
 	// Need to get registers by parameter
+
+	immediates_info = {
+		{"ib", "BYTE"},		// = > 020, # imm8
+		{"ib,u", "BYTE"},	// = > 024, # Unsigned imm8
+		{"iw", "WORD"},		// = > 030, # imm16
+		{"ib,s", "BYTE"},	// = > 0274, # imm8 sign - extended to opsize or bits
+		{"iwd", ""},	// = > 034, # imm16 or imm32, depending on opsize				// What same as opcode size (maybe the x2 opcode size)?
+		{"id", "DOUBLE_WORD"},		// = > 040, # imm32
+		{"id,s", "DOUBLE_WORD"},	// = > 0254, # imm32 sign - extended to 64 bits
+		{"iwdq", "ADDRESS_SIZE"},	// = > 044, # imm16 / 32 / 64, depending on addrsize
+		{"rel8", "BYTE"},	// = > 050,			// relative address in 8bits value?
+		{"iq", "QUAD_WORD"},		// = > 054,
+		{"rel16", "WORD"},	// = > 060,			// relative address in 16bits value?
+		{"rel", ""},	// = > 064, # 16 or 32 bit relative operand	// ? @TODO
+		{"rel32", "DOUBLE_WORD"},	// = > 070,	// relative address in 32bits value?
+		{"seg", ""},	// = > 074,			// Immediate address value? So arch size https://stackoverflow.com/questions/19074666/8086-why-cant-we-move-an-immediate-data-into-segment-register
+	};
 }
 
 /// Instruction encoding rules (comments from insns.pl file of NASM compiler)
@@ -228,7 +259,7 @@ std::string modr_value_regex_string = R"REG((\/[\dr]\s+)*.*)REG";
 /// 	'rel16' = > 060,
 /// 	'rel' = > 064, # 16 or 32 bit relative operand
 /// 	'rel32' = > 070,
-/// 	'seg' = > 074,
+/// 	'seg' = > 074,			// Immediate address value? So arch size https://stackoverflow.com/questions/19074666/8086-why-cant-we-move-an-immediate-data-into-segment-register
 /// 	);
 std::string immediates_regex_string = R"REG((ib|ib,u|iw|ib,s|iwd|id|id,s|iwdq|rel8|iq|rel16|rel|rel32|seg)?)REG";
 
@@ -371,12 +402,13 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 		cerr << "Fails to open ./data/regs.dat" << endl;
 	}
 
-	generate_operands_info();
+	generate_operands_and_immediates_info();
 
+	size_t	parsing_error_count = 0;
 	ifstream	insns_dat_file(base_path + "/data/insns.dat");
 	if (insns_dat_file.is_open())
 	{
-		regex	instruction_desc_regex(R"REG((\w+)\s+([\w,\|\:]+)\s+\[([\w\s\/\-:,]+)\]\s+([\w,]+))REG");
+		regex	instruction_desc_regex(R"REG((\w+)\s+([\w,\|\:]+)\s+\[([\w\s\/\-\+:,]+)\]\s+([\w,]+))REG");
 		smatch	instruction_desc_match_result;
 		regex	operands_regex(operands_regex_string);
 		smatch	operands_match_result;
@@ -399,6 +431,10 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 		while (getline(insns_dat_file, read_line))
 		{
 			current_line++;
+
+			if (read_line.empty()) {
+				continue;
+			}
 
 			if (read_line.starts_with(";;")) { // Verbose comment
 				continue;
@@ -500,7 +536,39 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 //							operand_descs.push_back(operand_desc.str());
 						}
 						else {
-							operand_desc << "{" << it_operand_info->second.type << ", " << "Operand::Size::" << it_operand_info->second.size << "}";
+							operand_desc << "{" << it_operand_info->second.type << ", " << "Operand::Size::";
+							
+							if (it_operand_info->second.size.length()) {
+								operand_desc << it_operand_info->second.size;
+							}
+							else {
+								// @TODO compute the size based on an analysis of other fields of the instruction desc DB
+//								operand_desc << it_operand_info->second.size;
+								if (operand == "imm") {
+									unordered_map<string, string>::iterator it_immediate_info;// = immediates_info.find(/* @TODO */);
+
+									if (it_immediate_info != immediates_info.end()) {
+										if (it_immediate_info->second.length()) {
+											operand_desc << it_immediate_info->second;
+										}
+										else {
+											// @TODO Need to dig more on how to get the size (we may have to check something else in this case
+											cout << "Fails to dertermine size of an immediate value: " << endl
+												<< "    " << read_line << endl;
+										}
+									}
+									else {
+										// @TODO might be normal if there is multiple encoding flag to test
+									}
+								}
+								else {
+									cout << "Fails to dertermine size of an operand: " << endl
+										<< "    " << read_line << endl;
+								}
+							}
+
+							operand_desc << "}";
+
 							operand_descs.push_back(operand_desc.str());
 						}
 					}
@@ -521,7 +589,11 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 						encoding_rules_string.erase(0, opcode_match_result[2].length());
 					}
 
-					assert(!opcode.empty());
+					if (opcode.empty()) {
+						cout << "Parsing error (opcode empty): " << endl
+							<< "    " << read_line << endl;
+						parsing_error_count++;
+					}
 
 					{	// write instruction line in x64_cpp_instruction_desc_table
 						x64_cpp_instruction_desc_table << "        "
@@ -538,6 +610,11 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 				}
 
 				previous_instruction_name = instruction;
+			}
+			else {
+				cout << "Parsing error: " << endl
+					<< "    " << read_line << endl;
+				parsing_error_count++;
 			}
 		}
 	}
@@ -569,6 +646,8 @@ R"CODE(
 	asm_x64_hpp_file << x64_hpp_instruction_enum.str() << endl;
 	asm_x64_hpp_file << x64_hpp_register_enum.str() << endl;
 	asm_x64_hpp_file << "}" << endl;
+
+	cout << "Total parsing errors: " << parsing_error_count << endl;
 
 	FrameMark;
 	return 0;

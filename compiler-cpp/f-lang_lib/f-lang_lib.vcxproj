@@ -29,7 +29,32 @@
   <ItemGroup>
     <ClInclude Include="..\sources\asm\ASM.hpp" />
     <ClInclude Include="..\sources\ASM\ASM_lexer.hpp" />
-    <ClInclude Include="..\sources\ASM\generated\ASM_x64.hpp" />
+    <CustomBuild Include="..\sources\ASM\generated\ASM_x64.hpp">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">ClCompile</OutputItemType>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="..\sources\fstd\core\assert.hpp" />
     <ClInclude Include="..\sources\fstd\core\logger.hpp" />
     <ClInclude Include="..\sources\fstd\core\string_builder.hpp" />
@@ -90,7 +115,32 @@
   <ItemGroup>
     <ClCompile Include="..\sources\ASM\ASM.cpp" />
     <ClCompile Include="..\sources\ASM\ASM_lexer.cpp" />
-    <ClCompile Include="..\sources\ASM\generated\ASM_x64.cpp" />
+    <CustomBuild Include="..\sources\ASM\generated\ASM_x64.cpp">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">ClCompile</OutputItemType>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
+    </CustomBuild>
     <ClCompile Include="..\sources\fstd\core\assert.cpp" />
     <ClCompile Include="..\sources\fstd\core\logger.cpp" />
     <ClCompile Include="..\sources\fstd\core\string_builder.cpp" />
@@ -207,7 +257,6 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
@@ -225,7 +274,6 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
@@ -245,7 +293,6 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
@@ -267,7 +314,6 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;TRACY_ENABLE;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
@@ -289,7 +335,6 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>
@@ -311,7 +356,6 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;TRACY_ENABLE;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <ExceptionHandling>false</ExceptionHandling>

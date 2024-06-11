@@ -119,7 +119,6 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\tracy\public;$(SolutionDir)third-party\WindowsHModular\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -129,7 +128,6 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
       <AdditionalDependencies>f-lang_lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -139,7 +137,6 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\tracy\public;$(SolutionDir)third-party\WindowsHModular\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -161,7 +158,6 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;_CRT_SECURE_NO_WARNINGS;TRACY_ENABLE;TRACY_NO_EXIT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\tracy\public;$(SolutionDir)third-party\WindowsHModular\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -181,7 +177,6 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\tracy\public;$(SolutionDir)third-party\WindowsHModular\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -191,7 +186,6 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
       <AdditionalDependencies>f-lang_lib.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -201,7 +195,6 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\tracy\public;$(SolutionDir)third-party\WindowsHModular\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -223,7 +216,6 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_HAS_EXCEPTIONS=0;_CRT_SECURE_NO_WARNINGS;TRACY_ENABLE;TRACY_NO_EXIT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)sources;$(SolutionDir)third-party;$(SolutionDir)third-party\tracy\public;$(SolutionDir)third-party\WindowsHModular\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
