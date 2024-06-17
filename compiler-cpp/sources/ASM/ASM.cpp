@@ -621,7 +621,7 @@ namespace f::ASM
 		return g_instruction_desc_table_indices[(size_t)instruction + 1];
 	}
 
-	void encode_operand(uint8_t data[64], uint32_t& size, const Operand& desc_operand, const Operand& operand)
+	void encode_operand(uint32_t last_opcode_byte_index, uint8_t data[64], uint32_t& size, const Operand_Encoding_Desc& desc_operand, const Operand& operand)
 	{
 		// MI type encoding
 		{
@@ -638,35 +638,43 @@ namespace f::ASM
 
 			// First operand encoded in modr/m struct
 			if (operand.type_flags == (uint8_t)Operand::Type_Flags::REGISTER) {
-				modrm |= 0b11 << 6; // register flag
+				if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
+					modrm |= 0b11 << 6; // register flag
 
-				modrm |= 5 << 3; // second register or additional data (/x value)
-				modrm |= g_register_desc_table[(size_t)operand.value._register].id;
+					modrm |= 5 << 3; // second register or additional data (/x value)
+					modrm |= g_register_desc_table[(size_t)operand.value._register].id;
 
-				data[size++] = modrm;
+					data[size++] = modrm;
+				}
+				else if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_ADD_TO_OPCODE)) {
+					data[last_opcode_byte_index] += g_register_desc_table[(size_t)operand.value._register].id;
+				}
+				else {
+					report_error(Compiler_Error::internal_error, "Register encoding fails for a strange reason or unsupported encoding rule");
+				}
 			}
 			else if (operand.type_flags == (uint8_t)Operand::Type_Flags::IMMEDIATE) {
 				// desc_operand give us the number of bytes to write (in some cases we use an instruction supporting a bigger immediate that needed
 				// because it may have not a version with the size we want)
-				if (desc_operand.size == Operand::Size::BYTE) {
+				if (desc_operand.op.size == Operand::Size::BYTE) {
 					data[size++] = (uint8_t)operand.value.integer;
 				}
-				else if (desc_operand.size == Operand::Size::WORD) {
+				else if (desc_operand.op.size == Operand::Size::WORD) {
 					uint16_t value = (uint16_t)operand.value.integer;
 					for (uint8_t i = 0; i < 2; i++) {
 						data[size++] = ((uint8_t*)&value)[i];
 					}
 				}
-				else if (desc_operand.size == Operand::Size::DOUBLE_WORD) {
+				else if (desc_operand.op.size == Operand::Size::DOUBLE_WORD) {
 					uint32_t value = (uint32_t)operand.value.integer;
-					for (uint8_t i = 0; i < 2; i++) {
+					for (uint8_t i = 0; i < 4; i++) {
 						data[size++] = ((uint8_t*)&value)[i];
 					}
 				}
-				else if (desc_operand.size == Operand::Size::QUAD_WORD
-					|| desc_operand.size == Operand::Size::ADDRESS_SIZE) { // @Warning x64 as target
+				else if (desc_operand.op.size == Operand::Size::QUAD_WORD
+					|| desc_operand.op.size == Operand::Size::ADDRESS_SIZE) { // @Warning x64 as target
 					uint64_t value = operand.value.integer;
-					for (uint8_t i = 0; i < 2; i++) {
+					for (uint8_t i = 0; i < 8; i++) {
 						data[size++] = ((uint8_t*)&value)[i];
 					}
 				}
@@ -688,12 +696,12 @@ namespace f::ASM
 		{
 			// @TODO handle flags,...
 			// immediate size value promotions
-			if (((is_flag_set(g_instruction_desc_table[desc_index].op1.type_flags, operand1.type_flags) && g_instruction_desc_table[desc_index].op1.size >= operand1.size)
+			if (((is_flag_set(g_instruction_desc_table[desc_index].op_enc_desc_1.op.type_flags, operand1.type_flags) && g_instruction_desc_table[desc_index].op_enc_desc_1.op.size >= operand1.size)
 				|| (operand1.type_flags == Operand::Type_Flags::NONE && operand1.size == Operand::Size::NONE
-					&& g_instruction_desc_table[desc_index].op1.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op1.size == Operand::Size::NONE))
-				&& ((is_flag_set(g_instruction_desc_table[desc_index].op2.type_flags, operand2.type_flags) && g_instruction_desc_table[desc_index].op2.size >= operand2.size)
+					&& g_instruction_desc_table[desc_index].op_enc_desc_1.op.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op_enc_desc_1.op.size == Operand::Size::NONE))
+				&& ((is_flag_set(g_instruction_desc_table[desc_index].op_enc_desc_2.op.type_flags, operand2.type_flags) && g_instruction_desc_table[desc_index].op_enc_desc_2.op.size >= operand2.size)
 					|| (operand2.type_flags == Operand::Type_Flags::NONE && operand2.size == Operand::Size::NONE
-						&& g_instruction_desc_table[desc_index].op2.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op2.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
+						&& g_instruction_desc_table[desc_index].op_enc_desc_2.op.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op_enc_desc_2.op.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
 				break;
 			}
 		}
@@ -717,8 +725,9 @@ namespace f::ASM
 			data[size++] = ((uint8_t*)&g_instruction_desc_table[desc_index].opcode)[i];
 		}
 
-		encode_operand(data, size, g_instruction_desc_table[desc_index].op1, operand1);
-		encode_operand(data, size, g_instruction_desc_table[desc_index].op2, operand2);
+		uint32_t last_opcode_byte_index = size - 1;
+		encode_operand(last_opcode_byte_index, data, size, g_instruction_desc_table[desc_index].op_enc_desc_1, operand1);
+		encode_operand(last_opcode_byte_index, data, size, g_instruction_desc_table[desc_index].op_enc_desc_2, operand2);
 
 		push_raw_data(section, data, size);
 

@@ -12,6 +12,8 @@
 
 #include <tracy/Tracy.hpp>
 
+#define SKIP_ERROR	continue;	// comment it if errors should generate bad code (can be easier to find parsing errors)
+
 using namespace std;
 
 #if defined(TRACY_ENABLE)
@@ -167,7 +169,7 @@ void generate_operands_and_immediates_info()
 		{"rel8", "BYTE"},	// = > 050,			// relative address in 8bits value?
 		{"iq", "QUAD_WORD"},		// = > 054,
 		{"rel16", "WORD"},	// = > 060,			// relative address in 16bits value?
-		{"rel", ""},	// = > 064, # 16 or 32 bit relative operand	// ? @TODO
+		{"rel", ""},	// = > 064, # 16 or 32 bit relative operand, I have to look at operand size flag (o16, o32, o64, odf,...)
 		{"rel32", "DOUBLE_WORD"},	// = > 070,	// relative address in 32bits value?
 		{"seg", ""},	// = > 074,			// Immediate address value? So arch size https://stackoverflow.com/questions/19074666/8086-why-cant-we-move-an-immediate-data-into-segment-register
 	};
@@ -243,7 +245,7 @@ std::string operands_regex_string = R"REG(([\w\-]{0,4}:?\s+).*)REG";
 std::string opcode_flags_regex_string = R"REG((\s*)(o16|o32|odf|o64|o64nw|a16|a32|adf|a64|\!osp|\!asp|f2i|f3i|mustrep|mustrepne|rex\.l|norexb|norexx|norexr|norexw|repe|nohi|nof3|norep|wait|resb|np|jcc8|jmp8|jlen|hlexr|hlenl|hle|vsibx|vm32x|vm64x|vsiby|vm32y|vm64y|vsibz|vm32z|vm64z)\s+.*)REG";
 
 std::string opcode_regex_string = R"REG((\s*)([0-9a-f]{2})\s*.*)REG";
-std::string modr_value_regex_string = R"REG((\/[\dr]\s+)*.*)REG";
+std::string modr_value_regex_string = R"REG((\s*\/)([r\d])\s*.*)REG";
 
 /// my% imm_codes = (
 /// 	'ib' = > 020, # imm8
@@ -261,7 +263,7 @@ std::string modr_value_regex_string = R"REG((\/[\dr]\s+)*.*)REG";
 /// 	'rel32' = > 070,
 /// 	'seg' = > 074,			// Immediate address value? So arch size https://stackoverflow.com/questions/19074666/8086-why-cant-we-move-an-immediate-data-into-segment-register
 /// 	);
-std::string immediates_regex_string = R"REG((ib|ib,u|iw|ib,s|iwd|id|id,s|iwdq|rel8|iq|rel16|rel|rel32|seg)?)REG";
+std::string immediates_regex_string = R"REG((\s*)(ib,u|ib,s|ib|iwdq|iwd|iw|id,s|id|iq|rel8|rel16|rel32|rel|seg)\s*.*)REG"; // reodered to have longest string before
 
 int main(int ac, char** av)
 {
@@ -382,13 +384,17 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 					int first = stoi(first_index);
 					int last = stoi(last_index);
 					for (int i = first; i <= last; i++) {
-						x64_hpp_register_enum << "        " << to_upper(prefix) << i << to_upper(suffix) << "," << endl;
-						x64_cpp_register_desc_table << "        " << "{Operand::Size::" << register_size << ", " << stoi(register_number) << "}," << endl;
+						std::string register_enum = to_upper(prefix) + to_string(i) + to_upper(suffix);
+
+						x64_hpp_register_enum << "        " << register_enum << "," << endl;
+						x64_cpp_register_desc_table << "        " << "{Operand::Size::" << register_size << ", " << stoi(register_number) << "}, // " << register_enum << endl;
 					}
 				}
 				else {
-					x64_hpp_register_enum << "        " << to_upper(registers) << "," << endl;
-					x64_cpp_register_desc_table << "        " << "{Operand::Size::" << register_size << ", " << stoi(register_number) << "}," << endl;
+					std::string register_enum = to_upper(registers);
+
+					x64_hpp_register_enum << "        " << register_enum << "," << endl;
+					x64_cpp_register_desc_table << "        " << "{Operand::Size::" << register_size << ", " << stoi(register_number) << "}, // " << register_enum << endl;
 				}
 			}
 
@@ -504,9 +510,10 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 				if (is_x64_supported) {
 					std::string encoding_rules_string = encoding_rules.str();
 
-					std::string opcode;
-					uint8_t		opcode_size = 0;
-					std::vector<std::string> operand_descs;
+					string			opcode;
+					uint8_t			opcode_size = 0;
+					vector<string>	operand_encoding_rule_stack;
+					vector<string>	operand_descs;
 
 #if defined(_DEBUG)
 					if (encoding_rules_string.find("wait") != std::string::npos)
@@ -519,58 +526,6 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 						&& operands_match_result[1].length()) {
 
 						encoding_rules_string.erase(0, operands_match_result[1].length());
-					}
-
-					// operands
-					vector<string>	operands_types_array = split(operand_types, ',');
-					for (const string& operand : operands_types_array) {
-						stringstream	operand_desc;
-
-						if (operand == "void") {	// Here just the format of the string that should contains "4 columns"
-							break;
-						}
-
-						auto it_operand_info = operands_info.find(operand);
-						if (it_operand_info == operands_info.end()) {
-//							operand_desc << "0xBAD'F00D /* Operand not correctly analyzed */";
-//							operand_descs.push_back(operand_desc.str());
-						}
-						else {
-							operand_desc << "{" << it_operand_info->second.type << ", " << "Operand::Size::";
-							
-							if (it_operand_info->second.size.length()) {
-								operand_desc << it_operand_info->second.size;
-							}
-							else {
-								// @TODO compute the size based on an analysis of other fields of the instruction desc DB
-//								operand_desc << it_operand_info->second.size;
-								if (operand == "imm") {
-									unordered_map<string, string>::iterator it_immediate_info;// = immediates_info.find(/* @TODO */);
-
-									if (it_immediate_info != immediates_info.end()) {
-										if (it_immediate_info->second.length()) {
-											operand_desc << it_immediate_info->second;
-										}
-										else {
-											// @TODO Need to dig more on how to get the size (we may have to check something else in this case
-											cout << "Fails to dertermine size of an immediate value: " << endl
-												<< "    " << read_line << endl;
-										}
-									}
-									else {
-										// @TODO might be normal if there is multiple encoding flag to test
-									}
-								}
-								else {
-									cout << "Fails to dertermine size of an operand: " << endl
-										<< "    " << read_line << endl;
-								}
-							}
-
-							operand_desc << "}";
-
-							operand_descs.push_back(operand_desc.str());
-						}
 					}
 
 					while (regex_match(encoding_rules_string, opcode_flags_match_result, opcode_flags_regex)
@@ -588,11 +543,117 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 						encoding_rules_string.erase(0, opcode_match_result[1].length());
 						encoding_rules_string.erase(0, opcode_match_result[2].length());
 					}
+					if (encoding_rules_string.starts_with("+r")) {
+						operand_encoding_rule_stack.push_back("REGISTER_ADD_TO_OPCODE");
+
+						encoding_rules_string.erase(0, 2);
+					}
 
 					if (opcode.empty()) {
 						cout << "Parsing error (opcode empty): " << endl
 							<< "    " << read_line << endl;
 						parsing_error_count++;
+						SKIP_ERROR
+					}
+
+					if (regex_match(encoding_rules_string, modr_value_match_result, modr_value_regex)
+						&& modr_value_match_result[2].length()) {
+
+						operand_encoding_rule_stack.push_back("REGISTER_MODR");
+
+						encoding_rules_string.erase(0, modr_value_match_result[1].length());
+						encoding_rules_string.erase(0, modr_value_match_result[2].length());
+					}
+
+					std::vector<std::string>	immediates_encoding_rules;
+					immediates_encoding_rules.reserve(4);
+					while (regex_match(encoding_rules_string, immediates_match_result, immediates_regex)
+						&& immediates_match_result[2].length()) {
+						immediates_encoding_rules.push_back(immediates_match_result[2]);
+
+						encoding_rules_string.erase(0, immediates_match_result[1].length());
+						encoding_rules_string.erase(0, immediates_match_result[2].length());
+					}
+
+					// operands (after encoding rules parsing to be able to dertermine operands size and encoding rules when needed)
+					vector<string>	operands_types_array = split(operand_types, ',');
+					for (const string& operand : operands_types_array) {
+						stringstream	operand_desc;
+
+						if (operand == "void") {	// Here just the format of the string that should contains "4 columns"
+							break;
+						}
+
+						auto it_operand_info = operands_info.find(operand);
+						if (it_operand_info == operands_info.end()) {
+//							operand_desc << "0xBAD'F00D /* Operand not correctly analyzed */";
+//							operand_descs.push_back(operand_desc.str());
+						}
+						else {
+							operand_desc << "{{" << it_operand_info->second.type << ", " << "Operand::Size::";
+
+							if (it_operand_info->second.size.length()) {
+								operand_desc << it_operand_info->second.size;
+							}
+							else {
+								// @TODO compute the size based on an analysis of other fields of the instruction desc DB
+//								operand_desc << it_operand_info->second.size;
+								if (operand == "imm") {
+									uint8_t immediate_index = 0;
+									for (; immediate_index < immediates_encoding_rules.size(); immediate_index++)
+									{
+										unordered_map<string, string>::iterator it_immediate_info = immediates_info.find(immediates_encoding_rules[immediate_index]);
+
+										if (it_immediate_info != immediates_info.end()) {
+											if (it_immediate_info->second.length()) {
+												operand_desc << it_immediate_info->second;
+												break;
+											}
+											else {
+												// @TODO Need to dig more on how to get the size (we may have to check something else in this case
+												cout << "!!!!! Fails to dertermine size of an immediate value: " << endl
+													<< "    " << read_line << endl;
+
+												operand_desc << "DOUBLE_WORD";	// @TODO replace that by fallback looking at operand size
+											}
+										}
+										else {
+											// @TODO might be normal if there is multiple encoding flag to test
+										}
+									}
+
+									if (immediate_index == immediates_encoding_rules.size()) {
+										cout << "Fails to dertermine size of an immediate value: " << endl
+											<< "    " << read_line << endl;
+										SKIP_ERROR
+									}
+								}
+								else {
+									cout << "Fails to dertermine size of an operand: " << endl
+										<< "    " << read_line << endl;
+									SKIP_ERROR
+								}
+							}
+
+							operand_desc << "}, "; // @TODO the 1 should be determined by parsing
+							if (operand_encoding_rule_stack.size())	{
+								for (const string& op_encoding_flags : operand_encoding_rule_stack)
+								{
+									operand_desc << "Operand_Encoding_Desc::Encoding_Flags::" << op_encoding_flags;
+								}
+							}
+							else {
+								operand_desc << "Operand_Encoding_Desc::Encoding_Flags::NONE";
+							}
+							operand_desc << "}";
+
+
+							// But the thing is that operand encoding flags are just after the opcode in the order of operands
+							// And the operands encoding rules are very specific to each operand type
+							// And sometimes nothing is specified like for memory
+
+							operand_descs.push_back(operand_desc.str());
+						}
 					}
 
 					{	// write instruction line in x64_cpp_instruction_desc_table
@@ -615,6 +676,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 				cout << "Parsing error: " << endl
 					<< "    " << read_line << endl;
 				parsing_error_count++;
+				SKIP_ERROR
 			}
 		}
 	}

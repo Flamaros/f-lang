@@ -46,10 +46,11 @@ namespace f
 		{
 			enum Type_Flags : uint8_t
 			{
-				NONE		= 0b0000,
-				REGISTER	= 0b0001,
-				IMMEDIATE	= 0b0010,
-				ADDRESS		= 0b0100
+				NONE				= 0b0000,
+				REGISTER			= 0b0001,
+				IMMEDIATE			= 0b0010,
+				IMMEDIATE_SIGNED	= 0b0100,	// Explicitely signed in the ASM source
+				ADDRESS				= 0b1000
 			};
 			uint8_t	type_flags;	// @Fuck workaround to be able to use the enum as flags without cast
 
@@ -79,6 +80,20 @@ namespace f
 			}				value;
 		};
 
+		struct Operand_Encoding_Desc
+		{
+			enum Encoding_Flags : uint8_t
+			{
+				NONE					= 0b0000,
+				REGISTER_MODR			= 0b0001,
+				REGISTER_ADD_TO_OPCODE	= 0b0010,
+				IMMEDIATE_SIGNED		= 0b0100	// This entry support signed integer immediate values
+			};
+
+			Operand		op;
+			uint8_t		encoding_flags;
+		};
+
 		struct Register_Desc
 		{
 			Operand::Size	size;
@@ -87,12 +102,12 @@ namespace f
 
 		struct Instruction_Desc
 		{
-			uint32_t	opcode;
-			uint8_t		opcode_size;
-			Operand		op1;
-			Operand		op2;
-			Operand		op3;
-			Operand		op4;
+			uint32_t				opcode;
+			uint8_t					opcode_size;
+			Operand_Encoding_Desc	op_enc_desc_1;
+			Operand_Encoding_Desc	op_enc_desc_2;
+			Operand_Encoding_Desc	op_enc_desc_3;
+			Operand_Encoding_Desc	op_enc_desc_4;
 		};
 
 		struct Section
