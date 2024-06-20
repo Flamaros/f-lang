@@ -550,7 +550,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 					}
 
 					if (opcode.empty()) {
-						cout << "Parsing error (opcode empty): " << endl
+						cout << "Parsing warning (opcode empty): " << endl
 							<< "    " << read_line << endl;
 						parsing_error_count++;
 						SKIP_ERROR
@@ -673,7 +673,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 				previous_instruction_name = instruction;
 			}
 			else {
-				cout << "Parsing error: " << endl
+				cout << "Parsing warning: " << endl
 					<< "    " << read_line << endl;
 				parsing_error_count++;
 				SKIP_ERROR
@@ -709,7 +709,7 @@ R"CODE(
 	asm_x64_hpp_file << x64_hpp_register_enum.str() << endl;
 	asm_x64_hpp_file << "}" << endl;
 
-	cout << "Total parsing errors: " << parsing_error_count << endl;
+	cout << "Total parsing warnings: " << parsing_error_count << endl;
 
 	FrameMark;
 	return 0;

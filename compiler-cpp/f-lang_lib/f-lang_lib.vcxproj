@@ -146,6 +146,12 @@
       <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ClCompile</OutputItemType>
       <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ClCompile</OutputItemType>
       <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">ClCompile</OutputItemType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">true</ExcludedFromBuild>
     </CustomBuild>
     <ClCompile Include="..\sources\fstd\core\assert.cpp" />
     <ClCompile Include="..\sources\fstd\core\logger.cpp" />
@@ -168,6 +174,33 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\third-party\WindowsHModular\include\win32\make.bat" />
+    <CustomBuild Include="ASM_x64_CustomBuild">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">$(OutDir)f-asm_nasm_db_to_code.exe $(SolutionDir)</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">$(SolutionDir)sources\ASM\generated\ASM_x64.cpp;$(SolutionDir)sources\ASM\generated\ASM_x64.hpp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">$(OutDir)f-asm_nasm_db_to_code.exe;$(SolutionDir)data\insns.dat;$(SolutionDir)data\regs.dat</AdditionalInputs>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|Win32'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ClCompile</OutputItemType>
+      <OutputItemType Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">ClCompile</OutputItemType>
+    </CustomBuild>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

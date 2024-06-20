@@ -304,5 +304,8 @@
     <CustomBuild Include="..\sources\ASM\generated\ASM_x64.hpp">
       <Filter>Source Files\ASM\generated</Filter>
     </CustomBuild>
+    <CustomBuild Include="ASM_x64_CustomBuild">
+      <Filter>Source Files\ASM</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>
