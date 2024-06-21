@@ -626,8 +626,6 @@ namespace f::ASM
 		// @TODO faire des fonctions pour encoder les modrm ça sera plus clair
 		// avec mod, reg et rm
 
-
-		uint8_t modrm = 0;
 		// modr / m struct :
 		//     (most significant bit)
 		//     2 bits       mod - 00 = > indirect, e.g.[eax]
@@ -635,18 +633,27 @@ namespace f::ASM
 		//     10 = > indirect plus word offset
 		//     11 = > register
 		//     3 bits       reg - identifies register
-		//     3 bits       rm - identifies second register or additional data
+		//     3 bits       rm - identifies second register or additional data (often addressing mode)
 		//     (least significant bit)
+
+		uint8_t* modrm = nullptr;
+		if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
+			// "Allocate" the modrm byte just behind the last opcode byte ("fixed" position) if necessary
+			// modrm can contains 2 register operands
+			modrm = &data[last_opcode_byte_index + 1];
+			if (last_opcode_byte_index + 1 >= size) {
+				*modrm = 0;
+				size++;	// This is what does the "allocation"
+			}
+		}
 
 		// First operand encoded in modr/m struct
 		if (operand.type_flags == (uint8_t)Operand::Type_Flags::REGISTER) {
 			if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
-				modrm |= 0b11 << 6; // register flag
+				*modrm |= 0b11 << 6; // register flag
 
-				modrm |= modr_value << 3; // second register or additional data (/x value)
-				modrm |= g_register_desc_table[(size_t)operand.value._register].id;
-
-				data[size++] = modrm;
+				*modrm |= modr_value << 3; // second register or additional data (/x value)
+				*modrm |= g_register_desc_table[(size_t)operand.value._register].id;
 			}
 			else if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_ADD_TO_OPCODE)) {
 				data[last_opcode_byte_index] += g_register_desc_table[(size_t)operand.value._register].id;
@@ -689,10 +696,8 @@ namespace f::ASM
 		else if (operand.type_flags == (uint8_t)Operand::Type_Flags::ADDRESS) {
 			// @TODO seems completely wrong
 			if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
-				modrm |= modr_value << 3; // second register or additional data (/x value)
-				modrm |= 0b101;	// Displacement mode
-
-				data[size++] = modrm;
+				*modrm |= modr_value << 3; // second register or additional data (/x value)
+				*modrm |= 0b101;	// Displacement mode
 			}
 
 			// @TODO @Warning be clear about what we are doing here
@@ -729,23 +734,24 @@ namespace f::ASM
 			return false;
 		}
 
-		uint8_t data[64];
-		uint32_t size = 0;
+		Instruction_Desc	instruction_desc = g_instruction_desc_table[desc_index];
+		uint8_t				data[64];
+		uint32_t			size = 0;
 
 		// REX.W prefix (for 64bits instruction that is not in 64bits by default)
-		if (is_flag_set(g_instruction_desc_table[desc_index].encoding_flags, (uint8_t)Instruction_Desc::Encoding_Flags::PREFIX_REX_W)) {
+		if (is_flag_set(instruction_desc.encoding_flags, (uint8_t)Instruction_Desc::Encoding_Flags::PREFIX_REX_W)) {
 			// @TODO check the instruction desc encoding flags here
 
-			data[size++] = 0b0100 << 4 | 0b1100; // first 4bits are the prefix bit pattern
+			data[size++] = 0b0100 << 4 | 0b1000; // first 4bits are the prefix bit pattern
 		}
 
-		for (uint8_t i = 0; i < g_instruction_desc_table[desc_index].opcode_size; i++) {
-			data[size++] = ((uint8_t*)&g_instruction_desc_table[desc_index].opcode)[i];
+		for (uint8_t i = 0; i < instruction_desc.opcode_size; i++) {
+			data[size++] = ((uint8_t*)&instruction_desc.opcode)[i];
 		}
 
 		uint32_t last_opcode_byte_index = size - 1;
-		encode_operand(last_opcode_byte_index, g_instruction_desc_table[desc_index].modr_value, data, size, g_instruction_desc_table[desc_index].op_enc_desc_1, operand1);
-		encode_operand(last_opcode_byte_index, g_instruction_desc_table[desc_index].modr_value, data, size, g_instruction_desc_table[desc_index].op_enc_desc_2, operand2);
+		encode_operand(last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_1, operand1);
+		encode_operand(last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_2, operand2);
 
 		push_raw_data(section, data, size);
 
