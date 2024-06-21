@@ -362,7 +362,7 @@ namespace f::ASM
 					stream::peek(stream); // Register
 				}
 				else if (current_token.type == Token_Type::IDENTIFIER) {
-					operands[operand_index].type_flags = Operand::Type_Flags::ADDRESS;
+					operands[operand_index].type_flags = Operand::Type_Flags::ADDRESS;	// @TODO check if all identifier are immediate addresses
 //					operands[operand_index].value.integer = current_token.value._register; // @TODO push label or function name here
 					operands[operand_index].size = Operand::Size::QUAD_WORD;	// @TODO base size of the target architecture
 
@@ -621,71 +621,89 @@ namespace f::ASM
 		return g_instruction_desc_table_indices[(size_t)instruction + 1];
 	}
 
-	void encode_operand(uint32_t last_opcode_byte_index, uint8_t data[64], uint32_t& size, const Operand_Encoding_Desc& desc_operand, const Operand& operand)
+	void encode_operand(uint32_t last_opcode_byte_index, uint8_t modr_value, uint8_t data[64], uint32_t& size, const Operand_Encoding_Desc& desc_operand, const Operand& operand)
 	{
-		// MI type encoding
-		{
-			uint8_t modrm = 0;
-			// modr / m struct :
-			//     (most significant bit)
-			//     2 bits       mod - 00 = > indirect, e.g.[eax]
-			//     01 = > indirect plus byte offset
-			//     10 = > indirect plus word offset
-			//     11 = > register
-			//     3 bits       reg - identifies register
-			//     3 bits       rm - identifies second register or additional data
-			//     (least significant bit)
+		// @TODO faire des fonctions pour encoder les modrm ça sera plus clair
+		// avec mod, reg et rm
 
-			// First operand encoded in modr/m struct
-			if (operand.type_flags == (uint8_t)Operand::Type_Flags::REGISTER) {
-				if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
-					modrm |= 0b11 << 6; // register flag
 
-					modrm |= 5 << 3; // second register or additional data (/x value)
-					modrm |= g_register_desc_table[(size_t)operand.value._register].id;
+		uint8_t modrm = 0;
+		// modr / m struct :
+		//     (most significant bit)
+		//     2 bits       mod - 00 = > indirect, e.g.[eax]
+		//     01 = > indirect plus byte offset
+		//     10 = > indirect plus word offset
+		//     11 = > register
+		//     3 bits       reg - identifies register
+		//     3 bits       rm - identifies second register or additional data
+		//     (least significant bit)
 
-					data[size++] = modrm;
-				}
-				else if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_ADD_TO_OPCODE)) {
-					data[last_opcode_byte_index] += g_register_desc_table[(size_t)operand.value._register].id;
-				}
-				else {
-					report_error(Compiler_Error::internal_error, "Register encoding fails for a strange reason or unsupported encoding rule");
-				}
+		// First operand encoded in modr/m struct
+		if (operand.type_flags == (uint8_t)Operand::Type_Flags::REGISTER) {
+			if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
+				modrm |= 0b11 << 6; // register flag
+
+				modrm |= modr_value << 3; // second register or additional data (/x value)
+				modrm |= g_register_desc_table[(size_t)operand.value._register].id;
+
+				data[size++] = modrm;
 			}
-			else if (operand.type_flags == (uint8_t)Operand::Type_Flags::IMMEDIATE) {
-				// desc_operand give us the number of bytes to write (in some cases we use an instruction supporting a bigger immediate that needed
-				// because it may have not a version with the size we want)
-				if (desc_operand.op.size == Operand::Size::BYTE) {
-					data[size++] = (uint8_t)operand.value.integer;
-				}
-				else if (desc_operand.op.size == Operand::Size::WORD) {
-					uint16_t value = (uint16_t)operand.value.integer;
-					for (uint8_t i = 0; i < 2; i++) {
-						data[size++] = ((uint8_t*)&value)[i];
-					}
-				}
-				else if (desc_operand.op.size == Operand::Size::DOUBLE_WORD) {
-					uint32_t value = (uint32_t)operand.value.integer;
-					for (uint8_t i = 0; i < 4; i++) {
-						data[size++] = ((uint8_t*)&value)[i];
-					}
-				}
-				else if (desc_operand.op.size == Operand::Size::QUAD_WORD
-					|| desc_operand.op.size == Operand::Size::ADDRESS_SIZE) { // @Warning x64 as target
-					uint64_t value = operand.value.integer;
-					for (uint8_t i = 0; i < 8; i++) {
-						data[size++] = ((uint8_t*)&value)[i];
-					}
-				}
-				else {
-					// @TODO improve this error message (handle flags)
-					// We may have to return false and print the error in the caller to have access to tokens
-					report_error(Compiler_Error::error, "Operand size not supported");
-				}
+			else if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_ADD_TO_OPCODE)) {
+				data[last_opcode_byte_index] += g_register_desc_table[(size_t)operand.value._register].id;
+			}
+			else {
+				report_error(Compiler_Error::internal_error, "Register encoding fails for a strange reason or unsupported encoding rule");
 			}
 		}
+		else if (operand.type_flags == (uint8_t)Operand::Type_Flags::IMMEDIATE) {
+			// desc_operand give us the number of bytes to write (in some cases we use an instruction supporting a bigger immediate that needed
+			// because it may have not a version with the size we want)
+			if (desc_operand.op.size == Operand::Size::BYTE) {
+				data[size++] = (uint8_t)operand.value.integer;
+			}
+			else if (desc_operand.op.size == Operand::Size::WORD) {
+				uint16_t value = (uint16_t)operand.value.integer;
+				for (uint8_t i = 0; i < 2; i++) {
+					data[size++] = ((uint8_t*)&value)[i];
+				}
+			}
+			else if (desc_operand.op.size == Operand::Size::DOUBLE_WORD) {
+				uint32_t value = (uint32_t)operand.value.integer;
+				for (uint8_t i = 0; i < 4; i++) {
+					data[size++] = ((uint8_t*)&value)[i];
+				}
+			}
+			else if (desc_operand.op.size == Operand::Size::QUAD_WORD
+				|| desc_operand.op.size == Operand::Size::ADDRESS_SIZE) { // @Warning x64 as target
+				uint64_t value = operand.value.integer;
+				for (uint8_t i = 0; i < 8; i++) {
+					data[size++] = ((uint8_t*)&value)[i];
+				}
+			}
+			else {
+				// @TODO improve this error message (handle flags)
+				// We may have to return false and print the error in the caller to have access to tokens
+				report_error(Compiler_Error::error, "Operand size not supported");
+			}
+		}
+		else if (operand.type_flags == (uint8_t)Operand::Type_Flags::ADDRESS) {
+			// @TODO seems completely wrong
+			if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
+				modrm |= modr_value << 3; // second register or additional data (/x value)
+				modrm |= 0b101;	// Displacement mode
 
+				data[size++] = modrm;
+			}
+
+			// @TODO @Warning be clear about what we are doing here
+			// often the address is in 32bits but added to a register, is it what means "rm*" operand type? m for memory
+			// displacement to a register value? with RIP (Instruction Pointer) we can get a 64bits address
+			uint32_t value = operand.value.integer;
+//			uint32_t value = 0xDEADBEEF;
+			for (uint8_t i = 0; i < 4; i++) {
+				data[size++] = ((uint8_t*)&value)[i];
+			}
+		}
 	}
 
 	bool push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2)
@@ -715,7 +733,7 @@ namespace f::ASM
 		uint32_t size = 0;
 
 		// REX.W prefix (for 64bits instruction that is not in 64bits by default)
-		if (is_flag_set(g_instruction_desc_table[desc_index].encoding_flags, (uint8_t)Instruction_Desc::Encoding_Flags::MODE_64)) {
+		if (is_flag_set(g_instruction_desc_table[desc_index].encoding_flags, (uint8_t)Instruction_Desc::Encoding_Flags::PREFIX_REX_W)) {
 			// @TODO check the instruction desc encoding flags here
 
 			data[size++] = 0b0100 << 4 | 0b1100; // first 4bits are the prefix bit pattern
@@ -726,8 +744,8 @@ namespace f::ASM
 		}
 
 		uint32_t last_opcode_byte_index = size - 1;
-		encode_operand(last_opcode_byte_index, data, size, g_instruction_desc_table[desc_index].op_enc_desc_1, operand1);
-		encode_operand(last_opcode_byte_index, data, size, g_instruction_desc_table[desc_index].op_enc_desc_2, operand2);
+		encode_operand(last_opcode_byte_index, g_instruction_desc_table[desc_index].modr_value, data, size, g_instruction_desc_table[desc_index].op_enc_desc_1, operand1);
+		encode_operand(last_opcode_byte_index, g_instruction_desc_table[desc_index].modr_value, data, size, g_instruction_desc_table[desc_index].op_enc_desc_2, operand2);
 
 		push_raw_data(section, data, size);
 

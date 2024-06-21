@@ -157,6 +157,8 @@ void generate_operands_and_immediates_info()
 	// @TODO get registers to add them to operands_info (some instructions support only few specific registers)
 	// Need to get registers by parameter
 
+
+	// @TODO rel* means I have to patch the value like for addresses (call, jmp,...) is it a better way to use this flag instead of the frontend that know that it's an identifier (label for functions, "variables",...)
 	immediates_info = {
 		{"ib", "BYTE"},		// = > 020, # imm8
 		{"ib,u", "BYTE"},	// = > 024, # Unsigned imm8
@@ -513,6 +515,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 					string			opcode;
 					uint8_t			opcode_size = 0;
 					vector<string>	instruction_encoding_rule_stack;
+					string			modr_value = "0";
 					vector<string>	operand_encoding_rule_stack;
 					vector<string>	operand_descs;
 
@@ -536,8 +539,15 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 						encoding_rules_string.erase(0, opcode_flags_match_result[1].length());
 
 						// @TODO do something better (like a hash table)
-						if (encoding_rules_string.starts_with("o64")) {
-							instruction_encoding_rule_stack.push_back("MODE_64");
+						if (encoding_rules_string.starts_with("o64nw")) {
+							// No REX.W (so we put nothing)
+						}
+						else if (encoding_rules_string.starts_with("o64")) {
+							instruction_encoding_rule_stack.push_back("PREFIX_REX_W");
+						}
+						else if (encoding_rules_string.starts_with("odf")) {
+							// No REX.W (so we put nothing)
+							//instruction_encoding_rule_stack.push_back("PREFIX_REX_W");
 						}
 
 						encoding_rules_string.erase(0, opcode_flags_match_result[2].length());
@@ -568,6 +578,10 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 						&& modr_value_match_result[2].length()) {
 
 						operand_encoding_rule_stack.push_back("REGISTER_MODR");
+
+						if (modr_value_match_result[2] != "r") {
+							modr_value = modr_value_match_result[2];
+						}
 
 						encoding_rules_string.erase(0, modr_value_match_result[1].length());
 						encoding_rules_string.erase(0, modr_value_match_result[2].length());
@@ -668,6 +682,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 						x64_cpp_instruction_desc_table << "        "
 							<< "{0x" << opcode << ", " << std::to_string(opcode_size) << ", ";
 
+						// Encoding rules
 						if (instruction_encoding_rule_stack.size()) {
 							for (const string& instruction_encoding_flag : instruction_encoding_rule_stack)
 							{
@@ -678,6 +693,9 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 							x64_cpp_instruction_desc_table << "Instruction_Desc::Encoding_Flags::NONE";
 						}
 
+						x64_cpp_instruction_desc_table << ", " << modr_value;
+
+						// Operands
 						for (const string& operand_desc : operand_descs) {
 							x64_cpp_instruction_desc_table << ", " << operand_desc;
 						}

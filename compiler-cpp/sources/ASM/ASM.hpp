@@ -50,7 +50,7 @@ namespace f
 				REGISTER			= 0b0001,
 				IMMEDIATE			= 0b0010,
 				IMMEDIATE_SIGNED	= 0b0100,	// Explicitely signed in the ASM source
-				ADDRESS				= 0b1000
+				ADDRESS				= 0b1000	// @TOOD may have no sense because identifier are immediate values because we replace it by the value (an address)
 			};
 			uint8_t	type_flags;	// @Fuck workaround to be able to use the enum as flags without cast
 
@@ -106,12 +106,13 @@ namespace f
 			{
 				NONE					= 0b0000,
 				MODE_32					= 0b0001,
-				MODE_64					= 0b0010,	// NEED REX.W prefix
+				PREFIX_REX_W			= 0b0010,	// NEED REX.W prefix
 			};
 
 			uint32_t				opcode;
 			uint8_t					opcode_size;
 			uint8_t					encoding_flags;
+			uint8_t					modr_value;
 			Operand_Encoding_Desc	op_enc_desc_1;
 			Operand_Encoding_Desc	op_enc_desc_2;
 			Operand_Encoding_Desc	op_enc_desc_3;
