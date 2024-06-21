@@ -102,8 +102,16 @@ namespace f
 
 		struct Instruction_Desc
 		{
+			enum Encoding_Flags : uint8_t
+			{
+				NONE					= 0b0000,
+				MODE_32					= 0b0001,
+				MODE_64					= 0b0010,	// NEED REX.W prefix
+			};
+
 			uint32_t				opcode;
 			uint8_t					opcode_size;
+			uint8_t					encoding_flags;
 			Operand_Encoding_Desc	op_enc_desc_1;
 			Operand_Encoding_Desc	op_enc_desc_2;
 			Operand_Encoding_Desc	op_enc_desc_3;

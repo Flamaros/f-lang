@@ -512,6 +512,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 
 					string			opcode;
 					uint8_t			opcode_size = 0;
+					vector<string>	instruction_encoding_rule_stack;
 					vector<string>	operand_encoding_rule_stack;
 					vector<string>	operand_descs;
 
@@ -531,7 +532,14 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 					while (regex_match(encoding_rules_string, opcode_flags_match_result, opcode_flags_regex)
 						&& opcode_flags_match_result[2].length()) {
 
+						// Remove potential space character
 						encoding_rules_string.erase(0, opcode_flags_match_result[1].length());
+
+						// @TODO do something better (like a hash table)
+						if (encoding_rules_string.starts_with("o64")) {
+							instruction_encoding_rule_stack.push_back("MODE_64");
+						}
+
 						encoding_rules_string.erase(0, opcode_flags_match_result[2].length());
 					}
 
@@ -637,9 +645,9 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 
 							operand_desc << "}, "; // @TODO the 1 should be determined by parsing
 							if (operand_encoding_rule_stack.size())	{
-								for (const string& op_encoding_flags : operand_encoding_rule_stack)
+								for (const string& op_encoding_flag : operand_encoding_rule_stack)
 								{
-									operand_desc << "Operand_Encoding_Desc::Encoding_Flags::" << op_encoding_flags;
+									operand_desc << "Operand_Encoding_Desc::Encoding_Flags::" << op_encoding_flag;
 								}
 							}
 							else {
@@ -658,7 +666,18 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 
 					{	// write instruction line in x64_cpp_instruction_desc_table
 						x64_cpp_instruction_desc_table << "        "
-							<< "{0x" << opcode << ", " << std::to_string(opcode_size);
+							<< "{0x" << opcode << ", " << std::to_string(opcode_size) << ", ";
+
+						if (instruction_encoding_rule_stack.size()) {
+							for (const string& instruction_encoding_flag : instruction_encoding_rule_stack)
+							{
+								x64_cpp_instruction_desc_table << "Instruction_Desc::Encoding_Flags::" << instruction_encoding_flag;
+							}
+						}
+						else {
+							x64_cpp_instruction_desc_table << "Instruction_Desc::Encoding_Flags::NONE";
+						}
+
 						for (const string& operand_desc : operand_descs) {
 							x64_cpp_instruction_desc_table << ", " << operand_desc;
 						}

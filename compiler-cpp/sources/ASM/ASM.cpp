@@ -714,8 +714,8 @@ namespace f::ASM
 		uint8_t data[64];
 		uint32_t size = 0;
 
-		// REX.X prefix (for 64bits instruction that is not in 64bits by default)
-		if (operand1.size == Operand::Size::QUAD_WORD || operand2.size == Operand::Size::QUAD_WORD) {
+		// REX.W prefix (for 64bits instruction that is not in 64bits by default)
+		if (is_flag_set(g_instruction_desc_table[desc_index].encoding_flags, (uint8_t)Instruction_Desc::Encoding_Flags::MODE_64)) {
 			// @TODO check the instruction desc encoding flags here
 
 			data[size++] = 0b0100 << 4 | 0b1100; // first 4bits are the prefix bit pattern
