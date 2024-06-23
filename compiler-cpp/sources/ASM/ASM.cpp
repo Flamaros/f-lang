@@ -621,7 +621,20 @@ namespace f::ASM
 		return g_instruction_desc_table_indices[(size_t)instruction + 1];
 	}
 
-	void encode_operand(uint8_t operand_encoding, uint32_t last_opcode_byte_index, uint8_t modr_value, uint8_t data[64], uint32_t& size, const Operand_Encoding_Desc& desc_operand, const Operand& operand)
+	inline void encode_additionnal_bit_in_REX_prefix(uint8_t value, uint8_t data[64], uint8_t REX_prefix_index, uint8_t target_bit)
+	{
+		if (value > 0b111) {
+			if (REX_prefix_index == (uint8_t)-1) {
+				report_error(Compiler_Error::internal_error, "??? Is it really valid to use a 64bit register without the REX prefix. If not turn this into a real error!");
+			}
+
+			// If it crash here it is because there is no REX prefix and REX_prefix_index == -1
+			// I am not sure it can happens with valid code (using a 64bit register without the prefix to set the 64bit addressing mode)
+			data[REX_prefix_index] |= target_bit;
+		}
+	}
+
+	void encode_operand(uint8_t operand_encoding, uint8_t REX_prefix_index, uint8_t last_opcode_byte_index, uint8_t modr_value, uint8_t data[64], uint8_t& size, const Operand_Encoding_Desc& desc_operand, const Operand& operand)
 	{
 		// @TODO faire des fonctions pour encoder les modrm ça sera plus clair
 		// avec mod, reg et rm
@@ -653,10 +666,14 @@ namespace f::ASM
 				if (modr_value == (uint8_t)-2) {
 					if (is_flag_set(operand_encoding, (uint8_t)Instruction_Desc::Operand_Encoding_Flags::IN_MODRM_REG)) {
 						*modrm |= 0b11 << 6; // register flag
-						*modrm |= g_register_desc_table[(size_t)operand.value._register].id << 3;
+						*modrm |= (g_register_desc_table[(size_t)operand.value._register].id & 0b111) << 3;
+
+						encode_additionnal_bit_in_REX_prefix(g_register_desc_table[(size_t)operand.value._register].id, data, REX_prefix_index, 0b0100);
 					}
 					else if (is_flag_set(operand_encoding, (uint8_t)Instruction_Desc::Operand_Encoding_Flags::IN_MODRM_RM)) {
-						*modrm |= g_register_desc_table[(size_t)operand.value._register].id;
+						*modrm |= (g_register_desc_table[(size_t)operand.value._register].id & 0b111);
+
+						encode_additionnal_bit_in_REX_prefix(g_register_desc_table[(size_t)operand.value._register].id, data, REX_prefix_index, 0b0001);
 					}
 					else if (is_flag_set(operand_encoding, (uint8_t)Instruction_Desc::Operand_Encoding_Flags::IMPLICIT_OPERAND)) {
 					}
@@ -666,8 +683,10 @@ namespace f::ASM
 				}
 				else {
 					*modrm |= 0b11 << 6; // register flag
-					*modrm |= modr_value << 3;
-					*modrm |= g_register_desc_table[(size_t)operand.value._register].id;
+					*modrm |= (modr_value & 0b111) << 3;
+					*modrm |= (g_register_desc_table[(size_t)operand.value._register].id & 0b111);
+
+					encode_additionnal_bit_in_REX_prefix(g_register_desc_table[(size_t)operand.value._register].id, data, REX_prefix_index, 0b0001);
 				}
 			}
 			else if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_ADD_TO_OPCODE)) {
@@ -709,15 +728,18 @@ namespace f::ASM
 			}
 		}
 		else if (operand.type_flags == (uint8_t)Operand::Type_Flags::ADDRESS) {
-			// @TODO seems completely wrong
+			// Check at https://stackoverflow.com/questions/15511482/x64-instruction-encoding-and-the-modrm-byte
+			// for the mod part of modrm byte
 			if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
 				*modrm &= 0b00111111;	// Remove mod flag (that can contains 0b11 from a previous register operand)
 
 				// Some instruction like CALL ("[202] CALL mem [m: odf ff /2] 8086,BND") need a modrm value
 				if (modr_value != (uint8_t)-1
 					&& modr_value != (uint8_t)-2) {
-					*modrm |= modr_value << 3;
+					*modrm |= (modr_value & 0b111) << 3;
 				}
+				// More info about the displacement in 64bits mode:
+				// https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol2/o_b5573232dd8f1481-72.html
 				*modrm |= 0b101;	// Displacement mode (make the address relative to register RIP (Re-Extended Instruction Pointer))
 			}
 
@@ -757,22 +779,23 @@ namespace f::ASM
 
 		Instruction_Desc	instruction_desc = g_instruction_desc_table[desc_index];
 		uint8_t				data[64];
-		uint32_t			size = 0;
+		uint8_t				REX_prefix_index = -1;
+		uint8_t				size = 0;
 
-		// REX.W prefix (for 64bits instruction that is not in 64bits by default)
+		// REX prefix (only the W member can be set at instruction level, other members are set at operands level)
 		if (is_flag_set(instruction_desc.encoding_flags, (uint8_t)Instruction_Desc::Encoding_Flags::PREFIX_REX_W)) {
-			// @TODO check the instruction desc encoding flags here
-
+			// W member should be 1 to switch to 64bit addressing mode
 			data[size++] = 0b0100 << 4 | 0b1000; // first 4bits are the prefix bit pattern
+			REX_prefix_index = 0;
 		}
 
 		for (uint8_t i = 0; i < instruction_desc.opcode_size; i++) {
 			data[size++] = ((uint8_t*)&instruction_desc.opcode)[i];
 		}
 
-		uint32_t last_opcode_byte_index = size - 1;
-		encode_operand(instruction_desc.operands_encoding[0], last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_1, operand1);
-		encode_operand(instruction_desc.operands_encoding[1], last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_2, operand2);
+		uint8_t last_opcode_byte_index = size - 1;
+		encode_operand(instruction_desc.operands_encoding[0], REX_prefix_index, last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_1, operand1);
+		encode_operand(instruction_desc.operands_encoding[1], REX_prefix_index, last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_2, operand2);
 
 		push_raw_data(section, data, size);
 
