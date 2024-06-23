@@ -26,6 +26,7 @@ namespace f
 {
 	namespace ASM
 	{
+		constexpr uint8_t	NONE = 0b0;
 		constexpr size_t NB_MAX_OPERAND_PER_INSTRUCTION = 2;
 		//struct Imported_Function
 		//{
@@ -46,7 +47,6 @@ namespace f
 		{
 			enum Type_Flags : uint8_t
 			{
-				NONE				= 0b0000,
 				REGISTER			= 0b0001,
 				IMMEDIATE			= 0b0010,
 				IMMEDIATE_SIGNED	= 0b0100,	// Explicitely signed in the ASM source
@@ -84,7 +84,6 @@ namespace f
 		{
 			enum Encoding_Flags : uint8_t
 			{
-				NONE					= 0b0000,
 				REGISTER_MODR			= 0b0001,
 				REGISTER_ADD_TO_OPCODE	= 0b0010,
 				IMMEDIATE_SIGNED		= 0b0100	// This entry support signed integer immediate values
@@ -104,15 +103,26 @@ namespace f
 		{
 			enum Encoding_Flags : uint8_t
 			{
-				NONE					= 0b0000,
 				MODE_32					= 0b0001,
 				PREFIX_REX_W			= 0b0010,	// NEED REX.W prefix
 			};
 
+			enum Operand_Encoding_Flags : uint8_t
+			{
+				IN_MODRM_REG			= 0b0000'0001,	// r
+				IN_MODRM_RM				= 0b0000'0010,	// m
+				IN_VEX_V				= 0b0000'0100,	// v
+				IMMEDIATE				= 0b0000'1000,	// i
+				IN_IS4_OR_IMZ2_REGISTER	= 0b0001'0000,	// s
+				IMPLICIT_OPERAND		= 0b0010'0000,	// -
+				IN_MID_INDEX_REGISTER	= 0b0100'0000,	// x
+			};
+
 			uint32_t				opcode;
 			uint8_t					opcode_size;
+			uint8_t					operands_encoding[4];	// Can be overriden by flags in the instruction encoding rules
 			uint8_t					encoding_flags;
-			uint8_t					modr_value;
+			uint8_t					modr_value;	// (uint8_t)-1 if not present, (uint8_t)-2 for "/r", else the value n of "/n"
 			Operand_Encoding_Desc	op_enc_desc_1;
 			Operand_Encoding_Desc	op_enc_desc_2;
 			Operand_Encoding_Desc	op_enc_desc_3;

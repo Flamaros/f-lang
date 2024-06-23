@@ -182,17 +182,67 @@ void generate_operands_and_immediates_info()
 ///
 /// The operands word lists the order of the operands :
 ///
-/// r = register field in the modr / m
-/// m = modr / m
+/// r = register field in the modr/m
+/// m = modr/m
 /// v = VEX "v" field
 /// i = immediate
-/// s = register field of is4 / imz2 field
+/// s = register field of is4/imz2 field
 /// - = implicit (unencoded) operand
 /// x = indeX register of mib. 014..017 bytecodes are used.
 ///
 /// For an operand that should be filled into more than one field,
 /// enter it as e.g. "r+v".
-std::string operands_regex_string = R"REG(([\w\-]{0,4}:?\s+).*)REG";
+std::string operands_encoding_regex_string = R"REG(([\w\-\+]{0,4}:?\s+).*)REG";
+
+void parse_operands_encoding(const string& operands_encoding_string, string operands_encoding[4])
+{
+	size_t op_encoding_index = 0;
+	for (size_t i = 0; i < operands_encoding_string.size(); i++)
+	{
+		const char& c = operands_encoding_string[i];
+		string& operand_encoding = operands_encoding[op_encoding_index];
+
+		if (c == 'r') {
+			operand_encoding = "Instruction_Desc::Operand_Encoding_Flags::IN_MODRM_REG";
+			op_encoding_index++;
+		}
+		else if (c == 'm') {
+			operand_encoding = "Instruction_Desc::Operand_Encoding_Flags::IN_MODRM_RM";
+			op_encoding_index++;
+		}
+		else if (c == 'v') {
+			operand_encoding = "Instruction_Desc::Operand_Encoding_Flags::IN_VEX_V";
+			op_encoding_index++;
+		}
+		else if (c == 'i') {
+			operand_encoding = "Instruction_Desc::Operand_Encoding_Flags::IMMEDIATE";
+			op_encoding_index++;
+		}
+		else if (c == 's') {
+			operand_encoding = "Instruction_Desc::Operand_Encoding_Flags::IN_IS4_OR_IMZ2_REGISTER";
+			op_encoding_index++;
+		}
+		else if (c == '-') {
+			operand_encoding = "Instruction_Desc::Operand_Encoding_Flags::IMPLICIT_OPERAND";
+			op_encoding_index++;
+		}
+		else if (c == 'x') {
+			operand_encoding = "Instruction_Desc::Operand_Encoding_Flags::IN_MID_INDEX_REGISTER";
+			op_encoding_index++;
+		}
+		else if (c == '+') {
+			operand_encoding += " | ";
+		}
+		else if (c == ':') {
+			break;
+		}
+	}
+
+	for (size_t i = op_encoding_index; i < 4; i++)
+	{
+		operands_encoding[i] = "NONE";
+	}
+}
 
 ///my% plain_codes = (
 ///		'o16' = > 0320, # 16 - bit operand size
@@ -418,8 +468,8 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 	{
 		regex	instruction_desc_regex(R"REG((\w+)\s+([\w,\|\:]+)\s+\[([\w\s\/\-\+:,]+)\]\s+([\w,]+))REG");
 		smatch	instruction_desc_match_result;
-		regex	operands_regex(operands_regex_string);
-		smatch	operands_match_result;
+		regex	operands_encoding_regex(operands_encoding_regex_string);
+		smatch	operands_encoding_match_result;
 		regex	opcode_flags_regex(opcode_flags_regex_string);
 		smatch	opcode_flags_match_result;
 		regex	opcode_regex(opcode_regex_string);
@@ -512,10 +562,11 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 				if (is_x64_supported) {
 					std::string encoding_rules_string = encoding_rules.str();
 
+					string			operands_encoding[4];
 					string			opcode;
 					uint8_t			opcode_size = 0;
 					vector<string>	instruction_encoding_rule_stack;
-					string			modr_value = "0";
+					string			modr_value = "(uint8_t)-1";
 					vector<string>	operand_encoding_rule_stack;
 					vector<string>	operand_descs;
 
@@ -526,10 +577,12 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 					}
 #endif
 
-					if (regex_match(encoding_rules_string, operands_match_result, operands_regex)
-						&& operands_match_result[1].length()) {
+					if (regex_match(encoding_rules_string, operands_encoding_match_result, operands_encoding_regex)
+						&& operands_encoding_match_result[1].length()) {
 
-						encoding_rules_string.erase(0, operands_match_result[1].length());
+						parse_operands_encoding(operands_encoding_match_result[1].str(), operands_encoding);
+
+						encoding_rules_string.erase(0, operands_encoding_match_result[1].length());
 					}
 
 					while (regex_match(encoding_rules_string, opcode_flags_match_result, opcode_flags_regex)
@@ -579,7 +632,10 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 
 						operand_encoding_rule_stack.push_back("REGISTER_MODR");
 
-						if (modr_value_match_result[2] != "r") {
+						if (modr_value_match_result[2] == "r") {
+							modr_value = "(uint8_t)-2";
+						}
+						else {
 							modr_value = modr_value_match_result[2];
 						}
 
@@ -665,7 +721,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 								}
 							}
 							else {
-								operand_desc << "Operand_Encoding_Desc::Encoding_Flags::NONE";
+								operand_desc << "NONE";
 							}
 							operand_desc << "}";
 
@@ -682,6 +738,14 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 						x64_cpp_instruction_desc_table << "        "
 							<< "{0x" << opcode << ", " << std::to_string(opcode_size) << ", ";
 
+						// Operands Encoding
+						x64_cpp_instruction_desc_table
+							<< "{" << operands_encoding[0]
+							<< ", " << operands_encoding[1]
+							<< ", " << operands_encoding[2]
+							<< ", " << operands_encoding[3]
+							<< "}, ";
+
 						// Encoding rules
 						if (instruction_encoding_rule_stack.size()) {
 							for (const string& instruction_encoding_flag : instruction_encoding_rule_stack)
@@ -690,7 +754,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 							}
 						}
 						else {
-							x64_cpp_instruction_desc_table << "Instruction_Desc::Encoding_Flags::NONE";
+							x64_cpp_instruction_desc_table << "NONE";
 						}
 
 						x64_cpp_instruction_desc_table << ", " << modr_value;

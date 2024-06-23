@@ -621,7 +621,7 @@ namespace f::ASM
 		return g_instruction_desc_table_indices[(size_t)instruction + 1];
 	}
 
-	void encode_operand(uint32_t last_opcode_byte_index, uint8_t modr_value, uint8_t data[64], uint32_t& size, const Operand_Encoding_Desc& desc_operand, const Operand& operand)
+	void encode_operand(uint8_t operand_encoding, uint32_t last_opcode_byte_index, uint8_t modr_value, uint8_t data[64], uint32_t& size, const Operand_Encoding_Desc& desc_operand, const Operand& operand)
 	{
 		// @TODO faire des fonctions pour encoder les modrm ça sera plus clair
 		// avec mod, reg et rm
@@ -650,10 +650,25 @@ namespace f::ASM
 		// First operand encoded in modr/m struct
 		if (operand.type_flags == (uint8_t)Operand::Type_Flags::REGISTER) {
 			if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
-				*modrm |= 0b11 << 6; // register flag
-
-				*modrm |= modr_value << 3; // second register or additional data (/x value)
-				*modrm |= g_register_desc_table[(size_t)operand.value._register].id;
+				if (modr_value == (uint8_t)-2) {
+					if (is_flag_set(operand_encoding, (uint8_t)Instruction_Desc::Operand_Encoding_Flags::IN_MODRM_REG)) {
+						*modrm |= 0b11 << 6; // register flag
+						*modrm |= g_register_desc_table[(size_t)operand.value._register].id << 3;
+					}
+					else if (is_flag_set(operand_encoding, (uint8_t)Instruction_Desc::Operand_Encoding_Flags::IN_MODRM_RM)) {
+						*modrm |= g_register_desc_table[(size_t)operand.value._register].id;
+					}
+					else if (is_flag_set(operand_encoding, (uint8_t)Instruction_Desc::Operand_Encoding_Flags::IMPLICIT_OPERAND)) {
+					}
+					else {
+						report_error(Compiler_Error::internal_error, "Register encoding fails for a strange reason or unsupported encoding rule");
+					}
+				}
+				else {
+					*modrm |= 0b11 << 6; // register flag
+					*modrm |= modr_value << 3;
+					*modrm |= g_register_desc_table[(size_t)operand.value._register].id;
+				}
 			}
 			else if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_ADD_TO_OPCODE)) {
 				data[last_opcode_byte_index] += g_register_desc_table[(size_t)operand.value._register].id;
@@ -696,14 +711,20 @@ namespace f::ASM
 		else if (operand.type_flags == (uint8_t)Operand::Type_Flags::ADDRESS) {
 			// @TODO seems completely wrong
 			if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
-				*modrm |= modr_value << 3; // second register or additional data (/x value)
-				*modrm |= 0b101;	// Displacement mode
+				*modrm &= 0b00111111;	// Remove mod flag (that can contains 0b11 from a previous register operand)
+
+				// Some instruction like CALL ("[202] CALL mem [m: odf ff /2] 8086,BND") need a modrm value
+				if (modr_value != (uint8_t)-1
+					&& modr_value != (uint8_t)-2) {
+					*modrm |= modr_value << 3;
+				}
+				*modrm |= 0b101;	// Displacement mode (make the address relative to register RIP (Re-Extended Instruction Pointer))
 			}
 
 			// @TODO @Warning be clear about what we are doing here
 			// often the address is in 32bits but added to a register, is it what means "rm*" operand type? m for memory
 			// displacement to a register value? with RIP (Instruction Pointer) we can get a 64bits address
-			uint32_t value = operand.value.integer;
+			uint32_t value = (uint32_t)operand.value.integer;
 //			uint32_t value = 0xDEADBEEF;
 			for (uint8_t i = 0; i < 4; i++) {
 				data[size++] = ((uint8_t*)&value)[i];
@@ -720,11 +741,11 @@ namespace f::ASM
 			// @TODO handle flags,...
 			// immediate size value promotions
 			if (((is_flag_set(g_instruction_desc_table[desc_index].op_enc_desc_1.op.type_flags, operand1.type_flags) && g_instruction_desc_table[desc_index].op_enc_desc_1.op.size >= operand1.size)
-				|| (operand1.type_flags == Operand::Type_Flags::NONE && operand1.size == Operand::Size::NONE
-					&& g_instruction_desc_table[desc_index].op_enc_desc_1.op.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op_enc_desc_1.op.size == Operand::Size::NONE))
+				|| (operand1.type_flags == NONE && operand1.size == Operand::Size::NONE
+					&& g_instruction_desc_table[desc_index].op_enc_desc_1.op.type_flags == NONE && g_instruction_desc_table[desc_index].op_enc_desc_1.op.size == Operand::Size::NONE))
 				&& ((is_flag_set(g_instruction_desc_table[desc_index].op_enc_desc_2.op.type_flags, operand2.type_flags) && g_instruction_desc_table[desc_index].op_enc_desc_2.op.size >= operand2.size)
-					|| (operand2.type_flags == Operand::Type_Flags::NONE && operand2.size == Operand::Size::NONE
-						&& g_instruction_desc_table[desc_index].op_enc_desc_2.op.type_flags == Operand::Type_Flags::NONE && g_instruction_desc_table[desc_index].op_enc_desc_2.op.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
+					|| (operand2.type_flags == NONE && operand2.size == Operand::Size::NONE
+						&& g_instruction_desc_table[desc_index].op_enc_desc_2.op.type_flags == NONE && g_instruction_desc_table[desc_index].op_enc_desc_2.op.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
 				break;
 			}
 		}
@@ -750,8 +771,8 @@ namespace f::ASM
 		}
 
 		uint32_t last_opcode_byte_index = size - 1;
-		encode_operand(last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_1, operand1);
-		encode_operand(last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_2, operand2);
+		encode_operand(instruction_desc.operands_encoding[0], last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_1, operand1);
+		encode_operand(instruction_desc.operands_encoding[1], last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_2, operand2);
 
 		push_raw_data(section, data, size);
 
