@@ -27,7 +27,7 @@ namespace f
 	namespace ASM
 	{
 		constexpr uint8_t	NONE = 0b0;
-		constexpr size_t NB_MAX_OPERAND_PER_INSTRUCTION = 2;
+		constexpr size_t	NB_MAX_OPERAND_PER_INSTRUCTION = 4;
 		//struct Imported_Function
 		//{
 		//	AST_Statement_Function* function;
@@ -123,10 +123,7 @@ namespace f
 			uint8_t					operands_encoding[4];	// Can be overriden by flags in the instruction encoding rules
 			uint8_t					encoding_flags;
 			uint8_t					modr_value;	// (uint8_t)-1 if not present, (uint8_t)-2 for "/r", else the value n of "/n"
-			Operand_Encoding_Desc	op_enc_desc_1;
-			Operand_Encoding_Desc	op_enc_desc_2;
-			Operand_Encoding_Desc	op_enc_desc_3;
-			Operand_Encoding_Desc	op_enc_desc_4;
+			Operand_Encoding_Desc	op_enc_descs[4];
 		};
 
 		struct Section
@@ -204,7 +201,7 @@ namespace f
 		// Try to generate valid ASM code else compiler errors may happens in these functions, especially in push_instruction which
 		// may fail to find the given instruction for the current targetted architecture
 		Section* create_section(ASM& asm_result, fstd::language::string_view name);
-		bool push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2);
+		bool push_instruction(Section* section, Instruction instruction, const Operand operands[NB_MAX_OPERAND_PER_INSTRUCTION]);
 		void push_raw_data(Section* section, uint8_t* data, uint32_t size);
 
 		Section* get_section(const ASM& asm_result, fstd::language::string_view name);

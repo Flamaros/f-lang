@@ -462,7 +462,7 @@ namespace f::ASM
 			current_token = stream::get(stream);
 		}
 
-		if (!push_instruction(section, instruction, operands[0], operands[1])) {
+		if (!push_instruction(section, instruction, operands)) {
 			report_error(Compiler_Error::error, instruction_token, "Unable to find encoding description for the instruction .. with operands .. and ...");
 		}
 
@@ -690,6 +690,12 @@ namespace f::ASM
 				}
 			}
 			else if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_ADD_TO_OPCODE)) {
+				if (g_register_desc_table[(size_t)operand.value._register].id > 0b111) {
+					// @TODO should be an assert I think
+//					report_error(Compiler_Error::internal_error, "encoding the register directly in the opcode seems to be only a thing with a 32bit register!");
+					// We certainly pick the wrong instruction description here, fix the matching method
+				}
+
 				data[last_opcode_byte_index] += g_register_desc_table[(size_t)operand.value._register].id;
 			}
 			else {
@@ -754,20 +760,31 @@ namespace f::ASM
 		}
 	}
 
-	bool push_instruction(Section* section, Instruction instruction, const Operand& operand1, const Operand& operand2)
+	inline bool is_the_instruction_desc_compatible(const Instruction_Desc& instruction_desc, const Operand operands[2])
+	{
+		// @TODO handle flags,...
+		// immediate size value promotions
+
+		for (uint8_t i = 0; i < NB_MAX_OPERAND_PER_INSTRUCTION; i++)
+		{
+			if (((is_flag_set(instruction_desc.op_enc_descs[i].op.type_flags, operands[i].type_flags) && instruction_desc.op_enc_descs[i].op.size >= operands[i].size)
+				|| (operands[i].type_flags == NONE && operands[i].size == Operand::Size::NONE
+					&& instruction_desc.op_enc_descs[i].op.type_flags == NONE && instruction_desc.op_enc_descs[i].op.size == Operand::Size::NONE))) {
+			}
+			else {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool push_instruction(Section* section, Instruction instruction, const Operand operands[NB_MAX_OPERAND_PER_INSTRUCTION])
 	{
 		// Find the instruction decription that match parameters
 		size_t desc_index = get_first_instruction_desc_index(instruction);
 		for (; desc_index < get_next_instruction_first_desc(instruction); desc_index++)
 		{
-			// @TODO handle flags,...
-			// immediate size value promotions
-			if (((is_flag_set(g_instruction_desc_table[desc_index].op_enc_desc_1.op.type_flags, operand1.type_flags) && g_instruction_desc_table[desc_index].op_enc_desc_1.op.size >= operand1.size)
-				|| (operand1.type_flags == NONE && operand1.size == Operand::Size::NONE
-					&& g_instruction_desc_table[desc_index].op_enc_desc_1.op.type_flags == NONE && g_instruction_desc_table[desc_index].op_enc_desc_1.op.size == Operand::Size::NONE))
-				&& ((is_flag_set(g_instruction_desc_table[desc_index].op_enc_desc_2.op.type_flags, operand2.type_flags) && g_instruction_desc_table[desc_index].op_enc_desc_2.op.size >= operand2.size)
-					|| (operand2.type_flags == NONE && operand2.size == Operand::Size::NONE
-						&& g_instruction_desc_table[desc_index].op_enc_desc_2.op.type_flags == NONE && g_instruction_desc_table[desc_index].op_enc_desc_2.op.size == Operand::Size::NONE))) { // If Operand 2 isn't used (like call instruction)
+			if (is_the_instruction_desc_compatible(g_instruction_desc_table[desc_index], operands)) {
 				break;
 			}
 		}
@@ -794,8 +811,18 @@ namespace f::ASM
 		}
 
 		uint8_t last_opcode_byte_index = size - 1;
-		encode_operand(instruction_desc.operands_encoding[0], REX_prefix_index, last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_1, operand1);
-		encode_operand(instruction_desc.operands_encoding[1], REX_prefix_index, last_opcode_byte_index, instruction_desc.modr_value, data, size, instruction_desc.op_enc_desc_2, operand2);
+		for (uint8_t op_i = 0; op_i < NB_MAX_OPERAND_PER_INSTRUCTION; op_i++)
+		{
+			encode_operand(
+				instruction_desc.operands_encoding[op_i],
+				REX_prefix_index,
+				last_opcode_byte_index,
+				instruction_desc.modr_value,
+				data,
+				size,
+				instruction_desc.op_enc_descs[op_i],
+				operands[op_i]);
+		}
 
 		push_raw_data(section, data, size);
 

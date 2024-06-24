@@ -568,7 +568,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 					vector<string>	instruction_encoding_rule_stack;
 					string			modr_value = "(uint8_t)-1";
 					vector<string>	operand_encoding_rule_stack;
-					vector<string>	operand_descs;
+					string			operand_descs[4];
 
 #if defined(_DEBUG)
 					if (encoding_rules_string.find("wait") != std::string::npos)
@@ -655,8 +655,13 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 
 					// operands (after encoding rules parsing to be able to dertermine operands size and encoding rules when needed)
 					vector<string>	operands_types_array = split(operand_types, ',');
+					uint8_t			operand_descs_index = 0;
 					for (const string& operand : operands_types_array) {
 						stringstream	operand_desc;
+
+						{ // @TODO remove that, it's just a work around because I don't parse correctly operands that are register names
+							operand_descs[operand_descs_index] = "{}";
+						}
 
 						if (operand == "void") {	// Here just the format of the string that should contains "4 columns"
 							break;
@@ -730,8 +735,14 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 							// And the operands encoding rules are very specific to each operand type
 							// And sometimes nothing is specified like for memory
 
-							operand_descs.push_back(operand_desc.str());
+							operand_descs[operand_descs_index] = operand_desc.str();
 						}
+						operand_descs_index++;
+					}
+					// Generate empty operand descs
+					for (; operand_descs_index < 4; operand_descs_index++)
+					{
+						operand_descs[operand_descs_index] = "{}";
 					}
 
 					{	// write instruction line in x64_cpp_instruction_desc_table
@@ -757,12 +768,15 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 							x64_cpp_instruction_desc_table << "NONE";
 						}
 
-						x64_cpp_instruction_desc_table << ", " << modr_value;
+						x64_cpp_instruction_desc_table << ", " << modr_value << ", ";
 
 						// Operands
-						for (const string& operand_desc : operand_descs) {
-							x64_cpp_instruction_desc_table << ", " << operand_desc;
-						}
+						x64_cpp_instruction_desc_table
+							<< "{" << operand_descs[0]
+							<< ", " << operand_descs[1]
+							<< ", " << operand_descs[2]
+							<< ", " << operand_descs[3]
+							<< "}";
 						x64_cpp_instruction_desc_table << "},"
 							<< " // [" << x64_nb_instruction_desc++ << "] " << read_line
 							<< endl;
