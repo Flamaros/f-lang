@@ -624,9 +624,8 @@ namespace f::ASM
 	inline void encode_additionnal_bit_in_REX_prefix(uint8_t value, uint8_t data[64], uint8_t REX_prefix_index, uint8_t target_bit)
 	{
 		if (value > 0b111) {
-			if (REX_prefix_index == (uint8_t)-1) {
-				report_error(Compiler_Error::internal_error, "??? Is it really valid to use a 64bit register without the REX prefix. If not turn this into a real error!");
-			}
+			// Is it really valid to use a 64bit register without the REX prefix??? If not turn this into a real error!
+			core::Assert((REX_prefix_index != (uint8_t)-1));
 
 			// If it crash here it is because there is no REX prefix and REX_prefix_index == -1
 			// I am not sure it can happens with valid code (using a 64bit register without the prefix to set the 64bit addressing mode)
@@ -760,13 +759,20 @@ namespace f::ASM
 		}
 	}
 
-	inline bool is_the_instruction_desc_compatible(const Instruction_Desc& instruction_desc, const Operand operands[2])
+	inline bool is_the_instruction_desc_compatible(const Instruction_Desc& instruction_desc, const Operand operands[NB_MAX_OPERAND_PER_INSTRUCTION])
 	{
 		// @TODO handle flags,...
 		// immediate size value promotions
+		bool need_REX_prefix = is_flag_set(instruction_desc.encoding_flags, (uint8_t)Instruction_Desc::Encoding_Flags::PREFIX_REX_W);
 
 		for (uint8_t i = 0; i < NB_MAX_OPERAND_PER_INSTRUCTION; i++)
 		{
+			if (operands[i].type_flags == (uint8_t)Operand::Type_Flags::REGISTER
+				&& (uint8_t)operands[i].value._register > 0b111
+				&& need_REX_prefix == false) {
+				return false;
+			}
+
 			if (((is_flag_set(instruction_desc.op_enc_descs[i].op.type_flags, operands[i].type_flags) && instruction_desc.op_enc_descs[i].op.size >= operands[i].size)
 				|| (operands[i].type_flags == NONE && operands[i].size == Operand::Size::NONE
 					&& instruction_desc.op_enc_descs[i].op.type_flags == NONE && instruction_desc.op_enc_descs[i].op.size == Operand::Size::NONE))) {

@@ -439,7 +439,7 @@ R"CODE(    enum class Register : uint8_t // @TODO Can we have more than 256 regi
 						std::string register_enum = to_upper(prefix) + to_string(i) + to_upper(suffix);
 
 						x64_hpp_register_enum << "        " << register_enum << "," << endl;
-						x64_cpp_register_desc_table << "        " << "{Operand::Size::" << register_size << ", " << stoi(register_number) << "}, // " << register_enum << endl;
+						x64_cpp_register_desc_table << "        " << "{Operand::Size::" << register_size << ", " << stoi(register_number) + i - first << "}, // " << register_enum << endl;
 					}
 				}
 				else {
