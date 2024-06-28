@@ -1,2 +1,6 @@
+../../compiler-cpp/sources/ASM/generated/
+
+../../compiler-cpp/sources/third-party/
+
 ../../compiler-cpp/sources/tests.cpp
 ../../compiler-cpp/sources/tests.hpp
