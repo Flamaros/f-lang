@@ -64,20 +64,23 @@ namespace fstd
 		}
 
 		template<typename Type, size_t bucket_size>
-		Type* get_bucket(const Bucket_Array<Type, bucket_size>& array, size_t index)
+		Type* get_bucket(const Bucket_Array<Type, bucket_size>& array, size_t bucket_index)
 		{
 			size_t last_bucket_index = array.size / bucket_size;
-			core::Assert(index <= last_bucket_index);
+			core::Assert(bucket_index <= last_bucket_index);
 
-			return array.ptr[index];
+			return array.ptr[bucket_index];
 		}
 
 		template<typename Type, size_t bucket_size>
 		Type* get_array_element(const Bucket_Array<Type, bucket_size>& array, size_t index)
 		{
 			fstd::core::Assert(array.size > index);
-			// @TODO
-			return nullptr;
+
+			size_t bucket_index = index / bucket_size;
+			size_t index_in_bucket = index % bucket_size;
+
+			return &array.ptr[bucket_index][index_in_bucket];
 		}
 
 		template<typename Type, size_t bucket_size>

@@ -11,6 +11,8 @@
 
 #include <fstd/language/defer.hpp>
 
+#include <third-party/SpookyV2.h>
+
 #include <Windows.h>
 
 #include <time.h>
@@ -806,6 +808,8 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
         DWORD text_image_section_virtual_address_address = text_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         text_image_section_virtual_address = text_section_address;
+		text_section->position_in_file = text_image_section_pointer_to_raw_data;
+		text_section->RVA = text_image_section_virtual_address;
 
         set_file_position(output_file, text_image_section_virtual_address_address);
         write_file(output_file, (uint8_t*)&text_image_section_virtual_address, sizeof(text_image_section_virtual_address), &bytes_written);
@@ -828,6 +832,8 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
         DWORD rdata_image_section_virtual_address_address = rdata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         rdata_image_section_virtual_address = rdata_section_address;
+		rdata_section->position_in_file = rdata_image_section_pointer_to_raw_data;
+		rdata_section->RVA = rdata_image_section_virtual_address;
 
         set_file_position(output_file, rdata_image_section_virtual_address_address);
         write_file(output_file, (uint8_t*)&rdata_image_section_virtual_address, sizeof(rdata_image_section_virtual_address), &bytes_written);
@@ -851,6 +857,8 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
         DWORD reloc_image_section_virtual_address_address = reloc_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         reloc_image_section_virtual_address = reloc_section_address;
+		reloc_section->position_in_file = reloc_image_section_virtual_address_address;
+		reloc_section->RVA = reloc_image_section_virtual_address;
 
         set_file_position(output_file, reloc_image_section_virtual_address_address);
         write_file(output_file, (uint8_t*)&reloc_image_section_virtual_address, sizeof(reloc_image_section_virtual_address), &bytes_written);
@@ -889,6 +897,40 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
         set_file_position(output_file, idata_image_section_pointer_to_raw_data_address);
         write_file(output_file, (uint8_t*)&idata_image_section_pointer_to_raw_data, sizeof(idata_image_section_pointer_to_raw_data), &bytes_written);
     }
+
+	// Patching addresses
+	{
+		for (size_t i_section = 0; i_section < memory::get_array_size(asm_result.sections); i_section++)
+		{
+			ASM::Section* section = memory::get_array_element(asm_result.sections, i_section);
+			for (size_t j_add_to_patch = 0; j_add_to_patch < memory::get_array_size(section->addr_to_patch); j_add_to_patch++)
+			{
+				ASM::ADDR_TO_PATCH* addr_to_patch = memory::get_array_element(section->addr_to_patch, j_add_to_patch);
+				ASM::Label**		found_label;
+
+				uint64_t label_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(addr_to_patch->label), fstd::language::get_string_size(addr_to_patch->label), 0);
+				uint16_t label_short_hash = label_hash & 0xffff;
+
+				found_label = fstd::memory::hash_table_get(asm_result.labels, label_short_hash, addr_to_patch->label);
+				if (!found_label) {
+					report_error(Compiler_Error::internal_error, "Unable to find a label to patch an address in generated machine code.");
+				}
+
+				ASM::Label*	label = *found_label;
+				uint32_t	addr;	// @Warning even in 64bits we do only 32bits relative to RIP (Re-extended Instruction Pointer) register displacement
+
+				if (label->function) {
+					addr = label->function->name_RVA - section->RVA - addr_to_patch->addr_of_addr;
+				}
+				else {
+					addr = label->section->RVA + label->RVA - section->RVA - addr_to_patch->addr_of_addr - sizeof(addr);	// @Warning the sizeof(addr) is the size of the addr we patch
+				}
+
+				set_file_position(output_file, section->position_in_file + addr_to_patch->addr_of_addr);
+				write_file(output_file, (uint8_t*)&addr, sizeof(addr), &bytes_written);
+			}
+		}
+	}
 
     close_file(output_file);
 }

@@ -214,7 +214,7 @@ namespace fstd
 		//}
 
 		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
-		inline Value_Type* hash_table_get(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, Hash_Type hash, Key_Type& key)
+		inline Value_Type* hash_table_get(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, Hash_Type hash, Key_Type& key)
 		{
 			ZoneScopedN("hash_table_get");
 

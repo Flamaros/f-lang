@@ -6,6 +6,7 @@
 #include <fstd/language/defer.hpp>
 #include <fstd/language/flags.hpp>
 #include <fstd/memory/array.hpp>
+#include <fstd/memory/bucket_array.hpp>
 #include <fstd/system/file.hpp>
 #include <fstd/stream/array_read_stream.hpp>
 
@@ -194,7 +195,7 @@ namespace f::ASM
 				report_error(Compiler_Error::error, module_name, "Only identifiers are supported inside the \"MODULE\" scope. Those identifier specifies the function names to import.");
 			}
 
-			// Register the function
+			// Register the function (in function imports)
 			Imported_Function** found_imported_func;
 
 			uint64_t func_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(current_token.text), fstd::language::get_string_size(current_token.text), 0);
@@ -202,8 +203,9 @@ namespace f::ASM
 
 			found_imported_func = fstd::memory::hash_table_get((*found_imported_lib)->functions, func_short_hash, module_name.text);
 
+			Imported_Function* new_imported_func;
 			if (found_imported_func == nullptr) {
-				Imported_Function* new_imported_func = allocate_imported_function();
+				new_imported_func = allocate_imported_function();
 
 				new_imported_func->name = current_token.text;
 				new_imported_func->name_RVA = 0;
@@ -213,6 +215,26 @@ namespace f::ASM
 			else {
 				report_error(Compiler_Error::warning, current_token, "Function already imported!"); // @TODO for the current module
 			}
+			// --
+
+			// Register the function (in labels)
+			Label** found_label;
+
+			uint64_t label_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(current_token.text), fstd::language::get_string_size(current_token.text), 0);
+			uint16_t label_short_hash = label_hash & 0xffff;
+
+			found_label = fstd::memory::hash_table_get(asm_result.labels, label_short_hash, current_token.text);
+			if (found_label) {
+				// @TODO give the position of the previous declaration (label)
+				report_error(Compiler_Error::error, current_token, "Function name conflicts with a label.");
+			}
+
+			Label* new_label = allocate_Label();
+
+			new_label->label = current_token.text;
+			new_label->function = new_imported_func;
+
+			found_label = fstd::memory::hash_table_insert(asm_result.labels, label_short_hash, current_token.text, new_label);
 			// --
 
 			stream::peek<Token>(stream); // function name
@@ -363,10 +385,9 @@ namespace f::ASM
 				}
 				else if (current_token.type == Token_Type::IDENTIFIER) {
 					operands[operand_index].type_flags = Operand::Type_Flags::ADDRESS;	// @TODO check if all identifier are immediate addresses
-//					operands[operand_index].value.integer = current_token.value._register; // @TODO push label or function name here
 					operands[operand_index].size = Operand::Size::QUAD_WORD;	// @TODO base size of the target architecture
-
-					// @TODO
+					operands[operand_index].address_flags = Operand::Address_Flags::FROM_LABEL;
+					operands[operand_index].label = current_token.text;
 
 					stream::peek(stream); // Identifier
 				}
@@ -490,13 +511,19 @@ namespace f::ASM
 		found_label = fstd::memory::hash_table_get(asm_result.labels, label_short_hash, label_name.text);
 		if (found_label) {
 			// @TODO give the position of the first definition
-			report_error(Compiler_Error::error, label_name, "Label already used.");
+			if ((*found_label)->function) {
+				report_error(Compiler_Error::error, label_name, "Label name conflicts with an imported function.");
+			}
+			else {
+				report_error(Compiler_Error::error, label_name, "Label already used.");
+			}
 		}
 
 		Label* new_label = allocate_Label();
 
 		new_label->label = label_name.text;
 		new_label->section = section;
+		new_label->function = nullptr;
 		new_label->RVA = stream::get_position(section->stream_data);
 
 		found_label = fstd::memory::hash_table_insert(asm_result.labels, label_short_hash, label_name.text, new_label);
@@ -633,7 +660,7 @@ namespace f::ASM
 		}
 	}
 
-	void encode_operand(uint8_t operand_encoding, uint8_t REX_prefix_index, uint8_t last_opcode_byte_index, uint8_t modr_value, uint8_t data[64], uint8_t& size, const Operand_Encoding_Desc& desc_operand, const Operand& operand)
+	void encode_operand(Section* section, uint8_t operand_encoding, uint8_t REX_prefix_index, uint8_t last_opcode_byte_index, uint8_t modr_value, uint8_t data[64], uint8_t& size, const Operand_Encoding_Desc& desc_operand, const Operand& operand)
 	{
 		// @TODO faire des fonctions pour encoder les modrm ça sera plus clair
 		// avec mod, reg et rm
@@ -748,6 +775,12 @@ namespace f::ASM
 				*modrm |= 0b101;	// Displacement mode (make the address relative to register RIP (Re-Extended Instruction Pointer))
 			}
 
+			ADDR_TO_PATCH	addr_to_patch;
+
+			addr_to_patch.label = operand.label;
+			addr_to_patch.addr_of_addr = stream::get_position(section->stream_data) + size;
+			memory::push_back(section->addr_to_patch, addr_to_patch);
+
 			// @TODO @Warning be clear about what we are doing here
 			// often the address is in 32bits but added to a register, is it what means "rm*" operand type? m for memory
 			// displacement to a register value? with RIP (Instruction Pointer) we can get a 64bits address
@@ -820,6 +853,7 @@ namespace f::ASM
 		for (uint8_t op_i = 0; op_i < NB_MAX_OPERAND_PER_INSTRUCTION; op_i++)
 		{
 			encode_operand(
+				section,
 				instruction_desc.operands_encoding[op_i],
 				REX_prefix_index,
 				last_opcode_byte_index,

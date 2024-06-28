@@ -78,6 +78,14 @@ namespace f
 				double			        real_64;
 				long double		        real_max;
 			}				value;
+
+			enum Address_Flags : uint8_t
+			{
+				FROM_LABEL = 0b0001,
+			};
+
+			fstd::language::string_view	label;	// Only used with Type_Flags::LABEL_ADDRESS
+			uint8_t						address_flags;
 		};
 
 		struct Operand_Encoding_Desc
@@ -126,6 +134,11 @@ namespace f
 			Operand_Encoding_Desc	op_enc_descs[4];
 		};
 
+		struct ADDR_TO_PATCH {
+			fstd::language::string_view		label;			// Label to search for and obtain addr (it is a string_view of the label token)
+			uint32_t						addr_of_addr;	// Where to apply the addr (relative to the begging of the section)
+		};
+
 		struct Section
 		{
 			fstd::language::string_view	name; // string_view of the first token parsed of this section
@@ -136,32 +149,23 @@ namespace f
 			// I want chunks of memory instead of a full contiguous buffer to avoid issue with memory allocation,...
 			// But I don't need to release memory, moving,... auto initialization,...
 
-			// fstd::memory::Bucket_Array<ADDR_TO_PATCH>	addr_to_patch; // bucket_array because we need fast push_back (allocation of bucket_size) and fast iteration (over arrays)
-		};
-
-		struct Label
-		{
-			fstd::language::string_view	label;
-			Section*					section;
-			uint64_t					RVA;	// Offset in bytes relative to the beggining of the section
-		};
-
-		struct ADDR_TO_PATCH {
-			fstd::language::string_view		label;			// Label to search for and obtain addr (it is a string_view of the label token)
-			uint32_t						addr_of_addr;	// Where to apply the addr
-		};
-
-		struct Code
-		{
-			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Section*, 32> Section_Hash_Table;
-
-			Section_Hash_Table	sections;
+			fstd::memory::Bucket_Array<ADDR_TO_PATCH>	addr_to_patch; // bucket_array because we need fast push_back (allocation of bucket_size) and fast iteration (over arrays)
+			uint64_t									position_in_file;
+			uint64_t									RVA;
 		};
 
 		struct Imported_Function
 		{
 			fstd::language::string_view	name;
 			uint32_t					name_RVA;
+		};
+
+		struct Label
+		{
+			fstd::language::string_view	label;
+			Section*					section;	// @Warning not initialized for an Imported_Function
+			Imported_Function*			function;	// If not null the label is already used for an imported function
+			uint64_t					RVA;	// Offset in bytes relative to the beggining of the section - @Warning not initialized for an Imported_Function
 		};
 
 		struct Imported_Library
