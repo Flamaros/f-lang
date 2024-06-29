@@ -177,7 +177,7 @@ uint8_t	hello_world_instructions[] = {
 
 
 // @TODO should be generated not hard-coded
-uint8_t* kernel32_function_names[] = {
+uint8_t* _kernel32_function_names[] = {
     (uint8_t*)"GetStdHandle",
     (uint8_t*)"WriteFile",
     (uint8_t*)"ExitProcess",
@@ -645,35 +645,35 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 		// @TODO do a copy for the IAT after the transition of this code to the memory stream which should allow a copy
         for (size_t i = 0; i < 2; i++)
         {
-            {
-                LONGLONG RVA;
+			LONGLONG	RVA;
+			DWORD		current_offset = 0;
 
-                // GetStdHandle
-                RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-                    + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                    + sizeof(LONGLONG) * (3 + 1) * 2 // ILT + IAT
-                    + 0;
-                write_file(output_file, (uint8_t*)&RVA, sizeof(RVA), &bytes_written);
-                DWORD pos = (DWORD)get_file_position(output_file);
+			auto	it_library = hash_table_begin(asm_result.imported_libraries);
+			auto	it_library_end = hash_table_end(asm_result.imported_libraries);
+			for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library))
+			{
+				ASM::Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library);
 
-                idata_section_size += bytes_written;
+				auto it_function = hash_table_begin(imported_library->functions);
+				auto it_function_end = hash_table_end(imported_library->functions);
+				for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function))
+				{
+					ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function);
 
-                // WriteFile
-                RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-                    + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                    + sizeof(LONGLONG) * (3 + 1) * 2 // ILT + IAT;
-                    + (DWORD)fstd::language::string_literal_size(kernel32_function_names[0]) + 1 + sizeof(WORD);
-                write_file(output_file, (uint8_t*)&RVA, sizeof(RVA), &bytes_written);
-                idata_section_size += bytes_written;
+					RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
+						+ sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
+						+ sizeof(LONGLONG) * (memory::hash_table_get_size(imported_library->functions) + 1) * 2 // ILT + IAT
+						+ current_offset;
+					write_file(output_file, (uint8_t*)&RVA, sizeof(RVA), &bytes_written);
+					DWORD pos = (DWORD)get_file_position(output_file);
 
-                // ExitProcess
-                RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-                    + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                    + sizeof(LONGLONG) * (3 + 1) * 2 // ILT + IAT;
-                    + (DWORD)fstd::language::string_literal_size(kernel32_function_names[0]) + 1 + (DWORD)fstd::language::string_literal_size(kernel32_function_names[1]) + 1 + sizeof(WORD) * 2;
-                write_file(output_file, (uint8_t*)&RVA, sizeof(RVA), &bytes_written);
-                idata_section_size += bytes_written;
-            }
+					// Fix the name_RVA of the function for later use
+					imported_function->name_RVA = RVA;
+
+					current_offset += (DWORD)fstd::language::get_string_size(imported_function->name) + 1 + sizeof(WORD);
+					idata_section_size += bytes_written;
+				}
+			}
             write_zeros(output_file, sizeof(LONGLONG));
             idata_section_size += bytes_written;
         }
@@ -684,14 +684,26 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
             name.Hint = 0; // @TODO @Optimize a proper linker will certainly try to get a good hint to help the loader.
 
-            for (size_t i = 0; i < 3; i++)
-            {
-                write_file(output_file, (uint8_t*)&name.Hint, sizeof(name.Hint), &bytes_written);
-                idata_section_size += bytes_written;
+			auto	it_library = hash_table_begin(asm_result.imported_libraries);
+			auto	it_library_end = hash_table_end(asm_result.imported_libraries);
+			for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library))
+			{
+				ASM::Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library);
 
-                write_file(output_file, (uint8_t*)kernel32_function_names[i], (DWORD)fstd::language::string_literal_size(kernel32_function_names[i]) + 1, &bytes_written); // +1 to write the ending '\0'
-                idata_section_size += bytes_written;
-            }
+				auto it_function = hash_table_begin(imported_library->functions);
+				auto it_function_end = hash_table_end(imported_library->functions);
+				for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function))
+				{
+					ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function);
+
+					write_file(output_file, (uint8_t*)&name.Hint, sizeof(name.Hint), &bytes_written);
+					idata_section_size += bytes_written;
+
+					write_file(output_file, (uint8_t*)language::to_utf8(imported_function->name), (DWORD)fstd::language::get_string_size(imported_function->name), &bytes_written); // +1 to write the ending '\0'
+					write_zeros(output_file, 1);
+					idata_section_size += bytes_written + 1;
+				}
+			}
         }
 
         // Dll names
