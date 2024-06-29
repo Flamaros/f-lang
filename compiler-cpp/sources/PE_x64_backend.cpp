@@ -631,6 +631,19 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
 				write_file(output_file, (uint8_t*)&import_descriptor, sizeof(import_descriptor), &bytes_written);
 				idata_section_size += bytes_written;
+
+				// Fix RVA of imported functions
+				size_t	function_index = 0;
+				auto it_function = hash_table_begin(imported_library->functions);
+				auto it_function_end = hash_table_end(imported_library->functions);
+				for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function))
+				{
+					ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function);
+
+					// Fix the name_RVA of the function for later use
+					imported_function->name_RVA = import_descriptor.FirstThunk + function_index * sizeof(uint64_t);	// @TODO sizeof(uint64_t) in 64bits should be sizeof(uint32_t) in 32bits
+					function_index++;
+				}
 			}
         }
         // Write zeros to terminate import_descriptor table
@@ -665,10 +678,6 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 						+ sizeof(LONGLONG) * (memory::hash_table_get_size(imported_library->functions) + 1) * 2 // ILT + IAT
 						+ current_offset;
 					write_file(output_file, (uint8_t*)&RVA, sizeof(RVA), &bytes_written);
-					DWORD pos = (DWORD)get_file_position(output_file);
-
-					// Fix the name_RVA of the function for later use
-					imported_function->name_RVA = RVA;
 
 					current_offset += (DWORD)fstd::language::get_string_size(imported_function->name) + 1 + sizeof(WORD);
 					idata_section_size += bytes_written;
@@ -953,7 +962,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 				uint32_t	addr;	// @Warning even in 64bits we do only 32bits relative to RIP (Re-extended Instruction Pointer) register displacement
 
 				if (label->function) {
-					addr = label->function->name_RVA - section->RVA - addr_to_patch->addr_of_addr;
+					addr = label->function->name_RVA - section->RVA - addr_to_patch->addr_of_addr - sizeof(addr);
 				}
 				else {
 					addr = label->section->RVA + label->RVA - section->RVA - addr_to_patch->addr_of_addr - sizeof(addr);	// @Warning the sizeof(addr) is the size of the addr we patch

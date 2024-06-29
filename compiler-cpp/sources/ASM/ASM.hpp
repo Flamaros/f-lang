@@ -174,7 +174,7 @@ namespace f
 
 			fstd::language::string_view	name; // string_view of the first token parsed of this library
 			Function_Hash_Table			functions;
-			uint32_t					name_RVA;
+			uint32_t					IAT_RVA; // "global" RVA to the entry in IAT
 		};
 
 		struct ASM
