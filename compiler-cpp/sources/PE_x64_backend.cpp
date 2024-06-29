@@ -606,25 +606,32 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
         {
             IMAGE_IMPORT_DESCRIPTOR import_descriptor;
 
-            // RVA to original unbound IAT (PIMAGE_THUNK_DATA)
-            import_descriptor.OriginalFirstThunk = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-                + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2;
-            import_descriptor.TimeDateStamp = 0;
-            import_descriptor.ForwarderChain = 0; // -1 if no forwarders
+			auto it_library = hash_table_begin(asm_result.imported_libraries);
+			auto it_library_end = hash_table_end(asm_result.imported_libraries);
+			for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library))
+			{
+				ASM::Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library);
 
-            // RVA to DLL name
-            import_descriptor.Name = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-                + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                + sizeof(LONGLONG) * (3 + 1) * 2 // IAT + ILT
-                + HNT_size; // HNT
+				// RVA to original unbound IAT (PIMAGE_THUNK_DATA)
+				import_descriptor.OriginalFirstThunk = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
+					+ sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2;
+				import_descriptor.TimeDateStamp = 0;
+				import_descriptor.ForwarderChain = 0; // -1 if no forwarders
 
-            // RVA to IAT (if bound this IAT has actual addresses)
-            import_descriptor.FirstThunk = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-                + sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-                + sizeof(LONGLONG) * (3 + 1);
+				// RVA to DLL name
+				import_descriptor.Name = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
+					+ sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
+					+ sizeof(LONGLONG) * (memory::hash_table_get_size(imported_library->functions) + 1) * 2 // IAT + ILT
+					+ HNT_size; // HNT
 
-            write_file(output_file, (uint8_t*)&import_descriptor, sizeof(import_descriptor), &bytes_written);
-            idata_section_size += bytes_written;
+				// RVA to IAT (if bound this IAT has actual addresses)
+				import_descriptor.FirstThunk = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
+					+ sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
+					+ sizeof(LONGLONG) * (memory::hash_table_get_size(imported_library->functions) + 1);
+
+				write_file(output_file, (uint8_t*)&import_descriptor, sizeof(import_descriptor), &bytes_written);
+				idata_section_size += bytes_written;
+			}
         }
         // Write zeros to terminate import_descriptor table
         write_zeros(output_file, sizeof(IMAGE_IMPORT_DESCRIPTOR));
