@@ -177,10 +177,6 @@ uint8_t	hello_world_instructions[] = {
 
 
 // @TODO should be generated not hard-coded
-uint8_t* dll_names[] = {
-    (uint8_t*)"kernel32.dll",
-};
-
 uint8_t* kernel32_function_names[] = {
     (uint8_t*)"GetStdHandle",
     (uint8_t*)"WriteFile",
@@ -579,15 +575,32 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     {
         ZoneScopedN("Write import data (.idata section data)");
 
-        // @TODO Make it generic (actually hard coded)
         // @TODO check the section size in the header (idata_image_section_header.SizeOfRawData)
 
+		size_t	nb_imported_functions = 0;
+		DWORD	HNT_size = 0;
 
-        DWORD HNT_size = 0;
-        for (DWORD i = 0; i < 3; i++) {
-            HNT_size += sizeof(WORD);
-            HNT_size += (DWORD)fstd::language::string_literal_size(kernel32_function_names[i]) + 1;
-        }
+		// Compute few statistics
+		{
+			auto it_library = hash_table_begin(asm_result.imported_libraries);
+			auto it_library_end = hash_table_end(asm_result.imported_libraries);
+			for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library))
+			{
+				ASM::Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library);
+
+				auto it_function = hash_table_begin(imported_library->functions);
+				auto it_function_end = hash_table_end(imported_library->functions);
+				for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function))
+				{
+					ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function);
+
+					HNT_size += sizeof(WORD);
+					HNT_size += (DWORD)fstd::language::get_string_size(imported_function->name) + 1;
+
+					nb_imported_functions++;
+				}
+			}
+		}
 
         DWORD idata_section_size = 0;
         {
@@ -622,6 +635,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
         //
         // ILT and IAT are exactly the same in file, but the loader will resolve addresses for the IAT when loading the binary
 
+		// @TODO do a copy for the IAT after the transition of this code to the memory stream which should allow a copy
         for (size_t i = 0; i < 2; i++)
         {
             {
@@ -857,8 +871,6 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
         DWORD reloc_image_section_virtual_address_address = reloc_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
         reloc_image_section_virtual_address = reloc_section_address;
-		reloc_section->position_in_file = reloc_image_section_virtual_address_address;
-		reloc_section->RVA = reloc_image_section_virtual_address;
 
         set_file_position(output_file, reloc_image_section_virtual_address_address);
         write_file(output_file, (uint8_t*)&reloc_image_section_virtual_address, sizeof(reloc_image_section_virtual_address), &bytes_written);
@@ -900,6 +912,8 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
 	// Patching addresses
 	{
+		ZoneScopedN("Patching addresses");
+
 		for (size_t i_section = 0; i_section < memory::get_array_size(asm_result.sections); i_section++)
 		{
 			ASM::Section* section = memory::get_array_element(asm_result.sections, i_section);
