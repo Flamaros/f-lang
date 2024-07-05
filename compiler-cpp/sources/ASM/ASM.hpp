@@ -150,8 +150,8 @@ namespace f
 			// But I don't need to release memory, moving,... auto initialization,...
 
 			fstd::memory::Bucket_Array<ADDR_TO_PATCH>	addr_to_patch; // bucket_array because we need fast push_back (allocation of bucket_size) and fast iteration (over arrays)
-			uint64_t									position_in_file;
-			uint64_t									RVA;
+			uint32_t									position_in_file;
+			uint32_t									RVA;
 		};
 
 		struct Imported_Function
@@ -165,7 +165,7 @@ namespace f
 			fstd::language::string_view	label;
 			Section*					section;	// @Warning not initialized for an Imported_Function
 			Imported_Function*			function;	// If not null the label is already used for an imported function
-			uint64_t					RVA;	// Offset in bytes relative to the beggining of the section - @Warning not initialized for an Imported_Function
+			uint32_t					RVA;	// Offset in bytes relative to the beggining of the section - @Warning not initialized for an Imported_Function
 		};
 
 		struct Imported_Library

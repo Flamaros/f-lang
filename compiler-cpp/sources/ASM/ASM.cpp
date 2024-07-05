@@ -524,7 +524,7 @@ namespace f::ASM
 		new_label->label = label_name.text;
 		new_label->section = section;
 		new_label->function = nullptr;
-		new_label->RVA = stream::get_position(section->stream_data);
+		new_label->RVA = (uint32_t)stream::get_position(section->stream_data);
 
 		found_label = fstd::memory::hash_table_insert(asm_result.labels, label_short_hash, label_name.text, new_label);
 
@@ -778,7 +778,7 @@ namespace f::ASM
 			ADDR_TO_PATCH	addr_to_patch;
 
 			addr_to_patch.label = operand.label;
-			addr_to_patch.addr_of_addr = stream::get_position(section->stream_data) + size;
+			addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
 			memory::push_back(section->addr_to_patch, addr_to_patch);
 
 			// @TODO @Warning be clear about what we are doing here

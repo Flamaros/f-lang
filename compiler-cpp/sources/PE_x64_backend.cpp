@@ -83,91 +83,14 @@ DWORD	idata_section_address;
 
 
 
-struct Encoded_Instruction
-{
-    // Maximum instruction size:
-    // https://stackoverflow.com/questions/14698350/x86-64-asm-maximum-bytes-for-an-instruction#:~:text=The%20x86%20instruction%20set%20(16,0x67%20prefixes%2C%20for%20example).
-    // Intel say 15, but Quantitative Approach has said 17 and now in the 6th edition says 18 bytes
-    uint8_t data[18];
-    uint8_t size;
+// Maximum instruction size:
+// https://stackoverflow.com/questions/14698350/x86-64-asm-maximum-bytes-for-an-instruction#:~:text=The%20x86%20instruction%20set%20(16,0x67%20prefixes%2C%20for%20example).
+// Intel say 15, but Quantitative Approach has said 17 and now in the 6th edition says 18 bytes
 
-    // @TODO I should certainly have an enum to tell if I have relocation to do
-};
-
-// Struct for input ASM (used to convert IR to ASM)
-struct ASM
-{
-    enum class Register : uint8_t
-    {
-        EAX, ECX, EDX, EBX,
-        ESP, EBP, ESI, EDI
-    };
-
-    struct Operand // @TODO UPPER_CASE
-    {
-        enum class Type : uint8_t // @TODO UPPER_CASE
-        {
-            Register = 0x01,
-            MemoryAddress = 0x02,
-            ImmediateValue = 0x04,
-        };
-
-        Type        type;
-        union
-        {
-            Register    _register;
-            uint32_t    address;
-            uint32_t    immediate_value;
-        } value;
-    };
-
-    language::string    name;
-    Operand             operands[3];
-};
-
-// For explanation of "mov ebp, esp"
+// For explanation of "mov ebp, esp" (thing in 32bits calling convention)
 // https://stackoverflow.com/questions/21718397/what-are-the-esp-and-the-ebp-registers
 // Ease the compiler debugging
 // @TODO I may want implement option "omit frame pointers" to increase performances by using ebp as general purpose register
-
-
-// @TODO should be generated not hard-coded
-uint8_t	hello_world_instructions[] = {
-    0x89, 0xE5,										   // mov    ebp, esp           // initialize new call frame (put current stack pointer into base point of current stack)
-    0x83, 0xEC, 0x04,								   // sub    esp, 0x4
-    0x6A, 0xF5,										   // push   0xfffffff5         // STD_OUTPUT_HANDLE == (DWORD)-11 => 0xfffffff5 en hexa
-#if DLL_MODE == 1
-    0xFF, 0x15, 0x38, 0x40, 0x00, 0x10,				   // call   GetStdHandle       // ImageBase 0x10000000 + .idata virtual addr 0x4000 + 0x38 (offset in IAT)
-#else
-    0xFF, 0x15, 0x3B, 0x20, 0x00, 0x00,				   // call   GetStdHandle       // ImageBase 0x400000 + .idata virtual addr 0x3000 + 0x48 (offset in IAT) - ((RIP) 0x400000 + 0x1000 + 0x08) 
-#endif
-    0x89, 0xC3,										   // mov    ebx, eax
-    0x6A, 0x00,										   // push   0x0
-    0x8D, 0x45, 0xFC,								   // lea    eax, [ebp-0x4]
-    0x50,											   // push   eax
-    0x6A, 0x0B,										   // push   0xb				@Warning nNumberOfBytesToWrite
-#if DLL_MODE == 1
-    0x68, 0x00, 0x20, 0x00, 0x10,				       // push   DWORD PTR ds:0x0	@Warning address of message string (first value in .rdata section)
-#else
-    0x68, 0x00, 0x20, 0x40, 0x00,				       // push   DWORD PTR ds:0x0	@Warning address of message string (first value in .rdata section)
-#endif
-    0x53,											   // push   ebx
-#if DLL_MODE == 1
-    0xFF, 0x15, 0x3C, 0x40, 0x00, 0x10,				   // call   WriteFile          // ImageBase 0x10000000 + .idata virtual addr 0x4000 + 0x3C (offset in IAT)
-#else
-    0xFF, 0x15, 0x2D, 0x20, 0x00, 0x00,				   // call   WriteFile          // ImageBase 0x400000 + .idata virtual addr 0x3000 + 0x3C (offset in IAT) - ((RIP) 0x400000 + 0x1000 + 0x1D) 
-#endif
-    0x6A, 0x00,										   // push   0x0
-#if DLL_MODE == 1
-    0xFF, 0x15, 0x40, 0x40, 0x00, 0x10,				   // call   ExitProcess        // ImageBase 0x10000000 + .idata virtual addr 0x4000 + 0x40 (offset in IAT)
-#else
-    0xFF, 0x15, 0x2D, 0x20, 0x00, 0x00,				   // call   ExitProcess        // ImageBase 0x400000 + .idata virtual addr 0x3000 + 0x40 (offset in IAT) - ((RIP) 0x400000 + 0x1000 + 0x25) 
-#endif
-    0xF4											   // hlt
-};
-
-// @TODO les call prennent un offset par rapport à la position de l'instruction courante (RIP - Register instruction pointer)
-
 
 
 // @TODO get memory page size dynamically:
@@ -175,13 +98,6 @@ uint8_t	hello_world_instructions[] = {
 // Page size under Windows (depending on CPU arch)
 // https://devblogs.microsoft.com/oldnewthing/20210510-00/?p=105200
 
-
-// @TODO should be generated not hard-coded
-uint8_t* _kernel32_function_names[] = {
-    (uint8_t*)"GetStdHandle",
-    (uint8_t*)"WriteFile",
-    (uint8_t*)"ExitProcess",
-};
 
 // @Warning 4 first bits are a flag (https://docs.microsoft.com/fr-fr/windows/win32/debug/pe-format#base-relocation-types):
 // IMAGE_REL_BASED_DIR64 for x64 code?
@@ -204,46 +120,6 @@ static DWORD	compute_aligned_size(DWORD raw_size, DWORD alignement)
 static DWORD	align_address(DWORD address, DWORD alignement)
 {
     return address + (address % alignement);
-}
-
-static void	write_zeros(HANDLE file, uint32_t count) // @TODO remove it
-{
-    constexpr uint32_t	buffer_size = 512;
-    static bool			initialized = false;
-    static char			zeros_buffer[buffer_size];
-    uint32_t			nb_iterations = count / buffer_size;
-    uint32_t			modulo = count % buffer_size;
-    DWORD				bytes_written;
-
-    if (initialized == false) {
-        ZeroMemory(zeros_buffer, buffer_size);
-        initialized = true;
-    }
-
-    for (uint32_t i = 0; i < nb_iterations; i++) {
-        WriteFile(file, (const void*)zeros_buffer, buffer_size, &bytes_written, NULL);
-    }
-    WriteFile(file, (const void*)zeros_buffer, modulo, &bytes_written, NULL);
-}
-
-static void	write_zeros(File file, uint32_t count)
-{
-    constexpr uint32_t	buffer_size = 512;
-    static bool			initialized = false;
-    static char			zeros_buffer[buffer_size];
-    uint32_t			nb_iterations = count / buffer_size;
-    uint32_t			modulo = count % buffer_size;
-    uint32_t			bytes_written;
-
-    if (initialized == false) {
-        ZeroMemory(zeros_buffer, buffer_size);
-        initialized = true;
-    }
-
-    for (uint32_t i = 0; i < nb_iterations; i++) {
-        write_file(file, (uint8_t*)zeros_buffer, buffer_size, &bytes_written);
-    }
-    write_file(file, (uint8_t*)zeros_buffer, modulo, &bytes_written);
 }
 
 void f::PE_x64_backend::initialize_backend()
@@ -378,7 +254,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 #else
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress = 0x3000; // @TODO need to be computed and patched
 #endif
-        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = (hash_table_get_size(asm_result.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR); // + 1 for the null entry
+        image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size = ((DWORD)hash_table_get_size(asm_result.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR); // + 1 for the null entry
 
 #if DLL_MODE == 1
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress = 0x3000; // @TODO need to be computed and patched
@@ -389,7 +265,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
 		// @TODO add the function counting (3 here is hard-coded)
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].VirtualAddress = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-            + (hash_table_get_size(asm_result.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
+            + ((DWORD)hash_table_get_size(asm_result.imported_libraries) + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR) // Import table + null terminated entry
             + sizeof(LONGLONG) * (3 + 1); // ILT (3 entries + 1 null)
         image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IAT].Size = (3 + 1) * sizeof(LONGLONG); // @TODO take care of 64bit binaries // null entry count
     }
@@ -621,19 +497,19 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 				// RVA to DLL name
 				import_descriptor.Name = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
 					+ sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-					+ sizeof(LONGLONG) * (memory::hash_table_get_size(imported_library->functions) + 1) * 2 // IAT + ILT
+					+ sizeof(LONGLONG) * ((DWORD)memory::hash_table_get_size(imported_library->functions) + 1) * 2 // IAT + ILT
 					+ HNT_size; // HNT
 
 				// RVA to IAT (if bound this IAT has actual addresses)
 				import_descriptor.FirstThunk = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
 					+ sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-					+ sizeof(LONGLONG) * (memory::hash_table_get_size(imported_library->functions) + 1);
+					+ sizeof(LONGLONG) * ((DWORD)memory::hash_table_get_size(imported_library->functions) + 1);
 
 				write_file(output_file, (uint8_t*)&import_descriptor, sizeof(import_descriptor), &bytes_written);
 				idata_section_size += bytes_written;
 
 				// Fix RVA of imported functions
-				size_t	function_index = 0;
+				uint32_t	function_index = 0;
 				auto it_function = hash_table_begin(imported_library->functions);
 				auto it_function_end = hash_table_end(imported_library->functions);
 				for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function))

@@ -60,5 +60,6 @@ namespace fstd
 
 		bool							write_file(File& file, uint8_t* buffer, uint32_t length, uint32_t* nb_written_bytes = nullptr);
 		bool							write_file(File& file, const stream::Memory_Write_Stream& stream, uint32_t* nb_written_bytes = nullptr);
+		bool							write_zeros(File file, uint32_t count);
 	}
 }

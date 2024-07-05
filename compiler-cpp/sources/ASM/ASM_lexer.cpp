@@ -135,6 +135,8 @@ namespace f::ASM
 
 			// Pseudo instructions
 			HT_INSERT_VALUE(Keyword, 0, "db", DB);
+
+			// @TODO add other size (dw, dd, dq)?
 		}
 
 		// @TODO Move this code into an auto-generated cpp file?

@@ -6,6 +6,7 @@
 #include <fstd/core/assert.hpp>
 #include <fstd/stream/memory_write_stream.hpp>
 #include <fstd/memory/bucket_array.hpp>
+#include <fstd/system/allocator.hpp>
 
 #if defined(FSTD_OS_WINDOWS)
 #	include <win32/file.h>
@@ -210,6 +211,31 @@ namespace fstd
 			}
 
 			return true;
+		}
+
+		bool write_zeros(File file, uint32_t count)
+		{
+			bool				result = true;
+			constexpr uint32_t	buffer_size = 512;
+			static bool			initialized = false;
+			static char			zeros_buffer[buffer_size];
+			uint32_t			nb_iterations = count / buffer_size;
+			uint32_t			modulo = count % buffer_size;
+			uint32_t			bytes_written;
+
+			if (initialized == false) {
+				fstd::system::zero_memory(zeros_buffer, buffer_size);
+				initialized = true;
+			}
+
+			for (uint32_t i = 0; result && i < nb_iterations; i++) {
+				result &= write_file(file, (uint8_t*)zeros_buffer, buffer_size, &bytes_written);
+			}
+			if (result) {
+				result &= write_file(file, (uint8_t*)zeros_buffer, modulo, &bytes_written);
+			}
+
+			return result;
 		}
 	}
 }
