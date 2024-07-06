@@ -36,6 +36,11 @@ compiler-cpp/tests/x64
 # All generated sources of compiler-cpp/
 compiler-cpp/sources/ASM/generated/*
 
+# Some files in research folder where I build some ASM (NASM or other) sources
+research/*.obj
+research/*_tests.*
+
+
 # QtCreator
 build-*
 

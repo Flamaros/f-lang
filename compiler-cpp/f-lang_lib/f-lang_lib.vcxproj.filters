@@ -297,6 +297,9 @@
     <ClCompile Include="..\sources\ASM\generated\ASM_x64.cpp">
       <Filter>Source Files\ASM\generated</Filter>
     </ClCompile>
+    <ClCompile Include="..\sources\ASM\generated\ASM_x64_lexer.cpp">
+      <Filter>Source Files\ASM\generated</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\third-party\WindowsHModular\include\win32\make.bat">

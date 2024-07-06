@@ -20,9 +20,9 @@ SECTION ".text"
 		; WriteFile( hstdOut, message, length(message), &bytes, 0);
 ;		add		rsp, 0x20
 		mov		rcx, rax								; move previous result (rax: hStdOut) to first parameter register (rcx)
-		mov		rdx, message							; in some asm langages lea instruction is used here, but in nasm labels are directly address
+		lea		rdx, message							; in some asm langages lea instruction is used here, but in nasm labels are directly address
 		mov 	r8d, 12;message_length					; in f it should be an immediate value in simplest cases, but as I want my strings to have a length, length is also available in .rdata section
-		mov		r9, NumberOfBytesWritten				; [out, optional] lpNumberOfBytesWritten
+		lea		r9, NumberOfBytesWritten				; [out, optional] lpNumberOfBytesWritten
 		push	0										; [in, out, optional] lpOverlapped
 		call    WriteFile
 
