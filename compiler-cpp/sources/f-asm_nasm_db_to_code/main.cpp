@@ -489,7 +489,7 @@ R"CODE(#define HT_INSERT_REGISTERS \
 	ifstream	insns_dat_file(base_path + "/data/insns.dat");
 	if (insns_dat_file.is_open())
 	{
-		regex	instruction_desc_regex(R"REG((\w+)\s+([\w,\|\:]+)\s+\[([\w\s\/\-\+:,]+)\]\s+([\w,]+))REG");
+		regex	instruction_desc_regex(R"REG((\w+)\s+([\w,\|\:\*]+)\s+\[([\w\s\/\-\+:,\.]+)\]\s+([\w,]+))REG");
 		smatch	instruction_desc_match_result;
 		regex	operands_encoding_regex(operands_encoding_regex_string);
 		smatch	operands_encoding_match_result;
@@ -583,6 +583,8 @@ R"CODE(#define HT_INSERT_REGISTERS \
 
 						x64_nb_instruction++;
 					}
+
+					previous_instruction_name = instruction;
 				}
 
 				if (is_x64_supported) {
@@ -810,8 +812,6 @@ R"CODE(#define HT_INSERT_REGISTERS \
 
 					x64_current_instruction_index++;
 				}
-
-				previous_instruction_name = instruction;
 			}
 			else {
 				cout << "Parsing warning: " << endl
