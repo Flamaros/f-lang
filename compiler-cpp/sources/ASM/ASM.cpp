@@ -760,11 +760,35 @@ namespace f::ASM
 			}
 		}
 		else if (operand.type_flags == (uint8_t)Operand::Type_Flags::ADDRESS) {
-			// Check at https://stackoverflow.com/questions/15511482/x64-instruction-encoding-and-the-modrm-byte
-			// for the mod part of modrm byte
-			if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
-				*modrm &= 0b00111111;	// Remove mod flag (that can contains 0b11 from a previous register operand)
 
+			// Do MODR/M and SIB bytes
+			if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS)) {
+				// Check at https://en.wikipedia.org/wiki/ModR/M#SIB_byte
+				// and https://en.wikipedia.org/wiki/VEX_prefix#Instruction_encoding
+
+				if (modrm == nullptr) {
+					// @TODO wrong instruction desc selection or the user did an error like used an EA on instruction that doesn't support it?
+					report_error(Compiler_Error::error, "Can't use Effective Address when there is no modrm byte");
+				}
+
+				// Set the MOD of MODR/M byte
+				if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::FROM_LABEL)) {
+					*modrm |= 0b10 << 6; // displacement 32 bits (RIP relative)
+
+				}
+				else {	// The displacement is an immediate value
+					// https://stackoverflow.com/questions/15511482/x64-instruction-encoding-and-the-modrm-byte
+
+					// Can bit 8 or 32 bits
+					if (operand.size == Operand::Size::BYTE) {
+						*modrm |= 0b01 << 6; // displacement 8 bits
+					}
+					else {
+						*modrm |= 0b10 << 6; // displacement 32 bits
+					}
+				}
+					 
+				// @TODO check what I need to do with REG field (maybe simply not touch it if I have a register or a modrm value)
 				// Some instruction like CALL ("[202] CALL mem [m: odf ff /2] 8086,BND") need a modrm value
 				if (modr_value != (uint8_t)-1
 					&& modr_value != (uint8_t)-2) {
@@ -772,22 +796,48 @@ namespace f::ASM
 				}
 				// More info about the displacement in 64bits mode:
 				// https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol2/o_b5573232dd8f1481-72.html
-				*modrm |= 0b101;	// Displacement mode (make the address relative to register RIP (Re-Extended Instruction Pointer))
+				*modrm |= 0b100;	// Effective Address mode (make the address relative to register RIP (Re-Extended Instruction Pointer))
+
+				// scale	2bits (1, 2, 4, 8)
+				// index	3bits (a register)
+				// base		3bits (a register)
+				uint8_t	SIB = operand.value.EA.value >> (64 - 8);
+
+				data[size++] = SIB;
+			}
+			else {
+				// Check at https://stackoverflow.com/questions/15511482/x64-instruction-encoding-and-the-modrm-byte
+				// for the mod part of modrm byte
+				if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
+					*modrm &= 0b00111111;	// Remove mod flag (that can contains 0b11 from a previous register operand)
+
+					// Some instruction like CALL ("[202] CALL mem [m: odf ff /2] 8086,BND") need a modrm value
+					if (modr_value != (uint8_t)-1
+						&& modr_value != (uint8_t)-2) {
+						*modrm |= (modr_value & 0b111) << 3;
+					}
+					// More info about the displacement in 64bits mode:
+					// https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol2/o_b5573232dd8f1481-72.html
+					*modrm |= 0b101;	// Displacement mode (make the address relative to register RIP (Re-Extended Instruction Pointer))
+				}
 			}
 
-			ADDR_TO_PATCH	addr_to_patch;
+			if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::FROM_LABEL)) {
+				ADDR_TO_PATCH	addr_to_patch;
 
-			addr_to_patch.label = operand.label;
-			addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
-			memory::push_back(section->addr_to_patch, addr_to_patch);
+				addr_to_patch.label = operand.label;
+				addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
+				memory::push_back(section->addr_to_patch, addr_to_patch);
+			}
 
-			// @TODO @Warning be clear about what we are doing here
-			// often the address is in 32bits but added to a register, is it what means "rm*" operand type? m for memory
-			// displacement to a register value? with RIP (Instruction Pointer) we can get a 64bits address
-			uint32_t value = (uint32_t)operand.value.integer;
-//			uint32_t value = 0xDEADBEEF;
-			for (uint8_t i = 0; i < 4; i++) {
-				data[size++] = ((uint8_t*)&value)[i];
+			if (operand.size == Operand::Size::BYTE) {
+				data[size++] = (uint8_t)operand.value.integer;
+			}
+			else {
+				uint32_t value = (uint32_t)operand.value.integer;
+				for (uint8_t i = 0; i < 4; i++) {
+					data[size++] = ((uint8_t*)&value)[i];
+				}
 			}
 		}
 	}

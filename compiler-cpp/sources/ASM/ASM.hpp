@@ -28,20 +28,25 @@ namespace f
 	{
 		constexpr uint8_t	NONE = 0b0;
 		constexpr size_t	NB_MAX_OPERAND_PER_INSTRUCTION = 4;
-		//struct Imported_Function
-		//{
-		//	AST_Statement_Function* function;
-		//	uint32_t				name_RVA;
-		//};
 
-		//struct Imported_Library
-		//{
-		//	typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Function*, 32> Function_Hash_Table;
+		struct Effective_Address
+		{
+			enum class Scale_Value
+			{
+				V1	= 0b00,
+				V2	= 0b01,
+				V4	= 0b10,
+				V8	= 0b11,
+			};
 
-		//	fstd::language::string_view	name; // string_view of the first token parsed of this library
-		//	Function_Hash_Table			functions;
-		//	uint32_t					name_RVA;
-		//};
+			// Used only for type EFFECTIVE_ADDRESS
+			// SIB byte is 8 upper bits
+			// Displacement is on lower bits depending on the size of the Operand
+			// @Warning Displacement can be in 64bits in long mode, in this case there is no SIB byte
+			// and the Displacement fill completely the value
+			// This form exist only for the MOV instruction with AL, AX, EAX, RAX register and the displacement is an absolute address
+			uint64_t	value;
+		};
 
 		struct Operand
 		{
@@ -49,8 +54,8 @@ namespace f
 			{
 				REGISTER			= 0b0001,
 				IMMEDIATE			= 0b0010,
-				IMMEDIATE_SIGNED	= 0b0100,	// Explicitely signed in the ASM source
-				ADDRESS				= 0b1000	// @TOOD may have no sense because identifier are immediate values because we replace it by the value (an address)
+				IMMEDIATE_SIGNED	= 0b0100,	// Explicitely signed in the ASM source @TODO unecessary?
+				ADDRESS				= 0b1000,	// @TOOD may have no sense because identifier are immediate values because we replace it by the value (an address)
 			};
 			uint8_t	type_flags;	// @Fuck workaround to be able to use the enum as flags without cast
 
@@ -77,14 +82,17 @@ namespace f
 				float			        real_32;
 				double			        real_64;
 				long double		        real_max;
+
+				Effective_Address		EA;
 			}				value;
 
 			enum Address_Flags : uint8_t
 			{
-				FROM_LABEL = 0b0001,
+				FROM_LABEL			= 0b0001,
+				EFFECTIVE_ADDRESS	= 0b0010,	// @Warning require a ModRM byte and add a SIB byte	- can have the displacement part FROM_LABEL or not (from immediate value)
 			};
 
-			fstd::language::string_view	label;	// Only used with Type_Flags::LABEL_ADDRESS
+			fstd::language::string_view	label;	// Only used when Address_Flags::FROM_LABEL is set on address_flags
 			uint8_t						address_flags;
 		};
 
@@ -205,6 +213,7 @@ namespace f
 		// Try to generate valid ASM code else compiler errors may happens in these functions, especially in push_instruction which
 		// may fail to find the given instruction for the current targetted architecture
 		Section* create_section(ASM& asm_result, fstd::language::string_view name);
+		void create_Effective_Address(Register base, Register index, Effective_Address::Scale_Value scale, uint32_t displacement, Operand& EA_operand);	// Helper method that generate an Operand with an Effective Address
 		bool push_instruction(Section* section, Instruction instruction, const Operand operands[NB_MAX_OPERAND_PER_INSTRUCTION]);
 		void push_raw_data(Section* section, uint8_t* data, uint32_t size);
 
