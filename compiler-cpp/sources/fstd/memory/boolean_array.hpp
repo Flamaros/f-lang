@@ -13,9 +13,9 @@ namespace fstd
 		template<size_t nb_values>
 		struct Boolean_Array
 		{
-			constexpr static bool is_bit_set(uint32_t var, size_t pos)	{ return (var >> pos) & 1; }
-			constexpr static void set_bit(uint32_t var, size_t pos)	{ var |= 1UL << pos; }
-			constexpr static void unset_bit(uint32_t var, size_t pos)	{ var &= ~(1UL << pos); }
+			static inline bool is_bit_set(const uint32_t& var, size_t pos)	{ return (var >> pos) & 0b1; }
+			static inline void set_bit(uint32_t& var, size_t pos)			{ var |= 1UL << pos; }
+			static inline void unset_bit(uint32_t& var, size_t pos)			{ var &= ~(1UL << pos); }
 
 			// Compile time variables
 			using Chunk_Type = uint32_t;
