@@ -6,10 +6,6 @@
 
 // @Warning This array isn't resizable!
 
-#define is_bit_set(var, pos) (((var) >> (pos)) & 1)
-#define set_bit(var, pos) ((var) |= 1UL << (pos))
-#define unset_bit(var, pos) ((var) &= ~(1UL << (pos)))
-
 namespace fstd
 {
 	namespace memory
@@ -17,6 +13,10 @@ namespace fstd
 		template<size_t nb_values>
 		struct Boolean_Array
 		{
+			constexpr static bool is_bit_set(uint32_t var, size_t pos)	{ return (var >> pos) & 1; }
+			constexpr static void set_bit(uint32_t var, size_t pos)	{ var |= 1UL << pos; }
+			constexpr static void unset_bit(uint32_t var, size_t pos)	{ var &= ~(1UL << pos); }
+
 			// Compile time variables
 			using Chunk_Type = uint32_t;
 			constexpr size_t nb_bits_per_chunk() { return sizeof(Chunk_Type) * 8; }
@@ -61,7 +61,7 @@ namespace fstd
 			size_t chunk_index = bit_index / boolean_array.nb_bits_per_chunk();
 			size_t bit_subindex = bit_index % boolean_array.nb_bits_per_chunk();
 
-			return is_bit_set(boolean_array.data[chunk_index], bit_subindex);
+			return Boolean_Array<nb_values>::is_bit_set(boolean_array.data[chunk_index], bit_subindex);
 		}
 
 		template<size_t nb_values>
@@ -77,9 +77,9 @@ namespace fstd
 
 			// @SpeedUp can we do it in a branchless way?
 			if (value)
-				set_bit(boolean_array.data[chunk_index], bit_subindex);
+				Boolean_Array<nb_values>::set_bit(boolean_array.data[chunk_index], bit_subindex);
 			else
-				unset_bit(boolean_array.data[chunk_index], bit_subindex);
+				Boolean_Array<nb_values>::unset_bit(boolean_array.data[chunk_index], bit_subindex);
 		}
 
 		// @TODO add searching methods for first or last set bit 
