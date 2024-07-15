@@ -52,10 +52,13 @@ namespace f::ASM
 		{'\n', Punctuation::NEW_LINE_CHARACTER},   // newline
 		{'~', Punctuation::TILDE},
 		{'`', Punctuation::BACKQUOTE},
+		{'*', Punctuation::STAR},
 		{'-', Punctuation::DASH},
 		{'+', Punctuation::PLUS},
 		{'{', Punctuation::OPEN_BRACE},
 		{'}', Punctuation::CLOSE_BRACE},
+		{'[', Punctuation::OPEN_BRACKET},
+		{']', Punctuation::CLOSE_BRACKET},
 		{':', Punctuation::COLON},
 		{';', Punctuation::SEMICOLON},
 		{'\'', Punctuation::SINGLE_QUOTE},
@@ -136,10 +139,20 @@ namespace f::ASM
 			HT_INSERT_VALUE(Keyword, 0, "MODULE", MODULE);
 			HT_INSERT_VALUE(Keyword, 0, "SECTION", SECTION);
 
+			// Directives
+			HT_INSERT_VALUE(Keyword, 0, "abs", ABS);
+
+			// Operand size specifiers
+			HT_INSERT_VALUE(Keyword, 0, "byte", BYTE);
+			HT_INSERT_VALUE(Keyword, 0, "word", WORD);
+			HT_INSERT_VALUE(Keyword, 0, "dword", DWORD);
+			HT_INSERT_VALUE(Keyword, 0, "qword", QWORD);
+
 			// Pseudo instructions
 			HT_INSERT_VALUE(Keyword, 0, "db", DB);
-
-			// @TODO add other size (dw, dd, dq)?
+			HT_INSERT_VALUE(Keyword, 0, "dw", DW);
+			HT_INSERT_VALUE(Keyword, 0, "dd", DD);
+			HT_INSERT_VALUE(Keyword, 0, "dq", DQ);
 		}
 
 		// @TODO Move this code into an auto-generated cpp file?

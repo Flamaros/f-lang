@@ -45,6 +45,7 @@ namespace f
 			// @Warning Displacement can be in 64bits in long mode, in this case there is no SIB byte
 			// and the Displacement fill completely the value
 			// This form exist only for the MOV instruction with AL, AX, EAX, RAX register and the displacement is an absolute address
+			// If size of Operand is Size::NONE then the displacement can comes from a label (Address_Flag::FROM_LABEL should be set)
 			uint64_t	value;
 		};
 
@@ -88,8 +89,13 @@ namespace f
 
 			enum Address_Flags : uint8_t
 			{
-				FROM_LABEL			= 0b0001,
-				EFFECTIVE_ADDRESS	= 0b0010,	// @Warning require a ModRM byte and add a SIB byte	- can have the displacement part FROM_LABEL or not (from immediate value)
+				FROM_LABEL							= 0b0000'0001,
+				ABSOLUTE							= 0b0000'0010,	// @Warning RIP relative by default (abs keyword or a register used in EA make the address absolute)
+				EFFECTIVE_ADDRESS					= 0b0000'0100,	// @Warning require a ModRM byte and add a SIB byte	- can have the displacement part FROM_LABEL or not (from immediate value)
+				EFFECTIVE_ADDRESS_EXTEND_INDEX		= 0b0000'1000,	// @Warning require extended byte in the REX prefix
+				EFFECTIVE_ADDRESS_EXTEND_BASE		= 0b0001'0000,	// @Warning require extended byte in the REX prefix
+				EFFECTIVE_ADDRESS_DISPLACEMENT8		= 0b0010'0000,	// @Warning May differ than the operand size
+				EFFECTIVE_ADDRESS_DISPLACEMENT32	= 0b0100'0000,	// @Warning May differ than the operand size
 			};
 
 			fstd::language::string_view	label;	// Only used when Address_Flags::FROM_LABEL is set on address_flags
@@ -212,12 +218,12 @@ namespace f
 		// You should create a section keep the pointer to fill it in an efficient way with function helpers when possible
 		// Try to generate valid ASM code else compiler errors may happens in these functions, especially in push_instruction which
 		// may fail to find the given instruction for the current targetted architecture
-		Section* create_section(ASM& asm_result, fstd::language::string_view name);
-		void create_Effective_Address(Register base, Register index, Effective_Address::Scale_Value scale, uint32_t displacement, Operand& EA_operand);	// Helper method that generate an Operand with an Effective Address
-		bool push_instruction(Section* section, Instruction instruction, const Operand operands[NB_MAX_OPERAND_PER_INSTRUCTION]);
-		void push_raw_data(Section* section, uint8_t* data, uint32_t size);
+		Section*	create_section(ASM& asm_result, fstd::language::string_view name);
+		void		create_Effective_Address(Register base, Register index, Effective_Address::Scale_Value scale, Operand& operand);	// Helper method that generate an Operand with an Effective Address
+		bool		push_instruction(Section* section, Instruction instruction, const Operand operands[NB_MAX_OPERAND_PER_INSTRUCTION]);
+		void		push_raw_data(Section* section, uint8_t* data, uint32_t size);
 
-		Section* get_section(const ASM& asm_result, fstd::language::string_view name);
+		Section*	get_section(const ASM& asm_result, fstd::language::string_view name);
 
 		// @TODO do the production API 
 		//   - create the import module

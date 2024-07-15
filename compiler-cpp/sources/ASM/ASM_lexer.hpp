@@ -28,12 +28,20 @@ namespace f::ASM
         MODULE,
         SECTION,
 
+		// Directives
+		ABS,	// abs directive can be used to make an address absolute (in EA)
+
+		// Operand size specifiers
+		BYTE,
+		WORD,
+		DWORD,
+		QWORD,
+
         // Pseudo instructions (part of the language)
         DB,	// push a byte or an array of bytes (in form of a string literal)
-		// @TODO
-		// DW,	// push a word - 2 bytes
-		// DD,	// push a double word - 4 bytes
-		// DQ,	// push a quad word - 8 bytes
+		DW,	// push a word - 2 bytes
+		DD,	// push a double word - 4 bytes
+		DQ,	// push a quad word - 8 bytes
 
 		COUNT,
     };
@@ -83,10 +91,13 @@ namespace f::ASM
         // Mostly in the order on a QWERTY keyboard (symbols making a pair are grouped)
         TILDE,                  //    ~                 Should stay the first of single character symbols
         BACKQUOTE,              //    `
+		STAR,                   //    *
 		DASH,                   //    -
 		PLUS,                   //    +
 		OPEN_BRACE,             //    {
         CLOSE_BRACE,            //    }
+		OPEN_BRACKET,           //    [
+		CLOSE_BRACKET,          //    ]
 		COLON,					//    :
 		SEMICOLON,              //    ;                 comment
         SINGLE_QUOTE,           //    '                 string literal

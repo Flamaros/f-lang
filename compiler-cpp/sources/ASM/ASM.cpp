@@ -338,6 +338,240 @@ namespace f::ASM
 		}
 	}
 
+	void parse_effective_address_operand(stream::Array_Read_Stream<Token>& stream, Operand& operand)
+	{
+		// EA should have the following syntax:
+		// Base, Index * Scale, Displacement
+		//
+		// Parts are comma separated and can be empty
+		// Comma can be skipped if there is no more parts
+		// So a base + displacement can be write like this:
+		// Base,, displacement
+
+		size_t							starting_line;
+		Token							current_token;
+		Register						base = Register::UNKNOWN;
+		Register						index = Register::RSP;		// @Warning ESP and RSP register can't be encoded as index, so if there is no index RSP can be used as escape sequence
+		Effective_Address::Scale_Value	scale = Effective_Address::Scale_Value::V1;
+
+		current_token = stream::get(stream);
+		starting_line = current_token.line;
+		fstd::core::Assert(
+			current_token.type == Token_Type::SYNTAXE_OPERATOR
+			&& current_token.value.punctuation == Punctuation::OPEN_BRACKET);
+
+		stream::peek(stream); // [
+		current_token = stream::get(stream);
+
+		operand.type_flags = Operand::Type_Flags::ADDRESS;
+		// operand.size = Operand::Size::NONE;	// Don't change the operand size, can be specified before by a size modifier like qword
+		// operand value will be EA (something packed with a function called at the end of this parsing)
+		operand.address_flags = Operand::Address_Flags::EFFECTIVE_ADDRESS;
+
+		// Optionnal Absolute flag specification
+		if (current_token.type == Token_Type::KEYWORD
+			&& current_token.value.keyword == Keyword::ABS) {
+			operand.address_flags |= Operand::Address_Flags::ABSOLUTE;
+
+			stream::peek(stream);
+			current_token = stream::get(stream);
+		}
+
+		// Optionnal Register (will be Base)
+		if (current_token.type == Token_Type::REGISTER) {
+			base = current_token.value._register;
+
+			stream::peek(stream);
+			current_token = stream::get(stream);
+		}
+
+		if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+			&& current_token.value.punctuation == Punctuation::COMMA) {
+			stream::peek(stream);
+			current_token = stream::get(stream);
+		}
+		else {
+			report_error(Compiler_Error::error, current_token, "Syntax error in Base field, EA should have the following syntax: Base, Index * Scale, Displacement. Where fields comma separated can be omitted.");
+		}
+
+		// Optionnal Register (will be Index)
+		if (current_token.type == Token_Type::REGISTER) {
+			index = current_token.value._register;
+
+			stream::peek(stream);
+			current_token = stream::get(stream);
+		}
+		// If there is no index register it can't have a scale
+		else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+			&& current_token.value.punctuation == Punctuation::COMMA) {
+			stream::peek(stream);
+			current_token = stream::get(stream);
+
+			goto displacement_field;
+		}
+		else {
+			report_error(Compiler_Error::error, current_token, "Syntax error in Index * Scale field, EA should have the following syntax: Base, Index * Scale, Displacement. Where fields comma separated can be omitted.");
+		}
+
+		if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+			if (current_token.value.punctuation == Punctuation::STAR) {
+				stream::peek(stream);
+				current_token = stream::get(stream);
+			}
+			else if (current_token.value.punctuation == Punctuation::COMMA) {
+				stream::peek(stream);
+				current_token = stream::get(stream);
+
+				goto displacement_field;
+			}
+			else {
+				report_error(Compiler_Error::error, current_token, "Syntax error in Index * Scale field, EA should have the following syntax: Base, Index * Scale, Displacement. Where fields comma separated can be omitted.");
+			}
+		}
+		else {
+			report_error(Compiler_Error::error, current_token, "Syntax error in Index * Scale field, EA should have the following syntax: Base, Index * Scale, Displacement. Where fields comma separated can be omitted.");
+		}
+
+		if (current_token.type == Token_Type::NUMERIC_LITERAL_I8) {
+			switch (current_token.value.integer)
+			{
+			case 1:
+				scale = Effective_Address::Scale_Value::V1;
+				break;
+			case 2:
+				scale = Effective_Address::Scale_Value::V2;
+				break;
+			case 4:
+				scale = Effective_Address::Scale_Value::V4;
+				break;
+			case 8:
+				scale = Effective_Address::Scale_Value::V8;
+				break;
+			default:
+				report_error(Compiler_Error::error, current_token, "Scale should be one of the following values: 1, 2, 4 or 8");
+				break;
+			}
+		}
+		else {
+			report_error(Compiler_Error::error, current_token, "Syntax error in Index * Scale field of EA. Scale should be one of the following values: 1, 2, 4 or 8");
+		}
+
+		if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+			&& current_token.value.punctuation == Punctuation::COMMA) {
+			stream::peek(stream);
+			current_token = stream::get(stream);
+		}
+		else {
+			report_error(Compiler_Error::error, current_token, "Syntax error in Index * Scale field, EA should have the following syntax: Base, Index * Scale, Displacement. Where fields comma separated can be omitted.");
+		}
+
+	displacement_field:
+		if (current_token.type == Token_Type::IDENTIFIER) {
+			operand.label = current_token.text;
+			operand.address_flags |= Operand::Address_Flags::FROM_LABEL;
+
+			stream::peek(stream); // Identifier
+			current_token = stream::get(stream);
+		}
+		// @TODO Do we need to do something cleaver to factorize code here?
+		// In the lexer, by having the size and sign as flags on numeric literal?
+		// Or here with a table that give the type of the numeric literal kind?
+		else if (current_token.type == Token_Type::NUMERIC_LITERAL_I8) {
+			operand.value.integer = current_token.value.integer;
+			operand.address_flags |= Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT8;
+
+			if (operand.value.integer < 0) {
+				report_error(Compiler_Error::error, current_token, "Syntax error in displacement field, value can't be negative");
+			}
+
+			stream::peek(stream); // Numeric value
+			current_token = stream::get(stream);
+		}
+		else if (current_token.type == Token_Type::NUMERIC_LITERAL_I16) {
+			operand.value.integer = current_token.value.integer;
+			operand.address_flags |= Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT32;
+
+			if (operand.value.integer < 0) {
+				report_error(Compiler_Error::error, current_token, "Syntax error in displacement field, value can't be negative");
+			}
+
+			stream::peek(stream); // Numeric value
+			current_token = stream::get(stream);
+		}
+		else if (current_token.type == Token_Type::NUMERIC_LITERAL_I32) {
+			operand.value.integer = current_token.value.integer;
+			operand.address_flags |= Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT32;
+
+			if (operand.value.integer < 0) {
+				report_error(Compiler_Error::error, current_token, "Syntax error in displacement field, value can't be negative");
+			}
+
+			stream::peek(stream); // Numeric value
+			current_token = stream::get(stream);
+		}
+		else if (current_token.type == Token_Type::NUMERIC_LITERAL_I64) {
+			operand.size = Operand::Size::QUAD_WORD;
+			operand.address_flags = Operand::Address_Flags::ABSOLUTE;	// We remove EFFECTIVE_ADDRESS because there is no SIB byte in this case
+
+			operand.value.integer = current_token.value.integer;
+
+			if (operand.value.integer < 0) {
+				report_error(Compiler_Error::error, current_token, "Syntax error in displacement field, value can't be negative");
+			}
+
+			stream::peek(stream); // Numeric value
+			current_token = stream::get(stream);
+
+			goto closing_bracket;	// @Warning Skip EA operand generation
+		}
+		else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI8) {
+			operand.value.unsigned_integer = current_token.value.unsigned_integer;
+			operand.address_flags |= Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT8;
+
+			stream::peek(stream); // Numeric value
+			current_token = stream::get(stream);
+		}
+		else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI16) {
+			operand.value.unsigned_integer = current_token.value.unsigned_integer;
+			operand.address_flags |= Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT32;
+
+			stream::peek(stream); // Numeric value
+			current_token = stream::get(stream);
+		}
+		else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI32) {
+			operand.value.unsigned_integer = current_token.value.unsigned_integer;
+			operand.address_flags |= Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT32;
+
+			stream::peek(stream); // Numeric value
+			current_token = stream::get(stream);
+		}
+		else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI64) {
+			operand.size = Operand::Size::QUAD_WORD;
+			operand.address_flags = Operand::Address_Flags::ABSOLUTE;	// We remove EFFECTIVE_ADDRESS because there is no SIB byte in this case
+
+			operand.value.unsigned_integer = current_token.value.unsigned_integer;
+
+			stream::peek(stream); // Numeric value
+			current_token = stream::get(stream);
+
+			goto closing_bracket;	// @Warning Skip EA operand generation
+		}
+		else {
+			report_error(Compiler_Error::error, current_token, "Syntax error in displacement field, EA should have the following syntax: Base, Index * Scale, Displacement. Where fields comma separated can be omitted.");
+		}
+
+		create_Effective_Address(base, index, scale, operand);
+
+	closing_bracket:
+		if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+			&& current_token.value.punctuation == Punctuation::CLOSE_BRACKET) {
+			stream::peek(stream); // ]
+			return;
+		}
+
+		report_error(Compiler_Error::error, current_token, "Syntax error closing bracket is expected at the end of EA");
+	}
+
 	void parse_instruction(ASM& asm_result, stream::Array_Read_Stream<Token>& stream, Section* section)
 	{
 		ZoneScopedNC("f::ASM::parse_instruction", 0x1b5e20);
@@ -390,6 +624,30 @@ namespace f::ASM
 					operands[operand_index].label = current_token.text;
 
 					stream::peek(stream); // Identifier
+				}
+				else if (current_token.type == Token_Type::SYNTAXE_OPERATOR) {
+					if (current_token.value.punctuation == Punctuation::OPEN_BRACKET) {
+						parse_effective_address_operand(stream, operands[operand_index]);
+					}
+				}
+				else if (current_token.type == Token_Type::KEYWORD) {
+					if (current_token.value.keyword == Keyword::BYTE) {
+						operands[operand_index].size = Operand::Size::BYTE;
+					}
+					else if (current_token.value.keyword == Keyword::WORD) {
+						operands[operand_index].size = Operand::Size::WORD;
+					}
+					else if (current_token.value.keyword == Keyword::DWORD) {
+						operands[operand_index].size = Operand::Size::DOUBLE_WORD;
+					}
+					else if (current_token.value.keyword == Keyword::QWORD) {
+						operands[operand_index].size = Operand::Size::QUAD_WORD;
+					}
+					else {
+						report_error(Compiler_Error::error, current_token, "Keyword not reconized in this context of operand definition");
+					}
+
+					stream::peek(stream); // Operand size modifier
 				}
 				// @TODO Do we need to do something cleaver to factorize code here?
 				// In the lexer, by having the size and sign as flags on numeric literal?
@@ -638,6 +896,59 @@ namespace f::ASM
 		return new_section;
 	}
 
+	void create_Effective_Address(Register base, Register index, Effective_Address::Scale_Value scale, Operand& operand)
+	{
+		uint8_t	SIB = 0;
+
+		switch (scale)
+		{
+		case f::ASM::Effective_Address::Scale_Value::V1:
+			SIB = 0 << 6;
+			break;
+		case f::ASM::Effective_Address::Scale_Value::V2:
+			SIB = 1 << 6;
+			break;
+		case f::ASM::Effective_Address::Scale_Value::V4:
+			SIB = 2 << 6;
+			break;
+		case f::ASM::Effective_Address::Scale_Value::V8:
+			SIB = 3 << 6;
+			break;
+		}
+
+		SIB |= (g_register_desc_table[(size_t)index].id & 0b111) << 3;
+		SIB |= (g_register_desc_table[(size_t)base].id & 0b111) << 0;
+
+		if (g_register_desc_table[(size_t)index].id > 0b111) {
+			operand.address_flags |= Operand::Address_Flags::EFFECTIVE_ADDRESS_EXTEND_INDEX;
+		}
+		if (g_register_desc_table[(size_t)base].id > 0b111) {
+			operand.address_flags |= Operand::Address_Flags::EFFECTIVE_ADDRESS_EXTEND_BASE;
+		}
+
+		uint8_t		displacement8 = 0;
+		uint32_t	displacement32 = 0;
+
+		// Extract displacement value
+		if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT8)) {
+			displacement8 = (uint8_t)operand.value.unsigned_integer;
+		}
+		else if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT32)) {
+			displacement32 = (uint32_t)operand.value.unsigned_integer;
+		}
+		else if (!is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::FROM_LABEL)) {
+			report_error(Compiler_Error::internal_error, "Displacement size should be specified when it doesn't come from a label");
+		}
+
+		operand.value.EA.value = (uint64_t)SIB << (64 - 8);
+		if (displacement8 != 0) {
+			operand.value.EA.value |= displacement8;
+		}
+		else if (displacement32 != 0) {
+			operand.value.EA.value |= displacement32;
+		}
+	}
+
 	inline size_t get_first_instruction_desc_index(Instruction instruction)
 	{
 		return g_instruction_desc_table_indices[(size_t)instruction];
@@ -760,7 +1071,6 @@ namespace f::ASM
 			}
 		}
 		else if (operand.type_flags == (uint8_t)Operand::Type_Flags::ADDRESS) {
-
 			// Do MODR/M and SIB bytes
 			if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS)) {
 				// Check at https://en.wikipedia.org/wiki/ModR/M#SIB_byte
@@ -779,12 +1089,18 @@ namespace f::ASM
 				else {	// The displacement is an immediate value
 					// https://stackoverflow.com/questions/15511482/x64-instruction-encoding-and-the-modrm-byte
 
+					// @TODO no displacement can be used in SIB byte, mod of modrm byte should be 0b00
+
 					// Can bit 8 or 32 bits
-					if (operand.size == Operand::Size::BYTE) {
+					if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT8)) {
 						*modrm |= 0b01 << 6; // displacement 8 bits
 					}
-					else {
+					else if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT32)
+						|| is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::FROM_LABEL)) {
 						*modrm |= 0b10 << 6; // displacement 32 bits
+					}
+					else {
+						report_error(Compiler_Error::internal_error, "");
 					}
 				}
 					 
@@ -803,7 +1119,45 @@ namespace f::ASM
 				// base		3bits (a register)
 				uint8_t	SIB = operand.value.EA.value >> (64 - 8);
 
+				// Set the additionnal byte in the REX prefix if necessary (we put an arbitrary value that need 4bits as the check was done during parsing and we have a flag)
+				if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_EXTEND_INDEX)) {
+					encode_additionnal_bit_in_REX_prefix(0b1000, data, REX_prefix_index, 0b0010);
+				}
+				if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_EXTEND_BASE)) {
+					encode_additionnal_bit_in_REX_prefix(0b1000, data, REX_prefix_index, 0b0001);
+				}
+
 				data[size++] = SIB;
+
+				if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::FROM_LABEL)) {
+					ADDR_TO_PATCH	addr_to_patch;
+
+					addr_to_patch.label = operand.label;
+					addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
+					memory::push_back(section->addr_to_patch, addr_to_patch);
+
+					size += 4;	// @Warning allocate 4 bytes for the addr in 32bits dispacement mod.
+				}
+				else {
+					// @Warning we should encode the immediate displacement value as requested by the instruction desc because
+					// the operand size can be specified and it may force the selection of an instruction_desc which expect a different immediate value size.
+					// By exemple "mov qword [rsp,, 32], 0" :
+					// will request a 64bits mov version which don't support 8 bits displacement so the displacement value 32
+					// will be encoded in 4 bytes instead of 1.
+					if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT8)) {
+						data[size++] = (uint8_t)operand.value.EA.value;
+					}
+					else if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_DISPLACEMENT32)
+						|| is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::FROM_LABEL)) {
+						uint32_t value = (uint32_t)operand.value.EA.value;
+						for (uint8_t i = 0; i < 4; i++) {
+							data[size++] = ((uint8_t*)&value)[i];
+						}
+					}
+					else {
+						report_error(Compiler_Error::internal_error, "");
+					}
+				}
 			}
 			else {
 				// Check at https://stackoverflow.com/questions/15511482/x64-instruction-encoding-and-the-modrm-byte
@@ -820,25 +1174,20 @@ namespace f::ASM
 					// https://xem.github.io/minix86/manual/intel-x86-and-64-manual-vol2/o_b5573232dd8f1481-72.html
 					*modrm |= 0b101;	// Displacement mode (make the address relative to register RIP (Re-Extended Instruction Pointer))
 				}
-			}
 
-			if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::FROM_LABEL)) {
+				// @TODO add 64bit displacement support? (using the qword keyword in front of the label)
+				// This should force the addr to be absolute (so don't add addr_to_patch)
+
 				ADDR_TO_PATCH	addr_to_patch;
 
 				addr_to_patch.label = operand.label;
 				addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
 				memory::push_back(section->addr_to_patch, addr_to_patch);
+
+				size += 4;	// @Warning allocate 4 bytes for the addr in 32bits dispacement mod.
 			}
 
-			if (operand.size == Operand::Size::BYTE) {
-				data[size++] = (uint8_t)operand.value.integer;
-			}
-			else {
-				uint32_t value = (uint32_t)operand.value.integer;
-				for (uint8_t i = 0; i < 4; i++) {
-					data[size++] = ((uint8_t*)&value)[i];
-				}
-			}
+
 		}
 	}
 
@@ -893,6 +1242,18 @@ namespace f::ASM
 			// W member should be 1 to switch to 64bit addressing mode
 			data[size++] = 0b0100 << 4 | 0b1000; // first 4bits are the prefix bit pattern
 			REX_prefix_index = 0;
+		}
+		if (REX_prefix_index == (uint8_t)-1) {	// Don't allocate REX prefix if already present, operands may need it
+			for (uint8_t op_i = 0; op_i < NB_MAX_OPERAND_PER_INSTRUCTION; op_i++)
+			{
+				if (operands[op_i].size == Operand::Size::QUAD_WORD	// W will be set to 1 when encoding operand
+					|| is_flag_set(operands[op_i].address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_EXTEND_BASE)
+					|| is_flag_set(operands[op_i].address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_EXTEND_INDEX)) {
+					data[size++] = 0b0100 << 4;
+					REX_prefix_index = 0;
+					break;
+				}
+			}
 		}
 
 		for (uint8_t i = 0; i < instruction_desc.opcode_size; i++) {
