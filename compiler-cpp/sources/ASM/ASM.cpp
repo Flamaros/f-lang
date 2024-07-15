@@ -1028,12 +1028,11 @@ namespace f::ASM
 			}
 			else if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_ADD_TO_OPCODE)) {
 				if (g_register_desc_table[(size_t)operand.value._register].id > 0b111) {
-					// @TODO should be an assert I think
-//					report_error(Compiler_Error::internal_error, "encoding the register directly in the opcode seems to be only a thing with a 32bit register!");
-					// We certainly pick the wrong instruction description here, fix the matching method
+					// The extention register bit should be set in base or REX prefix
+					encode_additionnal_bit_in_REX_prefix(g_register_desc_table[(size_t)operand.value._register].id, data, REX_prefix_index, 0b0001);
 				}
 
-				data[last_opcode_byte_index] += g_register_desc_table[(size_t)operand.value._register].id;
+				data[last_opcode_byte_index] += g_register_desc_table[(size_t)operand.value._register].id & 0b111;
 			}
 			else {
 				report_error(Compiler_Error::internal_error, "Register encoding fails for a strange reason or unsupported encoding rule");
@@ -1080,6 +1079,8 @@ namespace f::ASM
 					// @TODO wrong instruction desc selection or the user did an error like used an EA on instruction that doesn't support it?
 					report_error(Compiler_Error::error, "Can't use Effective Address when there is no modrm byte");
 				}
+
+				*modrm &= 0b00111111;	// Remove mod flag (that can contains 0b11 from a previous register operand)
 
 				// Set the MOD of MODR/M byte
 				if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::FROM_LABEL)) {
@@ -1195,16 +1196,8 @@ namespace f::ASM
 	{
 		// @TODO handle flags,...
 		// immediate size value promotions
-		bool need_REX_prefix = is_flag_set(instruction_desc.encoding_flags, (uint8_t)Instruction_Desc::Encoding_Flags::PREFIX_REX_W);
-
 		for (uint8_t i = 0; i < NB_MAX_OPERAND_PER_INSTRUCTION; i++)
 		{
-			if (operands[i].type_flags == (uint8_t)Operand::Type_Flags::REGISTER
-				&& (uint8_t)operands[i].value._register > 0b111
-				&& need_REX_prefix == false) {
-				return false;
-			}
-
 			if (((is_flag_set(instruction_desc.op_enc_descs[i].op.type_flags, operands[i].type_flags) && instruction_desc.op_enc_descs[i].op.size >= operands[i].size)
 				|| (operands[i].type_flags == NONE && operands[i].size == Operand::Size::NONE
 					&& instruction_desc.op_enc_descs[i].op.type_flags == NONE && instruction_desc.op_enc_descs[i].op.size == Operand::Size::NONE))) {
@@ -1247,8 +1240,9 @@ namespace f::ASM
 			for (uint8_t op_i = 0; op_i < NB_MAX_OPERAND_PER_INSTRUCTION; op_i++)
 			{
 				if (operands[op_i].size == Operand::Size::QUAD_WORD	// W will be set to 1 when encoding operand
-					|| is_flag_set(operands[op_i].address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_EXTEND_BASE)
-					|| is_flag_set(operands[op_i].address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_EXTEND_INDEX)) {
+					|| (operands[op_i].type_flags == Operand::Type_Flags::ADDRESS && is_flag_set(operands[op_i].address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_EXTEND_BASE))
+					|| (operands[op_i].type_flags == Operand::Type_Flags::ADDRESS && is_flag_set(operands[op_i].address_flags, (uint8_t)Operand::Address_Flags::EFFECTIVE_ADDRESS_EXTEND_INDEX))
+					|| (operands[op_i].type_flags == Operand::Type_Flags::REGISTER && (uint8_t)g_register_desc_table[(size_t)operands[op_i].value._register].id > 0b111)) {
 					data[size++] = 0b0100 << 4;
 					REX_prefix_index = 0;
 					break;
