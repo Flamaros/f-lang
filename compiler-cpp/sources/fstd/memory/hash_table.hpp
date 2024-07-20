@@ -76,8 +76,8 @@ namespace fstd
 			struct Iterator
 			{
 				const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>* hash_table;
-				size_t bucket_index;
-				size_t slot_index;
+				ssize_t bucket_index;
+				ssize_t slot_index;
 			};
 
 			struct Value_POD
@@ -98,10 +98,10 @@ namespace fstd
 
 			bool (*compare_function)(const Key_Type&, const Key_Type&) = nullptr;
 			Array<Bucket> buckets;
-			size_t size;
+			ssize_t size;
 		};
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
 		inline void hash_table_init(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, bool (*compare_function)(const Key_Type&, const Key_Type&))
 		{
 			ZoneScopedN("hash_table_init");
@@ -117,12 +117,12 @@ namespace fstd
 			hash_table.size = 0;
 		}
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
 		inline void hash_table_release(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
 		{
 			ZoneScopedN("hash_table_release");
 
-			for (size_t bucket_index = 0; bucket_index < get_array_size(hash_table.buckets); bucket_index++)
+			for (ssize_t bucket_index = 0; bucket_index < get_array_size(hash_table.buckets); bucket_index++)
 			{
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 
@@ -132,7 +132,7 @@ namespace fstd
 			release(hash_table.buckets);
 		}
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
 		inline Value_Type* hash_table_insert(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, Hash_Type hash, Key_Type& key, Value_Type& value)
 		{
 			ZoneScopedN("hash_table_insert");
@@ -141,8 +141,8 @@ namespace fstd
 
 			while (true)
 			{
-				size_t bucket_index = hash / _bucket_size;
-				size_t value_index = hash - (bucket_index * _bucket_size);
+				ssize_t bucket_index = hash / _bucket_size;
+				ssize_t value_index = hash - (bucket_index * _bucket_size);
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 
 				if (bucket->nb_values == 0)
@@ -153,7 +153,7 @@ namespace fstd
 					init(bucket->init_flags);
 					allocate(bucket->init_flags);
 
-					size_t bucket_size_in_bytes = _bucket_size * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD);
+					ssize_t bucket_size_in_bytes = _bucket_size * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD);
 					bucket->table = (typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD*)system::allocate(bucket_size_in_bytes);
 					system::zero_memory(bucket->table, bucket_size_in_bytes);
 				}
@@ -213,7 +213,7 @@ namespace fstd
 		//	}
 		//}
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
 		inline Value_Type* hash_table_get(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, Hash_Type hash, Key_Type& key)
 		{
 			ZoneScopedN("hash_table_get");
@@ -222,8 +222,8 @@ namespace fstd
 
 			while (true)
 			{
-				size_t bucket_index = hash / _bucket_size;
-				size_t value_index = hash - (bucket_index * _bucket_size);
+				ssize_t bucket_index = hash / _bucket_size;
+				ssize_t value_index = hash - (bucket_index * _bucket_size);
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 
 				if (bucket->nb_values == 0) // bucket is not iniatilized
@@ -241,15 +241,15 @@ namespace fstd
 			}
 		}
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
-		inline size_t hash_table_get_size(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
+		inline ssize_t hash_table_get_size(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
 		{
 			fstd::core::Assert(hash_table.compare_function);
 
 			return hash_table.size;
 		}
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
 		inline typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator hash_table_begin(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
 		{
 			ZoneScopedN("hash_table_begin");
@@ -264,7 +264,7 @@ namespace fstd
 			{
 				auto* bucket = get_array_element(hash_table.buckets, it.bucket_index);
 
-				size_t bucket_size = bucket->nb_values == 0 ? 0 : _bucket_size;
+				ssize_t bucket_size = bucket->nb_values == 0 ? 0 : _bucket_size;
 				for (it.slot_index = 0; it.slot_index < bucket_size; it.slot_index++) // @Warning some buckets aren't allocated so the size can be 0
 				{
 					if (boolean_array_get(bucket->init_flags, it.slot_index) == true)
@@ -275,7 +275,7 @@ namespace fstd
 			return it;
 		}
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
 		inline typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& hash_table_next(typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& it)
 		{
 			ZoneScopedN("hash_table_next");
@@ -288,7 +288,7 @@ namespace fstd
 			{
 				auto* bucket = get_array_element(it.hash_table->buckets, it.bucket_index);
 
-				size_t bucket_size = bucket->nb_values == 0 ? 0 : _bucket_size;
+				ssize_t bucket_size = bucket->nb_values == 0 ? 0 : _bucket_size;
 				for (; it.slot_index < bucket_size; it.slot_index++) // @Warning some buckets aren't allocated so the size can be 0
 				{
 					if (boolean_array_get(bucket->init_flags, it.slot_index) == true)
@@ -300,7 +300,7 @@ namespace fstd
 			return it;
 		}
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
 		inline typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator hash_table_end(const Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table)
 		{
 			ZoneScopedN("hash_table_end");
@@ -315,7 +315,7 @@ namespace fstd
 			return it;
 		}
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
 		inline bool equals(typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& a, typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& b)
 		{
 			ZoneScopedN("equals");
@@ -323,7 +323,7 @@ namespace fstd
 			return a.hash_table == b.hash_table && a.bucket_index == b.bucket_index && a.slot_index == b.slot_index;
 		}
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
 		inline Value_Type* hash_table_get(typename Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Iterator& it)
 		{
 			ZoneScopedN("hash_table_get (iterator)");
@@ -340,17 +340,17 @@ namespace fstd
 			return &value_pod.value;
 		}
 
-		template<typename Hash_Type, typename Key_Type, typename Value_Type, size_t _bucket_size>
+		template<typename Hash_Type, typename Key_Type, typename Value_Type, ssize_t _bucket_size>
 		inline void log_stats(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>& hash_table, fstd::core::Logger& logger)
 		{
 			ZoneScopedN("log_stats");
 
-			size_t nb_used_buckets = 0;
-			size_t bucket_size = _bucket_size * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD);
-			size_t memory_size = sizeof(hash_table.buckets) +
+			ssize_t nb_used_buckets = 0;
+			ssize_t bucket_size = _bucket_size * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Value_POD);
+			ssize_t memory_size = sizeof(hash_table.buckets) +
 				get_array_size(hash_table.buckets) * sizeof(Hash_Table<Hash_Type, Key_Type, Value_Type, _bucket_size>::Bucket);
 
-			for (size_t bucket_index = 0; bucket_index < get_array_size(hash_table.buckets); bucket_index++)
+			for (ssize_t bucket_index = 0; bucket_index < get_array_size(hash_table.buckets); bucket_index++)
 			{
 				auto* bucket = get_array_element(hash_table.buckets, bucket_index);
 

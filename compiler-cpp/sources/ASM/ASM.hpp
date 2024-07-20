@@ -212,7 +212,7 @@ namespace f
 			return fstd::language::are_equals(name, section.name);
 		}
 
-		void compile_file(const fstd::system::Path& path, const fstd::system::Path& output_path, bool shared_library, ASM& asm_result);
+		void compile_file(const fstd::system::Path& path, ASM& asm_result);
 
 		// Advanced API
 		// You should create a section keep the pointer to fill it in an efficient way with function helpers when possible

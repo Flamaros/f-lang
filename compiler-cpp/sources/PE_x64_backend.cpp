@@ -818,10 +818,10 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 	{
 		ZoneScopedN("Patching addresses");
 
-		for (size_t i_section = 0; i_section < memory::get_array_size(asm_result.sections); i_section++)
+		for (ssize_t i_section = 0; i_section < memory::get_array_size(asm_result.sections); i_section++)
 		{
 			ASM::Section* section = memory::get_array_element(asm_result.sections, i_section);
-			for (size_t j_add_to_patch = 0; j_add_to_patch < memory::get_array_size(section->addr_to_patch); j_add_to_patch++)
+			for (ssize_t j_add_to_patch = 0; j_add_to_patch < memory::get_array_size(section->addr_to_patch); j_add_to_patch++)
 			{
 				ASM::ADDR_TO_PATCH* addr_to_patch = memory::get_array_element(section->addr_to_patch, j_add_to_patch);
 				ASM::Label**		found_label;

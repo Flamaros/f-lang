@@ -15,7 +15,7 @@ namespace fstd
 		struct Array_Read_Stream
 		{
 			fstd::memory::Array<Array_Type>*	buffer_ptr = nullptr;
-			size_t								position = 0;
+			ssize_t								position = 0;
 		};
 
 		template<typename Array_Type>

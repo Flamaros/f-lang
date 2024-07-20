@@ -259,11 +259,11 @@ namespace f::ASM
 	{
 		ZoneScopedN("lex");
 
-		stream::Array_Read_Stream<uint8_t>   stream;
-		size_t	                        nb_tokens_prediction = 0;
-		language::string_view           current_view;
-		int					            current_line = 1;
-		int					            current_column = 1;
+		stream::Array_Read_Stream<uint8_t>	stream;
+		ssize_t								nb_tokens_prediction = 0;
+		language::string_view				current_view;
+		int									current_line = 1;
+		int									current_column = 1;
 
 		stream::init<uint8_t>(stream, file_buffer);
 
@@ -832,7 +832,7 @@ namespace f::ASM
 			print_to_builder(string_builder, " ---\n");
 		}
 
-		for (size_t i = 0; i < memory::get_array_size(tokens); i++)
+		for (ssize_t i = 0; i < memory::get_array_size(tokens); i++)
 		{
 			switch (tokens[i].type)
 			{

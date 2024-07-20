@@ -14,18 +14,18 @@ namespace fstd
 		struct Array
 		{
 			Type*	ptr = nullptr;
-			size_t	reserved = 0;
-			size_t	size = 0;				// Number of elements
+			ssize_t	reserved = 0;
+			ssize_t	size = 0;				// Number of elements
 
 											// @TODO @CleanUp
 			// I don't really want to put the operator here (directly in the struct)
-			inline Type& operator[](size_t index)
+			inline Type& operator[](ssize_t index)
 			{
 				return ptr[index];
 			}
 
 			// @TODO @WTF??? Why I need a const version???
-			inline const Type& operator[](size_t index) const
+			inline const Type& operator[](ssize_t index) const
 			{
 				return ptr[index];
 			}
@@ -40,7 +40,7 @@ namespace fstd
 		}
 
 		template<typename Type>
-		void resize_array(Array<Type>& array, size_t size)
+		void resize_array(Array<Type>& array, ssize_t size)
 		{
 			ZoneScopedN("resize_array");
 
@@ -55,7 +55,7 @@ namespace fstd
 		}
 
 		template<typename Type>
-		void reserve_array(Array<Type>& array, size_t size)
+		void reserve_array(Array<Type>& array, ssize_t size)
 		{
 			ZoneScopedN("reserve_array");
 
@@ -75,7 +75,7 @@ namespace fstd
 		}
 
 		template<typename Type>
-		void shrink_array(Array<Type>& array, size_t size)
+		void shrink_array(Array<Type>& array, ssize_t size)
 		{
 			ZoneScopedN("shrink_array");
 
@@ -105,7 +105,7 @@ namespace fstd
 		}
 
 		template<typename Type>
-		void array_copy(Array<Type>& array, size_t index, const Type* raw_array, size_t size)
+		void array_copy(Array<Type>& array, ssize_t index, const Type* raw_array, ssize_t size)
 		{
 			ZoneScopedN("array_copy");
 
@@ -114,16 +114,26 @@ namespace fstd
 		}
 
 		template<typename Type>
-		void array_copy(Array<Type>& array, size_t index, const Array<Type>& source)
+		void array_copy(Array<Type>& array, ssize_t index, const Array<Type>& source, ssize_t start_index = 0, ssize_t size = -1)
 		{
 			ZoneScopedN("array_copy");
 
-			resize_array(array, index + source.size);
-			system::memory_copy(&array.ptr[index], source.ptr, source.size * sizeof(Type));
+			if (size == -1) {
+				size = source.size - start_index;
+			}
+
+			fstd::core::Assert(
+				start_index >= 0 &&
+				start_index < source.size &&
+				size > 0 &&	// We should copy at least one element
+				start_index + size <= source.size);
+
+			resize_array(array, index + size);
+			system::memory_copy(&array.ptr[index], &source.ptr[start_index], size * sizeof(Type));
 		}
 
 		template<typename Type>
-		Type* get_array_element(const Array<Type>& array, size_t index)
+		Type* get_array_element(const Array<Type>& array, ssize_t index)
 		{
 			fstd::core::Assert(array.size > index);
 			return &array.ptr[index];
@@ -150,25 +160,25 @@ namespace fstd
 		}
 
 		template<typename Type>
-		size_t get_array_size(const Array<Type>& array)
+		ssize_t get_array_size(const Array<Type>& array)
 		{
 			return array.size;
 		}
 
 		template<typename Type>
-		size_t get_array_bytes_size(const Array<Type>& array)
+		ssize_t get_array_bytes_size(const Array<Type>& array)
 		{
 			return array.size * sizeof(Type);
 		}
 
 		template<typename Type>
-		size_t is_array_empty(const Array<Type>& array)
+		ssize_t is_array_empty(const Array<Type>& array)
 		{
 			return array.size == 0;
 		}
 
 		template<typename Type>
-		size_t get_array_reserved(const Array<Type>& array)
+		ssize_t get_array_reserved(const Array<Type>& array)
 		{
 			return array.reserved;
 		}
@@ -177,9 +187,9 @@ namespace fstd
 		// Car avec un pointeur sur fonction je ne suis pas sur que le compilateur ou linker soient en mesure de supprimer le call
 		// Le pb c'est qu'en C++ pour être sur que le paramètre template soit une fonction qui respecte le bon prototype est over complicated.
 		template<typename Type, typename SearchType>
-		size_t find_array_element(const Array<Type>& array, const SearchType& value, bool (*match_function)(const SearchType&, const Type&), size_t start_index = 0)
+		ssize_t find_array_element(const Array<Type>& array, const SearchType& value, bool (*match_function)(const SearchType&, const Type&), ssize_t start_index = 0)
 		{
-			for (size_t i = start_index; i < array.size; i++)
+			for (ssize_t i = start_index; i < array.size; i++)
 			{
 				if (match_function(value, array[i])) {
 					return i;

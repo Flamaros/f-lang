@@ -65,7 +65,7 @@ namespace f::ASM
 
 	void compile(ASM& asm_result, stream::Array_Read_Stream<Token>& stream);
 
-	void compile_file(const fstd::system::Path& path, const fstd::system::Path& output_path, bool shared_library, ASM& asm_result)
+	void compile_file(const fstd::system::Path& path, ASM& asm_result)
 	{
 		ZoneScopedNC("f::ASM::compile_file", 0x1b5e20);
 

@@ -42,5 +42,9 @@ namespace fstd
 			language::copy(path.string, 0, source.string);
 			path.is_absolute = source.is_absolute;
 		}
+
+		ssize_t					extension(Path& path, language::string& extension);	// return -1 if their is no extension, else the position of character following the '.'
+		ssize_t					file_name(Path& path, language::string& file_name);	// return -1 if their is no filename
+		ssize_t					base_name(Path& path, language::string& base_name);	// return -1 if their is no filename
 	}
 }

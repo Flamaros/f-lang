@@ -45,7 +45,7 @@ namespace fstd
 			static_assert(std::is_integral<IntegerType>::value, "to_string works only with integral types.");
 
 			uint8_t*	string;
-			size_t		string_length = 0;	// doesn't contains the sign
+			ssize_t		string_length = 0;	// doesn't contains the sign
 			bool		is_negative = false;
 
 			// value range is from -9,223,372,036,854,775,807 to +9,223,372,036,854,775,807

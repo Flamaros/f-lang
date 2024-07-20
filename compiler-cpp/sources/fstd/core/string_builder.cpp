@@ -316,7 +316,7 @@ namespace fstd
 
 		void free_buffers(String_Builder& builder)
 		{
-			for (size_t i = 0; i < memory::get_array_size(builder.strings); i++) {
+			for (ssize_t i = 0; i < memory::get_array_size(builder.strings); i++) {
 				language::release(*memory::get_array_element(builder.strings, i));
 			}
 
@@ -326,16 +326,16 @@ namespace fstd
 		language::string to_string(String_Builder& builder)
 		{
 			language::string	result;
-			size_t				total_length = 0;
-			size_t				position = 0;
+			ssize_t				total_length = 0;
+			ssize_t				position = 0;
 
-			for (size_t i = 0; i < memory::get_array_size(builder.strings); i++) {
+			for (ssize_t i = 0; i < memory::get_array_size(builder.strings); i++) {
 				total_length += language::get_string_size(*memory::get_array_element(builder.strings, i));
 			}
 
 			language::reserve(result, total_length + 1); // + 1 for ending '\0'
-			for (size_t i = 0; i < memory::get_array_size(builder.strings); i++) {
-				size_t size = language::get_string_size(*memory::get_array_element(builder.strings, i));
+			for (ssize_t i = 0; i < memory::get_array_size(builder.strings); i++) {
+				ssize_t size = language::get_string_size(*memory::get_array_element(builder.strings, i));
 
 				language::copy(result, position, *memory::get_array_element(builder.strings, i));
 				position += size;

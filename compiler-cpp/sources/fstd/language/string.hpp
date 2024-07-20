@@ -69,24 +69,24 @@ namespace fstd
 			system::memory_copy(memory::get_array_data(str.buffer), string, memory::get_array_bytes_size(str.buffer));
 		}
 
-		inline void reserve(string& str, size_t size)
+		inline void reserve(string& str, ssize_t size)
 		{
 			memory::reserve_array(str.buffer, size);
 		}
 
-		inline void resize(string& str, size_t size)
+		inline void resize(string& str, ssize_t size)
 		{
 			memory::resize_array(str.buffer, size);
 		}
 
-		inline void copy(string& str, size_t position, const uint8_t* string, size_t size)
+		inline void copy(string& str, ssize_t position, const uint8_t* string, ssize_t size)
 		{
 			memory::array_copy(str.buffer, position, string, size);
 		}
 
-		inline void copy(string& str, size_t position, const string& string)
+		inline void copy(string& str, ssize_t position, const string& string, ssize_t start_pos = 0, ssize_t size = -1)
 		{
-			memory::array_copy(str.buffer, position, string.buffer);
+			memory::array_copy(str.buffer, position, string.buffer, start_pos, size);
 		}
 
 		inline void release(string& str)
@@ -119,6 +119,33 @@ namespace fstd
 			else {
 				return system::memory_compare(a.buffer.ptr, b.buffer.ptr, a.buffer.size);
 			}
+		}
+
+		inline ssize_t first_of(const string& str, uint8_t c, ssize_t start_pos = 0)
+		{
+			for (ssize_t i = start_pos; i < memory::get_array_size(str.buffer); i++)
+			{
+				if (*memory::get_array_element(str.buffer, i) == c)
+					return i;
+			}
+
+			return -1;
+		}
+
+		inline ssize_t last_of(const string& str, uint8_t c, ssize_t start_pos = -1)
+		{
+			if (start_pos == -1) {
+				start_pos = memory::get_array_size(str.buffer) - 1;
+			}
+
+			core::Assert(start_pos <= memory::get_array_size(str.buffer) - 1);
+			for (ssize_t i = start_pos; i != 0; i--)
+			{
+				if (*memory::get_array_element(str.buffer, i) == c)
+					return i;
+			}
+
+			return -1;
 		}
 
 		// @SpeedUp @CleanUp
@@ -154,22 +181,22 @@ namespace fstd
 			system::memory_copy(memory::get_array_data(str.buffer), string, memory::get_array_bytes_size(str.buffer));
 		}
 
-		inline void reserve(UTF16LE_string& str, size_t size)
+		inline void reserve(UTF16LE_string& str, ssize_t size)
 		{
 			memory::reserve_array(str.buffer, size);
 		}
 
-		inline void resize(UTF16LE_string& str, size_t size)
+		inline void resize(UTF16LE_string& str, ssize_t size)
 		{
 			memory::resize_array(str.buffer, size);
 		}
 
-		inline void copy(UTF16LE_string& str, size_t position, const uint16_t* string, size_t size)
+		inline void copy(UTF16LE_string& str, ssize_t position, const uint16_t* string, ssize_t size)
 		{
 			memory::array_copy(str.buffer, position, string, size);
 		}
 
-		inline void copy(UTF16LE_string& str, size_t position, const UTF16LE_string& string)
+		inline void copy(UTF16LE_string& str, ssize_t position, const UTF16LE_string& string)
 		{
 			memory::array_copy(str.buffer, position, string.buffer);
 		}
@@ -191,7 +218,7 @@ namespace fstd
 			return memory::get_array_data(str.buffer);
 		}
 
-		inline size_t get_string_size(const UTF16LE_string& str)
+		inline ssize_t get_string_size(const UTF16LE_string& str)
 		{
 			return memory::get_array_size(str.buffer);
 		}

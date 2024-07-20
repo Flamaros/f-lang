@@ -48,7 +48,7 @@ inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 	ZoneScopedN("allocate_AST_node");
 
 	// Ensure that no reallocation could happen during the resize
-	bool overflow_preallocated_buffer = memory::get_array_size(globals.parser_data.ast_nodes) >= memory::get_array_reserved(globals.parser_data.ast_nodes) * sizeof(AST_Statement_Variable);
+	bool overflow_preallocated_buffer = memory::get_array_size(globals.parser_data.ast_nodes) >= memory::get_array_reserved(globals.parser_data.ast_nodes) * (ssize_t)sizeof(AST_Statement_Variable);
 
 	core::Assert(overflow_preallocated_buffer == false);
 	if (overflow_preallocated_buffer) {
@@ -70,7 +70,7 @@ inline Symbol_Table* allocate_symbol_table()
 	ZoneScopedN("allocate_symbol_table");
 
 	// Ensure that no reallocation could happen during the resize
-	bool overflow_preallocated_buffer = memory::get_array_size(globals.parser_data.symbol_tables) >= memory::get_array_reserved(globals.parser_data.symbol_tables) * sizeof(Symbol_Table);
+	bool overflow_preallocated_buffer = memory::get_array_size(globals.parser_data.symbol_tables) >= memory::get_array_reserved(globals.parser_data.symbol_tables) * (ssize_t)sizeof(Symbol_Table);
 
 	core::Assert(overflow_preallocated_buffer == false);
 	if (overflow_preallocated_buffer) {

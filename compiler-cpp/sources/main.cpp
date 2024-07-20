@@ -87,44 +87,45 @@ int main(int ac, char** av)
 	f::ASM::ASM							asm_result;
 	int									result = 0;
 
-	if (ac != 3) {
+	if (ac < 2) {
 		report_error(Compiler_Error::error, "Wrong argument number, you should specify file paths of input and output files.");
 	}
 
-	// Compilation of ASM test
-	{
-		// @TODO mettre un timer
-		// Utiliser ce timer pour compter le nombre de loc/s que je peux compiler
+	system::Path	input_file_path;
+	system::Path	output_file_path;
 
+	defer{ system::reset_path(input_file_path); };
+	defer{ system::reset_path(output_file_path); };
 
-		system::Path	asm_file_path;
-		system::Path	asm_output_path;
+	system::from_native(input_file_path, (const uint8_t*)av[1]);
 
-		defer {
-			system::reset_path(asm_file_path);
-			system::reset_path(asm_output_path);
+	if (ac == 3) {
+		system::from_native(output_file_path, (const uint8_t*)av[2]);
+	}
+	else {
+		language::string	filename;
+		String_Builder		string_builder;
+
+		defer{
+			release(filename);
+			free_buffers(string_builder);
 		};
 
-		system::from_native(asm_file_path, (uint8_t*)u8R"(tests/asm/helloworld.fasm)");
-		system::from_native(asm_output_path, (uint8_t*)u8R"(.\asm_helloworld.exe)");
+		system::base_name(input_file_path, filename);
+		print_to_builder(string_builder, ".\\%s.exe", filename);
 
-		f::ASM::compile_file(asm_file_path, asm_output_path, false, asm_result);
+		system::from_native(output_file_path, to_string(string_builder));
 	}
+
+	f::ASM::compile_file(input_file_path, asm_result);
 
 	// Native backend
 	{
-		system::Path	output_file_path;
-
-		defer{ system::reset_path(output_file_path); };
-
-		system::from_native(output_file_path, (uint8_t*)av[2]);
-
 		f::PE_x64_backend::initialize_backend(); // @TODO see to do it asynchronously (are event better at compile-time to generate C++ code with tables)
 		f::PE_x64_backend::compile(asm_result, output_file_path);
 	}
 
 
-	// @TODO handle options correctly
 	// The code following the return don't work for the moment
 	// The IR strategy isn't correct
 	// Put the focus on doing things from bottom up (ASM -> Static Single Assignement -> f-lang)

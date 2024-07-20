@@ -13,11 +13,13 @@ typedef unsigned long long uint64_t;
 
 #if defined(FSTD_X86_64)
 
-typedef uint64_t size_t;
+typedef uint64_t	size_t;
+typedef int64_t		ssize_t;
 
 #elif defined(FSTD_X86_32)
 
-typedef uint32_t size_t;
+typedef uint32_t	size_t;
+typedef int32_t		ssize_t;
 
 #else
 #	error

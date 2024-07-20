@@ -232,7 +232,7 @@ namespace fstd
 			// Flamaros - 16 september 2020
 			while (code_unit_index < language::get_string_size(utf16LE_string))
 			{
-				size_t		nb_utf8_code_units_added;
+				ssize_t		nb_utf8_code_units_added;
 				uint16_t	code_unit_1 = utf16LE_string[code_unit_index + 0];
 				uint8_t*	output = (uint8_t*)&utf8_string[result_size];
 
