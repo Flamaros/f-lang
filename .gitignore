@@ -55,6 +55,7 @@ output.exe
 scope.png
 
 f-editor.exe
+dx11_helloworld_x64.exe
 
 # research/vs_x86_hello_world (Visual Studio)
 research/vs_x86_hello_world/Release

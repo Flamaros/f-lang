@@ -208,7 +208,7 @@ namespace f::ASM
 				new_imported_func = allocate_imported_function();
 
 				new_imported_func->name = current_token.text;
-				new_imported_func->name_RVA = 0;
+				new_imported_func->RVA_of_IAT_entry = 0;
 
 				fstd::memory::hash_table_insert((*found_imported_lib)->functions, func_short_hash, module_name.text, new_imported_func);
 			}

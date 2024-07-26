@@ -24,6 +24,8 @@ using namespace fstd;
 using namespace fstd::core;
 using namespace fstd::system;
 using namespace fstd::stream;
+using namespace fstd::memory;
+using namespace fstd::language;
 
 using namespace f;
 
@@ -453,157 +455,171 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
         // @TODO check the section size in the header (idata_image_section_header.SizeOfRawData)
 
-		size_t	nb_imported_functions = 0;
-		DWORD	HNT_size = 0;
+		// Struct of idata section :
+		// array of IMAGE_IMPORT_DESCRIPTOR
+		// 0
+		// For each imported libraries
+		//   library name
+		//   ILT
+		//   0
+		//   IAT
+		//   0
+		//   HNT
+		//   0
+
+		struct Library_Import_Computations
+		{
+			DWORD		name_RVA;	// name of library
+			DWORD		ILT_RVA;
+			DWORD		IAT_RVA;
+//			LONGLONG	first_thunk;
+			DWORD		HNT_start_RVA;
+			DWORD		HNT_end_RVA;
+		};
+
+		ssize_t							nb_imported_dlls = hash_table_get_size(asm_result.imported_libraries);
+		DWORD							image_import_descriptors_size = (nb_imported_dlls + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR);
+		Library_Import_Computations		empty_lib_imp_computations = { };
+		Library_Import_Computations*	previous_lib_imp_computations = &empty_lib_imp_computations;
+
+		Array<Library_Import_Computations>	libraries_import_computations;
+		reserve_array(libraries_import_computations, nb_imported_dlls);
+
+		empty_lib_imp_computations.HNT_end_RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
+			+ image_import_descriptors_size;
 
 		// Compute few statistics
 		{
 			auto it_library = hash_table_begin(asm_result.imported_libraries);
 			auto it_library_end = hash_table_end(asm_result.imported_libraries);
-			for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library))
+			for (; !equals<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library))
 			{
-				ASM::Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library);
+				ASM::Imported_Library*		imported_library = *hash_table_get<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library);
+				ssize_t						nb_imported_functions = hash_table_get_size(imported_library->functions);
+				Library_Import_Computations	current_lib_imp_computations;
+
+				current_lib_imp_computations.name_RVA = previous_lib_imp_computations->HNT_end_RVA;
+				current_lib_imp_computations.ILT_RVA = current_lib_imp_computations.name_RVA + (DWORD)get_string_size(imported_library->name) + 1;
+				current_lib_imp_computations.IAT_RVA = current_lib_imp_computations.ILT_RVA + (nb_imported_functions + 1) * sizeof(uint64_t);	// @TODO fix it for 32bits
+				current_lib_imp_computations.HNT_start_RVA = current_lib_imp_computations.IAT_RVA + (nb_imported_functions + 1) * sizeof(uint64_t);	// @TODO fix it for 32bits
+				current_lib_imp_computations.HNT_end_RVA = current_lib_imp_computations.HNT_start_RVA;
 
 				auto it_function = hash_table_begin(imported_library->functions);
 				auto it_function_end = hash_table_end(imported_library->functions);
-				for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function))
+				for (ssize_t function_index = 0; !equals<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function), function_index++)
 				{
-					ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function);
+					ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function);
 
-					HNT_size += sizeof(WORD);
-					HNT_size += (DWORD)fstd::language::get_string_size(imported_function->name) + 1;
+					current_lib_imp_computations.HNT_end_RVA += sizeof(WORD)	// Hint
+						+ (DWORD)get_string_size(imported_function->name) + 1;	// Name
 
-					nb_imported_functions++;
+					// Fix RVA of imported functions
+					imported_function->RVA_of_IAT_entry = current_lib_imp_computations.IAT_RVA + function_index * sizeof(uint64_t);	// @TODO change it in 32bits
 				}
+
+				array_push_back(libraries_import_computations, current_lib_imp_computations);
+				previous_lib_imp_computations = get_array_last_element(libraries_import_computations);
 			}
 		}
 
         DWORD idata_section_size = 0;
+
+		// Write libraries import header
         {
             IMAGE_IMPORT_DESCRIPTOR import_descriptor;
 
 			auto it_library = hash_table_begin(asm_result.imported_libraries);
 			auto it_library_end = hash_table_end(asm_result.imported_libraries);
-			for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library))
+			for (ssize_t library_index = 0; !equals<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library), library_index++)
 			{
-				ASM::Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library);
+				ASM::Imported_Library*			imported_library = *hash_table_get<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library);
+				Library_Import_Computations*	current_lib_imp_computations = get_array_element(libraries_import_computations, library_index);
 
-				// RVA to original unbound IAT (PIMAGE_THUNK_DATA)
-				import_descriptor.OriginalFirstThunk = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-					+ sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2;
+				// RVA to original unbound IAT (PIMAGE_THUNK_DATA) -> mostly rva to ILT
+				import_descriptor.OriginalFirstThunk = current_lib_imp_computations->ILT_RVA;
+
 				import_descriptor.TimeDateStamp = 0;
 				import_descriptor.ForwarderChain = 0; // -1 if no forwarders
 
 				// RVA to DLL name
-				import_descriptor.Name = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-					+ sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-					+ sizeof(LONGLONG) * ((DWORD)memory::hash_table_get_size(imported_library->functions) + 1) * 2 // IAT + ILT
-					+ HNT_size; // HNT
+				import_descriptor.Name = current_lib_imp_computations->name_RVA;
 
 				// RVA to IAT (if bound this IAT has actual addresses)
-				import_descriptor.FirstThunk = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-					+ sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-					+ sizeof(LONGLONG) * ((DWORD)memory::hash_table_get_size(imported_library->functions) + 1);
+				import_descriptor.FirstThunk = current_lib_imp_computations->IAT_RVA;
 
 				write_file(output_file, (uint8_t*)&import_descriptor, sizeof(import_descriptor), &bytes_written);
 				idata_section_size += bytes_written;
-
-				// Fix RVA of imported functions
-				uint32_t	function_index = 0;
-				auto it_function = hash_table_begin(imported_library->functions);
-				auto it_function_end = hash_table_end(imported_library->functions);
-				for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function))
-				{
-					ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function);
-
-					// Fix the name_RVA of the function for later use
-					imported_function->name_RVA = import_descriptor.FirstThunk + function_index * sizeof(uint64_t);	// @TODO sizeof(uint64_t) in 64bits should be sizeof(uint32_t) in 32bits
-					function_index++;
-				}
 			}
         }
         // Write zeros to terminate import_descriptor table
         write_zeros(output_file, sizeof(IMAGE_IMPORT_DESCRIPTOR));
         idata_section_size += sizeof(IMAGE_IMPORT_DESCRIPTOR);
 
-        // ILT (Import Lookup Table). A simple LONGLONG per entry that contains RVA to function names
-        // IAT (Import Address Table). A simple LONGLONG per entry that contains RVA to function address.
-        //
-        // ILT and IAT are exactly the same in file, but the loader will resolve addresses for the IAT when loading the binary
-
-		// @TODO do a copy for the IAT after the transition of this code to the memory stream which should allow a copy
-        for (size_t i = 0; i < 2; i++)
-        {
-			LONGLONG	RVA;
-			DWORD		current_offset = 0;
-
+		// Write libraries import data
+		{
 			auto	it_library = hash_table_begin(asm_result.imported_libraries);
 			auto	it_library_end = hash_table_end(asm_result.imported_libraries);
-			for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library))
+			for (ssize_t library_index = 0; !equals<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library), library_index++)
 			{
-				ASM::Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library);
+				ASM::Imported_Library*			imported_library = *hash_table_get<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library);
+				Library_Import_Computations*	current_lib_imp_computations = get_array_element(libraries_import_computations, library_index);
 
-				auto it_function = hash_table_begin(imported_library->functions);
-				auto it_function_end = hash_table_end(imported_library->functions);
-				for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function))
+				// Write library name
+				write_file(output_file, to_utf8(imported_library->name), (uint32_t)get_string_size(imported_library->name), &bytes_written);
+				write_zeros(output_file, 1); // add '\0'
+				idata_section_size += bytes_written + 1;
+				// --
+
+
+				// ILT and IAT are exactly the same in file, but the loader will resolve addresses for the IAT when loading the binary
+				// @TODO do a copy for the IAT after the transition of this code to the memory stream which should allow a copy
+				for (size_t i = 0; i < 2; i++)
 				{
-					ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function);
+					LONGLONG	RVA;
+					DWORD		current_offset = 0;
 
-					RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-						+ sizeof(IMAGE_IMPORT_DESCRIPTOR) * 2
-						+ sizeof(LONGLONG) * (memory::hash_table_get_size(imported_library->functions) + 1) * 2 // ILT + IAT
-						+ current_offset;
-					write_file(output_file, (uint8_t*)&RVA, sizeof(RVA), &bytes_written);
+					auto it_function = hash_table_begin(imported_library->functions);
+					auto it_function_end = hash_table_end(imported_library->functions);
+					for (; !equals<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function))
+					{
+						ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function);
 
-					current_offset += (DWORD)fstd::language::get_string_size(imported_function->name) + 1 + sizeof(WORD);
-					idata_section_size += bytes_written;
+						RVA = current_lib_imp_computations->HNT_start_RVA
+							+ current_offset;
+						write_file(output_file, (uint8_t*)&RVA, sizeof(RVA), &bytes_written);
+
+						current_offset += sizeof(WORD)	// Hint
+							+ (DWORD)get_string_size(imported_function->name) + 1;	// Name
+						idata_section_size += bytes_written;
+					}
+
+					// Write a 0 at the end of each ILT and IAT tables (the loader count the entries of each dll by using the null terminated pattern)
+					write_zeros(output_file, sizeof(LONGLONG));
+					idata_section_size += sizeof(LONGLONG);
+				}
+
+				// HNT (Hint/Name Table)
+				{
+					IMAGE_IMPORT_BY_NAME name;
+
+					name.Hint = 0; // @TODO @Optimize a proper linker will certainly try to get a good hint to help the loader.
+
+					auto it_function = hash_table_begin(imported_library->functions);
+					auto it_function_end = hash_table_end(imported_library->functions);
+					for (; !equals<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function))
+					{
+						ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function);
+
+						write_file(output_file, (uint8_t*)&name.Hint, sizeof(name.Hint), &bytes_written);
+						idata_section_size += bytes_written;
+
+						write_file(output_file, (uint8_t*)language::to_utf8(imported_function->name), (DWORD)get_string_size(imported_function->name), &bytes_written); // +1 to write the ending '\0'
+						write_zeros(output_file, 1);
+						idata_section_size += bytes_written + 1;
+					}
 				}
 			}
-            write_zeros(output_file, sizeof(LONGLONG));
-            idata_section_size += bytes_written;
-        }
-
-        // HNT (Hint/Name Table)
-        {
-            IMAGE_IMPORT_BY_NAME name;
-
-            name.Hint = 0; // @TODO @Optimize a proper linker will certainly try to get a good hint to help the loader.
-
-			auto	it_library = hash_table_begin(asm_result.imported_libraries);
-			auto	it_library_end = hash_table_end(asm_result.imported_libraries);
-			for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library))
-			{
-				ASM::Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it_library);
-
-				auto it_function = hash_table_begin(imported_library->functions);
-				auto it_function_end = hash_table_end(imported_library->functions);
-				for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function))
-				{
-					ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Function*, 32>(it_function);
-
-					write_file(output_file, (uint8_t*)&name.Hint, sizeof(name.Hint), &bytes_written);
-					idata_section_size += bytes_written;
-
-					write_file(output_file, (uint8_t*)language::to_utf8(imported_function->name), (DWORD)fstd::language::get_string_size(imported_function->name), &bytes_written); // +1 to write the ending '\0'
-					write_zeros(output_file, 1);
-					idata_section_size += bytes_written + 1;
-				}
-			}
-        }
-
-        // Dll names
-        auto it = hash_table_begin(asm_result.imported_libraries);
-        auto it_end = hash_table_end(asm_result.imported_libraries);
-        for (; !equals<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it, it_end); hash_table_next<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it))
-        {
-			ASM::Imported_Library* imported_library = *hash_table_get<uint16_t, fstd::language::string_view, ASM::Imported_Library*, 32>(it);
-
-            write_file(output_file, to_utf8(imported_library->name), (uint32_t)get_string_size(imported_library->name), &bytes_written);
-            write_zeros(output_file, 1); // add '\0'
-            idata_section_size += bytes_written + 1;
-        }
-
-        // @TODO write zeros??? to terminate the import_descriptors table
+		}
 
         write_zeros(output_file, idata_image_section_header.SizeOfRawData - idata_section_size);
         size_of_image += compute_aligned_size(idata_image_section_header.SizeOfRawData, section_alignment);
@@ -826,7 +842,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 				ASM::ADDR_TO_PATCH* addr_to_patch = memory::get_array_element(section->addr_to_patch, j_add_to_patch);
 				ASM::Label**		found_label;
 
-				uint64_t label_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(addr_to_patch->label), fstd::language::get_string_size(addr_to_patch->label), 0);
+				uint64_t label_hash = SpookyHash::Hash64((const void*)to_utf8(addr_to_patch->label), get_string_size(addr_to_patch->label), 0);
 				uint16_t label_short_hash = label_hash & 0xffff;
 
 				found_label = fstd::memory::hash_table_get(asm_result.labels, label_short_hash, addr_to_patch->label);
@@ -838,7 +854,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 				uint32_t	addr;	// @Warning even in 64bits we do only 32bits relative to RIP (Re-extended Instruction Pointer) register displacement
 
 				if (label->function) {
-					addr = label->function->name_RVA - section->RVA - addr_to_patch->addr_of_addr - sizeof(addr);
+					addr = label->function->RVA_of_IAT_entry - section->RVA - addr_to_patch->addr_of_addr - sizeof(addr);
 				}
 				else {
 					addr = label->section->RVA + label->RVA - section->RVA - addr_to_patch->addr_of_addr - sizeof(addr);	// @Warning the sizeof(addr) is the size of the addr we patch

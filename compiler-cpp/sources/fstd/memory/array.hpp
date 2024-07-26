@@ -95,7 +95,7 @@ namespace fstd
 		}
 
 		template<typename Type>
-		void array_push_back(Array<Type>& array, Type value)
+		void array_push_back(Array<Type>& array, const Type& value)
 		{
 			ZoneScopedN("array_push_back");
 
