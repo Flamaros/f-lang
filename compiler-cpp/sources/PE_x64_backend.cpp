@@ -453,99 +453,87 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     {
         ZoneScopedN("Write import data (.idata section data)");
 
-        // @TODO check the section size in the header (idata_image_section_header.SizeOfRawData)
-
 		// Struct of idata section :
 		// array of IMAGE_IMPORT_DESCRIPTOR
 		// 0
 		// For each imported libraries
-		//   library name
-		//   ILT
+		//   library name (variable length)
+		//   ILT (fixed size depending on number of imported functions)
 		//   0
-		//   IAT
+		//   IAT (fixed size depending on number of imported functions (same as ILT))
 		//   0
-		//   HNT
+		//   HNT (variable size (depends of names of imported functions))
 		//   0
 
 		struct Library_Import_Computations
 		{
-			DWORD		name_RVA;	// name of library
+			DWORD		library_name_RVA;
 			DWORD		ILT_RVA;
 			DWORD		IAT_RVA;
-//			LONGLONG	first_thunk;
 			DWORD		HNT_start_RVA;
 			DWORD		HNT_end_RVA;
 		};
 
-		ssize_t							nb_imported_dlls = hash_table_get_size(asm_result.imported_libraries);
-		DWORD							image_import_descriptors_size = (nb_imported_dlls + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR);
-		Library_Import_Computations		empty_lib_imp_computations = { };
-		Library_Import_Computations*	previous_lib_imp_computations = &empty_lib_imp_computations;
-
+		ssize_t								nb_imported_dlls = hash_table_get_size(asm_result.imported_libraries);
+		DWORD								image_import_descriptors_size = (DWORD)(nb_imported_dlls + 1) * sizeof(IMAGE_IMPORT_DESCRIPTOR);
+        DWORD								idata_section_size = 0;
 		Array<Library_Import_Computations>	libraries_import_computations;
-		reserve_array(libraries_import_computations, nb_imported_dlls);
 
-		empty_lib_imp_computations.HNT_end_RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
-			+ image_import_descriptors_size;
-
-		// Compute few statistics
-		{
-			auto it_library = hash_table_begin(asm_result.imported_libraries);
-			auto it_library_end = hash_table_end(asm_result.imported_libraries);
-			for (; !equals<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library))
-			{
-				ASM::Imported_Library*		imported_library = *hash_table_get<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library);
-				ssize_t						nb_imported_functions = hash_table_get_size(imported_library->functions);
-				Library_Import_Computations	current_lib_imp_computations;
-
-				current_lib_imp_computations.name_RVA = previous_lib_imp_computations->HNT_end_RVA;
-				current_lib_imp_computations.ILT_RVA = current_lib_imp_computations.name_RVA + (DWORD)get_string_size(imported_library->name) + 1;
-				current_lib_imp_computations.IAT_RVA = current_lib_imp_computations.ILT_RVA + (nb_imported_functions + 1) * sizeof(uint64_t);	// @TODO fix it for 32bits
-				current_lib_imp_computations.HNT_start_RVA = current_lib_imp_computations.IAT_RVA + (nb_imported_functions + 1) * sizeof(uint64_t);	// @TODO fix it for 32bits
-				current_lib_imp_computations.HNT_end_RVA = current_lib_imp_computations.HNT_start_RVA;
-
-				auto it_function = hash_table_begin(imported_library->functions);
-				auto it_function_end = hash_table_end(imported_library->functions);
-				for (ssize_t function_index = 0; !equals<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function), function_index++)
-				{
-					ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function);
-
-					current_lib_imp_computations.HNT_end_RVA += sizeof(WORD)	// Hint
-						+ (DWORD)get_string_size(imported_function->name) + 1;	// Name
-
-					// Fix RVA of imported functions
-					imported_function->RVA_of_IAT_entry = current_lib_imp_computations.IAT_RVA + function_index * sizeof(uint64_t);	// @TODO change it in 32bits
-				}
-
-				array_push_back(libraries_import_computations, current_lib_imp_computations);
-				previous_lib_imp_computations = get_array_last_element(libraries_import_computations);
-			}
-		}
-
-        DWORD idata_section_size = 0;
-
-		// Write libraries import header
+		// Write libraries import header and fill libraries_import_computations
         {
-            IMAGE_IMPORT_DESCRIPTOR import_descriptor;
+            IMAGE_IMPORT_DESCRIPTOR	import_descriptor;
+
+			Library_Import_Computations			empty_lib_imp_computations = { };
+			Library_Import_Computations*		previous_lib_imp_computations = &empty_lib_imp_computations;
+			reserve_array(libraries_import_computations, nb_imported_dlls);
+
+			empty_lib_imp_computations.HNT_end_RVA = image_nt_header.OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress
+				+ image_import_descriptors_size;
 
 			auto it_library = hash_table_begin(asm_result.imported_libraries);
 			auto it_library_end = hash_table_end(asm_result.imported_libraries);
 			for (ssize_t library_index = 0; !equals<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library, it_library_end); hash_table_next<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library), library_index++)
 			{
-				ASM::Imported_Library*			imported_library = *hash_table_get<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library);
-				Library_Import_Computations*	current_lib_imp_computations = get_array_element(libraries_import_computations, library_index);
+				ASM::Imported_Library*		imported_library = *hash_table_get<uint16_t, string_view, ASM::Imported_Library*, 32>(it_library);
+				ssize_t						nb_imported_functions = hash_table_get_size(imported_library->functions);
+				Library_Import_Computations	current_lib_imp_computations;
+
+				// Compute few statistics
+				{
+					current_lib_imp_computations.library_name_RVA = previous_lib_imp_computations->HNT_end_RVA;
+					current_lib_imp_computations.ILT_RVA = current_lib_imp_computations.library_name_RVA + (DWORD)get_string_size(imported_library->name) + 1;
+					current_lib_imp_computations.IAT_RVA = current_lib_imp_computations.ILT_RVA + (DWORD)(nb_imported_functions + 1) * sizeof(uint64_t);	// @TODO fix it for 32bits
+					current_lib_imp_computations.HNT_start_RVA = current_lib_imp_computations.IAT_RVA + (DWORD)(nb_imported_functions + 1) * sizeof(uint64_t);	// @TODO fix it for 32bits
+					current_lib_imp_computations.HNT_end_RVA = current_lib_imp_computations.HNT_start_RVA;
+
+					auto it_function = hash_table_begin(imported_library->functions);
+					auto it_function_end = hash_table_end(imported_library->functions);
+					for (ssize_t function_index = 0; !equals<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function, it_function_end); hash_table_next<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function), function_index++)
+					{
+						ASM::Imported_Function* imported_function = *hash_table_get<uint16_t, string_view, ASM::Imported_Function*, 32>(it_function);
+
+						current_lib_imp_computations.HNT_end_RVA += sizeof(WORD)	// Hint
+							+ (DWORD)get_string_size(imported_function->name) + 1;	// Name
+
+						// Fix RVA of imported functions
+						imported_function->RVA_of_IAT_entry = current_lib_imp_computations.IAT_RVA + (uint32_t)function_index * sizeof(uint64_t);	// @TODO change it in 32bits
+					}
+
+					array_push_back(libraries_import_computations, current_lib_imp_computations);
+					previous_lib_imp_computations = get_array_last_element(libraries_import_computations);
+				}
 
 				// RVA to original unbound IAT (PIMAGE_THUNK_DATA) -> mostly rva to ILT
-				import_descriptor.OriginalFirstThunk = current_lib_imp_computations->ILT_RVA;
+				import_descriptor.OriginalFirstThunk = current_lib_imp_computations.ILT_RVA;
 
 				import_descriptor.TimeDateStamp = 0;
 				import_descriptor.ForwarderChain = 0; // -1 if no forwarders
 
 				// RVA to DLL name
-				import_descriptor.Name = current_lib_imp_computations->name_RVA;
+				import_descriptor.Name = current_lib_imp_computations.library_name_RVA;
 
 				// RVA to IAT (if bound this IAT has actual addresses)
-				import_descriptor.FirstThunk = current_lib_imp_computations->IAT_RVA;
+				import_descriptor.FirstThunk = current_lib_imp_computations.IAT_RVA;
 
 				write_file(output_file, (uint8_t*)&import_descriptor, sizeof(import_descriptor), &bytes_written);
 				idata_section_size += bytes_written;
