@@ -18,7 +18,7 @@ using namespace fstd;
 
 #define NB_PREALLOCATED_IMPORTED_LIBRARIES				128
 #define NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY	4096
-#define NB_PREALLOCALED_SECTIONS						5		// .text, .rdata, .data, .reloc, .idata
+#define NB_PREALLOCALED_SECTIONS						6		// .text, .rdata, .data, .reloc, .idata, .bss
 #define NB_LABELS_PER_TOKEN								1 / 10.0				
 
 namespace f::ASM
@@ -308,13 +308,13 @@ namespace f::ASM
 					stream::peek(stream); // String literal
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_I8) {
-					unsigned char value = (unsigned char)current_token.value.integer;
-					push_raw_data(section, &value, sizeof(value));	// byte value
+					uint8_t value = (uint8_t)current_token.value.integer;
+					push_raw_data(section, (uint8_t*)&value, sizeof(value));	// byte value
 					stream::peek(stream);
 				}
 				else if (current_token.type == Token_Type::NUMERIC_LITERAL_UI8) {
-					unsigned char value = (unsigned char)current_token.value.integer;
-					push_raw_data(section, &value, sizeof(value));	// byte value
+					uint8_t value = (uint8_t)current_token.value.integer;
+					push_raw_data(section, (uint8_t*)&value, sizeof(value));	// byte value
 					stream::peek(stream);
 				}
 				else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
@@ -323,6 +323,81 @@ namespace f::ASM
 				}
 				else if (is_numeric_litral(current_token.type)) {
 					report_error(Compiler_Error::error, current_token, "Operand value out of range: if you specify a character by its value it should be in range [0-256].");
+				}
+
+				current_token = stream::get(stream);
+			}
+			if (stream::is_eof(stream)) {
+				// @TODO Test and improve this error message
+				report_error(Compiler_Error::error, current_token, "End of file reached before the closure of the section");
+			}
+		}
+		else if (current_token.value.keyword == Keyword::DW) { // @TODO put it in a specific function?
+			stream::peek(stream);	// dw
+			while (current_token.line == starting_line && stream::is_eof(stream) == false)
+			{
+				if (is_numeric_litral(current_token.type)
+					&& current_token.type <= Token_Type::NUMERIC_LITERAL_UI16) {
+					uint16_t value = (uint16_t)current_token.value.integer;
+					push_raw_data(section, (uint8_t*)&value, sizeof(value));
+					stream::peek(stream);
+				}
+				else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+					&& current_token.value.punctuation == Punctuation::COMMA) {
+					stream::peek(stream);	// ,
+				}
+				else if (is_numeric_litral(current_token.type)) {
+					report_error(Compiler_Error::error, current_token, "Operand value out of range.");
+				}
+
+				current_token = stream::get(stream);
+			}
+			if (stream::is_eof(stream)) {
+				// @TODO Test and improve this error message
+				report_error(Compiler_Error::error, current_token, "End of file reached before the closure of the section");
+			}
+		}
+		else if (current_token.value.keyword == Keyword::DD) { // @TODO put it in a specific function?
+			stream::peek(stream);	// dd
+			while (current_token.line == starting_line && stream::is_eof(stream) == false)
+			{
+				if (is_numeric_litral(current_token.type)
+					&& current_token.type <= Token_Type::NUMERIC_LITERAL_UI32) {
+					uint32_t value = (uint32_t)current_token.value.integer;
+					push_raw_data(section, (uint8_t*)&value, sizeof(value));
+					stream::peek(stream);
+				}
+				else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+					&& current_token.value.punctuation == Punctuation::COMMA) {
+					stream::peek(stream);	// ,
+				}
+				else if (is_numeric_litral(current_token.type)) {
+					report_error(Compiler_Error::error, current_token, "Operand value out of range.");
+				}
+
+				current_token = stream::get(stream);
+			}
+			if (stream::is_eof(stream)) {
+				// @TODO Test and improve this error message
+				report_error(Compiler_Error::error, current_token, "End of file reached before the closure of the section");
+			}
+		}
+		else if (current_token.value.keyword == Keyword::DQ) { // @TODO put it in a specific function?
+			stream::peek(stream);	// dq
+			while (current_token.line == starting_line && stream::is_eof(stream) == false)
+			{
+				if (is_numeric_litral(current_token.type)
+					&& current_token.type <= Token_Type::NUMERIC_LITERAL_UI64) {
+					uint64_t value = (uint64_t)current_token.value.integer;
+					push_raw_data(section, (uint8_t*)&value, sizeof(value));
+					stream::peek(stream);
+				}
+				else if (current_token.type == Token_Type::SYNTAXE_OPERATOR
+					&& current_token.value.punctuation == Punctuation::COMMA) {
+					stream::peek(stream);	// ,
+				}
+				else if (is_numeric_litral(current_token.type)) {
+					report_error(Compiler_Error::error, current_token, "Operand value out of range.");
 				}
 
 				current_token = stream::get(stream);

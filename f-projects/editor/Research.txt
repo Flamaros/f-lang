@@ -1,3 +1,6 @@
 emacs is very old and busted, but dired mode is still pretty great.
 
 Voir les mode de navigation de vim aussi, cf vidéo de primeagen
+
+Fuzzy search :
+https://x.com/transmutrix/status/1817588774961877324?t=IfOxsAaDvDdnniSjH6PBhQ&s=19

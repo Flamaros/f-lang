@@ -63,6 +63,8 @@ DWORD	text_image_section_virtual_address = 0;
 DWORD	text_image_section_pointer_to_raw_data = 0;
 DWORD	rdata_image_section_virtual_address = 0;
 DWORD	rdata_image_section_pointer_to_raw_data = 0;
+DWORD	data_image_section_virtual_address = 0;
+DWORD	data_image_section_pointer_to_raw_data = 0;
 DWORD	reloc_image_section_virtual_address = 0;
 DWORD	reloc_image_section_pointer_to_raw_data = 0;
 DWORD	idata_image_section_virtual_address = 0;
@@ -76,6 +78,8 @@ DWORD	text_image_section_header_address;
 DWORD	text_section_address;
 DWORD	rdata_image_section_header_address;
 DWORD	rdata_section_address;
+DWORD	data_image_section_header_address;
+DWORD	data_section_address;
 #if DLL_MODE == 1
 DWORD	reloc_image_section_header_address;
 DWORD	reloc_section_address;
@@ -181,6 +185,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     IMAGE_NT_HEADERS64		image_nt_header;	// @Warning should be aligned on 8 byte boundary
     IMAGE_SECTION_HEADER	text_image_section_header;
     IMAGE_SECTION_HEADER	rdata_image_section_header;
+	IMAGE_SECTION_HEADER	data_image_section_header;
 #if DLL_MODE == 1
     IMAGE_SECTION_HEADER	reloc_image_section_header;
 #endif
@@ -286,7 +291,14 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 	language::assign(section_name, (uint8_t*)".rdata");
 	ASM::Section* rdata_section = ASM::get_section(asm_result, section_name);
 
+	language::assign(section_name, (uint8_t*)".data");
+	ASM::Section* data_section = ASM::get_section(asm_result, section_name);
+
+	language::assign(section_name, (uint8_t*)".bss");
+	ASM::Section* bss_section = ASM::get_section(asm_result, section_name);
+
     // .text section
+	if (text_section)
     {
         ZoneScopedN(".text section");
 
@@ -308,6 +320,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     }
 
 	// .rdata section
+	if (rdata_section)
     {
         ZoneScopedN(".rdata section");
 
@@ -327,6 +340,28 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
         rdata_image_section_header_address = (DWORD)get_file_position(output_file);
         write_file(output_file, (uint8_t*)&rdata_image_section_header, sizeof(rdata_image_section_header), &bytes_written);
     }
+
+	// .data section
+	if (data_section)
+	{
+		ZoneScopedN(".data section");
+
+		RtlSecureZeroMemory(&data_image_section_header, sizeof(data_image_section_header));	// @TODO replace it by the corresponding intrasect while translating this code in f-lang
+
+		RtlCopyMemory(data_image_section_header.Name, ".data", 6);	// @Warning there is a '\0' ending character as it doesn't fill the 8 characters
+		data_image_section_header.Misc.VirtualSize = (DWORD)stream::get_size(data_section->stream_data);
+		data_image_section_header.VirtualAddress = data_image_section_virtual_address;
+		data_image_section_header.SizeOfRawData = compute_aligned_size(data_image_section_header.Misc.VirtualSize, file_alignment);
+		data_image_section_header.PointerToRawData = data_image_section_pointer_to_raw_data;
+		data_image_section_header.PointerToRelocations = 0x00;
+		data_image_section_header.PointerToLinenumbers = 0x00;
+		data_image_section_header.NumberOfRelocations = 0;
+		data_image_section_header.NumberOfLinenumbers = 0;
+		data_image_section_header.Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE;
+
+		data_image_section_header_address = (DWORD)get_file_position(output_file);
+		write_file(output_file, (uint8_t*)&data_image_section_header, sizeof(data_image_section_header), &bytes_written);
+	}
 
 #if DLL_MODE == 1
     // .reloc section
@@ -382,6 +417,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     size_of_image = compute_aligned_size(size_of_image, section_alignment);
 
     // Write code (.text section data)
+	if (text_section)
     {
         ZoneScopedN("Write code (.text section data)");
 
@@ -391,13 +427,23 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     }
 
     // Write read only data (.rdata section data)
-	/* @TODO put it back with the asm frontend that give generic sections names */
+	if (rdata_section)
 	{
         ZoneScopedN("Write read only data (.rdata section data)");
 
 		write_file(output_file, rdata_section->stream_data, &bytes_written);
         write_zeros(output_file, rdata_image_section_header.SizeOfRawData - bytes_written);
         size_of_image += compute_aligned_size(rdata_image_section_header.SizeOfRawData, section_alignment);
+    }
+
+    // Write read/write only data (.data section data)
+	if (data_section)
+	{
+        ZoneScopedN("Write read/write only data (.data section data)");
+
+		write_file(output_file, data_section->stream_data, &bytes_written);
+        write_zeros(output_file, data_image_section_header.SizeOfRawData - bytes_written);
+        size_of_image += compute_aligned_size(data_image_section_header.SizeOfRawData, section_alignment);
     }
 
 #if DLL_MODE == 1
@@ -725,6 +771,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     }
 
     // text_image_section_virtual_address
+	if (text_section)
     {
         ZoneScopedN("text_image_section_virtual_address");
 
@@ -738,6 +785,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     }
 
     // text_image_section_pointer_to_raw_data
+	if (text_section)
     {
         ZoneScopedN("text_image_section_pointer_to_raw_data");
 
@@ -749,6 +797,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     }
 
     // rdata_image_section_virtual_address
+	if (rdata_section)
     {
         ZoneScopedN("rdata_image_section_virtual_address");
 
@@ -762,7 +811,8 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     }
 
     // rdata_image_section_pointer_to_raw_data
-    {
+	if (rdata_section)
+	{
         ZoneScopedN("rdata_image_section_pointer_to_raw_data");
 
         DWORD rdata_image_section_pointer_to_raw_data_address = rdata_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
@@ -771,6 +821,32 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
         set_file_position(output_file, rdata_image_section_pointer_to_raw_data_address);
         write_file(output_file, (uint8_t*)&rdata_image_section_pointer_to_raw_data, sizeof(rdata_image_section_pointer_to_raw_data), &bytes_written);
     }
+
+	// data_image_section_virtual_address
+	if (data_section)
+	{
+		ZoneScopedN("data_image_section_virtual_address");
+
+		DWORD data_image_section_virtual_address_address = data_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, VirtualAddress);
+		data_image_section_virtual_address = data_section_address;
+		data_section->position_in_file = data_image_section_pointer_to_raw_data;
+		data_section->RVA = data_image_section_virtual_address;
+
+		set_file_position(output_file, data_image_section_virtual_address_address);
+		write_file(output_file, (uint8_t*)&data_image_section_virtual_address, sizeof(data_image_section_virtual_address), &bytes_written);
+	}
+
+	// data_image_section_pointer_to_raw_data
+	if (data_section)
+	{
+		ZoneScopedN("data_image_section_pointer_to_raw_data");
+
+		DWORD data_image_section_pointer_to_raw_data_address = data_image_section_header_address + offsetof(IMAGE_SECTION_HEADER, PointerToRawData);
+		// data_image_section_pointer_to_raw_data is already computed
+
+		set_file_position(output_file, data_image_section_pointer_to_raw_data_address);
+		write_file(output_file, (uint8_t*)&data_image_section_pointer_to_raw_data, sizeof(data_image_section_pointer_to_raw_data), &bytes_written);
+	}
 
 #if DLL_MODE == 1
     // reloc_image_section_virtual_address

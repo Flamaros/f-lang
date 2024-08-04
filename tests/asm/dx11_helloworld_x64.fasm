@@ -17,6 +17,24 @@ SECTION ".text"
 {
 	main:
 		sub     rsp, 0x28 ; reserve 40 bytes (0x20) of shadow space
+		
+		// @TODO get the hInstance with GetModuleHandle(NULL) (return the HModule of the exe, no need to specify the module or exe name)
+		// GetModuleHandle();
+		
+		mov		wc.hInstance, 0	// @TODO put the right value, but how to get it without a WinMain?
+		mov		[,, wc.lpszClassName], window_class
+	// HWND hwnd;
+	// const wchar_t* windowClass = L"directX11_example";
+	// MSG msg = {};
+	// WNDCLASSEX wc;
+	// 
+	// wc = { sizeof(WNDCLASSEX), CS_VREDRAW | CS_HREDRAW, wndProc, 0, 0, hInstance, (HICON)NULL, LoadCursor(NULL, IDC_ARROW), NULL, NULL, windowClass, NULL };
+	// RegisterClassEx(&wc);
+	// 
+	// hwnd = CreateWindow(wc.lpszClassName, L"DirectX 11 Example", WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_MAXIMIZE, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, wc.hInstance, NULL);
+
+		
+		
 
 		; hStdOut = GetStdHandle(STD_OUTPUT_HANDLE)
 		mov		rcx, -11 ; STD_OUTPUT_HANDLE((DWORD)-11)
@@ -41,12 +59,60 @@ SECTION ".text"
 		hlt
 }
 
+SECTION ".data"
+{
+	//typedef struct tagWNDCLASSEXA {
+	//	UINT      cbSize;
+	//	UINT      style;
+	//	WNDPROC   lpfnWndProc;
+	//	int       cbClsExtra;
+	//	int       cbWndExtra;
+	//	HINSTANCE hInstance;
+	//	HICON     hIcon;
+	//	HCURSOR   hCursor;
+	//	HBRUSH    hbrBackground;
+	//	LPCSTR    lpszMenuName;
+	//	LPCSTR    lpszClassName;
+	//	HICON     hIconSm;
+	//} WNDCLASSEXA, *PWNDCLASSEXA, *NPWNDCLASSEXA, *LPWNDCLASSEXA;
+	wc:	// WNDCLASSEXA
+	wc.cbSize:
+		dd	80		// sizeof(WNDCLASSEXA)
+	wc.style:
+		dd	0x0003	// CS_VREDRAW (0x0001) | CS_HREDRAW (0x0002) - https://learn.microsoft.com/fr-fr/windows/win32/winmsg/window-class-styles
+	wc.lpfnWndProc:
+		dq	0		// null
+	wc.cbClsExtra:
+		dd	0
+	wc.cbWndExtra:
+		dd	0
+	wc.hInstance:
+		dq	0		// null
+	wc.hIcon:
+		dq	0		// null
+	wc.hCursor:
+		dq	0		// null
+	wc.hbrBackground:
+		dq	0		// null
+	wc.lpszMenuName:
+		dq	0		// null
+	wc.lpszClassName:
+		dq	0		// null
+	wc.hIconSm:
+		dq	0		// null
+}
+
 SECTION ".rdata" // @TODO should I support ` or ' character for a special string token type?
 {
 	message:
 		db      "Hello World", 0	; I put an addtionnal 0 but it can be omitted
 	message_length:
 		db		12					; 11 + 1 for the ending \0
+		
+	window_class:
+		db      "directX11_example", 0	; I put an addtionnal 0 but it can be omitted
+	window_class_length:
+		db		18					; 17 + 1 for the ending \0
 }
 
 
