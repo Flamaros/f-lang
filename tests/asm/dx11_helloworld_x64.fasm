@@ -21,8 +21,8 @@ SECTION ".text"
 		// @TODO get the hInstance with GetModuleHandle(NULL) (return the HModule of the exe, no need to specify the module or exe name)
 		// GetModuleHandle();
 		
-		mov		wc.hInstance, 0	// @TODO put the right value, but how to get it without a WinMain?
-		mov		[,, wc.lpszClassName], window_class
+		mov		[wc.hInstance], 0	// @TODO put the right value, but how to get it without a WinMain?
+;		mov		[wc.lpszClassName], window_class
 	// HWND hwnd;
 	// const wchar_t* windowClass = L"directX11_example";
 	// MSG msg = {};
@@ -43,7 +43,7 @@ SECTION ".text"
 		; WriteFile( hstdOut, message, length(message), &bytes, 0);
 ;		add		rsp, 0x20
 		mov		rcx, rax								; move previous result (rax: hStdOut) to first parameter register (rcx)
-		lea		rdx, message							; in some asm langages lea instruction is used here, but in nasm labels are directly address
+		lea		rdx, [message]							; in some asm langages lea instruction is used here, but in nasm labels are directly address
 		mov 	r8d, 12;message_length					; in f it should be an immediate value in simplest cases, but as I want my strings to have a length, length is also available in .rdata section
 		lea		r9, [rsp,, 48]							; [out, optional] lpNumberOfBytesWritten
 		mov		qword [rsp,, 32], 0						; [in, out, optional] lpOverlapped

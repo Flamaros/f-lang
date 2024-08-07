@@ -54,7 +54,7 @@ namespace f
 			enum Type_Flags : uint8_t
 			{
 				REGISTER			= 0b0001,
-				IMMEDIATE			= 0b0010,
+				IMMEDIATE			= 0b0010,	// Labels are immediate address values (Address_Flags::From_LABEL is set in this case)
 				IMMEDIATE_SIGNED	= 0b0100,	// Explicitely signed in the ASM source @TODO unecessary?
 				ADDRESS				= 0b1000,	// @TOOD may have no sense because identifier are immediate values because we replace it by the value (an address)
 			};
@@ -89,6 +89,7 @@ namespace f
 
 			enum Address_Flags : uint8_t
 			{
+				UNKNOWN								= 0b0000'0000,
 				FROM_LABEL							= 0b0000'0001,
 				ABSOLUTE							= 0b0000'0010,	// @Warning RIP relative by default (abs keyword or a register used in EA make the address absolute)
 				EFFECTIVE_ADDRESS					= 0b0000'0100,	// @Warning require a ModRM byte and add a SIB byte	- can have the displacement part FROM_LABEL or not (from immediate value)

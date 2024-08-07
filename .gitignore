@@ -48,14 +48,14 @@ cl.log
 cl.error
 *.dot
 AST.png
-hello_world.exe
 output.cpp
 output.obj
 output.exe
 scope.png
 
-f-editor.exe
 dx11_helloworld_x64.exe
+f-editor.exe
+helloworld_x64.exe
 
 # research/vs_x86_hello_world (Visual Studio)
 research/vs_x86_hello_world/Release

@@ -19,7 +19,7 @@ using namespace fstd;
 #define NB_PREALLOCATED_IMPORTED_LIBRARIES				128
 #define NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY	4096
 #define NB_PREALLOCALED_SECTIONS						6		// .text, .rdata, .data, .reloc, .idata, .bss
-#define NB_LABELS_PER_TOKEN								1 / 10.0				
+#define NB_LABELS_PER_TOKEN								1 / 5.0				
 
 namespace f::ASM
 {
@@ -443,6 +443,18 @@ namespace f::ASM
 		// operand value will be EA (something packed with a function called at the end of this parsing)
 		operand.address_flags = Operand::Address_Flags::EFFECTIVE_ADDRESS;
 
+		// @Warning special case when there is only an identifier between brackets, it's a simple address without SIB byte,...
+		if (current_token.type == Token_Type::IDENTIFIER) {
+			operand.size = Operand::Size::QUAD_WORD;	// @TODO base size of the target architecture
+			operand.address_flags = Operand::Address_Flags::FROM_LABEL;
+			operand.label = current_token.text;
+
+			stream::peek(stream);	// Identifier
+			current_token = stream::get(stream);
+
+			goto closing_bracket;	// @Warning Skip EA operand generation
+		}
+
 		// Optionnal Absolute flag specification
 		if (current_token.type == Token_Type::KEYWORD
 			&& current_token.value.keyword == Keyword::ABS) {
@@ -693,7 +705,7 @@ namespace f::ASM
 					stream::peek(stream); // Register
 				}
 				else if (current_token.type == Token_Type::IDENTIFIER) {
-					operands[operand_index].type_flags = Operand::Type_Flags::ADDRESS;	// @TODO check if all identifier are immediate addresses
+					operands[operand_index].type_flags = Operand::Type_Flags::IMMEDIATE;	// @TODO check if all identifier are immediate addresses
 					operands[operand_index].size = Operand::Size::QUAD_WORD;	// @TODO base size of the target architecture
 					operands[operand_index].address_flags = Operand::Address_Flags::FROM_LABEL;
 					operands[operand_index].label = current_token.text;
@@ -1114,9 +1126,19 @@ namespace f::ASM
 			}
 		}
 		else if (operand.type_flags == (uint8_t)Operand::Type_Flags::IMMEDIATE) {
+			if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::FROM_LABEL)) {
+				ADDR_TO_PATCH	addr_to_patch;
+
+				addr_to_patch.label = operand.label;
+				addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
+				memory::push_back(section->addr_to_patch, addr_to_patch);
+
+				size += 4;	// @Warning allocate 4 bytes for the addr in 32bits dispacement mod.
+			}
+
 			// desc_operand give us the number of bytes to write (in some cases we use an instruction supporting a bigger immediate that needed
 			// because it may have not a version with the size we want)
-			if (desc_operand.op.size == Operand::Size::BYTE) {
+			else if (desc_operand.op.size == Operand::Size::BYTE) {
 				data[size++] = (uint8_t)operand.value.integer;
 			}
 			else if (desc_operand.op.size == Operand::Size::WORD) {
@@ -1205,6 +1227,7 @@ namespace f::ASM
 
 				data[size++] = SIB;
 
+				// @TODO remove this condition because now addresses values from labels are considered as immediate values?
 				if (is_flag_set(operand.address_flags, (uint8_t)Operand::Address_Flags::FROM_LABEL)) {
 					ADDR_TO_PATCH	addr_to_patch;
 

@@ -49,6 +49,38 @@ constexpr ULONGLONG size_of_heap_commit = 0x1000;
 // My values (not serialized)
 constexpr size_t PE_header_start_address = 0xD0; // @Warning This value is actually hard coded because I don't have any DOS stub, otherwise I should be able to compute it from the DOS stub size.
 
+enum class Section_Type
+{
+	IDATA,
+	RELOC,
+	TEXT,
+	RDATA,
+	DATA,
+	BSS,
+
+	COUNT,
+};
+
+struct Section_Data
+{
+	Section_Type	type = Section_Type::COUNT;
+	ASM::Section*	asm_section = nullptr;
+
+	DWORD	image_section_virtual_address = 0;
+	DWORD	image_section_pointer_to_raw_data = 0;
+	DWORD	image_section_header_address;
+	DWORD	section_address;
+};
+
+Section_Data	sections_data[(size_t)Section_Type::COUNT] = {
+	{Section_Type::IDATA},
+	{Section_Type::RELOC},
+	{Section_Type::TEXT},
+	{Section_Type::RDATA},
+	{Section_Type::DATA},
+	{Section_Type::BSS}
+};
+
 // @TODO variables that have to be computed at run time
 DWORD	size_of_code = 0;			// The size of the code (text) section, or the sum of all code sections if there are multiple sections.
 DWORD	size_of_initialized_data = 0;	// The size of the initialized data section, or the sum of all such sections if there are multiple data sections.
@@ -206,9 +238,9 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
     image_nt_header.Signature = (WORD)'P' | ((WORD)'E' << 8);	// 'PE\0\0' @Warning take care of the endianness / 0x50450000
     image_nt_header.FileHeader.Machine = IMAGE_FILE_MACHINE_AMD64;
 #if DLL_MODE == 1
-    image_nt_header.FileHeader.NumberOfSections = 4;
+    image_nt_header.FileHeader.NumberOfSections = memory::get_array_size(asm_result.sections) + 2; // +2 for idata and reloc implicitely added
 #else
-    image_nt_header.FileHeader.NumberOfSections = 3;
+    image_nt_header.FileHeader.NumberOfSections = memory::get_array_size(asm_result.sections) + 1; // +1 for idata implicitely added
 #endif
     image_nt_header.FileHeader.TimeDateStamp = (DWORD)(current_time_in_seconds_since_1970);	// @Warning UTC time
     image_nt_header.FileHeader.PointerToSymbolTable = 0;	// This value should be zero for an image because COFF debugging information is deprecated.
@@ -721,22 +753,34 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 
     // base_of_data
     {
+		// @TODO I should have an iteration over sections here and use the previous section
+
         ZoneScopedN("base_of_data");
 
         DWORD base_of_data_address = image_nt_header_address + offsetof(IMAGE_NT_HEADERS32, OptionalHeader.BaseOfData);
         rdata_section_address = compute_aligned_size(text_section_address + text_image_section_header.SizeOfRawData, section_alignment);
         rdata_image_section_pointer_to_raw_data = align_address(text_image_section_pointer_to_raw_data + text_image_section_header.SizeOfRawData, file_alignment);
+		data_section_address = compute_aligned_size(rdata_section_address + rdata_image_section_header.SizeOfRawData, section_alignment);
+		data_image_section_pointer_to_raw_data = align_address(rdata_image_section_pointer_to_raw_data + rdata_image_section_header.SizeOfRawData, file_alignment);
 #if DLL_MODE == 1
-        reloc_section_address = compute_aligned_size(rdata_section_address + rdata_image_section_header.SizeOfRawData, section_alignment);
-        reloc_image_section_pointer_to_raw_data = align_address(rdata_image_section_pointer_to_raw_data + rdata_image_section_header.SizeOfRawData, file_alignment);
+        reloc_section_address = compute_aligned_size(data_section_address + data_image_section_header.SizeOfRawData, section_alignment);
+        reloc_image_section_pointer_to_raw_data = align_address(data_image_section_pointer_to_raw_data + data_image_section_header.SizeOfRawData, file_alignment);
 #endif
 
 #if DLL_MODE == 1
         idata_section_address = compute_aligned_size(reloc_section_address + reloc_image_section_header.SizeOfRawData, section_alignment);
         idata_image_section_pointer_to_raw_data = align_address(reloc_image_section_pointer_to_raw_data + reloc_image_section_header.SizeOfRawData, file_alignment);
 #else
-        idata_section_address = compute_aligned_size(rdata_section_address + rdata_image_section_header.SizeOfRawData, section_alignment);
-        idata_image_section_pointer_to_raw_data = align_address(rdata_image_section_pointer_to_raw_data + rdata_image_section_header.SizeOfRawData, file_alignment);
+		if (data_section)
+		{
+			idata_section_address = compute_aligned_size(data_section_address + data_image_section_header.SizeOfRawData, section_alignment);
+			idata_image_section_pointer_to_raw_data = align_address(data_image_section_pointer_to_raw_data + data_image_section_header.SizeOfRawData, file_alignment);
+		}
+		else
+		{
+			idata_section_address = compute_aligned_size(rdata_section_address + rdata_image_section_header.SizeOfRawData, section_alignment);
+			idata_image_section_pointer_to_raw_data = align_address(rdata_image_section_pointer_to_raw_data + rdata_image_section_header.SizeOfRawData, file_alignment);
+		}
 #endif
 
         // 8192
