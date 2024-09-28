@@ -24,6 +24,7 @@ De toute façon même pour l'IR il faudra qu'il sache qu'elle archi target à ca
 
 
 Renomer IR_generator en CodeGenerator
+ - https://rustc-dev-guide.rust-lang.org/overview.html
  - l'interface avec le backend doit se traduire sous forme d'une table de fonctions avec une API précise que les différents backend se doivent de respecter
  - comme ça je pourrais faire un backend x86 également
  - Ensuite les backends doivent générer le binaire à partir de la liste d'instruction qu'ils ont eux même généré

@@ -179,7 +179,7 @@ namespace f
 		{
 			fstd::language::string_view	label;
 			Section*					section;	// @Warning not initialized for an Imported_Function
-			Imported_Function*			function;	// If not null the label is already used for an imported function
+			Imported_Function*			imported_function;	// If not null the label is already used for an imported function
 			uint32_t					RVA;		// Offset in bytes relative to the beggining of the section - @Warning not initialized for an Imported_Function
 		};
 

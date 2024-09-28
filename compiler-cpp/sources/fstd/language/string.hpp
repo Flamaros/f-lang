@@ -26,7 +26,7 @@ namespace fstd
 {
 	namespace language
 	{
-		inline size_t	string_literal_size(const uint8_t* utf8_string)
+		inline size_t	length_of_null_terminated_string(const uint8_t* utf8_string)
 		{
 			size_t	result = 0;
 
@@ -35,7 +35,7 @@ namespace fstd
 			return result;
 		}
 
-		inline size_t	string_literal_size(const uint16_t* utf16le_string)
+		inline size_t	length_of_null_terminated_string(const uint16_t* utf16le_string)
 		{
 			size_t	result = 0;
 
@@ -65,7 +65,7 @@ namespace fstd
 
 		inline void assign(string& str, const uint8_t* string)
 		{
-			memory::resize_array(str.buffer, string_literal_size(string));
+			memory::resize_array(str.buffer, length_of_null_terminated_string(string));
 			system::memory_copy(memory::get_array_data(str.buffer), string, memory::get_array_bytes_size(str.buffer));
 		}
 
@@ -177,7 +177,7 @@ namespace fstd
 
 		inline void assign(UTF16LE_string& str, const uint16_t* string)
 		{
-			memory::resize_array(str.buffer, string_literal_size(string));
+			memory::resize_array(str.buffer, length_of_null_terminated_string(string));
 			system::memory_copy(memory::get_array_data(str.buffer), string, memory::get_array_bytes_size(str.buffer));
 		}
 

@@ -281,13 +281,13 @@ namespace fstd
 						else if (language::to_utf8(*format)[position] == 's') {	// c string (char*)
 							char* c_string = va_arg(args, char*);
 
-							print_to_builder(builder, (uint8_t*)c_string, language::string_literal_size((uint8_t*)c_string));
+							print_to_builder(builder, (uint8_t*)c_string, language::length_of_null_terminated_string((uint8_t*)c_string));
 							position++;
 						}
 						else if (language::to_utf8(*format)[position] == 'w') {	// c wstring (wchar*)
 							wchar_t* w_string = va_arg(args, wchar_t*);
 
-							print_to_builder(builder, (uint16_t*)w_string, language::string_literal_size((uint16_t*)w_string));
+							print_to_builder(builder, (uint16_t*)w_string, language::length_of_null_terminated_string((uint16_t*)w_string));
 							position++;
 						}
 						else {

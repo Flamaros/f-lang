@@ -33,7 +33,7 @@ namespace fstd {
 
 		inline void assign(string_view& str, uint8_t* string)
 		{
-			str.size = string_literal_size(string);
+			str.size = length_of_null_terminated_string(string);
 			str.ptr = string;
 		}
 
@@ -108,7 +108,7 @@ namespace fstd {
 
 		inline void assign(UTF16LE_string_view& str, uint16_t* string)
 		{
-			str.size = string_literal_size(string);
+			str.size = length_of_null_terminated_string(string);
 			str.ptr = string;
 		}
 

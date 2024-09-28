@@ -232,7 +232,7 @@ namespace f::ASM
 			Label* new_label = allocate_Label();
 
 			new_label->label = current_token.text;
-			new_label->function = new_imported_func;
+			new_label->imported_function = new_imported_func;
 
 			found_label = fstd::memory::hash_table_insert(asm_result.labels, label_short_hash, current_token.text, new_label);
 			// --
@@ -856,7 +856,7 @@ namespace f::ASM
 		found_label = fstd::memory::hash_table_get(asm_result.labels, label_short_hash, label_name.text);
 		if (found_label) {
 			// @TODO give the position of the first definition
-			if ((*found_label)->function) {
+			if ((*found_label)->imported_function) {
 				report_error(Compiler_Error::error, label_name, "Label name conflicts with an imported function.");
 			}
 			else {
@@ -868,7 +868,7 @@ namespace f::ASM
 
 		new_label->label = label_name.text;
 		new_label->section = section;
-		new_label->function = nullptr;
+		new_label->imported_function = nullptr;
 		new_label->RVA = (uint32_t)stream::get_position(section->stream_data);
 
 		found_label = fstd::memory::hash_table_insert(asm_result.labels, label_short_hash, label_name.text, new_label);
