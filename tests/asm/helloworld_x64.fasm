@@ -21,7 +21,7 @@ SECTION ".text"
 ;		add		rsp, 0x20
 		mov		rcx, rax								; move previous result (rax: hStdOut) to first parameter register (rcx)
 		lea		rdx, [message]							; in some asm langages lea instruction is used here, but in nasm labels are directly address
-		mov 	r8d, 12			;[message_length]		; in f it should be an immediate value in simplest cases, but as I want my strings to have a length, length is also available in .rdata section
+		mov 	r8d, [message.length]					; in f it should be an immediate value in simplest cases, but as I want my strings to have a length, length is also available in .rdata section
 		lea		r9, [rsp,, 48]							; [out, optional] lpNumberOfBytesWritten
 		mov		qword [rsp,, 32], 0						; [in, out, optional] lpOverlapped
 		call    [WriteFile]
@@ -40,6 +40,6 @@ SECTION ".rdata" // @TODO should I support ` or ' character for a special string
 {
 	message:
 		db      "Hello World", 0	; I put an addtionnal 0 but it can be omitted
-	message_length:
-		db		12					; 11 + 1 for the ending \0
+	message.length:
+		dd		12					; 11 + 1 for the ending \0
 }
