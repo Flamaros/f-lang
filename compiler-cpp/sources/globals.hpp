@@ -9,7 +9,7 @@
 
 #include "lexer/lexer_base.hpp"
 
-#include <fstd/memory/array.hpp>
+#include <fstd/container/array.hpp>
 
 #include <fstd/system/path.hpp>
 
@@ -30,13 +30,13 @@ struct Globals
 {
 	fstd::core::Logger*						logger = nullptr;
 	Configuration							configuration;
-	fstd::memory::Array<f::Lexer_Data>		lexer_data;
+	fstd::container::Array<f::Lexer_Data>		lexer_data;
 	f::Parser_Data							parser_data;
 	f::IR_Data								ir_data;
 	f::PE_X64_Backend_Data					x64_backend_data;
 
 	// f-asm
-	fstd::memory::Array<f::ASM::Lexer_Data>	asm_lexer_data;
+	fstd::container::Array<f::ASM::Lexer_Data>	asm_lexer_data;
 	f::ASM::ASM_Data						asm_data;
 };
 

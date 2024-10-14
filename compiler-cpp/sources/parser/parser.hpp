@@ -2,8 +2,8 @@
 
 #include "../lexer/lexer.hpp"
 
-#include <fstd/memory/array.hpp>
-#include <fstd/memory/hash_table.hpp>
+#include <fstd/container/array.hpp>
+#include <fstd/container/hash_table.hpp>
 
 #include <fstd/system/path.hpp>
 
@@ -299,9 +299,9 @@ namespace f
 
 	struct Symbol_Table
 	{
-		fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> variables;
-		fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> user_types;
-		fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> functions; // Not really sure that it is different than a variable
+		fstd::container::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> variables;
+		fstd::container::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> user_types;
+		fstd::container::Hash_Table<uint16_t, fstd::language::string_view, AST_Node*, 32> functions; // Not really sure that it is different than a variable
 
 		// @TODO Can we put function declarations in a struct?
 
@@ -335,15 +335,15 @@ namespace f
 		// It also remove the computation that depend of the type of the node.
 		//
 		// Flamaros - 07 january 2021
-		fstd::memory::Array<uint8_t>	ast_nodes;
+		fstd::container::Array<uint8_t>	ast_nodes;
 
 		// We do the same for symbol tables, as we certainly will have different types of symbols tables.
-		fstd::memory::Array<uint8_t>	symbol_tables;
+		fstd::container::Array<uint8_t>	symbol_tables;
 
 		Symbol_Table* current_symbol_table;
 	};
 
-    void parse(fstd::memory::Array<Token<Keyword>>& tokens, Parsing_Result& ast);
+    void parse(fstd::container::Array<Token<Keyword>>& tokens, Parsing_Result& ast);
 	inline bool is_binary_operator(const AST_Node* node);
 	inline bool is_unary_operator(const AST_Node* node);
 	void generate_dot_file(const AST_Node* node, const fstd::system::Path& output_file_path);

@@ -4,7 +4,7 @@
 
 namespace fstd
 {
-	namespace memory
+	namespace container
 	{
 		template<typename Type, size_t capacity>
 		class Bucket

@@ -5,7 +5,7 @@
 
 namespace fstd
 {
-	namespace memory
+	namespace container
 	{
 		template<typename Type, ssize_t bucket_size = 512>
 		struct Bucket_Array

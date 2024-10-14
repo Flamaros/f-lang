@@ -18,7 +18,7 @@
 //
 // Flamaros - 03 january 2020
 
-#include <fstd/memory/array.hpp>
+#include <fstd/container/array.hpp>
 
 #include <fstd/language/types.hpp>
 
@@ -48,13 +48,13 @@ namespace fstd
 
 		struct string
 		{
-			memory::Array<uint8_t>	buffer;
+			container::Array<uint8_t>	buffer;
 
 			// @TODO @CleanUp
 			// I don't really want to put the operator here (directly in the struct)
 			inline uint8_t& operator[](size_t index)
 			{
-				return *memory::get_array_element(buffer, index);
+				return *container::get_array_element(buffer, index);
 			}
 		};
 
@@ -65,33 +65,33 @@ namespace fstd
 
 		inline void assign(string& str, const uint8_t* string)
 		{
-			memory::resize_array(str.buffer, length_of_null_terminated_string(string));
-			system::memory_copy(memory::get_array_data(str.buffer), string, memory::get_array_bytes_size(str.buffer));
+			container::resize_array(str.buffer, length_of_null_terminated_string(string));
+			system::memory_copy(container::get_array_data(str.buffer), string, container::get_array_bytes_size(str.buffer));
 		}
 
 		inline void reserve(string& str, ssize_t size)
 		{
-			memory::reserve_array(str.buffer, size);
+			container::reserve_array(str.buffer, size);
 		}
 
 		inline void resize(string& str, ssize_t size)
 		{
-			memory::resize_array(str.buffer, size);
+			container::resize_array(str.buffer, size);
 		}
 
 		inline void copy(string& str, ssize_t position, const uint8_t* string, ssize_t size)
 		{
-			memory::array_copy(str.buffer, position, string, size);
+			container::array_copy(str.buffer, position, string, size);
 		}
 
 		inline void copy(string& str, ssize_t position, const string& string, ssize_t start_pos = 0, ssize_t size = -1)
 		{
-			memory::array_copy(str.buffer, position, string.buffer, start_pos, size);
+			container::array_copy(str.buffer, position, string.buffer, start_pos, size);
 		}
 
 		inline void release(string& str)
 		{
-			memory::release(str.buffer);
+			container::release(str.buffer);
 		}
 
 		// @Warning be careful when using the resulting buffer
@@ -103,12 +103,12 @@ namespace fstd
 
 		inline uint8_t* to_utf8(const string& str)
 		{
-			return memory::get_array_data(str.buffer);
+			return container::get_array_data(str.buffer);
 		}
 
 		inline size_t get_string_size(const string& str)
 		{
-			return memory::get_array_size(str.buffer);
+			return container::get_array_size(str.buffer);
 		}
 
 		inline bool are_equals(const string& a, const string& b)
@@ -123,9 +123,9 @@ namespace fstd
 
 		inline ssize_t first_of(const string& str, uint8_t c, ssize_t start_pos = 0)
 		{
-			for (ssize_t i = start_pos; i < memory::get_array_size(str.buffer); i++)
+			for (ssize_t i = start_pos; i < container::get_array_size(str.buffer); i++)
 			{
-				if (*memory::get_array_element(str.buffer, i) == c)
+				if (*container::get_array_element(str.buffer, i) == c)
 					return i;
 			}
 
@@ -135,13 +135,13 @@ namespace fstd
 		inline ssize_t last_of(const string& str, uint8_t c, ssize_t start_pos = -1)
 		{
 			if (start_pos == -1) {
-				start_pos = memory::get_array_size(str.buffer) - 1;
+				start_pos = container::get_array_size(str.buffer) - 1;
 			}
 
-			core::Assert(start_pos <= memory::get_array_size(str.buffer) - 1);
+			core::Assert(start_pos <= container::get_array_size(str.buffer) - 1);
 			for (ssize_t i = start_pos; i != 0; i--)
 			{
-				if (*memory::get_array_element(str.buffer, i) == c)
+				if (*container::get_array_element(str.buffer, i) == c)
 					return i;
 			}
 
@@ -165,45 +165,45 @@ namespace fstd
 
 		struct UTF16LE_string
 		{
-			memory::Array<uint16_t>	buffer;
+			container::Array<uint16_t>	buffer;
 
 			// @TODO @CleanUp
 			// I don't really want to put the operator here (directly in the struct)
 			inline uint16_t& operator[](size_t index)
 			{
-				return *memory::get_array_element(buffer, index);
+				return *container::get_array_element(buffer, index);
 			}
 		};
 
 		inline void assign(UTF16LE_string& str, const uint16_t* string)
 		{
-			memory::resize_array(str.buffer, length_of_null_terminated_string(string));
-			system::memory_copy(memory::get_array_data(str.buffer), string, memory::get_array_bytes_size(str.buffer));
+			container::resize_array(str.buffer, length_of_null_terminated_string(string));
+			system::memory_copy(container::get_array_data(str.buffer), string, container::get_array_bytes_size(str.buffer));
 		}
 
 		inline void reserve(UTF16LE_string& str, ssize_t size)
 		{
-			memory::reserve_array(str.buffer, size);
+			container::reserve_array(str.buffer, size);
 		}
 
 		inline void resize(UTF16LE_string& str, ssize_t size)
 		{
-			memory::resize_array(str.buffer, size);
+			container::resize_array(str.buffer, size);
 		}
 
 		inline void copy(UTF16LE_string& str, ssize_t position, const uint16_t* string, ssize_t size)
 		{
-			memory::array_copy(str.buffer, position, string, size);
+			container::array_copy(str.buffer, position, string, size);
 		}
 
 		inline void copy(UTF16LE_string& str, ssize_t position, const UTF16LE_string& string)
 		{
-			memory::array_copy(str.buffer, position, string.buffer);
+			container::array_copy(str.buffer, position, string.buffer);
 		}
 
 		inline void release(UTF16LE_string& str)
 		{
-			memory::release(str.buffer);
+			container::release(str.buffer);
 		}
 
 		// @Warning be careful when using the resulting buffer
@@ -215,12 +215,12 @@ namespace fstd
 
 		inline uint16_t* to_utf16(const UTF16LE_string& str)
 		{
-			return memory::get_array_data(str.buffer);
+			return container::get_array_data(str.buffer);
 		}
 
 		inline ssize_t get_string_size(const UTF16LE_string& str)
 		{
-			return memory::get_array_size(str.buffer);
+			return container::get_array_size(str.buffer);
 		}
 
 		inline bool are_equals(const UTF16LE_string& a, const UTF16LE_string& b)

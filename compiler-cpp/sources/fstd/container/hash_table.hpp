@@ -4,8 +4,8 @@
 
 #include <fstd/system/allocator.hpp>
 
-#include <fstd/memory/array.hpp>
-#include <fstd/memory/boolean_array.hpp>
+#include <fstd/container/array.hpp>
+#include <fstd/container/boolean_array.hpp>
 
 #include <fstd/core/assert.hpp>
 #include <fstd/core/logger.hpp>
@@ -59,7 +59,7 @@
 
 namespace fstd
 {
-	namespace memory
+	namespace container
 	{
 		// @TODO In f version template should be much simpler to use than in C++, especialy for functions
 		// that manipulate the Hash_Table.

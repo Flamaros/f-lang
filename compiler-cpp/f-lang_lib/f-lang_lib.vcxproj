@@ -55,6 +55,12 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release-Tracy|x64'">ASM_x64.cpp;ASM_x64.hpp</Outputs>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\container\array.hpp" />
+    <ClInclude Include="..\sources\fstd\container\boolean_array.hpp" />
+    <ClInclude Include="..\sources\fstd\container\bucket.hpp" />
+    <ClInclude Include="..\sources\fstd\container\bucket_array.hpp" />
+    <ClInclude Include="..\sources\fstd\container\hash_table.hpp" />
+    <ClInclude Include="..\sources\fstd\container\stack.hpp" />
     <ClInclude Include="..\sources\fstd\core\assert.hpp" />
     <ClInclude Include="..\sources\fstd\core\logger.hpp" />
     <ClInclude Include="..\sources\fstd\core\string_builder.hpp" />
@@ -67,12 +73,6 @@
     <ClInclude Include="..\sources\fstd\language\types.hpp" />
     <ClInclude Include="..\sources\fstd\macros.hpp" />
     <ClInclude Include="..\sources\fstd\math\math.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\array.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\boolean_array.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\bucket.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\hash_table.hpp" />
-    <ClInclude Include="..\sources\fstd\memory\stack.hpp" />
     <ClInclude Include="..\sources\fstd\os\windows\console.hpp" />
     <ClInclude Include="..\sources\fstd\platform.hpp" />
     <ClInclude Include="..\sources\fstd\stream\array_read_stream.hpp" />

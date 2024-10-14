@@ -22,22 +22,22 @@ using namespace f;
 inline Imported_Library* allocate_imported_library()
 {
 	// Ensure that no reallocation could happen during the resize
-	core::Assert(memory::get_array_size(globals.ir_data.imported_libraries) < memory::get_array_reserved(globals.ir_data.imported_libraries));
+	core::Assert(container::get_array_size(globals.ir_data.imported_libraries) < container::get_array_reserved(globals.ir_data.imported_libraries));
 
-	memory::resize_array(globals.ir_data.imported_libraries, memory::get_array_size(globals.ir_data.imported_libraries) + 1);
+	container::resize_array(globals.ir_data.imported_libraries, container::get_array_size(globals.ir_data.imported_libraries) + 1);
 
-	Imported_Library* new_imported_library = memory::get_array_last_element(globals.ir_data.imported_libraries);
+	Imported_Library* new_imported_library = container::get_array_last_element(globals.ir_data.imported_libraries);
 	return new_imported_library;
 }
 
 inline Imported_Function* allocate_imported_function()
 {
 	// Ensure that no reallocation could happen during the resize
-	core::Assert(memory::get_array_size(globals.ir_data.imported_functions) < memory::get_array_reserved(globals.ir_data.imported_functions));
+	core::Assert(container::get_array_size(globals.ir_data.imported_functions) < container::get_array_reserved(globals.ir_data.imported_functions));
 
-	memory::resize_array(globals.ir_data.imported_functions, memory::get_array_size(globals.ir_data.imported_functions) + 1);
+	container::resize_array(globals.ir_data.imported_functions, container::get_array_size(globals.ir_data.imported_functions) + 1);
 
-	Imported_Function* new_imported_function = memory::get_array_last_element(globals.ir_data.imported_functions);
+	Imported_Function* new_imported_function = container::get_array_last_element(globals.ir_data.imported_functions);
 	return new_imported_function;
 }
 
@@ -250,14 +250,14 @@ static void parse_ast(Parsing_Result& parsing_result, IR& ir, AST_Node* node)
 			Literal literal;
 
 			// @TODO use the *literal_node->value.value.string instead of the token's text
-			memory::reserve_array(literal.data, literal_node->value.text.size + 1);
-			memory::array_copy(literal.data, 0, literal_node->value.text.ptr, literal_node->value.text.size);
-			memory::array_push_back(literal.data, (uint8_t)'\0');
+			container::reserve_array(literal.data, literal_node->value.text.size + 1);
+			container::array_copy(literal.data, 0, literal_node->value.text.ptr, literal_node->value.text.size);
+			container::array_push_back(literal.data, (uint8_t)'\0');
 			literal.RVA = ir.read_only_data.current_RVA;
 
 			// @TODO @SpeedUp see how this bufer can be pre-allocated
-			memory::array_push_back(ir.read_only_data.literals, literal);
-			ir.read_only_data.current_RVA += memory::get_array_size(literal.data);
+			container::array_push_back(ir.read_only_data.literals, literal);
+			ir.read_only_data.current_RVA += container::get_array_size(literal.data);
 		}
 		else if (literal_node->value.type == Token_Type::NUMERIC_LITERAL_I32
 			|| literal_node->value.type == Token_Type::NUMERIC_LITERAL_I64) {
@@ -462,14 +462,14 @@ static void parse_function_declaration(IR& ir, AST_Statement_Function* function_
 		uint64_t lib_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(dll_token->text), fstd::language::get_string_size(dll_token->text), 0);
 		uint16_t lib_short_hash = lib_hash & 0xffff;
 
-		found_imported_lib = fstd::memory::hash_table_get(ir.imported_libraries, lib_short_hash, dll_token->text);
+		found_imported_lib = fstd::container::hash_table_get(ir.imported_libraries, lib_short_hash, dll_token->text);
 		if (found_imported_lib == nullptr) {
 			Imported_Library* new_imported_lib = allocate_imported_library();
 
 			new_imported_lib->name = dll_token->text;
-			fstd::memory::hash_table_init(new_imported_lib->functions, &fstd::language::are_equals);
+			fstd::container::hash_table_init(new_imported_lib->functions, &fstd::language::are_equals);
 
-			found_imported_lib = fstd::memory::hash_table_insert(ir.imported_libraries, lib_short_hash, dll_token->text, new_imported_lib);
+			found_imported_lib = fstd::container::hash_table_insert(ir.imported_libraries, lib_short_hash, dll_token->text, new_imported_lib);
 		}
 
 		Imported_Function** found_imported_func;
@@ -477,7 +477,7 @@ static void parse_function_declaration(IR& ir, AST_Statement_Function* function_
 		uint64_t func_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(function_node->name.text), fstd::language::get_string_size(function_node->name.text), 0);
 		uint16_t func_short_hash = func_hash & 0xffff;
 
-		found_imported_func = fstd::memory::hash_table_get((*found_imported_lib)->functions, func_short_hash, dll_token->text);
+		found_imported_func = fstd::container::hash_table_get((*found_imported_lib)->functions, func_short_hash, dll_token->text);
 
 		if (found_imported_func) {
 			if (win32_system_call) {
@@ -493,7 +493,7 @@ static void parse_function_declaration(IR& ir, AST_Statement_Function* function_
 		new_imported_func->function = function_node;
 		new_imported_func->name_RVA = 0;
 
-		fstd::memory::hash_table_insert((*found_imported_lib)->functions, func_short_hash, dll_token->text, new_imported_func);
+		fstd::container::hash_table_insert((*found_imported_lib)->functions, func_short_hash, dll_token->text, new_imported_func);
 	}
 	else
 	{
@@ -518,15 +518,15 @@ void f::generate_ir(Parsing_Result& parsing_result, IR& ir)
 
 	// Initialize data
 	{
-		memory::hash_table_init(ir.imported_libraries, &language::are_equals);
-		memory::init(ir.code_data.code);
-		memory::reserve_array(ir.code_data.code, 4096); // @TODO I really should do something cleaver
+		container::hash_table_init(ir.imported_libraries, &language::are_equals);
+		container::init(ir.code_data.code);
+		container::reserve_array(ir.code_data.code, 4096); // @TODO I really should do something cleaver
 
-		memory::init(globals.ir_data.imported_libraries);
-		memory::reserve_array(globals.ir_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
+		container::init(globals.ir_data.imported_libraries);
+		container::reserve_array(globals.ir_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
 
-		memory::init(globals.ir_data.imported_functions);
-		memory::reserve_array(globals.ir_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
+		container::init(globals.ir_data.imported_functions);
+		container::reserve_array(globals.ir_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
 	}
 
 	ir.parsing_result = &parsing_result;

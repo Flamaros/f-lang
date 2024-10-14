@@ -30,8 +30,8 @@ namespace fstd
 
 			language::string* string_buffer;
 
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
+			container::array_push_back(builder.strings, language::string());
+			string_buffer = container::get_array_last_element(builder.strings);
 
 			language::copy(*string_buffer, 0, string, size);
 		}
@@ -44,8 +44,8 @@ namespace fstd
 
 			language::string* string_buffer;
 
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
+			container::array_push_back(builder.strings, language::string());
+			string_buffer = container::get_array_last_element(builder.strings);
 
 			language::UTF16LE_string_view	string_view;
 
@@ -61,8 +61,8 @@ namespace fstd
 				print_to_builder(builder, "0x", 2);
 			}
 
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
+			container::array_push_back(builder.strings, language::string());
+			string_buffer = container::get_array_last_element(builder.strings);
 
 			if (format == Numeric_Format::decimal) {
 				language::to_string(value, *string_buffer);
@@ -79,8 +79,8 @@ namespace fstd
 		{
 			language::string* string_buffer;
 
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
+			container::array_push_back(builder.strings, language::string());
+			string_buffer = container::get_array_last_element(builder.strings);
 
 			language::to_string(value, *string_buffer);
 		}
@@ -93,8 +93,8 @@ namespace fstd
 				print_to_builder(builder, "0x", 2);
 			}
 
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
+			container::array_push_back(builder.strings, language::string());
+			string_buffer = container::get_array_last_element(builder.strings);
 
 			if (format == Numeric_Format::decimal) {
 				language::to_string(value, *string_buffer);
@@ -111,8 +111,8 @@ namespace fstd
 		{
 			language::string* string_buffer;
 
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
+			container::array_push_back(builder.strings, language::string());
+			string_buffer = container::get_array_last_element(builder.strings);
 
 			language::to_string(value, *string_buffer);
 		}
@@ -131,8 +131,8 @@ namespace fstd
 		{
 			language::string* string_buffer;
 
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
+			container::array_push_back(builder.strings, language::string());
+			string_buffer = container::get_array_last_element(builder.strings);
 
 			language::copy(*string_buffer, 0, value);
 		}
@@ -141,8 +141,8 @@ namespace fstd
 		{
 			language::string* string_buffer;
 
-			memory::array_push_back(builder.strings, language::string());
-			string_buffer = memory::get_array_last_element(builder.strings);
+			container::array_push_back(builder.strings, language::string());
+			string_buffer = container::get_array_last_element(builder.strings);
 
 			language::copy(*string_buffer, 0, value);
 		}
@@ -316,11 +316,11 @@ namespace fstd
 
 		void free_buffers(String_Builder& builder)
 		{
-			for (ssize_t i = 0; i < memory::get_array_size(builder.strings); i++) {
-				language::release(*memory::get_array_element(builder.strings, i));
+			for (ssize_t i = 0; i < container::get_array_size(builder.strings); i++) {
+				language::release(*container::get_array_element(builder.strings, i));
 			}
 
-			memory::release(builder.strings);
+			container::release(builder.strings);
 		}
 
 		language::string to_string(String_Builder& builder)
@@ -329,15 +329,15 @@ namespace fstd
 			ssize_t				total_length = 0;
 			ssize_t				position = 0;
 
-			for (ssize_t i = 0; i < memory::get_array_size(builder.strings); i++) {
-				total_length += language::get_string_size(*memory::get_array_element(builder.strings, i));
+			for (ssize_t i = 0; i < container::get_array_size(builder.strings); i++) {
+				total_length += language::get_string_size(*container::get_array_element(builder.strings, i));
 			}
 
 			language::reserve(result, total_length + 1); // + 1 for ending '\0'
-			for (ssize_t i = 0; i < memory::get_array_size(builder.strings); i++) {
-				ssize_t size = language::get_string_size(*memory::get_array_element(builder.strings, i));
+			for (ssize_t i = 0; i < container::get_array_size(builder.strings); i++) {
+				ssize_t size = language::get_string_size(*container::get_array_element(builder.strings, i));
 
-				language::copy(result, position, *memory::get_array_element(builder.strings, i));
+				language::copy(result, position, *container::get_array_element(builder.strings, i));
 				position += size;
 			}
 			result.buffer[total_length] = '\0';

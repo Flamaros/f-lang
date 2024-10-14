@@ -5,8 +5,8 @@
 #include <fstd/core/logger.hpp>
 #include <fstd/core/string_builder.hpp>
 
-#include <fstd/memory/array.hpp>
-#include <fstd/memory/hash_table.hpp>
+#include <fstd/container/array.hpp>
+#include <fstd/container/hash_table.hpp>
 
 #include <fstd/stream/array_read_stream.hpp>
 
@@ -48,7 +48,7 @@ inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 	ZoneScopedN("allocate_AST_node");
 
 	// Ensure that no reallocation could happen during the resize
-	bool overflow_preallocated_buffer = memory::get_array_size(globals.parser_data.ast_nodes) >= memory::get_array_reserved(globals.parser_data.ast_nodes) * (ssize_t)sizeof(AST_Statement_Variable);
+	bool overflow_preallocated_buffer = container::get_array_size(globals.parser_data.ast_nodes) >= container::get_array_reserved(globals.parser_data.ast_nodes) * (ssize_t)sizeof(AST_Statement_Variable);
 
 	core::Assert(overflow_preallocated_buffer == false);
 	if (overflow_preallocated_buffer) {
@@ -56,9 +56,9 @@ inline Node_Type* allocate_AST_node(AST_Node** emplace_node)
 	}
 
 	// @TODO use a version that didn't check the array size, because we just did it and we don't want to trigger unplanned allocations
-	memory::resize_array(globals.parser_data.ast_nodes, memory::get_array_size(globals.parser_data.ast_nodes) + sizeof(Node_Type));
+	container::resize_array(globals.parser_data.ast_nodes, container::get_array_size(globals.parser_data.ast_nodes) + sizeof(Node_Type));
 
-	Node_Type* new_node = (Node_Type*)(memory::get_array_last_element(globals.parser_data.ast_nodes) - sizeof(Node_Type));
+	Node_Type* new_node = (Node_Type*)(container::get_array_last_element(globals.parser_data.ast_nodes) - sizeof(Node_Type));
 	if (emplace_node) {
 		*emplace_node = (AST_Node*)new_node;
 	}
@@ -70,7 +70,7 @@ inline Symbol_Table* allocate_symbol_table()
 	ZoneScopedN("allocate_symbol_table");
 
 	// Ensure that no reallocation could happen during the resize
-	bool overflow_preallocated_buffer = memory::get_array_size(globals.parser_data.symbol_tables) >= memory::get_array_reserved(globals.parser_data.symbol_tables) * (ssize_t)sizeof(Symbol_Table);
+	bool overflow_preallocated_buffer = container::get_array_size(globals.parser_data.symbol_tables) >= container::get_array_reserved(globals.parser_data.symbol_tables) * (ssize_t)sizeof(Symbol_Table);
 
 	core::Assert(overflow_preallocated_buffer == false);
 	if (overflow_preallocated_buffer) {
@@ -78,9 +78,9 @@ inline Symbol_Table* allocate_symbol_table()
 	}
 
 	// @TODO use a version that didn't check the array size, because we just did it and we don't want to trigger unplanned allocations
-	memory::resize_array(globals.parser_data.symbol_tables, memory::get_array_size(globals.parser_data.symbol_tables) + sizeof(Symbol_Table));
+	container::resize_array(globals.parser_data.symbol_tables, container::get_array_size(globals.parser_data.symbol_tables) + sizeof(Symbol_Table));
 
-	Symbol_Table* new_node = (Symbol_Table*)(memory::get_array_last_element(globals.parser_data.symbol_tables) - sizeof(Symbol_Table));
+	Symbol_Table* new_node = (Symbol_Table*)(container::get_array_last_element(globals.parser_data.symbol_tables) - sizeof(Symbol_Table));
 	return new_node;
 }
 
@@ -315,7 +315,7 @@ void parse_variable(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Key
 		uint16_t short_hash = hash & 0xffff;
 		AST_Node* value = (AST_Node*)variable;
 
-		fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->variables, short_hash, variable->name.text, value);
+		fstd::container::hash_table_insert(globals.parser_data.current_symbol_table->variables, short_hash, variable->name.text, value);
 	}
 }
 
@@ -338,7 +338,7 @@ void parse_alias(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keywor
 		uint16_t short_hash = hash & 0xffff;
 		AST_Node* value = (AST_Node*)alias_node;
 
-		fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->user_types, short_hash, alias_node->name.text, value);
+		fstd::container::hash_table_insert(globals.parser_data.current_symbol_table->user_types, short_hash, alias_node->name.text, value);
 	}
 }
 
@@ -407,7 +407,7 @@ void parse_function(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Key
 		uint16_t short_hash = hash & 0xffff;
 		AST_Node* value = (AST_Node*)function_node;
 
-		fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->functions, short_hash, function_node->name.text, value);
+		fstd::container::hash_table_insert(globals.parser_data.current_symbol_table->functions, short_hash, function_node->name.text, value);
 	};
 
 	auto insert_parameters_to_symbol_table = [&]() {
@@ -417,7 +417,7 @@ void parse_function(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Key
 			uint16_t short_hash = hash & 0xffff;
 			AST_Node* value = (AST_Node*)argument;
 
-			fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->variables, short_hash, argument->name.text, value);
+			fstd::container::hash_table_insert(globals.parser_data.current_symbol_table->variables, short_hash, argument->name.text, value);
 		}
 
 	};
@@ -584,7 +584,7 @@ void parse_struct(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keywo
 		uint16_t short_hash = hash & 0xffff;
 		AST_Node* value = (AST_Node*)struct_node;
 
-		fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->user_types, short_hash, struct_node->name.text, value);
+		fstd::container::hash_table_insert(globals.parser_data.current_symbol_table->user_types, short_hash, struct_node->name.text, value);
 	}
 }
 
@@ -627,7 +627,7 @@ void parse_union(stream::Array_Read_Stream<Token<Keyword>>& stream, Token<Keywor
 		uint16_t short_hash = hash & 0xffff;
 		AST_Node* value = (AST_Node*)union_node;
 
-		fstd::memory::hash_table_insert(globals.parser_data.current_symbol_table->user_types, short_hash, union_node->name.text, value);
+		fstd::container::hash_table_insert(globals.parser_data.current_symbol_table->user_types, short_hash, union_node->name.text, value);
 	}
 }
 
@@ -1199,9 +1199,9 @@ void initialize_symbol_table(Symbol_Table* symbol_table, Symbol_Table* parent, S
 {
 	ZoneScopedN("initialize_symbol_table");
 
-	fstd::memory::hash_table_init(symbol_table->variables,	&fstd::language::are_equals);
-	fstd::memory::hash_table_init(symbol_table->user_types,	&fstd::language::are_equals);
-	fstd::memory::hash_table_init(symbol_table->functions,	&fstd::language::are_equals);
+	fstd::container::hash_table_init(symbol_table->variables,	&fstd::language::are_equals);
+	fstd::container::hash_table_init(symbol_table->user_types,	&fstd::language::are_equals);
+	fstd::container::hash_table_init(symbol_table->functions,	&fstd::language::are_equals);
 
 	symbol_table->type = type;
 	symbol_table->name = name;
@@ -1210,7 +1210,7 @@ void initialize_symbol_table(Symbol_Table* symbol_table, Symbol_Table* parent, S
 	symbol_table->first_child = nullptr;
 }
 
-void f::parse(fstd::memory::Array<Token<Keyword>>& tokens, Parsing_Result& parsing_result)
+void f::parse(fstd::container::Array<Token<Keyword>>& tokens, Parsing_Result& parsing_result)
 {
 	ZoneScopedNC("f::parse", 0xff6f00);
 
@@ -1223,8 +1223,8 @@ void f::parse(fstd::memory::Array<Token<Keyword>>& tokens, Parsing_Result& parsi
 	// We expect to be able to determine with the meta-programmation which AST_Node type is the largest one.
 	//
 	// Flamaros - 13 april 2020
-	memory::reserve_array(globals.parser_data.ast_nodes, memory::get_array_size(tokens) * sizeof(AST_Statement_Variable));
-	memory::reserve_array(globals.parser_data.symbol_tables, memory::get_array_size(tokens) * sizeof(Symbol_Table));
+	container::reserve_array(globals.parser_data.ast_nodes, container::get_array_size(tokens) * sizeof(AST_Statement_Variable));
+	container::reserve_array(globals.parser_data.symbol_tables, container::get_array_size(tokens) * sizeof(Symbol_Table));
 
 	stream::init<Token<Keyword>>(stream, tokens);
 
@@ -1567,12 +1567,12 @@ static void write_dot_symbol_table(String_Builder& file_string_builder, const Sy
 		print_to_builder(file_string_builder,
 			"\t\t\t" "<tr><td colspan=\"2\"></td></tr>\n\n"
 			"\t\t\t" "<tr><td colspan=\"2\">Variables</td></tr>\n");
-		auto it = fstd::memory::hash_table_begin(symbol_table->variables);
-		auto it_end = fstd::memory::hash_table_end(symbol_table->variables);
+		auto it = fstd::container::hash_table_begin(symbol_table->variables);
+		auto it_end = fstd::container::hash_table_end(symbol_table->variables);
 
-		for (; !fstd::memory::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
+		for (; !fstd::container::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::container::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
 		{
-			AST_Node* node = *fstd::memory::hash_table_get<uint16_t, fstd::language::string_view, AST_Node*, 32>(it);
+			AST_Node* node = *fstd::container::hash_table_get<uint16_t, fstd::language::string_view, AST_Node*, 32>(it);
 
 			if (node->ast_type == Node_Type::STATEMENT_VARIABLE) {
 				AST_Statement_Variable* variable = ((AST_Statement_Variable*)node);
@@ -1591,12 +1591,12 @@ static void write_dot_symbol_table(String_Builder& file_string_builder, const Sy
 		print_to_builder(file_string_builder,
 			"\t\t\t" "<tr><td colspan=\"2\"></td></tr>\n\n"
 			"\t\t\t" "<tr><td colspan=\"2\">User types</td></tr>\n");
-		auto it = fstd::memory::hash_table_begin(symbol_table->user_types);
-		auto it_end = fstd::memory::hash_table_end(symbol_table->user_types);
+		auto it = fstd::container::hash_table_begin(symbol_table->user_types);
+		auto it_end = fstd::container::hash_table_end(symbol_table->user_types);
 
-		for (; !fstd::memory::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
+		for (; !fstd::container::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::container::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
 		{
-			AST_Node* node = *fstd::memory::hash_table_get<uint16_t, fstd::language::string_view, AST_Node*, 32>(it);
+			AST_Node* node = *fstd::container::hash_table_get<uint16_t, fstd::language::string_view, AST_Node*, 32>(it);
 
 			if (node->ast_type == Node_Type::TYPE_ALIAS) {
 				print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>alias</td><td>%v</td></tr>\n", ((AST_Alias*)node)->name.text);
@@ -1622,12 +1622,12 @@ static void write_dot_symbol_table(String_Builder& file_string_builder, const Sy
 		print_to_builder(file_string_builder,
 			"\t\t\t" "<tr><td colspan=\"2\"></td></tr>\n\n"
 			"\t\t\t" "<tr><td colspan=\"2\">Functions</td></tr>\n");
-		auto it = fstd::memory::hash_table_begin(symbol_table->functions);
-		auto it_end = fstd::memory::hash_table_end(symbol_table->functions);
+		auto it = fstd::container::hash_table_begin(symbol_table->functions);
+		auto it_end = fstd::container::hash_table_end(symbol_table->functions);
 
-		for (; !fstd::memory::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
+		for (; !fstd::container::equals<uint16_t, fstd::language::string_view, AST_Node*, 32>(it, it_end); fstd::container::hash_table_next<uint16_t, fstd::language::string_view, AST_Node*, 32>(it))
 		{
-			AST_Node* node = *fstd::memory::hash_table_get<uint16_t, fstd::language::string_view, AST_Node*, 32>(it);
+			AST_Node* node = *fstd::container::hash_table_get<uint16_t, fstd::language::string_view, AST_Node*, 32>(it);
 
 			if (node->ast_type == Node_Type::STATEMENT_FUNCTION) {
 				print_to_builder(file_string_builder, "\t\t\t\t" "<tr><td>function</td><td>%v</td></tr>\n", ((AST_Statement_Function*)node)->name.text);

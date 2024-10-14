@@ -4,8 +4,8 @@
 
 #include <fstd/language/types.hpp>
 #include <fstd/language/string_view.hpp>
-#include <fstd/memory/stack.hpp>
-#include <fstd/memory/hash_table.hpp>
+#include <fstd/container/stack.hpp>
+#include <fstd/container/hash_table.hpp>
 
 namespace f
 {
@@ -35,7 +35,7 @@ namespace f
 
 	struct Imported_Library
 	{
-		typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Function*, 32> Function_Hash_Table;
+		typedef fstd::container::Hash_Table<uint16_t, fstd::language::string_view, Imported_Function*, 32> Function_Hash_Table;
 
 		fstd::language::string_view	name; // string_view of the first token parsed of this library
 		Function_Hash_Table			functions;
@@ -44,13 +44,13 @@ namespace f
 
 	struct Literal // Things that go in rdata section like string literals
 	{
-		fstd::memory::Array<uint8_t>	data;
+		fstd::container::Array<uint8_t>	data;
 		size_t							RVA;
 	};
 
 	struct ReadOnlyData
 	{
-		fstd::memory::Array<Literal>	literals;
+		fstd::container::Array<Literal>	literals;
 		size_t							current_RVA = 0;
 	};
 
@@ -63,13 +63,13 @@ namespace f
 		// for instructions it may depend, a call for instance can target a RVA (or RIP offset) in the IAT or
 		// an address in the code section.
 
-		fstd::memory::Array<uint8_t>	code;
+		fstd::container::Array<uint8_t>	code;
 		uint32_t						entry_point_RVA = 0x00;
 	};
 
 	struct IR
 	{
-		typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32> Imported_Library_Hash_Table;
+		typedef fstd::container::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32> Imported_Library_Hash_Table;
 
 		Parsing_Result*					parsing_result;
 		Imported_Library_Hash_Table		imported_libraries;
@@ -81,8 +81,8 @@ namespace f
 
 	struct IR_Data
 	{
-		fstd::memory::Array<Imported_Library>	imported_libraries;
-		fstd::memory::Array<Imported_Function>	imported_functions;
+		fstd::container::Array<Imported_Library>	imported_libraries;
+		fstd::container::Array<Imported_Function>	imported_functions;
 	};
 
 	void generate_ir(Parsing_Result& parsing_result, IR& ir);

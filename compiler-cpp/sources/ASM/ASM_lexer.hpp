@@ -2,7 +2,7 @@
 
 #include "generated/ASM_x64.hpp"
 
-#include <fstd/memory/array.hpp>
+#include <fstd/container/array.hpp>
 
 #include <fstd/core/assert.hpp>
 
@@ -142,7 +142,7 @@ namespace f::ASM
     struct Lexer_Data
     {
         fstd::system::Path		        file_path;
-        fstd::memory::Array<uint8_t>	file_buffer;
+        fstd::container::Array<uint8_t>	file_buffer;
     };
 
 	// @TODO Give the possibility to switch the targetted architecture
@@ -150,9 +150,9 @@ namespace f::ASM
 	// Store the targetted architecture in Lexer_Data to improve error messages
     void    initialize_lexer();
 
-	void    lex(const fstd::system::Path& path, fstd::memory::Array<Token>& tokens);
-    void    lex(const fstd::system::Path& path, fstd::memory::Array<uint8_t>& file_buffer, fstd::memory::Array<Token>& tokens, fstd::memory::Array<f::ASM::Lexer_Data>& lexer_data, Token& file_token);
-    void    print(fstd::memory::Array<Token>& tokens);
+	void    lex(const fstd::system::Path& path, fstd::container::Array<Token>& tokens);
+    void    lex(const fstd::system::Path& path, fstd::container::Array<uint8_t>& file_buffer, fstd::container::Array<Token>& tokens, fstd::container::Array<f::ASM::Lexer_Data>& lexer_data, Token& file_token);
+    void    print(fstd::container::Array<Token>& tokens);
 
     inline bool is_white_punctuation(Punctuation punctuation)
     {

@@ -5,7 +5,7 @@
 #include <fstd/core/unicode.hpp>
 #include <fstd/core/assert.hpp>
 #include <fstd/stream/memory_write_stream.hpp>
-#include <fstd/memory/bucket_array.hpp>
+#include <fstd/container/bucket_array.hpp>
 #include <fstd/system/allocator.hpp>
 
 #if defined(FSTD_OS_WINDOWS)
@@ -110,26 +110,26 @@ namespace fstd
 #endif
 		}
 
-		memory::Array<uint8_t> get_file_content(File& file)
+		container::Array<uint8_t> get_file_content(File& file)
 		{
 			ZoneScopedN("fstd::system::get_file_content");
 
 #if defined(FSTD_OS_WINDOWS)
-			memory::Array<uint8_t>	content;
+			container::Array<uint8_t>	content;
 			DWORD					read = 0;
 
-			memory::resize_array(content, (size_t)get_file_size(file));
+			container::resize_array(content, (size_t)get_file_size(file));
 			if (ReadFile(
 				file.handle,						// hFile
-				memory::get_array_data(content),	// lpBuffer
-				(DWORD)memory::get_array_size(content),	// nNumberOfBytesToRead
+				container::get_array_data(content),	// lpBuffer
+				(DWORD)container::get_array_size(content),	// nNumberOfBytesToRead
 				&read,								// lpNumberOfBytesRead
 				NULL								// lpOverlapped
 			) == TRUE) {
 				file.is_eof = true;
 				return content;
 			}
-			memory::release(content);
+			container::release(content);
 			return content;
 #else
 #	error
@@ -188,10 +188,10 @@ namespace fstd
 		bool write_file(File& file, const stream::Memory_Write_Stream& stream, uint32_t* nb_written_bytes)
 		{
 			const auto& bucket_array = stream::get_buffer(stream);
-			uint32_t	array_size = (uint32_t)memory::get_array_size(bucket_array);
+			uint32_t	array_size = (uint32_t)container::get_array_size(bucket_array);
 			uint32_t	remaining_size = array_size;
 			uint32_t	temp_nb_written_bytes = 0;
-			uint32_t	bucket_size = (uint32_t)memory::get_bucket_size(bucket_array); // Store the contexpr locally to avoid many useless instances of this function
+			uint32_t	bucket_size = (uint32_t)container::get_bucket_size(bucket_array); // Store the contexpr locally to avoid many useless instances of this function
 
 			if (nb_written_bytes) {
 				*nb_written_bytes = 0;
@@ -201,7 +201,7 @@ namespace fstd
 				size_t		position = array_size - remaining_size;
 				size_t		bucket_index = position / bucket_size;
 				uint32_t	length = remaining_size > bucket_size ? bucket_size : remaining_size;
-				if (write_file(file, memory::get_bucket(bucket_array, bucket_index), length, &temp_nb_written_bytes) == false) {
+				if (write_file(file, container::get_bucket(bucket_array, bucket_index), length, &temp_nb_written_bytes) == false) {
 					return false;
 				}
 				remaining_size -= temp_nb_written_bytes;

@@ -5,8 +5,8 @@
 
 #include <fstd/language/defer.hpp>
 #include <fstd/language/flags.hpp>
-#include <fstd/memory/array.hpp>
-#include <fstd/memory/bucket_array.hpp>
+#include <fstd/container/array.hpp>
+#include <fstd/container/bucket_array.hpp>
 #include <fstd/system/file.hpp>
 #include <fstd/stream/array_read_stream.hpp>
 
@@ -33,33 +33,33 @@ namespace f::ASM
 	inline Imported_Library* allocate_imported_library()
 	{
 		// Ensure that no reallocation could happen during the resize
-		core::Assert(memory::get_array_size(globals.asm_data.imported_libraries) < memory::get_array_reserved(globals.asm_data.imported_libraries));
+		core::Assert(container::get_array_size(globals.asm_data.imported_libraries) < container::get_array_reserved(globals.asm_data.imported_libraries));
 
-		memory::resize_array(globals.asm_data.imported_libraries, memory::get_array_size(globals.asm_data.imported_libraries) + 1);
+		container::resize_array(globals.asm_data.imported_libraries, container::get_array_size(globals.asm_data.imported_libraries) + 1);
 
-		Imported_Library* new_imported_library = memory::get_array_last_element(globals.asm_data.imported_libraries);
+		Imported_Library* new_imported_library = container::get_array_last_element(globals.asm_data.imported_libraries);
 		return new_imported_library;
 	}
 
 	inline Imported_Function* allocate_imported_function()
 	{
 		// Ensure that no reallocation could happen during the resize
-		core::Assert(memory::get_array_size(globals.asm_data.imported_functions) < memory::get_array_reserved(globals.asm_data.imported_functions));
+		core::Assert(container::get_array_size(globals.asm_data.imported_functions) < container::get_array_reserved(globals.asm_data.imported_functions));
 
-		memory::resize_array(globals.asm_data.imported_functions, memory::get_array_size(globals.asm_data.imported_functions) + 1);
+		container::resize_array(globals.asm_data.imported_functions, container::get_array_size(globals.asm_data.imported_functions) + 1);
 
-		Imported_Function* new_imported_function = memory::get_array_last_element(globals.asm_data.imported_functions);
+		Imported_Function* new_imported_function = container::get_array_last_element(globals.asm_data.imported_functions);
 		return new_imported_function;
 	}
 
 	inline Label* allocate_Label()
 	{
 		// Ensure that no reallocation could happen during the resize
-		core::Assert(memory::get_array_size(globals.asm_data.labels) < memory::get_array_reserved(globals.asm_data.labels));
+		core::Assert(container::get_array_size(globals.asm_data.labels) < container::get_array_reserved(globals.asm_data.labels));
 
-		memory::resize_array(globals.asm_data.labels, memory::get_array_size(globals.asm_data.labels) + 1);
+		container::resize_array(globals.asm_data.labels, container::get_array_size(globals.asm_data.labels) + 1);
 
-		Label* new_label = memory::get_array_last_element(globals.asm_data.labels);
+		Label* new_label = container::get_array_last_element(globals.asm_data.labels);
 		return new_label;
 	}
 
@@ -69,7 +69,7 @@ namespace f::ASM
 	{
 		ZoneScopedNC("f::ASM::compile_file", 0x1b5e20);
 
-		fstd::memory::Array<Token>	tokens;
+		fstd::container::Array<Token>	tokens;
 
 		initialize_lexer();
 		lex(path, tokens);
@@ -80,23 +80,23 @@ namespace f::ASM
 
 		// Result data
 		{
-			memory::hash_table_init(asm_result.imported_libraries, &language::are_equals);
-			memory::hash_table_init(asm_result.labels, &language::are_equals);
+			container::hash_table_init(asm_result.imported_libraries, &language::are_equals);
+			container::hash_table_init(asm_result.labels, &language::are_equals);
 
-			memory::init(asm_result.sections);
-			memory::reserve_array(asm_result.sections, NB_PREALLOCALED_SECTIONS);
+			container::init(asm_result.sections);
+			container::reserve_array(asm_result.sections, NB_PREALLOCALED_SECTIONS);
 		}
 
 		// Working data (stored in globals)
 		{
-			memory::init(globals.asm_data.imported_libraries);
-			memory::reserve_array(globals.asm_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
+			container::init(globals.asm_data.imported_libraries);
+			container::reserve_array(globals.asm_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
 
-			memory::init(globals.asm_data.imported_functions);
-			memory::reserve_array(globals.asm_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
+			container::init(globals.asm_data.imported_functions);
+			container::reserve_array(globals.asm_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
 
-			memory::init(globals.asm_data.labels);
-			memory::reserve_array(globals.asm_data.labels, (size_t)(memory::get_array_size(tokens) * NB_LABELS_PER_TOKEN) + 1);	// + 1 to ceil the value
+			container::init(globals.asm_data.labels);
+			container::reserve_array(globals.asm_data.labels, (size_t)(container::get_array_size(tokens) * NB_LABELS_PER_TOKEN) + 1);	// + 1 to ceil the value
 		}
 
 		stream::Array_Read_Stream<Token>	stream;
@@ -160,14 +160,14 @@ namespace f::ASM
 		uint64_t lib_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(module_name.text), fstd::language::get_string_size(module_name.text), 0);
 		uint16_t lib_short_hash = lib_hash & 0xffff;
 
-		found_imported_lib = fstd::memory::hash_table_get(asm_result.imported_libraries, lib_short_hash, module_name.text);
+		found_imported_lib = fstd::container::hash_table_get(asm_result.imported_libraries, lib_short_hash, module_name.text);
 		if (found_imported_lib == nullptr) {
 			Imported_Library* new_imported_lib = allocate_imported_library();
 
 			new_imported_lib->name = module_name.text;
-			fstd::memory::hash_table_init(new_imported_lib->functions, &fstd::language::are_equals);
+			fstd::container::hash_table_init(new_imported_lib->functions, &fstd::language::are_equals);
 
-			found_imported_lib = fstd::memory::hash_table_insert(asm_result.imported_libraries, lib_short_hash, module_name.text, new_imported_lib);
+			found_imported_lib = fstd::container::hash_table_insert(asm_result.imported_libraries, lib_short_hash, module_name.text, new_imported_lib);
 		}
 		// --
 
@@ -201,7 +201,7 @@ namespace f::ASM
 			uint64_t func_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(current_token.text), fstd::language::get_string_size(current_token.text), 0);
 			uint16_t func_short_hash = func_hash & 0xffff;
 
-			found_imported_func = fstd::memory::hash_table_get((*found_imported_lib)->functions, func_short_hash, module_name.text);
+			found_imported_func = fstd::container::hash_table_get((*found_imported_lib)->functions, func_short_hash, module_name.text);
 
 			Imported_Function* new_imported_func;
 			if (found_imported_func == nullptr) {
@@ -210,7 +210,7 @@ namespace f::ASM
 				new_imported_func->name = current_token.text;
 				new_imported_func->RVA_of_IAT_entry = 0;
 
-				fstd::memory::hash_table_insert((*found_imported_lib)->functions, func_short_hash, module_name.text, new_imported_func);
+				fstd::container::hash_table_insert((*found_imported_lib)->functions, func_short_hash, module_name.text, new_imported_func);
 			}
 			else {
 				report_error(Compiler_Error::warning, current_token, "Function already imported!"); // @TODO for the current module
@@ -223,7 +223,7 @@ namespace f::ASM
 			uint64_t label_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(current_token.text), fstd::language::get_string_size(current_token.text), 0);
 			uint16_t label_short_hash = label_hash & 0xffff;
 
-			found_label = fstd::memory::hash_table_get(asm_result.labels, label_short_hash, current_token.text);
+			found_label = fstd::container::hash_table_get(asm_result.labels, label_short_hash, current_token.text);
 			if (found_label) {
 				// @TODO give the position of the previous declaration (label)
 				report_error(Compiler_Error::error, current_token, "Function name conflicts with a label.");
@@ -234,7 +234,7 @@ namespace f::ASM
 			new_label->label = current_token.text;
 			new_label->imported_function = new_imported_func;
 
-			found_label = fstd::memory::hash_table_insert(asm_result.labels, label_short_hash, current_token.text, new_label);
+			found_label = fstd::container::hash_table_insert(asm_result.labels, label_short_hash, current_token.text, new_label);
 			// --
 
 			stream::peek<Token>(stream); // function name
@@ -853,7 +853,7 @@ namespace f::ASM
 		uint64_t label_hash = SpookyHash::Hash64((const void*)fstd::language::to_utf8(label_name.text), fstd::language::get_string_size(label_name.text), 0);
 		uint16_t label_short_hash = label_hash & 0xffff;
 
-		found_label = fstd::memory::hash_table_get(asm_result.labels, label_short_hash, label_name.text);
+		found_label = fstd::container::hash_table_get(asm_result.labels, label_short_hash, label_name.text);
 		if (found_label) {
 			// @TODO give the position of the first definition
 			if ((*found_label)->imported_function) {
@@ -871,7 +871,7 @@ namespace f::ASM
 		new_label->imported_function = nullptr;
 		new_label->RVA = (uint32_t)stream::get_position(section->stream_data);
 
-		found_label = fstd::memory::hash_table_insert(asm_result.labels, label_short_hash, label_name.text, new_label);
+		found_label = fstd::container::hash_table_insert(asm_result.labels, label_short_hash, label_name.text, new_label);
 
 		current_token = stream::get<Token>(stream);
 		if (!(current_token.type == Token_Type::SYNTAXE_OPERATOR
@@ -970,13 +970,13 @@ namespace f::ASM
 		core::Assert(get_string_size(name) <= SECTION_NAME_MAX_LENGTH);
 
 		// Return existing section
-		size_t search_result = memory::find_array_element(asm_result.sections, name, &match_section);
+		size_t search_result = container::find_array_element(asm_result.sections, name, &match_section);
 		if (search_result != (size_t)-1) {
-			return memory::get_array_element(asm_result.sections, search_result);
+			return container::get_array_element(asm_result.sections, search_result);
 		}
 
-		memory::array_push_back(asm_result.sections, Section());
-		Section* new_section = memory::get_array_last_element(asm_result.sections);
+		container::array_push_back(asm_result.sections, Section());
+		Section* new_section = container::get_array_last_element(asm_result.sections);
 
 		new_section->name = name;
 		stream::init(new_section->stream_data);
@@ -1089,7 +1089,9 @@ namespace f::ASM
 			if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
 				if (modr_value == (uint8_t)-2) {
 					if (is_flag_set(operand_encoding, (uint8_t)Instruction_Desc::Operand_Encoding_Flags::IN_MODRM_REG)) {
-						*modrm |= 0b11 << 6; // register flag
+//						if (*modrm != 0b0101) {
+							*modrm |= 0b11 << 6; // register flag
+//						}
 						*modrm |= (g_register_desc_table[(size_t)operand.value._register].id & 0b111) << 3;
 
 						encode_additionnal_bit_in_REX_prefix(g_register_desc_table[(size_t)operand.value._register].id, data, REX_prefix_index, 0b0100);
@@ -1131,7 +1133,7 @@ namespace f::ASM
 
 				addr_to_patch.label = operand.label;
 				addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
-				memory::push_back(section->addr_to_patch, addr_to_patch);
+				container::push_back(section->addr_to_patch, addr_to_patch);
 
 				data[size++] = 0; data[size++] = 0; data[size++] = 0; data[size++] = 0;
 			}
@@ -1233,7 +1235,7 @@ namespace f::ASM
 
 					addr_to_patch.label = operand.label;
 					addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
-					memory::push_back(section->addr_to_patch, addr_to_patch);
+					container::push_back(section->addr_to_patch, addr_to_patch);
 
 					data[size++] = 0; data[size++] = 0; data[size++] = 0; data[size++] = 0;
 				}
@@ -1281,7 +1283,7 @@ namespace f::ASM
 
 				addr_to_patch.label = operand.label;
 				addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
-				memory::push_back(section->addr_to_patch, addr_to_patch);
+				container::push_back(section->addr_to_patch, addr_to_patch);
 
 				data[size++] = 0; data[size++] = 0; data[size++] = 0; data[size++] = 0;
 			}
@@ -1384,9 +1386,9 @@ namespace f::ASM
 
 	Section* get_section(const ASM& asm_result, fstd::language::string_view name)
 	{
-		size_t search_result = memory::find_array_element(asm_result.sections, name, &match_section);
+		size_t search_result = container::find_array_element(asm_result.sections, name, &match_section);
 		if (search_result != (size_t)-1) {
-			return memory::get_array_element(asm_result.sections, search_result);
+			return container::get_array_element(asm_result.sections, search_result);
 		}
 		return nullptr;
 	}
@@ -1418,29 +1420,29 @@ namespace f::ASM
 			language::assign(section_name, _dummy_section_name);
 			system::from_native(dummy_path, (uint8_t*)u8R"(test_x64_encoding)");
 
-			fstd::memory::Array<Token>	tokens;
+			fstd::container::Array<Token>	tokens;
 
 			initialize_lexer();
 
 			// Result data
 			{
-				memory::hash_table_init(asm_result.imported_libraries, &language::are_equals);
-				memory::hash_table_init(asm_result.labels, &language::are_equals);
+				container::hash_table_init(asm_result.imported_libraries, &language::are_equals);
+				container::hash_table_init(asm_result.labels, &language::are_equals);
 
-				memory::init(asm_result.sections);
-				memory::reserve_array(asm_result.sections, NB_PREALLOCALED_SECTIONS);
+				container::init(asm_result.sections);
+				container::reserve_array(asm_result.sections, NB_PREALLOCALED_SECTIONS);
 			}
 
 			// Working data (stored in globals)
 			{
-				memory::init(globals.asm_data.imported_libraries);
-				memory::reserve_array(globals.asm_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
+				container::init(globals.asm_data.imported_libraries);
+				container::reserve_array(globals.asm_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
 
-				memory::init(globals.asm_data.imported_functions);
-				memory::reserve_array(globals.asm_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
+				container::init(globals.asm_data.imported_functions);
+				container::reserve_array(globals.asm_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
 
-				memory::init(globals.asm_data.labels);
-				memory::reserve_array(globals.asm_data.labels, (size_t)(memory::get_array_size(tokens) * NB_LABELS_PER_TOKEN) + 1);	// + 1 to ceil the value
+				container::init(globals.asm_data.labels);
+				container::reserve_array(globals.asm_data.labels, (size_t)(container::get_array_size(tokens) * NB_LABELS_PER_TOKEN) + 1);	// + 1 to ceil the value
 			}
 
 			file_token.type = Token_Type::UNKNOWN;
@@ -1460,11 +1462,11 @@ namespace f::ASM
 		auto verify_encoding = [](uint8_t code_length, uint8_t expected_code[15], stream::Memory_Write_Stream& encoded) -> bool {
 			// @TODO tester
 
-			core::Assert(memory::get_bucket_size(stream::get_buffer(encoded)) >= code_length);
+			core::Assert(container::get_bucket_size(stream::get_buffer(encoded)) >= code_length);
 
 			// @TODO printer l'erreur (index - instruction, expected vs got)
 			if (code_length != stream::get_size(encoded)
-				|| !system::memory_compare((void*)expected_code, (void*)memory::get_array_element(stream::get_buffer(encoded), 0), code_length)) {
+				|| !system::memory_compare((void*)expected_code, (void*)container::get_array_element(stream::get_buffer(encoded), 0), code_length)) {
 
 				return false;
 			}
@@ -1493,13 +1495,13 @@ namespace f::ASM
 			// A strategy could be to use arena allocators which might be also usefull for other parts of the compiler
 			Lexer_Data		lexer_data;
 
-			fstd::memory::Array<uint8_t>			buffer;
-			fstd::memory::Array<Token>				tokens;
+			fstd::container::Array<uint8_t>			buffer;
+			fstd::container::Array<Token>				tokens;
 
 			array_copy(buffer, 0, (uint8_t*)tests[i].asm_code, language::length_of_null_terminated_string((uint8_t*)tests[i].asm_code));
 			system::copy(lexer_data.file_path, dummy_path);
 			lexer_data.file_buffer = buffer;	// @TODO remove copy
-			memory::array_push_back(globals.asm_lexer_data, lexer_data);
+			container::array_push_back(globals.asm_lexer_data, lexer_data);
 
 			lex(dummy_path, buffer, tokens, globals.asm_lexer_data, file_token);
 

@@ -3,7 +3,7 @@
 #include "path.hpp"
 
 #include <fstd/platform.hpp>
-#include <fstd/memory/array.hpp>
+#include <fstd/container/array.hpp>
 
 #if defined(FSTD_OS_WINDOWS)
 typedef void*	HANDLE;
@@ -53,7 +53,7 @@ namespace fstd
 		void							close_file(File& file);
 		bool							is_file_eof(File& file);
 		uint64_t						get_file_size(const File& file);
-		memory::Array<uint8_t>			get_file_content(File& file);
+		container::Array<uint8_t>			get_file_content(File& file);
 
 		uint64_t						get_file_position(const File& file);
 		bool							set_file_position(File& file, uint64_t position);

@@ -11,9 +11,6 @@
     <Filter Include="Source Files\fstd">
       <UniqueIdentifier>{0e99d103-0c9f-4bdb-b04d-ca60f812a034}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\fstd\memory">
-      <UniqueIdentifier>{8b888506-8433-49d2-97f9-19de04d5ea3a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\fstd\system">
       <UniqueIdentifier>{fee017ce-5e88-496a-a478-3ea7b79c5f17}</UniqueIdentifier>
     </Filter>
@@ -53,6 +50,9 @@
     <Filter Include="Source Files\ASM\generated">
       <UniqueIdentifier>{967c9547-3804-400b-bbf9-73d90a193923}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\fstd\container">
+      <UniqueIdentifier>{36c4fb7e-cb92-477b-aaac-b390fc2d5aa7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sources\third-party\microsoft_craziness.h">
@@ -63,12 +63,6 @@
     </ClInclude>
     <ClInclude Include="..\sources\third-party\magic_enum.hpp">
       <Filter>Source Files\third-party</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\bucket.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\bucket_array.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\fstd\system\file.hpp">
       <Filter>Source Files\fstd\system</Filter>
@@ -87,9 +81,6 @@
     </ClInclude>
     <ClInclude Include="..\sources\fstd\system\stdio.hpp">
       <Filter>Source Files\fstd\system</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\array.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\fstd\core\logger.hpp">
       <Filter>Source Files\fstd\core</Filter>
@@ -114,9 +105,6 @@
     </ClInclude>
     <ClInclude Include="..\sources\fstd\language\intrinsic.hpp">
       <Filter>Source Files\fstd\language</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\hash_table.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\fstd\language\types.hpp">
       <Filter>Source Files\fstd\language</Filter>
@@ -144,9 +132,6 @@
     </ClInclude>
     <ClInclude Include="..\sources\IR_generator.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\stack.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
     </ClInclude>
     <ClInclude Include="..\sources\third-party\SpookyV2.h">
       <Filter>Source Files\third-party</Filter>
@@ -208,9 +193,6 @@
     <ClInclude Include="..\sources\lexer\lexer_base.hpp">
       <Filter>Source Files\lexer</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\fstd\memory\boolean_array.hpp">
-      <Filter>Source Files\fstd\memory</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\PE_x64_backend.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -231,6 +213,24 @@
     </ClInclude>
     <ClInclude Include="..\sources\ASM\generated\ASM_x64.hpp">
       <Filter>Source Files\ASM\generated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\container\array.hpp">
+      <Filter>Source Files\fstd\container</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\container\boolean_array.hpp">
+      <Filter>Source Files\fstd\container</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\container\bucket.hpp">
+      <Filter>Source Files\fstd\container</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\container\bucket_array.hpp">
+      <Filter>Source Files\fstd\container</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\container\hash_table.hpp">
+      <Filter>Source Files\fstd\container</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sources\fstd\container\stack.hpp">
+      <Filter>Source Files\fstd\container</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

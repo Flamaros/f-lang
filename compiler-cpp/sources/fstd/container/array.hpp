@@ -8,7 +8,7 @@
 
 namespace fstd
 {
-	namespace memory
+	namespace container
 	{
 		template<typename Type>
 		struct Array

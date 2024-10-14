@@ -14,9 +14,9 @@
 #include <fstd/language/types.hpp>
 #include <fstd/language/string_view.hpp>
 #include <fstd/system/path.hpp>
-#include <fstd/memory/array.hpp>
-#include <fstd/memory/bucket_array.hpp>
-#include <fstd/memory/hash_table.hpp>
+#include <fstd/container/array.hpp>
+#include <fstd/container/bucket_array.hpp>
+#include <fstd/container/hash_table.hpp>
 #include <fstd/stream/memory_write_stream.hpp>
 
 // @TODO include the proper version of ASM depending on the targetted architecture
@@ -164,7 +164,7 @@ namespace f
 			// I want chunks of memory instead of a full contiguous buffer to avoid issue with memory allocation,...
 			// But I don't need to release memory, moving,... auto initialization,...
 
-			fstd::memory::Bucket_Array<ADDR_TO_PATCH>	addr_to_patch; // bucket_array because we need fast push_back (allocation of bucket_size) and fast iteration (over arrays)
+			fstd::container::Bucket_Array<ADDR_TO_PATCH>	addr_to_patch; // bucket_array because we need fast push_back (allocation of bucket_size) and fast iteration (over arrays)
 			uint32_t									position_in_file;
 			uint32_t									RVA;
 		};
@@ -185,7 +185,7 @@ namespace f
 
 		struct Imported_Library
 		{
-			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Function*, 32> Function_Hash_Table;
+			typedef fstd::container::Hash_Table<uint16_t, fstd::language::string_view, Imported_Function*, 32> Function_Hash_Table;
 
 			fstd::language::string_view	name; // string_view of the first token parsed of this library
 			Function_Hash_Table			functions;
@@ -194,19 +194,19 @@ namespace f
 
 		struct ASM
 		{
-			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32>	Imported_Library_Hash_Table;
-			typedef fstd::memory::Hash_Table<uint16_t, fstd::language::string_view, Label*, 32>				Label_Hash_Table;
+			typedef fstd::container::Hash_Table<uint16_t, fstd::language::string_view, Imported_Library*, 32>	Imported_Library_Hash_Table;
+			typedef fstd::container::Hash_Table<uint16_t, fstd::language::string_view, Label*, 32>				Label_Hash_Table;
 
 			Imported_Library_Hash_Table		imported_libraries;
 			Label_Hash_Table				labels;
-			fstd::memory::Array<Section>	sections; // @Speed an Array should be good enough, the number of sections will stay very low and search on less than 10 elements is faster on a array than a hash_table
+			fstd::container::Array<Section>	sections; // @Speed an Array should be good enough, the number of sections will stay very low and search on less than 10 elements is faster on a array than a hash_table
 		};
 
 		struct ASM_Data
 		{
-			fstd::memory::Array<Imported_Library>	imported_libraries; // @TODO use Bucket_Array
-			fstd::memory::Array<Imported_Function>	imported_functions; // @TODO use Bucket_Array
-			fstd::memory::Array<Label>				labels;				// @TODO use Bucket_Array
+			fstd::container::Array<Imported_Library>	imported_libraries; // @TODO use Bucket_Array
+			fstd::container::Array<Imported_Function>	imported_functions; // @TODO use Bucket_Array
+			fstd::container::Array<Label>				labels;				// @TODO use Bucket_Array
 		};
 
 		inline bool match_section(const fstd::language::string_view& name, const Section& section) {

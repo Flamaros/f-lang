@@ -8,7 +8,7 @@
 
 namespace fstd
 {
-	namespace memory
+	namespace container
 	{
 		template<size_t nb_values>
 		struct Boolean_Array

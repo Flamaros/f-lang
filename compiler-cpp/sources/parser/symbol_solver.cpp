@@ -5,7 +5,7 @@
 
 #include "lexer/lexer.hpp"
 
-#include <fstd/memory/hash_table.hpp>
+#include <fstd/container/hash_table.hpp>
 
 #include <third-party/SpookyV2.h>
 
@@ -21,7 +21,7 @@ static AST_Node* get_user_type(Token<Keyword>* identifier, Symbol_Table* symbol_
 
 	while (symbol_table)
 	{
-		AST_Node** type_ptr = fstd::memory::hash_table_get(symbol_table->user_types, short_hash, identifier->text);
+		AST_Node** type_ptr = fstd::container::hash_table_get(symbol_table->user_types, short_hash, identifier->text);
 
 		if (type_ptr) {
 			AST_Node* type = *type_ptr;

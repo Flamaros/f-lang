@@ -15,7 +15,7 @@
 #include <fstd/language/string.hpp>
 #include <fstd/language/defer.hpp>
 
-#include <fstd/memory/hash_table.hpp>
+#include <fstd/container/hash_table.hpp>
 
 #include <fstd/os/windows/console.hpp>
 
@@ -190,7 +190,7 @@ void test_AST_operator_precedence()
 {
 	using namespace f;
 
-	fstd::memory::Array<f::Token<f::Keyword>>	tokens;
+	fstd::container::Array<f::Token<f::Keyword>>	tokens;
 	Parsing_Result								parsing_result;
 	//	IR											ir;
 	int											result = 0;
@@ -296,11 +296,11 @@ void test_AST_operator_precedence()
 
 void test_hash_table()
 {
-	fstd::memory::Hash_Table<uint16_t, fstd::language::string, void*>	hash_table;
+	fstd::container::Hash_Table<uint16_t, fstd::language::string, void*>	hash_table;
 	uint64_t	hash;
 	uint16_t	short_hash;
 
-	fstd::memory::hash_table_init(hash_table, &fstd::language::are_equals);
+	fstd::container::hash_table_init(hash_table, &fstd::language::are_equals);
 
 	fstd::language::string		string_type;
 	fstd::language::string		user_type_with_hash_of_string; // We will use the same hash than for the string_type to create a collision
@@ -308,7 +308,7 @@ void test_hash_table()
 	defer{
 		release(string_type);
 		release(user_type_with_hash_of_string);
-		fstd::memory::hash_table_release(hash_table);
+		fstd::container::hash_table_release(hash_table);
 	};
 
 	fstd::language::assign(string_type, (uint8_t*)u8"fstd::language::string");
@@ -319,22 +319,22 @@ void test_hash_table()
 	void* value;
 
 	value = (void*)0x01;
-	fstd::memory::hash_table_insert(hash_table, short_hash, string_type, value);
+	fstd::container::hash_table_insert(hash_table, short_hash, string_type, value);
 	value = (void*)0x02;
-	fstd::memory::hash_table_insert(hash_table, short_hash, user_type_with_hash_of_string, value);
+	fstd::container::hash_table_insert(hash_table, short_hash, user_type_with_hash_of_string, value);
 
 	// Check if we can correctly get back both value even with the hash collision
-	fstd::core::Assert((void*)*fstd::memory::hash_table_get(hash_table, short_hash, string_type) == (void*)0x01);
-	fstd::core::Assert((void*)*fstd::memory::hash_table_get(hash_table, short_hash, user_type_with_hash_of_string) == (void*)0x02);
+	fstd::core::Assert((void*)*fstd::container::hash_table_get(hash_table, short_hash, string_type) == (void*)0x01);
+	fstd::core::Assert((void*)*fstd::container::hash_table_get(hash_table, short_hash, user_type_with_hash_of_string) == (void*)0x02);
 
 	// Test if we iterate the right number of times with iterators
 	size_t count = 0;
-	auto it = fstd::memory::hash_table_begin(hash_table);
-	auto it_end = fstd::memory::hash_table_end(hash_table);
-	for (; !fstd::memory::equals<uint16_t, fstd::language::string, void*, 512>(it, it_end); fstd::memory::hash_table_next<uint16_t, fstd::language::string, void*, 512>(it))
+	auto it = fstd::container::hash_table_begin(hash_table);
+	auto it_end = fstd::container::hash_table_end(hash_table);
+	for (; !fstd::container::equals<uint16_t, fstd::language::string, void*, 512>(it, it_end); fstd::container::hash_table_next<uint16_t, fstd::language::string, void*, 512>(it))
 	{
 		count++;
-		void** value = fstd::memory::hash_table_get<uint16_t, fstd::language::string, void*, 512>(it);
+		void** value = fstd::container::hash_table_get<uint16_t, fstd::language::string, void*, 512>(it);
 		fstd::core::Assert(*value != nullptr);
 	}
 	fstd::core::Assert(count == 2);

@@ -3,7 +3,7 @@
 // A stream doesn' hold the memory
 // It is only made to ease the iteration
 
-#include <fstd/memory/array.hpp>
+#include <fstd/container/array.hpp>
 
 #include <fstd/core/assert.hpp>
 
@@ -14,12 +14,12 @@ namespace fstd
 		template<typename Array_Type>
 		struct Array_Read_Stream
 		{
-			fstd::memory::Array<Array_Type>*	buffer_ptr = nullptr;
+			fstd::container::Array<Array_Type>*	buffer_ptr = nullptr;
 			ssize_t								position = 0;
 		};
 
 		template<typename Array_Type>
-		inline void init(Array_Read_Stream<Array_Type>& stream, fstd::memory::Array<Array_Type>& buffer) {
+		inline void init(Array_Read_Stream<Array_Type>& stream, fstd::container::Array<Array_Type>& buffer) {
 			stream.buffer_ptr = &buffer;
 			stream.position = 0;
 		}
@@ -58,14 +58,14 @@ namespace fstd
 		inline Array_Type	get(const Array_Read_Stream<Array_Type>& stream) {
 			fstd::core::Assert(stream.buffer_ptr);
 
-			return *memory::get_array_element(*stream.buffer_ptr, stream.position);
+			return *container::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
 		template<typename Array_Type>
 		inline Array_Type*	get_pointer(const Array_Read_Stream<Array_Type>& stream) {	// @Warning return pointer at current position
 			fstd::core::Assert(stream.buffer_ptr);
 
-			return memory::get_array_element(*stream.buffer_ptr, stream.position);
+			return container::get_array_element(*stream.buffer_ptr, stream.position);
 		}
 
 		template<typename Array_Type>
@@ -79,9 +79,9 @@ namespace fstd
 			fstd::core::Assert(stream.buffer_ptr);
 			fstd::core::Assert(is_eof(stream) == false);
 
-			bool result = *memory::get_array_element(*stream.buffer_ptr, stream.position + 0) == 0xEF
-				&& *memory::get_array_element(*stream.buffer_ptr, stream.position + 1) == 0xBB
-				&& *memory::get_array_element(*stream.buffer_ptr, stream.position + 2) == 0xBF;
+			bool result = *container::get_array_element(*stream.buffer_ptr, stream.position + 0) == 0xEF
+				&& *container::get_array_element(*stream.buffer_ptr, stream.position + 1) == 0xBB
+				&& *container::get_array_element(*stream.buffer_ptr, stream.position + 2) == 0xBF;
 
 			if (skip_it && result) {
 				skip(stream, 3);

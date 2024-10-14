@@ -2,7 +2,7 @@
 
 #include "lexer_base.hpp"
 
-#include <fstd/memory/array.hpp>
+#include <fstd/container/array.hpp>
 
 #include <fstd/core/assert.hpp>
 
@@ -96,13 +96,13 @@ namespace f
     struct Lexer_Data
     {
         fstd::system::Path		        file_path;
-        fstd::memory::Array<uint8_t>	file_buffer;
+        fstd::container::Array<uint8_t>	file_buffer;
     };
 
     void    initialize_lexer();
-	void    lex(const fstd::system::Path& path, fstd::memory::Array<Token<Keyword>>& tokens);
-    void    lex(const fstd::system::Path& path, fstd::memory::Array<uint8_t>& file_buffer, fstd::memory::Array<Token<Keyword>>& tokens, fstd::memory::Array<f::Lexer_Data>& lexer_data, Token<Keyword>& file_token);
-    void    print(fstd::memory::Array<Token<Keyword>>& tokens);
+	void    lex(const fstd::system::Path& path, fstd::container::Array<Token<Keyword>>& tokens);
+    void    lex(const fstd::system::Path& path, fstd::container::Array<uint8_t>& file_buffer, fstd::container::Array<Token<Keyword>>& tokens, fstd::container::Array<f::Lexer_Data>& lexer_data, Token<Keyword>& file_token);
+    void    print(fstd::container::Array<Token<Keyword>>& tokens);
 
     inline bool is_a_basic_type(Keyword keyword) {
         return keyword >= Keyword::VOID && keyword <= Keyword::TYPE;

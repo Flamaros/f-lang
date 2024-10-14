@@ -6,7 +6,7 @@
 #include <fstd/language/flags.hpp>
 #include <fstd/core/logger.hpp>
 #include <fstd/core/string_builder.hpp>
-#include <fstd/memory/hash_table.hpp>
+#include <fstd/container/hash_table.hpp>
 #include <fstd/system/file.hpp>
 
 #include <third-party/SpookyV2.h>
@@ -17,7 +17,7 @@
 #include "generated/ASM_x64_lexer.cpp"
 
 using namespace fstd;
-using namespace fstd::memory;
+using namespace fstd::container;
 using namespace fstd::language;
 using namespace fstd::core;
 
@@ -189,13 +189,13 @@ namespace f::ASM
         language::string*	string = (language::string*)system::allocate(sizeof(language::string));
 
         init(*string);
-        memory::reserve_array(string->buffer, token_length);
+        container::reserve_array(string->buffer, token_length);
 
         size_t      position = 0;
         size_t      literal_length = 0;
-        uint8_t* output = memory::get_array_data(string->buffer);//  (uint8_t*)&string->buffer[0];
+        uint8_t* output = container::get_array_data(string->buffer);//  (uint8_t*)&string->buffer[0];
 
-        memory::reserve_array(string->buffer, token_length);
+        container::reserve_array(string->buffer, token_length);
 
         while (position < token_length)
         {
@@ -229,7 +229,7 @@ namespace f::ASM
         token.value.string = string;
     }
 
-    void lex(const system::Path& path, memory::Array<Token>& tokens)
+    void lex(const system::Path& path, container::Array<Token>& tokens)
     {
         ZoneScopedNC("f::ASM::lex", 0x1b5e20);
 
@@ -250,12 +250,12 @@ namespace f::ASM
 
 		system::copy(lexer_data.file_path, path);
 		lexer_data.file_buffer = system::get_file_content(file);
-        memory::array_push_back(globals.asm_lexer_data, lexer_data);
+        container::array_push_back(globals.asm_lexer_data, lexer_data);
 
         lex(path, lexer_data.file_buffer, tokens, globals.asm_lexer_data, file_token);
     }
 
-	void lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer, fstd::memory::Array<Token>& tokens, fstd::memory::Array<f::ASM::Lexer_Data>& lexer_data, Token& file_token)
+	void lex(const system::Path& path, fstd::container::Array<uint8_t>& file_buffer, fstd::container::Array<Token>& tokens, fstd::container::Array<f::ASM::Lexer_Data>& lexer_data, Token& file_token)
 	{
 		ZoneScopedN("lex");
 
@@ -280,7 +280,7 @@ namespace f::ASM
 
 		nb_tokens_prediction = get_array_size(file_buffer) / tokens_length_heuristic + 512;
 
-		memory::reserve_array(tokens, nb_tokens_prediction);
+		container::reserve_array(tokens, nb_tokens_prediction);
 
 		language::assign(current_view, stream::get_pointer(stream), 0);
 
@@ -392,7 +392,7 @@ namespace f::ASM
 							token.type = Token_Type::STRING_LITERAL;
 							polish_string_literal(token);
 
-							memory::array_push_back(tokens, token);
+							container::array_push_back(tokens, token);
 						}
 					}
 					else if (punctuation == Punctuation::SINGLE_QUOTE) {
@@ -429,7 +429,7 @@ namespace f::ASM
 							token.text = current_view;
 							token.type = Token_Type::STRING_LITERAL_RAW;
 
-							memory::array_push_back(tokens, token);
+							container::array_push_back(tokens, token);
 						}
 					}
 					else {
@@ -448,7 +448,7 @@ namespace f::ASM
 							skip(stream, 1, current_column);
 						}
 
-						memory::array_push_back(tokens, token);
+						container::array_push_back(tokens, token);
 					}
 				}
 			}
@@ -726,7 +726,7 @@ namespace f::ASM
 				language::resize(token.text, stream::get_position(stream) - token_start_position);
 
 				// Hack to handle negative numbers (we directly negate the value and replace the previous token if it's a dash)
-				Token* previous_token = memory::get_array_last_element(tokens);
+				Token* previous_token = container::get_array_last_element(tokens);
 				if (previous_token->type == Token_Type::SYNTAXE_OPERATOR && previous_token->value.punctuation == Punctuation::DASH) {
 					// May cause issues if the number have an unsigned suffix (because we access the signed version of the value (integer))
 					// @TODO We certainly need to trigger an error
@@ -742,7 +742,7 @@ namespace f::ASM
 					previous_token->text.size = (token.text.ptr + token.text.size) - previous_token->text.ptr;
 				}
 				else {
-					memory::array_push_back(tokens, token);
+					container::array_push_back(tokens, token);
 				}
 			}
 			else {  // Will be an identifier
@@ -801,16 +801,16 @@ namespace f::ASM
 				}
 
 			register_token:
-				memory::array_push_back(tokens, token);
+				container::array_push_back(tokens, token);
 			}
 		}
 
-		if (nb_tokens_prediction < memory::get_array_size(tokens)) {
+		if (nb_tokens_prediction < container::get_array_size(tokens)) {
 			// @TODO support print of floats
 	//		log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d - Nb tokens/byte: %.3f\n",  nb_tokens_prediction, memory::get_array_size(tokens), (float)memory::get_array_size(tokens) / (float)get_array_size(file_buffer));
 
 			// @TODO We should do a faster allocator of tokens than using array_push_back which check the size of the array.
-			log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d\n", nb_tokens_prediction, memory::get_array_size(tokens));
+			log(*globals.logger, Log_Level::warning, "[lexer] Wrong token number prediction. Predicted :%d - Nb tokens: %d\n", nb_tokens_prediction, container::get_array_size(tokens));
 			report_error(Compiler_Error::internal_error, "Overflow the maximum number of tokens that the compiler will be able to handle in future! Actually the buffer have a dynamic size but it will not stay like that for performances!");
 		}
 
@@ -819,7 +819,7 @@ namespace f::ASM
 #endif
 	}
 
-	void print(fstd::memory::Array<Token>& tokens)
+	void print(fstd::container::Array<Token>& tokens)
 	{
 		ZoneScopedNC("f::print[tokens]", 0x1b5e20);
 
@@ -827,13 +827,13 @@ namespace f::ASM
 
 		defer{ free_buffers(string_builder); };
 
-		if (memory::get_array_size(tokens)) {
+		if (container::get_array_size(tokens)) {
 			print_to_builder(string_builder, "--- tokens list of: ");
 			print_to_builder(string_builder, tokens[0].file_path);
 			print_to_builder(string_builder, " ---\n");
 		}
 
-		for (ssize_t i = 0; i < memory::get_array_size(tokens); i++)
+		for (ssize_t i = 0; i < container::get_array_size(tokens); i++)
 		{
 			switch (tokens[i].type)
 			{
@@ -901,7 +901,7 @@ namespace f::ASM
 			print_to_builder(string_builder, "\n");
 		}
 
-		if (memory::get_array_size(tokens)) {
+		if (container::get_array_size(tokens)) {
 			print_to_builder(string_builder, "---\n");
 		}
 

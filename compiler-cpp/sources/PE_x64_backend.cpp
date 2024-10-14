@@ -23,7 +23,7 @@ using namespace fstd;
 using namespace fstd::core;
 using namespace fstd::system;
 using namespace fstd::stream;
-using namespace fstd::memory;
+using namespace fstd::container;
 using namespace fstd::language;
 
 using namespace f;
@@ -214,7 +214,7 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 #if DLL_MODE == 1
     image_nt_header.FileHeader.NumberOfSections = (WORD)memory::get_array_size(asm_result.sections) + 2; // +2 for idata and reloc implicitely added
 #else
-    image_nt_header.FileHeader.NumberOfSections = (WORD)memory::get_array_size(asm_result.sections) + 1; // +1 for idata implicitely added
+    image_nt_header.FileHeader.NumberOfSections = (WORD)container::get_array_size(asm_result.sections) + 1; // +1 for idata implicitely added
 #endif
     image_nt_header.FileHeader.TimeDateStamp = (DWORD)(current_time_in_seconds_since_1970);	// @Warning UTC time
     image_nt_header.FileHeader.PointerToSymbolTable = 0;	// This value should be zero for an image because COFF debugging information is deprecated.
@@ -887,18 +887,18 @@ void f::PE_x64_backend::compile(const ASM::ASM& asm_result, const fstd::system::
 	{
 		ZoneScopedN("Patching addresses");
 
-		for (ssize_t i_section = 0; i_section < memory::get_array_size(asm_result.sections); i_section++)
+		for (ssize_t i_section = 0; i_section < container::get_array_size(asm_result.sections); i_section++)
 		{
-			ASM::Section* section = memory::get_array_element(asm_result.sections, i_section);
-			for (ssize_t j_add_to_patch = 0; j_add_to_patch < memory::get_array_size(section->addr_to_patch); j_add_to_patch++)
+			ASM::Section* section = container::get_array_element(asm_result.sections, i_section);
+			for (ssize_t j_add_to_patch = 0; j_add_to_patch < container::get_array_size(section->addr_to_patch); j_add_to_patch++)
 			{
-				ASM::ADDR_TO_PATCH* addr_to_patch = memory::get_array_element(section->addr_to_patch, j_add_to_patch);
+				ASM::ADDR_TO_PATCH* addr_to_patch = container::get_array_element(section->addr_to_patch, j_add_to_patch);
 				ASM::Label**		found_label;
 
 				uint64_t label_hash = SpookyHash::Hash64((const void*)to_utf8(addr_to_patch->label), get_string_size(addr_to_patch->label), 0);
 				uint16_t label_short_hash = label_hash & 0xffff;
 
-				found_label = fstd::memory::hash_table_get(asm_result.labels, label_short_hash, addr_to_patch->label);
+				found_label = fstd::container::hash_table_get(asm_result.labels, label_short_hash, addr_to_patch->label);
 				if (!found_label) {
 					report_error(Compiler_Error::internal_error, "Unable to find a label to patch an address in generated machine code.");
 				}

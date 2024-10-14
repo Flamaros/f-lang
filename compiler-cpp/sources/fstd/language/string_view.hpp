@@ -57,7 +57,7 @@ namespace fstd {
 		// @TODO should be in string, but C++ (cycle inclusion)
 		inline void copy(string& str, size_t position, const string_view& string)
 		{
-			memory::array_copy(str.buffer, position, string.ptr, string.size);
+			container::array_copy(str.buffer, position, string.ptr, string.size);
 		}
 
 		inline size_t get_string_size(const string_view& str)
@@ -132,7 +132,7 @@ namespace fstd {
 		// @TODO should be in string, but C++ (cycle inclusion)
 		inline void copy(UTF16LE_string& str, size_t position, const UTF16LE_string_view& string)
 		{
-			memory::array_copy(str.buffer, position, string.ptr, string.size);
+			container::array_copy(str.buffer, position, string.ptr, string.size);
 		}
 
 		inline size_t get_string_size(const UTF16LE_string_view& str)

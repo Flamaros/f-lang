@@ -4,7 +4,7 @@
 
 #include <fstd/system/stdio.hpp>
 
-#include <fstd/memory/array.hpp>
+#include <fstd/container/array.hpp>
 
 #include <cstdarg>	// @TODO remove it
 
@@ -14,7 +14,7 @@ namespace fstd
 	{
 		struct String_Builder
 		{
-			memory::Array<language::string>	strings;
+			container::Array<language::string>	strings;
 		};
 
 		enum class Numeric_Format
