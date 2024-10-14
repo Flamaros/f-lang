@@ -224,7 +224,7 @@ namespace fstd
 			// 2 UTF16 code units can give 4 UTF8 code units.
 			//
 			// Flamaros - 16 september 2020
-			memory::reserve_array(utf8_string.buffer, (3 * language::get_string_size(utf16LE_string)) + 1);
+			memory::resize_array(utf8_string.buffer, (3 * language::get_string_size(utf16LE_string)) + 1);
 
 			// @TODO @SpeedUp
 			// This really need to be optimized. Take a look at from_utf8_to_utf16LE implementation for inspirations.
@@ -254,11 +254,11 @@ namespace fstd
 				}
 				result_size += nb_utf8_code_units_added;
 			}
-			language::resize(utf8_string, result_size);
 
 			if (null_terminated) {
 				*get_array_element(utf8_string.buffer, result_size) = 0;
 			}
+			language::resize(utf8_string, result_size);
 		}
 
 		inline void from_utf16LE_to_utf8(const language::UTF16LE_string& utf16LE_string, language::string& utf8_string, bool null_terminated)
