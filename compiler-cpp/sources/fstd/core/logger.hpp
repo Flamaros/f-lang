@@ -10,7 +10,8 @@ namespace fstd
 			verbose,
 			info,
 			warning,
-			error
+			error,
+			format,	// A message with no particular color, that need to be always be displayed (like in tests)
 		};
 
 		struct Logger {

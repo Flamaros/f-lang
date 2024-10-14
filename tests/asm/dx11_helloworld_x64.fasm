@@ -22,8 +22,8 @@ SECTION ".text"
 		// GetModuleHandle();
 		
 		mov		[wc.hInstance], 0	// @TODO put the right value, but how to get it without a WinMain?
-		lea		rax,  [window_class]
-		mov		[wc.lpszClassName],  rax
+		lea		rax, [window_class]
+		mov		[wc.lpszClassName], rax
 
 	// HWND hwnd;
 	// const wchar_t* windowClass = L"directX11_example";

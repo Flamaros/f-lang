@@ -30,14 +30,14 @@ struct Globals
 {
 	fstd::core::Logger*						logger = nullptr;
 	Configuration							configuration;
-	fstd::container::Array<f::Lexer_Data>		lexer_data;
+	fstd::container::Array<f::Lexer_Data>	lexer_data;
 	f::Parser_Data							parser_data;
 	f::IR_Data								ir_data;
 	f::PE_X64_Backend_Data					x64_backend_data;
 
 	// f-asm
 	fstd::container::Array<f::ASM::Lexer_Data>	asm_lexer_data;
-	f::ASM::ASM_Data						asm_data;
+	f::ASM::ASM_Data							asm_data;
 };
 
 void initialize_globals();
@@ -50,7 +50,7 @@ enum class Compiler_Error
 	info,
 	warning,
 	error,
-	internal_error // Use it when the use trigger a limitation of the implementation of the compiler
+	internal_error // Use it when the user trigger a limitation of the implementation of the compiler
 };
 
 void report_error(Compiler_Error error, const char* error_message);

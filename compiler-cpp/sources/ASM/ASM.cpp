@@ -5,6 +5,7 @@
 
 #include <fstd/language/defer.hpp>
 #include <fstd/language/flags.hpp>
+#include <fstd/core/string_builder.hpp>
 #include <fstd/container/array.hpp>
 #include <fstd/container/bucket_array.hpp>
 #include <fstd/system/file.hpp>
@@ -1409,6 +1410,8 @@ namespace f::ASM
 		// Avec des contexts aussi je pourrais avoir des méthodes d'initialisation factorisé qui initialiserait sur un context
 		// J'ai beaucoup de copie car j'ai pas de notion de view sur les buffers pour le lexing,...
 
+		core::log(*globals.logger, core::Log_Level::format, "Starting x64 encoding tests:\n");
+
 		static uint8_t*	_dummy_section_name = (uint8_t*)u8R"(.text)";
 
 		// Init an dummy ASM context
@@ -1451,7 +1454,6 @@ namespace f::ASM
 			file_token.column = 0;
 		}
 
-
 		struct Encoding_Test
 		{
 			char	asm_code[64];
@@ -1464,7 +1466,6 @@ namespace f::ASM
 
 			core::Assert(container::get_bucket_size(stream::get_buffer(encoded)) >= code_length);
 
-			// @TODO printer l'erreur (index - instruction, expected vs got)
 			if (code_length != stream::get_size(encoded)
 				|| !system::memory_compare((void*)expected_code, (void*)container::get_array_element(stream::get_buffer(encoded), 0), code_length)) {
 
@@ -1473,17 +1474,50 @@ namespace f::ASM
 			return true;
 		};
 
+		auto log_result = [](size_t index, size_t tests_count, bool result, char asm_code[64], uint8_t code_length, uint8_t expected_code[15], stream::Memory_Write_Stream& encoded) -> void {
+			core::String_Builder	string_builder;
+			language::string		format_string;
+			language::string		formatted_string;
+			language::string_view	asm_code_string_view;
+
+			defer{
+				core::free_buffers(string_builder);
+			};
+
+			language::string_view   header;
+			language::string_view   footer;
+
+			if (result == true) {
+				language::assign(header, (uint8_t*)"\033[38;5;10m");
+			}
+			else {
+				language::assign(header, (uint8_t*)"\033[38;5;196m");
+			}
+			language::assign(footer, (uint8_t*)"\033[0m");
+
+			language::assign(asm_code_string_view, (uint8_t*)asm_code, language::length_of_null_terminated_string((uint8_t*)asm_code) - 2);
+			language::assign(format_string, (uint8_t*)"%v%d/%d %v%v\n");
+			core::print_to_builder(string_builder, &format_string, header, index + 1, tests_count, asm_code_string_view, footer);
+
+			formatted_string = core::to_string(string_builder);
+			system::print(formatted_string);
+		};
+
 		// @Warning I need a ending character because parse_instruction read until a new line (And to have a new line with tokens I need to have at least one more token)
+		// Tests more or less in the order of dx11_helloworld_x64.fasm
 		Encoding_Test tests[] = {
-			{ "sub	rsp, 0x28\n}"			, 4, { 0x48, 0x83, 0xEC, 0x28} },
-			{ "mov	rcx, -11\n}"			, 6, { 0x40, 0xB9, 0xF5, 0xFF, 0xFF, 0xFF} },
-			{ "call	[GetStdHandle]\n}"		, 7, { 0x40, 0xFF, 0x15, 0x00, 0x00, 0x00, 0x00} },
-			{ "mov	rcx, rax\n}"			, 3, { 0x48, 0x89, 0xC1} },
-			{ "lea	rdx, [message]\n}"		, 7, { 0x48, 0x8D, 0x15, 0x00, 0x00, 0x00, 0x00} },
-			{ "lea	r9, [rsp,, 48]\n}"		, 5, { 0x4C, 0x8D, 0x4C, 0x24, 0x30} },
-			{ "mov	qword [rsp,, 32], 0\n}"	, 9, { 0x48, 0xC7, 0x44, 0x24, 0x20, 0x00, 0x00, 0x00, 0x00} },
-			{ "xor	ecx, ecx\n}"			, 2, { 0x31, 0xC9} },
-			{ "hlt\n}"						, 1, { 0xF4} },
+			{ "sub	rsp, 0x28\n}"					, 4,	{ 0x48, 0x83, 0xEC, 0x28} },
+			{ "mov	[wc.hInstance], 0\n}"			, 12,	{ 0x48, 0xC7, 0x05, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} },
+			{ "lea	rax, [window_class]\n}"			, 7,	{ 0x48, 0x8D, 0x05, 0x00, 0x00, 0x00, 0x00} },
+			{ "mov	[wc.lpszClassName], rax\n}"		, 8,	{ 0x48, 0x89, 0x05, 0x23, 0x00, 0x00, 0x00, 0x00} },
+			{ "mov	rcx, -11\n}"					, 6,	{ 0x40, 0xB9, 0xF5, 0xFF, 0xFF, 0xFF} },
+			{ "call	[GetStdHandle]\n}"				, 7,	{ 0x40, 0xFF, 0x15, 0x00, 0x00, 0x00, 0x00} },
+			{ "mov	rcx, rax\n}"					, 3,	{ 0x48, 0x89, 0xC1} },
+			{ "lea	rdx, [message]\n}"				, 7,	{ 0x48, 0x8D, 0x15, 0x00, 0x00, 0x00, 0x00} },
+			{ "lea	r9, [rsp,, 48]\n}"				, 5,	{ 0x4C, 0x8D, 0x4C, 0x24, 0x30} },
+			{ "mov	qword [rsp,, 32], 0\n}"			, 9,	{ 0x48, 0xC7, 0x44, 0x24, 0x20, 0x00, 0x00, 0x00, 0x00} },
+			{ "xor	ecx, ecx\n}"					, 2,	{ 0x31, 0xC9} },
+			{ "hlt\n}"								, 1,	{ 0xF4} },
 		};
 		static constexpr size_t nb_tests = sizeof(tests) / sizeof(Encoding_Test);
 
@@ -1495,10 +1529,16 @@ namespace f::ASM
 			// A strategy could be to use arena allocators which might be also usefull for other parts of the compiler
 			Lexer_Data		lexer_data;
 
-			fstd::container::Array<uint8_t>			buffer;
-			fstd::container::Array<Token>				tokens;
+			fstd::container::Array<uint8_t>	buffer;
+			fstd::container::Array<Token>	tokens;
 
-			array_copy(buffer, 0, (uint8_t*)tests[i].asm_code, language::length_of_null_terminated_string((uint8_t*)tests[i].asm_code));
+			// I need a UTF-8 BOM to avoid a warning
+			array_push_back(buffer, (uint8_t)0xEF);
+			array_push_back(buffer, (uint8_t)0xBB);
+			array_push_back(buffer, (uint8_t)0xBF);
+
+			// @Warning copy the asm code just after the UTF-8 BOM
+			array_copy(buffer, 3, (uint8_t*)tests[i].asm_code, language::length_of_null_terminated_string((uint8_t*)tests[i].asm_code));
 			system::copy(lexer_data.file_path, dummy_path);
 			lexer_data.file_buffer = buffer;	// @TODO remove copy
 			container::array_push_back(globals.asm_lexer_data, lexer_data);
@@ -1512,7 +1552,9 @@ namespace f::ASM
 
 			parse_instruction(asm_result, stream, section);
 
-			nb_errors += verify_encoding(tests[i].code_length, tests[i].code, section->stream_data) ? 0 : 1;
+			bool result = verify_encoding(tests[i].code_length, tests[i].code, section->stream_data);
+			log_result(i, nb_tests, result, tests[i].asm_code, tests[i].code_length, tests[i].code, section->stream_data);
+			nb_errors += result ? 0 : 1;
 
 			// @Warning we reset the position to the beggining after each test
 			stream::reset(section->stream_data);
@@ -1521,6 +1563,7 @@ namespace f::ASM
 		// @TODO print a report sur le nombre d'erreurs par rapport au nombre de tests
 
 		if (nb_errors) {
+			core::log(*globals.logger, core::Log_Level::error, "Got %d errors on %d tests\n", nb_errors, nb_tests);
 			fstd::core::Assert(false);
 		}
 	}

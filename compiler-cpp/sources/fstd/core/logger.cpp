@@ -67,6 +67,9 @@ namespace fstd
 			case Log_Level::error:
 				language::assign(header, (uint8_t *)"\033[38;5;196;4mError:\033[0m ");
 				break;
+			case Log_Level::format:
+				language::assign(header, (uint8_t*)"\033[0m");
+				break;
 			default:
 				fstd::core::Assert(false);
 				break;

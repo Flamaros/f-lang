@@ -101,7 +101,6 @@ namespace fstd
 			return array.size == 0;
 		}
 
-		// Only buckets are released not the main array (array of buckets)
 		template<typename Type, ssize_t bucket_size>
 		void reset_array(Bucket_Array<Type, bucket_size>& array)
 		{
@@ -113,7 +112,9 @@ namespace fstd
 			for (ssize_t i = 0; i < nb_allocated_buckets; i++) {
 				system::free(array.ptr[i]);
 			}
+			system::free(array.ptr);
 
+			array.ptr = nullptr;
 			array.size = 0;
 		}
 
