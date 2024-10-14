@@ -30,6 +30,8 @@
 
 #include <tracy/Tracy.hpp>
 
+#include "ASM/ASM.hpp"
+
 void test_integer_to_string_performances()
 {
 	ZoneScopedNC("test_integer_to_string_performances", 0xf05545);
@@ -423,6 +425,8 @@ int main(int ac, char** av)
 	test_integer_to_string_performances();
 #	endif
 #endif
+	f::ASM::test_x64_encoding();
+
 	test_unicode_code_point_convversions();
 	test_unicode_string_convversions();
 	test_AST_operator_precedence();

@@ -1133,7 +1133,7 @@ namespace f::ASM
 				addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
 				memory::push_back(section->addr_to_patch, addr_to_patch);
 
-				size += 4;	// @Warning allocate 4 bytes for the addr in 32bits dispacement mod.
+				data[size++] = 0; data[size++] = 0; data[size++] = 0; data[size++] = 0;
 			}
 
 			// desc_operand give us the number of bytes to write (in some cases we use an instruction supporting a bigger immediate that needed
@@ -1235,7 +1235,7 @@ namespace f::ASM
 					addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
 					memory::push_back(section->addr_to_patch, addr_to_patch);
 
-					size += 4;	// @Warning allocate 4 bytes for the addr in 32bits dispacement mod.
+					data[size++] = 0; data[size++] = 0; data[size++] = 0; data[size++] = 0;
 				}
 				else {
 					// @Warning we should encode the immediate displacement value as requested by the instruction desc because
@@ -1283,10 +1283,8 @@ namespace f::ASM
 				addr_to_patch.addr_of_addr = (uint32_t)stream::get_position(section->stream_data) + size;
 				memory::push_back(section->addr_to_patch, addr_to_patch);
 
-				size += 4;	// @Warning allocate 4 bytes for the addr in 32bits dispacement mod.
+				data[size++] = 0; data[size++] = 0; data[size++] = 0; data[size++] = 0;
 			}
-
-
 		}
 	}
 
@@ -1399,5 +1397,129 @@ namespace f::ASM
 
 		// @TODO output all the data for debugging purpose
 		// The printed ASM should match what a debugger with a disasembler output
+	}
+
+	void test_x64_encoding()
+	{
+		// @TODO
+		// Il y a bon nombre de choses à revoir pour simplifier tout le code d'initialisation, c'est pas top pour faire des tests
+		// Il faudrait avoir des context plutot que des globals comme ça car ça permettrait d'isoler plus facilement les tests (un context par iteration ?)
+		// Avec des contexts aussi je pourrais avoir des méthodes d'initialisation factorisé qui initialiserait sur un context
+		// J'ai beaucoup de copie car j'ai pas de notion de view sur les buffers pour le lexing,...
+
+		static uint8_t*	_dummy_section_name = (uint8_t*)u8R"(.text)";
+
+		// Init an dummy ASM context
+		ASM						asm_result;
+		system::Path			dummy_path;
+		Token					file_token;
+		language::string_view	section_name;
+		{
+			language::assign(section_name, _dummy_section_name);
+			system::from_native(dummy_path, (uint8_t*)u8R"(test_x64_encoding)");
+
+			fstd::memory::Array<Token>	tokens;
+
+			initialize_lexer();
+
+			// Result data
+			{
+				memory::hash_table_init(asm_result.imported_libraries, &language::are_equals);
+				memory::hash_table_init(asm_result.labels, &language::are_equals);
+
+				memory::init(asm_result.sections);
+				memory::reserve_array(asm_result.sections, NB_PREALLOCALED_SECTIONS);
+			}
+
+			// Working data (stored in globals)
+			{
+				memory::init(globals.asm_data.imported_libraries);
+				memory::reserve_array(globals.asm_data.imported_libraries, NB_PREALLOCATED_IMPORTED_LIBRARIES);
+
+				memory::init(globals.asm_data.imported_functions);
+				memory::reserve_array(globals.asm_data.imported_functions, NB_PREALLOCATED_IMPORTED_LIBRARIES * NB_PREALLOCATED_IMPORTED_FUNCTIONS_PER_LIBRARY);
+
+				memory::init(globals.asm_data.labels);
+				memory::reserve_array(globals.asm_data.labels, (size_t)(memory::get_array_size(tokens) * NB_LABELS_PER_TOKEN) + 1);	// + 1 to ceil the value
+			}
+
+			file_token.type = Token_Type::UNKNOWN;
+			file_token.file_path = system::to_string(dummy_path);
+			file_token.line = 0;
+			file_token.column = 0;
+		}
+
+
+		struct Encoding_Test
+		{
+			char	asm_code[64];
+			uint8_t	code_length;
+			uint8_t	code[15];
+		};
+
+		auto verify_encoding = [](uint8_t code_length, uint8_t expected_code[15], stream::Memory_Write_Stream& encoded) -> bool {
+			// @TODO tester
+
+			core::Assert(memory::get_bucket_size(stream::get_buffer(encoded)) >= code_length);
+
+			// @TODO printer l'erreur (index - instruction, expected vs got)
+			if (code_length != stream::get_size(encoded)
+				|| !system::memory_compare((void*)expected_code, (void*)memory::get_array_element(stream::get_buffer(encoded), 0), code_length)) {
+
+				return false;
+			}
+			return true;
+		};
+
+		// @Warning I need a ending character because parse_instruction read until a new line (And to have a new line with tokens I need to have at least one more token)
+		Encoding_Test tests[] = {
+			{ "sub	rsp, 0x28\n}"			, 4, { 0x48, 0x83, 0xEC, 0x28} },
+			{ "mov	rcx, -11\n}"			, 6, { 0x40, 0xB9, 0xF5, 0xFF, 0xFF, 0xFF} },
+			{ "call	[GetStdHandle]\n}"		, 7, { 0x40, 0xFF, 0x15, 0x00, 0x00, 0x00, 0x00} },
+			{ "mov	rcx, rax\n}"			, 3, { 0x48, 0x89, 0xC1} },
+			{ "lea	rdx, [message]\n}"		, 7, { 0x48, 0x8D, 0x15, 0x00, 0x00, 0x00, 0x00} },
+			{ "lea	r9, [rsp,, 48]\n}"		, 5, { 0x4C, 0x8D, 0x4C, 0x24, 0x30} },
+			{ "mov	qword [rsp,, 32], 0\n}"	, 9, { 0x48, 0xC7, 0x44, 0x24, 0x20, 0x00, 0x00, 0x00, 0x00} },
+			{ "xor	ecx, ecx\n}"			, 2, { 0x31, 0xC9} },
+			{ "hlt\n}"						, 1, { 0xF4} },
+		};
+		static constexpr size_t nb_tests = sizeof(tests) / sizeof(Encoding_Test);
+
+		size_t nb_errors = 0;
+		for (int i = 0; i < nb_tests; i++)
+		{
+			// @TODO ajouter des defer pour release la mémoire (buffer, token, parse_instruction alloc in globals ?)
+			// For the moment leaks in this function are not critical because it will never go in production
+			// A strategy could be to use arena allocators which might be also usefull for other parts of the compiler
+			Lexer_Data		lexer_data;
+
+			fstd::memory::Array<uint8_t>			buffer;
+			fstd::memory::Array<Token>				tokens;
+
+			array_copy(buffer, 0, (uint8_t*)tests[i].asm_code, language::length_of_null_terminated_string((uint8_t*)tests[i].asm_code));
+			system::copy(lexer_data.file_path, dummy_path);
+			lexer_data.file_buffer = buffer;	// @TODO remove copy
+			memory::array_push_back(globals.asm_lexer_data, lexer_data);
+
+			lex(dummy_path, buffer, tokens, globals.asm_lexer_data, file_token);
+
+			stream::Array_Read_Stream<Token>	stream;
+			stream::init<Token>(stream, tokens);
+
+			Section* section = create_section(asm_result, section_name);
+
+			parse_instruction(asm_result, stream, section);
+
+			nb_errors += verify_encoding(tests[i].code_length, tests[i].code, section->stream_data) ? 0 : 1;
+
+			// @Warning we reset the position to the beggining after each test
+			stream::reset(section->stream_data);
+		}
+
+		// @TODO print a report sur le nombre d'erreurs par rapport au nombre de tests
+
+		if (nb_errors) {
+			fstd::core::Assert(false);
+		}
 	}
 }

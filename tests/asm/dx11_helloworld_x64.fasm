@@ -21,8 +21,10 @@ SECTION ".text"
 		// @TODO get the hInstance with GetModuleHandle(NULL) (return the HModule of the exe, no need to specify the module or exe name)
 		// GetModuleHandle();
 		
-;		mov		[wc.hInstance], 0	// @TODO put the right value, but how to get it without a WinMain?
-;		mov		[wc.lpszClassName], window_class
+		mov		[wc.hInstance], 0	// @TODO put the right value, but how to get it without a WinMain?
+		lea		rax,  [window_class]
+		mov		[wc.lpszClassName],  rax
+
 	// HWND hwnd;
 	// const wchar_t* windowClass = L"directX11_example";
 	// MSG msg = {};

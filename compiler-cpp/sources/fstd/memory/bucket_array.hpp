@@ -101,6 +101,22 @@ namespace fstd
 			return array.size == 0;
 		}
 
+		// Only buckets are released not the main array (array of buckets)
+		template<typename Type, ssize_t bucket_size>
+		void reset_array(Bucket_Array<Type, bucket_size>& array)
+		{
+			ZoneScopedN("reset");
+
+			ssize_t last_bucket_index = array.size / bucket_size;
+			ssize_t nb_allocated_buckets = array.ptr ? last_bucket_index + 1 : 0;
+
+			for (ssize_t i = 0; i < nb_allocated_buckets; i++) {
+				system::free(array.ptr[i]);
+			}
+
+			array.size = 0;
+		}
+
 		// @TODO add an iterator over buckets for fast copy (or write to files)
 	}
 }

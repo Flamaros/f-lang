@@ -230,5 +230,9 @@ namespace f
 		//   - create the import module
 
 		void debug_print(const ASM& asm_result);
+
+		// Tests
+
+		void test_x64_encoding();
 	}
 }
