@@ -462,6 +462,7 @@ namespace f::ASM
 				Token               token;
 				Numeric_Value_Flag  numeric_literal_flags = Numeric_Value_Flag::IS_DEFAULT;
 				uint8_t             next_char = 0;
+				size_t				token_start_position = stream::get_position(stream);
 
 				token.file_path = system::to_string(path);
 				token.line = current_line;
@@ -483,7 +484,7 @@ namespace f::ASM
 						token.value.unsigned_integer = 0;
 
 						peek(stream, current_column);
-						while (true) {
+						while (stream::get_remaining_size(stream)) {
 							current_character = stream::get(stream);
 
 							if (current_character >= '0' && current_character <= '9') {
@@ -722,7 +723,7 @@ namespace f::ASM
 				}
 
 				// We can simply compute the size of text by comparing the position on the stream with the one at the beginning of the numeric literal
-				language::resize(token.text, stream::get_pointer(stream) - language::to_utf8(token.text));
+				language::resize(token.text, stream::get_position(stream) - token_start_position);
 
 				// Hack to handle negative numbers (we directly negate the value and replace the previous token if it's a dash)
 				Token* previous_token = memory::get_array_last_element(tokens);

@@ -437,9 +437,10 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
             // Put similar code in the base library
             // https://github.com/ulfjack/ryu/blob/master/ryu/s2f.c
 
-            Token<Keyword>               token;
+            Token<Keyword>		token;
             Numeric_Value_Flag  numeric_literal_flags = Numeric_Value_Flag::IS_DEFAULT;
             uint8_t             next_char = 0;
+			size_t				token_start_position = stream::get_position(stream);
 
             token.file_path = system::to_string(path);
             token.line = current_line;
@@ -461,7 +462,7 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
 					token.value.unsigned_integer = 0;
 
 					peek(stream, current_column);
-                    while (true) {
+                    while (stream::get_remaining_size(stream)) {
                         current_character = stream::get(stream);
 
                         if (current_character >= '0' && current_character <= '9') {
@@ -680,7 +681,7 @@ void f::lex(const system::Path& path, fstd::memory::Array<uint8_t>& file_buffer,
             }
 
             // We can simply compute the size of text by comparing the position on the stream with the one at the beginning of the numeric literal
-            language::resize(token.text, stream::get_pointer(stream) - language::to_utf8(token.text));
+            language::resize(token.text, stream::get_position(stream) - token_start_position);
             memory::array_push_back(tokens, token);
 		}
 		else {  // Will be an identifier
