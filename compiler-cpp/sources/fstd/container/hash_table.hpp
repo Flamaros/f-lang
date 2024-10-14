@@ -2,7 +2,7 @@
 
 #include <fstd/language/types.hpp>
 
-#include <fstd/system/allocator.hpp>
+#include <fstd/system/memory.hpp>
 
 #include <fstd/container/array.hpp>
 #include <fstd/container/boolean_array.hpp>

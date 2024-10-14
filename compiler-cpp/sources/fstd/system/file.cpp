@@ -6,7 +6,7 @@
 #include <fstd/core/assert.hpp>
 #include <fstd/stream/memory_write_stream.hpp>
 #include <fstd/container/bucket_array.hpp>
-#include <fstd/system/allocator.hpp>
+#include <fstd/system/memory.hpp>
 
 #if defined(FSTD_OS_WINDOWS)
 #	include <win32/file.h>

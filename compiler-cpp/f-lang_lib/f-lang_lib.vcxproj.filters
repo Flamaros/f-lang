@@ -73,9 +73,6 @@
     <ClInclude Include="..\sources\fstd\system\path.hpp">
       <Filter>Source Files\fstd\system</Filter>
     </ClInclude>
-    <ClInclude Include="..\sources\fstd\system\allocator.hpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClInclude>
     <ClInclude Include="..\sources\fstd\os\windows\console.hpp">
       <Filter>Source Files\fstd\os\windows</Filter>
     </ClInclude>
@@ -232,6 +229,9 @@
     <ClInclude Include="..\sources\fstd\container\stack.hpp">
       <Filter>Source Files\fstd\container</Filter>
     </ClInclude>
+    <ClInclude Include="..\sources\fstd\system\memory.hpp">
+      <Filter>Source Files\fstd\system</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\sources\globals.cpp">
@@ -241,9 +241,6 @@
       <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\fstd\system\path.cpp">
-      <Filter>Source Files\fstd\system</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sources\fstd\system\allocator.cpp">
       <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
     <ClCompile Include="..\sources\fstd\os\windows\console.cpp">
@@ -299,6 +296,9 @@
     </ClCompile>
     <ClCompile Include="..\sources\ASM\generated\ASM_x64_lexer.cpp">
       <Filter>Source Files\ASM\generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sources\fstd\system\memory.cpp">
+      <Filter>Source Files\fstd\system</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

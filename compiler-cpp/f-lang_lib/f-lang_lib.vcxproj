@@ -77,8 +77,8 @@
     <ClInclude Include="..\sources\fstd\platform.hpp" />
     <ClInclude Include="..\sources\fstd\stream\array_read_stream.hpp" />
     <ClInclude Include="..\sources\fstd\stream\memory_write_stream.hpp" />
-    <ClInclude Include="..\sources\fstd\system\allocator.hpp" />
     <ClInclude Include="..\sources\fstd\system\file.hpp" />
+    <ClInclude Include="..\sources\fstd\system\memory.hpp" />
     <ClInclude Include="..\sources\fstd\system\path.hpp" />
     <ClInclude Include="..\sources\fstd\system\process.hpp" />
     <ClInclude Include="..\sources\fstd\system\stdio.hpp" />
@@ -147,8 +147,8 @@
     <ClCompile Include="..\sources\fstd\core\string_builder.cpp" />
     <ClCompile Include="..\sources\fstd\language\string.cpp" />
     <ClCompile Include="..\sources\fstd\os\windows\console.cpp" />
-    <ClCompile Include="..\sources\fstd\system\allocator.cpp" />
     <ClCompile Include="..\sources\fstd\system\file.cpp" />
+    <ClCompile Include="..\sources\fstd\system\memory.cpp" />
     <ClCompile Include="..\sources\fstd\system\path.cpp" />
     <ClCompile Include="..\sources\fstd\system\process.cpp" />
     <ClCompile Include="..\sources\fstd\system\stdio.cpp" />

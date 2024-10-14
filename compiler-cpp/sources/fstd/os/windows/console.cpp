@@ -7,7 +7,7 @@
 #	include <win32/process.h> // STARTUPINFOW
 #	include <win32/dbghelp.h> // IsDebuggerPresent
 
-#include <fstd/system/allocator.hpp>
+#include <fstd/system/memory.hpp>
 
 namespace fstd
 {
