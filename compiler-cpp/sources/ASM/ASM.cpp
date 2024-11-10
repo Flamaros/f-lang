@@ -1499,6 +1499,26 @@ namespace f::ASM
 			language::assign(format_string, (uint8_t*)"%v%d/%d %v%v\n");
 			core::print_to_builder(string_builder, &format_string, header, index + 1, tests_count, asm_code_string_view, footer);
 
+			// @TODO mettre en rouge le premier byte different ? Je peux récupèrer l'index avec le memcpy ?
+			if (result == false) {
+				core::print_to_builder(string_builder, "Expected: ");
+				for (uint8_t i = 0; i < code_length; i++) {
+					core::print_to_builder(string_builder, expected_code[i], core::Numeric_Format::hexadecimal, false, 2);
+					if (i < code_length - 1) {
+						core::print_to_builder(string_builder, " ");
+					}
+				}
+				core::print_to_builder(string_builder, "\n");
+				core::print_to_builder(string_builder, "Got:      ");
+				for (uint8_t i = 0; i < container::get_array_size(stream::get_buffer(encoded)); i++) {
+					core::print_to_builder(string_builder, *container::get_array_element(stream::get_buffer(encoded), i), core::Numeric_Format::hexadecimal, false, 2);
+					if (i < container::get_array_size(stream::get_buffer(encoded)) - 1) {
+						core::print_to_builder(string_builder, " ");
+					}
+				}
+				core::print_to_builder(string_builder, "\n");
+			}
+
 			formatted_string = core::to_string(string_builder);
 			system::print(formatted_string);
 		};
@@ -1507,9 +1527,9 @@ namespace f::ASM
 		// Tests more or less in the order of dx11_helloworld_x64.fasm
 		Encoding_Test tests[] = {
 			{ "sub	rsp, 0x28\n}"					, 4,	{ 0x48, 0x83, 0xEC, 0x28} },
-			{ "mov	[wc.hInstance], 0\n}"			, 12,	{ 0x48, 0xC7, 0x05, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} },
+			{ "mov	[wc.hInstance], 0\n}"			, 11,	{ 0x48, 0xC7, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} },
 			{ "lea	rax, [window_class]\n}"			, 7,	{ 0x48, 0x8D, 0x05, 0x00, 0x00, 0x00, 0x00} },
-			{ "mov	[wc.lpszClassName], rax\n}"		, 8,	{ 0x48, 0x89, 0x05, 0x23, 0x00, 0x00, 0x00, 0x00} },
+			{ "mov	[wc.lpszClassName], rax\n}"		, 7,	{ 0x48, 0x89, 0x05, 0x00, 0x00, 0x00, 0x00} },
 			{ "mov	rcx, -11\n}"					, 6,	{ 0x40, 0xB9, 0xF5, 0xFF, 0xFF, 0xFF} },
 			{ "call	[GetStdHandle]\n}"				, 7,	{ 0x40, 0xFF, 0x15, 0x00, 0x00, 0x00, 0x00} },
 			{ "mov	rcx, rax\n}"					, 3,	{ 0x48, 0x89, 0xC1} },

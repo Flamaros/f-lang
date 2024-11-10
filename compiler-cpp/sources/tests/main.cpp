@@ -367,7 +367,7 @@ void test_number_to_string()
 	release(f_string);
 
 	// Hexadecimal
-	fstd::language::to_string((uint64_t)5'624'978'429, 16, f_string); // 64 bits
+	fstd::language::to_string((uint64_t)5'624'978'429, 16, f_string, 16); // 64 bits
 	fstd::language::assign(result_string, (uint8_t*)u8"000000014F465BFD");
 	fstd::core::Assert(fstd::language::are_equals(f_string, result_string));
 	release(f_string);

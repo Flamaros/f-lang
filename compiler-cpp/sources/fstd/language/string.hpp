@@ -149,7 +149,7 @@ namespace fstd
 		}
 
 		// @SpeedUp @CleanUp
-		// Generic version with the base should the only version
+		// Generic version with the base should be the only version
 		// but if the base is a constant the compiler should be
 		// smart enough to remove conditions that launch the fastest
 		// implementation normally at runtime
@@ -159,7 +159,7 @@ namespace fstd
 		void to_string(IntegerType number, string& output);
 
 		template<typename IntegerType>
-		void to_string(IntegerType number, int8_t base, string& output);
+		void to_string(IntegerType number, int8_t base, string& output, int8_t padding = 0);
 
 		// =====================================================================
 

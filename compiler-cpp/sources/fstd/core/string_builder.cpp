@@ -53,22 +53,36 @@ namespace fstd
 			from_utf16LE_to_utf8(string_view, *string_buffer, false);
 		}
 
-		void print_to_builder(String_Builder& builder, int32_t value, Numeric_Format format)
+		void print_to_builder(String_Builder& builder, int32_t value, Numeric_Format format, bool prefix, int8_t padding)
 		{
 			language::string* string_buffer;
 
-			if (format == Numeric_Format::hexadecimal) {
-				print_to_builder(builder, "0x", 2);
+			if (prefix) {
+				if (format == Numeric_Format::binary) {
+					print_to_builder(builder, "0b", 2);
+				}
+				else if (format == Numeric_Format::octal) {
+					print_to_builder(builder, "0o", 2);
+				}
+				else if (format == Numeric_Format::hexadecimal) {
+					print_to_builder(builder, "0x", 2);
+				}
 			}
 
 			container::array_push_back(builder.strings, language::string());
 			string_buffer = container::get_array_last_element(builder.strings);
 
 			if (format == Numeric_Format::decimal) {
-				language::to_string(value, *string_buffer);
+				language::to_string(value, 10, *string_buffer, padding);
+			}
+			else if (format == Numeric_Format::binary) {
+				language::to_string((uint32_t)value, 2, *string_buffer, padding);
+			}
+			else if (format == Numeric_Format::octal) {
+				language::to_string((uint32_t)value, 8, *string_buffer, padding);
 			}
 			else if (format == Numeric_Format::hexadecimal) {
-				//*string_buffer = language::to_string(value, 16);
+				language::to_string((uint32_t)value, 16, *string_buffer, padding);
 			}
 			else {
 				core::Assert(false);
@@ -100,7 +114,7 @@ namespace fstd
 				language::to_string(value, *string_buffer);
 			}
 			else if (format == Numeric_Format::hexadecimal) {
-				//*string_buffer = language::to_string(value, 16);
+				language::to_string((uint64_t)value, 16, *string_buffer);
 			}
 			else {
 				core::Assert(false);

@@ -101,21 +101,25 @@ namespace fstd
 			resize(output, string_length + is_negative);
 		}
 
-		template void to_string<uint32_t>(uint32_t number, int8_t base, string& output);
-		template void to_string<uint64_t>(uint64_t number, int8_t base, string& output);
+		template void to_string<int32_t>(int32_t number, int8_t base, string& output, int8_t padding);
+		template void to_string<uint32_t>(uint32_t number, int8_t base, string& output, int8_t padding);
+		template void to_string<int64_t>(int64_t number, int8_t base, string& output, int8_t padding);
+		template void to_string<uint64_t>(uint64_t number, int8_t base, string& output, int8_t padding);
 
 		// Should I put the base as template parameter for better performances?
 		template<typename IntegerType>
-		void to_string(IntegerType number, int8_t base, string& output)
+		void to_string(IntegerType number, int8_t base, string& output, int8_t padding)
 		{
-			static_assert(std::is_same<IntegerType, uint32_t>::value ||
+			static_assert(std::is_same<IntegerType, int32_t>::value ||
+						std::is_same<IntegerType, uint32_t>::value ||
+						std::is_same<IntegerType, int64_t>::value ||
 						std::is_same<IntegerType, uint64_t>::value);
 			static_assert(std::is_integral<IntegerType>::value, "to_string works only with integral types.");
 
 			fstd::core::Assert(base >= 2 && base <= 16);
 			
 			// For base 10 we fallback on the specific implementation which handle the sign and is fastest
-			if (base == 10) {
+			if (base == 10 && padding == 0) {
 				to_string(number, output);
 				return;
 			}
@@ -132,7 +136,7 @@ namespace fstd
 				IntegerType	quotien = number;
 				IntegerType	reminder;
 
-				if (number) {	// we can't divide 0
+				if (quotien) {	// we can't divide 0
 					do
 					{
 						reminder = quotien % base;
@@ -140,41 +144,41 @@ namespace fstd
 
 						string[string_length++] = ordered_digits[reminder];
 					} while (quotien);
-
-					// Padding with 0
-					int32_t padding_size = 0;
-					if constexpr (std::is_same<IntegerType, uint32_t>::value) // 32 bits
-					{
-						if (base == 2) {
-							padding_size = 32 - string_length;
-						}
-						else if (base == 16) {
-							padding_size = 8 - string_length;
-						}
-					}
-					else // 64 bits
-					{
-						if (base == 2) {
-							padding_size = 64 - string_length;
-						}
-						else if (base == 16) {
-							padding_size = 16 - string_length;
-						}
-					}
-
-					if (padding_size > 0) {
-						system::memory_copy(&string[string_length], padding_buffer, padding_size);
-						string_length += padding_size;
-					}
-
-					// Reverse the string
-					size_t middle_cursor = string_length / 2;
-					for (size_t i = 0; i < middle_cursor; i++) {
-						intrinsic::swap((uint8_t*)&string[i], (uint8_t*)&string[string_length - i - 1]);
-					}
 				}
 				else {
-					string[0] = '0';
+					string[string_length++] = '0';
+				}
+
+				// Padding with 0
+				int32_t padding_size = 0;
+				if constexpr (std::is_same<IntegerType, uint32_t>::value) // 32 bits
+				{
+					if (base == 2) {
+						padding_size = padding - string_length;
+					}
+					else if (base == 16) {
+						padding_size = padding - string_length;
+					}
+				}
+				else // 64 bits
+				{
+					if (base == 2) {
+						padding_size = padding - string_length;
+					}
+					else if (base == 16) {
+						padding_size = padding - string_length;
+					}
+				}
+
+				if (padding_size > 0) {
+					system::memory_copy(&string[string_length], padding_buffer, padding_size);
+					string_length += padding_size;
+				}
+
+				// Reverse the string
+				size_t middle_cursor = string_length / 2;
+				for (size_t i = 0; i < middle_cursor; i++) {
+					intrinsic::swap((uint8_t*)&string[i], (uint8_t*)&string[string_length - i - 1]);
 				}
 			}
 

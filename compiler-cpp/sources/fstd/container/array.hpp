@@ -122,6 +122,10 @@ namespace fstd
 				size = source.size - start_index;
 			}
 
+			if (size == 0) {
+				return;
+			}
+
 			fstd::core::Assert(
 				start_index >= 0 &&
 				start_index < source.size &&
