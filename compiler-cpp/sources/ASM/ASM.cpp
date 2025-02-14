@@ -1090,9 +1090,9 @@ namespace f::ASM
 			if (is_flag_set(desc_operand.encoding_flags, (uint8_t)Operand_Encoding_Desc::Encoding_Flags::REGISTER_MODR)) {
 				if (modr_value == (uint8_t)-2) {
 					if (is_flag_set(operand_encoding, (uint8_t)Instruction_Desc::Operand_Encoding_Flags::IN_MODRM_REG)) {
-//						if (*modrm != 0b0101) {
+						if (*modrm != 0b101) {
 							*modrm |= 0b11 << 6; // register flag
-//						}
+						}
 						*modrm |= (g_register_desc_table[(size_t)operand.value._register].id & 0b111) << 3;
 
 						encode_additionnal_bit_in_REX_prefix(g_register_desc_table[(size_t)operand.value._register].id, data, REX_prefix_index, 0b0100);
@@ -1538,6 +1538,14 @@ namespace f::ASM
 			{ "mov	qword [rsp,, 32], 0\n}"			, 9,	{ 0x48, 0xC7, 0x44, 0x24, 0x20, 0x00, 0x00, 0x00, 0x00} },
 			{ "xor	ecx, ecx\n}"					, 2,	{ 0x31, 0xC9} },
 			{ "hlt\n}"								, 1,	{ 0xF4} },
+			// From http://www.c-jump.com/CIS77/CPU/x86/lecture.html
+			{ "add cl, al\n}"						, 2,	{ 0x00, 0xC1} },
+			{ "add ecx, [,, 1000]\n}"				, 7,	{ 0x03, 0x0C, 0x25, 0xE8, 0x03, 0x00, 0x00} },
+			{ "add edi, [ebx]\n}"					, 3,	{ 0x67, 0x03, 0x3B} },
+			{ "add eax, [esi,, 64]\n}"				, 4,	{ 0x67, 0x03, 0x46, 0x40} },	// ADD EAX, [ ESI + disp8 ]
+			{ "add ebx, [ebp,, 6464]\n}"			, 7,	{ 0x67, 0x03, 0x9D, 0x40, 0x19, 0x00, 0x00} },	// ADD EBX, [ EBP + disp32 ]
+			{ "add ebp, [eax, 1, 6464]\n}"			, 8,	{ 0x67, 0x03, 0x2C, 0x05, 0x40, 0x19, 0x00, 0x00} },	// ADD EBP, [ disp32 + EAX*1 ]
+			{ "add ecx, [edi, ebx * 4]\n}"			, 8,	{ 0x67, 0x03, 0x2C, 0x05, 0x00, 0x00, 0x00, 0x00} },	// ADD ECX, [ EBX + EDI*4 ]
 		};
 		static constexpr size_t nb_tests = sizeof(tests) / sizeof(Encoding_Test);
 

@@ -126,8 +126,14 @@ namespace f
 		{
 			enum Encoding_Flags : uint8_t
 			{
-				MODE_32					= 0b0001,
-				PREFIX_REX_W			= 0b0010,	// NEED REX.W prefix
+				MODE_32						= 0b0000'0001,
+				PREFIX_REX_W				= 0b0000'0010,	// NEED REX.W prefix
+				ADDRESSING_MODE_REGISTER	= 0b0000'0100,	// Operands (source and destination) are registers (it may have only one register) (INC EDX; PUSH EBP; MOV EAX, EDX)
+				ADDRESSING_MODE_IMPLICIT	= 0b0000'1000,	// There is no explicit operand (its determined by the instruction by itself) (CLC; CLD; RET;)
+				ADDRESSING_MODE_IMMEDIATE	= 0b0010'0000,	// Source operand is an immediate value, and the destination cannot be an immediate data (MOV ECX, 1; SUB ESP, 12; MOV EBX, 0x1000)
+				ADDRESSING_MODE_DIRECT		= 0b0100'0000,	// An operand directly specifies the address of the memory location where the data is located (MOV EBX, [0x1000]; ADD ECX, [0x1234])
+				ADDRESSING_MODE_INDIRECT	= 0b1000'0000,	// The data to be operated on is located at a memory address and that memory address is present in a register (MOV EAX, [EDX]; MOV [EDX], ECX)
+															// There are a few different forms of indirect operands in x86: 1. [reg] 2. [reg + displacement] 3. [displacement] 4. [reg * constant + reg] 5. [reg * constant + reg + displacement]
 			};
 
 			enum Operand_Encoding_Flags : uint8_t

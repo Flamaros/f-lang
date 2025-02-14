@@ -1,3 +1,149 @@
+Utiliser chatgpt o1, pour apprendre les bloc ASM?
+
+
+Mettre cette Todo liste directement dans le projet
+
+
+Remettre la string_view a "" pour l'enum "format", dans le logger, corriger le crash.
+
+
+
+
+
+
+commencer refacto sur les modes d'addressage des instructions
+
+
+back-end tb de RealNehe ?
+https://github.com/aengelke/fadec encoder ?
+
+
+
+
+http://ref.x86asm.net/geek64.html
+
+Tests unitaires pour la génération du code binaire 
+
+
+Pour l'exemple dx11 ?
+
+Gérer le mov:
+mov        [,, wc.lpszClassName], window_class
+Juste les valeurs immédiate qui sont des address de label a mettre en dword plutôt que quadword comme relatif a RIP? PB de détection a cause de la taille seulement ?
+
+
+
+
+
+
+Voir les todo:
+// @TODO check if it is valid and/or optimal to put here address and size of the entire idata section because IAT is only a part in the idata section
+// @TODO Optimize (should I compute the address to patch and do the file_position?)
+
+
+
+Factoriser le code d'écriture des sections (boucles)
+  - Il reste la partie correction des valeurs sur les header des sections (attention certaines corrections post write ne sont pas généric ou difficile à rendre générique?)
+
+
+
+
+
+
+Faire un test pour l'encodage d'instruction même si l'exécution est invalide
+https://www.cs.loyola.edu/~binkley/371/Encoding_Real_x86_Instructions.html
+
+Faire en mode test unitaire ? Avec le parsing des strings ? Et le résultat a obtenir en hexa?
+
+
+
+
+
+
+
+
+
+
+window_class doit être une valeur immédiate, mais à patcher quand même lors de la génération du binaire
+ [,, wc.lpszClassName] est une relative address avec un SIB ce qui provoque le déférencement
+
+
+
+
+
+Gerer la section bss (best save space), pour les variables locales?
+
+
+Amélioration syntaxique ?
+ - Faire que ça fonctionne simplement avec un label seul pour displacement sans SIB?
+Faire en sorte de supporter le saut d'un field pour éviter la multiplication des virgules ?
+
+
+Commencer à travailler sur le post du blog et faire un exemple un peu plus avancé (triangle qui tourne et change de couleur en dx11). Bien dire que je ne supporte pas le SSE, MMX,... Pour le moment.
+
+
+
+
+
+Générer mes debug info directement au format de RAD_DEBUGGER? est-ce que je pourrais avoir carrément du code dans mon exe ou pdb pour formatter les variables dans les watchers? que ce soit mieux que du natvis? idéalement j'aimerais pouvoir voir aussi la version non formatée des variables
+
+
+Migrer vers le write_memory_stream et comparer les perfs.
+
+
+
+
+
+Remplacer mes pointeurs de nose AST par des index ?
+
+
+
+
+
+
+
+De john carmack, pour éviter les bugs dans fonctions trop facilement appelées. Aussi pour le debugger?
+It would be kind of nice if C had a “functional” keyword to enforce no global references.
+Peut être pas aussi rigide que le pure du D?
+
+
+
+
+
+
+
+
+
+
+
+============================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Corriger les pb de classification des numériques literals, il me faut les taille byte, word,... (attention au print de debug) (aussi sur le lexer normal?)
 Il faut faire une struct register_desc (car j'ai besoin en plus de la taille du numéro du registre pour l'encodage de l'instruction)
    - attention au im dans insns.dat qui ne veux pas dire grand chose car seul le mov prend des immédiate de 64 bits (pour charger en mémoire)
