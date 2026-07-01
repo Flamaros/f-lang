@@ -100,18 +100,26 @@ Remplacer mes pointeurs de nose AST par des index ?
 
 
 
+============================================================================================================
 
 
 De john carmack, pour éviter les bugs dans fonctions trop facilement appelées. Aussi pour le debugger?
 It would be kind of nice if C had a “functional” keyword to enforce no global references.
 Peut être pas aussi rigide que le pure du D?
 
+Va avec le fait d'éventuellement réussir à ne pas mettre le paramètre implicite context ?
+
+
+============================================================================================================
 
 
 
 
+dédupliquer les litterals quand je les mets dans le binaire :
+https://x.com/tsoding/status/1950257735817457712
 
-
+Pour les strings, nombres, ...
+Faire une comparaison strict sur les tokens directement ?
 
 
 
@@ -654,3 +662,36 @@ Stacktrace?
 https://github.com/jeremy-rifkin/cpptrace/releases/tag/v0.2.0
 
 Pour gérer les crash report?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####################################
+
+
+https://x.com/tetsuoai/status/1947186471150157931?t=1uhQoD2pkNbptG1jIuVMRA&s=09
+
+Mettre la protection CET? En ajoutant l'instruction spécifique avant une instruction sur laquelle on peut jump? Il faut aussi flagger le binaire pour prévenir l'OS
+
+
+
+
+#####################################
+Annotations pour demander au compilo d'aoutput l'ASM d'un scope. (Pratique pour vérifier qu'il optimise correctement et debugguer au niveau des différents steps (IR, ASM,...))
+syntaxe : @debug_compiler(PARAMS) ?

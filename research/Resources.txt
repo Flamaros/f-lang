@@ -30,3 +30,10 @@ https://pubby.games/codegen.html
 Post sur le discord
 https://discord.com/channels/239737791225790464/241518132928315392/1088929378626437120
 ---------------
+
+
+
+---------------
+Resource sur le reverse engeniering des Binaire et asm (binaire to ASM)
+https://0x44.cc/reversing/2021/07/21/reversing-x86-and-c-code-for-beginners.html
+---------------
